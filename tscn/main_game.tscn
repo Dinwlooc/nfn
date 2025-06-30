@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=19 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://bdgr2qa4v5oq7" path="res://Script/Node/Node_MainGame.gd" id="1_ak5wu"]
 [ext_resource type="Script" uid="uid://vgw3c27vm76p" path="res://Script/Class/Class_Server.gd" id="2_5gkg4"]
@@ -7,13 +7,15 @@
 [ext_resource type="Texture2D" uid="uid://ktb06y62py2r" path="res://Picture/Backgound/backgound5.png" id="3_a4uvd"]
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://Script/Node/Node_Backgound.gd" id="5_3yxmy"]
 [ext_resource type="Script" uid="uid://062bg815jifb" path="res://Script/shader_lights.gd" id="8_4k6qy"]
+[ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://Script/Class/Class_RealAreaHand.gd" id="9_0w8dv"]
 [ext_resource type="Script" uid="uid://cbddakxiujtqr" path="res://Script/Class/Class_Arrow.gd" id="9_a5vnv"]
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://tscn/areaface_hand.tscn" id="9_xi3fn"]
-[ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://Script/Node/Node_AreaHand.gd" id="10_m34e1"]
-[ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://tscn/area_instrument.tscn" id="10_pljvk"]
-[ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://tscn/area_other_player.tscn" id="11_5s0vj"]
-[ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://tscn/area_self_player.tscn" id="11_ah0am"]
+[ext_resource type="Script" uid="uid://boamtyqq4276a" path="res://Script/Class/Class_RealAreaSelf.gd" id="11_5huyi"]
+[ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://tscn/areaface_targets.tscn" id="11_5s0vj"]
+[ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://tscn/areaface_self.tscn" id="11_ah0am"]
+[ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://tscn/areaface_self_properties.tscn" id="13_5huyi"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://tres/LineEdit_theme.tres" id="14_2oxbr"]
+[ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://Script/Class/Class_RealAreaTargets.gd" id="14_a6oxl"]
 [ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://Script/Node/Node_Console.gd" id="17_qle8x"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_riwjx"]
@@ -70,35 +72,44 @@ anchors_preset = 0
 offset_right = 1613.0
 offset_bottom = 907.0
 mouse_filter = 2
-script = ExtResource("10_m34e1")
+script = ExtResource("9_0w8dv")
 
-[node name="AreaHandFace" parent="Control/AreaHand" instance=ExtResource("9_xi3fn")]
+[node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_xi3fn")]
 layout_mode = 1
 offset_left = -4.405
 offset_top = -3.76099
 offset_right = 10.6
 offset_bottom = 3.974
 
-[node name="AreaInstrument2" parent="Control" instance=ExtResource("10_pljvk")]
-layout_mode = 1
-anchor_top = 0.0
-anchor_right = 0.999
-anchor_bottom = 0.911
-offset_left = 1454.0
-offset_top = 148.0
-offset_right = 143.6
-offset_bottom = -271.9
+[node name="AreaSelf" type="Control" parent="Control"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("11_5huyi")
 
-[node name="AreaOtherPlayer" parent="Control" instance=ExtResource("11_5s0vj")]
+[node name="AreaFaceSelf" parent="Control/AreaSelf" instance=ExtResource("11_ah0am")]
+offset_left = 1390.0
+offset_right = 1390.0
+offset_bottom = 691.0
+
+[node name="AreaFaceSelf_Properties" parent="Control/AreaSelf" instance=ExtResource("13_5huyi")]
+layout_mode = 1
+offset_left = 1453.0
+offset_top = 117.64
+offset_right = 1794.12
+offset_bottom = 508.0
+
+[node name="AreaTargets" type="Control" parent="Control"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("14_a6oxl")
+
+[node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("11_5s0vj")]
 offset_left = 693.0
 offset_top = 23.0
 offset_right = 899.0
 offset_bottom = 298.0
-
-[node name="AreaSelfPlayer" parent="Control" instance=ExtResource("11_ah0am")]
-offset_left = 1390.0
-offset_right = 1390.0
-offset_bottom = 691.0
 
 [node name="Console" type="Control" parent="Control"]
 anchors_preset = 0

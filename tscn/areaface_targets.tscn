@@ -21,7 +21,7 @@ shader_parameter/execute_effect = true
 shader_parameter/random_seed = 0.0
 shader_parameter/wave_mode = 1
 
-[node name="AreaOtherPlayer" type="Control"]
+[node name="AreaFaceTargets" type="Control"]
 clip_contents = true
 layout_mode = 3
 anchors_preset = 0

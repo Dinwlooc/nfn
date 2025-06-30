@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://oyd7psutawf1" path="res://Picture/Character/NFN_Mizukagami/NFN_Mizukagami _3.png" id="1_4bx5y"]
 
-[node name="AreaSelfPlayer" type="Control"]
+[node name="AreaFaceSelf" type="Control"]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 1396.0

@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://ld25ivvpfrx8"]
+[gd_scene format=3 uid="uid://b728pbl6qxvjt"]
 
-[node name="AreaInstrument" type="Control"]
+[node name="AreaFaceSelf_Properties" type="Control"]
 clip_contents = true
 layout_mode = 3
 anchor_top = 0.759
