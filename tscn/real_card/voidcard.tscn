@@ -1,0 +1,33 @@
+[gd_scene load_steps=3 format=3 uid="uid://vkgbltb0x3w1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tg7if"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wshpf"]
+
+[node name="RealCardFace" type="Control"]
+clip_contents = true
+custom_minimum_size = Vector2(58, 88)
+layout_mode = 3
+anchor_right = 0.09
+anchor_bottom = 0.244
+offset_right = -87.0
+offset_bottom = -131.6
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(2.5, 2.5)
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 57.0
+offset_bottom = 88.0
+color = Color(0.741176, 0.741176, 0.741176, 1)
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_right = 58.0
+offset_bottom = 88.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_tg7if")
+theme_override_styles/hover = SubResource("StyleBoxTexture_wshpf")
+toggle_mode = true
+action_mode = 0
+flat = true

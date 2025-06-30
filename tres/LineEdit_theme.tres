@@ -1,0 +1,6 @@
+[gd_resource type="Theme" format=3 uid="uid://c7plfql805fgp"]
+
+[resource]
+LineEdit/colors/font_selected_color = Color(0.964706, 0.909804, 0, 1)
+LineEdit/colors/font_uneditable_color = Color(1, 1, 1, 0.827451)
+LineEdit/colors/selection_color = Color(1, 1, 1, 0)

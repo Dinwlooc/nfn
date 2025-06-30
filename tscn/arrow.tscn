@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://ly0jk17iosjf"]
+
+[sub_resource type="Curve2D" id="Curve2D_gmwrc"]
+bake_interval = 0.01
+_data = {
+"points": PackedVector2Array(3.16364, 351.685, -3.16364, -351.685, -42.8387, 13.8648, 0, 0, 0, 0, 295.161, -334.135)
+}
+point_count = 2
+
+[node name="Path2D" type="Path2D"]
+position = Vector2(46.8387, 334.135)
+curve = SubResource("Curve2D_gmwrc")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+visible = false
+offset_right = 40.0
+offset_bottom = 40.0
+metadata/_edit_use_anchors_ = true

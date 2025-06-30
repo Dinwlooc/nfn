@@ -1,0 +1,92 @@
+extends Node
+ 
+###全局控制台####
+var maingame:Node
+var	realarea:Dictionary
+var console:Node
+var card_on_select:Dictionary
+var card_on_drag:Dictionary
+var system:System
+var server:Node
+var command_list: Dictionary = {
+	"c_start":{"min":0,"max":0},
+ 	"c_draw":{"min":0,"max":0},
+	"c_help":{"min":1,"max":1}, 
+	"c_connect_to":{"min":1,"max":1},
+	"c_close":{"min":0,"max":0}
+	}
+
+signal c_start
+signal c_draw
+signal c_connect_to(url:String)
+signal c_close 
+
+
+func register_console(console_instance)->void:
+	console = console_instance
+ 
+func register_maingame(maingame_instance)->void:
+	maingame = maingame_instance
+	
+func register_system(system_instance:System)->void:
+	system = system_instance
+	
+func register_server(server_instance)->void:
+	server = server_instance
+
+func register_realarea(realarea_name:String,realareahand_instance:RealArea)->void:
+	realarea[realarea_name] = realareahand_instance
+	
+func set_card_on_drag(area:RealArea,realcard:RealCard):
+	remove_card_on_drag()
+	card_on_drag["area"] = area
+	card_on_drag["card"] = realcard
+	card_on_drag["card"].dragged = true
+	card_on_drag["area"].tween_update()
+	
+func remove_card_on_drag():
+	if card_on_drag:
+		card_on_drag["card"].dragged = false
+		card_on_drag["area"].tween_update()
+	card_on_drag.clear()
+	
+func set_card_on_select(area_name,choose_list:Array[int]):
+	if card_on_select:
+		card_on_select[area_name] = choose_list
+	pass
+		
+func _print(text:Variant)->void:
+	if console:
+		match typeof(text):
+			4:
+				console.append_text(text)
+				print(text)
+				return
+			28:
+				var real_text:String = ""
+				for i in range(text.size()):
+					real_text += str(text[i])
+				console.append_text(real_text)
+				print(real_text)
+				return
+		push_error()
+		
+func command(signal_name:String,args:Array)->void:
+	if !command_list.has(signal_name):
+		_print(["无效输入：",signal_name])
+		return
+	var min_arg_num = command_list[signal_name]["min"]
+	var max_arg_num = command_list[signal_name]["max"]
+	if args.size()<min_arg_num:
+		_print(["Error:参数不足，",signal_name,"未发送。目标：",min_arg_num])
+		return
+	if args.size()>min_arg_num:
+		_print(["Error:参数过多，",signal_name,"未发送。限制：",max_arg_num])
+		return
+	else:
+		args.push_front(signal_name)
+		_print(["发送指令：",signal_name])
+		emit_signal.callv(args)
+		return
+
+
