@@ -1,12 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://db51joyx0uc86"]
+[gd_scene load_steps=5 format=3 uid="uid://db51joyx0uc86"]
 
 [ext_resource type="Script" uid="uid://bbo5r3nm8gklu" path="res://tscn/real_card/Node_RealCardAttack.gd" id="1_e6d5b"]
-[ext_resource type="Texture2D" uid="uid://cxupn3q64kbl3" path="res://Picture/CardAttack/A_basic_attatck.png" id="1_ohn0i"]
 [ext_resource type="Texture2D" uid="uid://ljvviksp78nn" path="res://Picture/suit/suit.png" id="2_u6ebe"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tg7if"]
-
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wshpf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tg7if"]
 
 [node name="RealCardFace" type="Control"]
 clip_contents = true
@@ -67,7 +66,6 @@ scale = Vector2(0.11, 0.11)
 [node name="TextureRect" type="TextureRect" parent="CenterContainer"]
 custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
-texture = ExtResource("1_ohn0i")
 stretch_mode = 1
 
 [node name="Name" type="Label" parent="."]
@@ -150,8 +148,8 @@ vertical_alignment = 1
 layout_mode = 0
 offset_right = 58.0
 offset_bottom = 88.0
-theme_override_styles/normal = SubResource("StyleBoxEmpty_tg7if")
 theme_override_styles/hover = SubResource("StyleBoxTexture_wshpf")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_tg7if")
 toggle_mode = true
 action_mode = 0
 flat = true

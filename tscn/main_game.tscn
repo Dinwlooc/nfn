@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=17 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://bdgr2qa4v5oq7" path="res://Script/Node/Node_MainGame.gd" id="1_ak5wu"]
 [ext_resource type="Script" uid="uid://vgw3c27vm76p" path="res://Script/Class/Class_Server.gd" id="2_5gkg4"]
@@ -6,7 +6,6 @@
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://tscn/shader_lights.gdshader" id="3_3ji7e"]
 [ext_resource type="Texture2D" uid="uid://ktb06y62py2r" path="res://Picture/Backgound/backgound5.png" id="3_a4uvd"]
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://Script/Node/Node_Backgound.gd" id="5_3yxmy"]
-[ext_resource type="Script" uid="uid://bswjuveutfcdf" path="res://tscn/Transition.gd" id="6_caqiy"]
 [ext_resource type="Script" uid="uid://062bg815jifb" path="res://Script/shader_lights.gd" id="8_4k6qy"]
 [ext_resource type="Script" uid="uid://cbddakxiujtqr" path="res://Script/Class/Class_Arrow.gd" id="9_a5vnv"]
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://tscn/areaface_hand.tscn" id="9_xi3fn"]
@@ -100,15 +99,6 @@ offset_bottom = 298.0
 offset_left = 1390.0
 offset_right = 1390.0
 offset_bottom = 691.0
-
-[node name="Transition" type="ColorRect" parent="Control"]
-visible = false
-layout_mode = 0
-offset_right = 1600.0
-offset_bottom = 900.0
-mouse_filter = 2
-color = Color(0, 0, 0, 1)
-script = ExtResource("6_caqiy")
 
 [node name="Console" type="Control" parent="Control"]
 anchors_preset = 0

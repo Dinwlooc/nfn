@@ -2,10 +2,7 @@ extends Control
 
 func _ready()-> void:
 	$ItemList_TestGame.connect("item_selected",_start_game)
-	$Transition.connect("OK",transition)
+	GlobalTransition.fade_out()
 func _start_game(_index)-> void:
-	$Transition.outto()
+	GlobalTransition.change_scene_with_transition("res://tscn/main_game.tscn")
 	pass
-
-func transition():
-	get_tree().change_scene_to_file("res://tscn/main_game.tscn")

@@ -72,14 +72,13 @@ func hover_card()->void:
 	
 	
 func card_move()-> void:
-	const time = 0.2
 	if area.real_card_pool.size() == 0||target_position.size()==0:
 		return
 	for i in range(0,area.real_card_pool.size()):
 		var card_position = area.real_card_pool[i].position
 		var _target_position = target_position[i]
 		if !area.real_card_pool[i].dragged:
-			GlobalUIAnimation.tween_animations(area.real_card_pool[i],{"position":_target_position},time)
+			GlobalUIAnimation.tween_animations(area.real_card_pool[i],{"position":_target_position})
 	pass
 
 func dragging_move(card)->void:

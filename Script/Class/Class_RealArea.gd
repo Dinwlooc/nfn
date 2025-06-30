@@ -53,7 +53,6 @@ func on_select(pool_id:int)-> void:
 	GlobalConsole.set_card_on_select(area_name,choose_list)
 	areaface.tween_update()
 	pass
-	pass
 	
 func on_drag(pool_id:int)->void:
 	if Input.get_mouse_button_mask()==1:

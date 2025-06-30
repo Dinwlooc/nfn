@@ -21,6 +21,7 @@ GlobalConsole="*res://Script/Global/global_console.gd"
 GlobalRpcManager="*res://Script/Global/global_rpcManager.gd"
 GlobalConfig="*res://Script/Global/global_config.gd"
 GlobalUIAnimation="*res://Script/Global/global_uiAnimation.gd"
+GlobalTransition="*res://Script/Global/global_transition.gd"
 
 [display]
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://c624f44o3dyxc"]
+[gd_scene load_steps=12 format=3 uid="uid://c624f44o3dyxc"]
 
 [ext_resource type="Script" uid="uid://bsycek868a820" path="res://Script/Node/Node_MeumControl.gd" id="1_x1yqv"]
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://Script/Node/Node_Backgound.gd" id="2_0deb0"]
@@ -7,7 +7,6 @@
 [ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://Picture/Backgound/backgound6.png" id="2_y0t8k"]
 [ext_resource type="Texture2D" uid="uid://csli57il02lge" path="res://Picture/Backgound/backgound3icon2.png" id="4_0dv2m"]
 [ext_resource type="Texture2D" uid="uid://c3ants1otolio" path="res://Picture/Backgound/backgound3icon3png.png" id="4_v2hq5"]
-[ext_resource type="Script" uid="uid://bswjuveutfcdf" path="res://tscn/Transition.gd" id="7_0fhyw"]
 [ext_resource type="Script" uid="uid://062bg815jifb" path="res://Script/shader_lights.gd" id="7_71pag"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fu0d1"]
@@ -116,12 +115,3 @@ item_count = 1
 icon_scale = 0.8
 item_0/text = "开始游戏"
 item_0/icon = ExtResource("4_0dv2m")
-
-[node name="Transition" type="ColorRect" parent="MeumControl"]
-visible = false
-layout_mode = 0
-offset_right = 1600.0
-offset_bottom = 900.0
-mouse_filter = 2
-color = Color(0, 0, 0, 1)
-script = ExtResource("7_0fhyw")

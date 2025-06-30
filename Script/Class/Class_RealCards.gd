@@ -34,15 +34,15 @@ func _ready()-> void:
 	
 
 func data_update(new_card_data:Dictionary)-> void:
-	if !(cardface)||new_card_data["type"] != cardface.type:
-		type = new_card_data["type"]
-		_load_scene_by_type(type)
 	texture_path = get_texture_path(new_card_data["name"],new_card_data["type"])
 	basic_cost = new_card_data["basic_cost"]
 	basic_damage = new_card_data["basic_damage"]
 	description = new_card_data["description"]
 	real_name = new_card_data["real_name"]
 	suit = new_card_data["suit"]
+	if !(cardface)||new_card_data["type"] != cardface.type:
+		type = new_card_data["type"]
+		_load_scene_by_type(type)
 	cardface.data_update()
 	pass
 	

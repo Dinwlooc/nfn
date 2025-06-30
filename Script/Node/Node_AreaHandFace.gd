@@ -5,8 +5,7 @@ var original_position
 var original_size
 var area_target_position:Vector2
 var area_target_size:Vector2
-const time = 0.2
-
+const time = 0.4
 func ready_expand()->void:
 	original_position = position
 	original_size = size
@@ -52,12 +51,10 @@ func card_move_expand()->void:
 		area.real_card_pool[i].cardface.position.y += 0.3*sin((Time.get_ticks_msec()+i*200)*0.004)
 
 func dragging_move(card):
-	const  time = 0.2
 	var _target_position = get_global_mouse_position()
 	GlobalUIAnimation.tween_animations(card,{"position":_target_position},time)
 
 func card_move()-> void:
-	const time = 0.2
 	if area.real_card_pool.size() == 0||target_position.size()==0:
 		return
 	for i in range(0,area.real_card_pool.size()):
