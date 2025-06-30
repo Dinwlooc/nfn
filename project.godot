@@ -17,10 +17,10 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-GlobalConsole="*res://global_console.gd"
-GlobalUIAnimation="*res://global_uiAnimation.gd"
-GlobalConfig="*res://global_config.gd"
-GlobalRpcManager="*res://global_rpcManager.gd"
+GlobalConsole="*res://Script/Global/global_console.gd"
+GlobalRpcManager="*res://Script/Global/global_rpcManager.gd"
+GlobalConfig="*res://Script/Global/global_config.gd"
+GlobalUIAnimation="*res://Script/Global/global_uiAnimation.gd"
 
 [display]
 

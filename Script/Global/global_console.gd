@@ -88,5 +88,3 @@ func command(signal_name:String,args:Array)->void:
 		_print(["发送指令：",signal_name])
 		emit_signal.callv(args)
 		return
-
-

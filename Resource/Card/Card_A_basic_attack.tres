@@ -19,6 +19,6 @@ name = "default:basic_attack"
 real_name = "交锋"
 description = "【结算】结算伤害+1。"
 type = "attack"
-basic_damage = 1
+basic_damage = 4
 basic_cost = 1
 custom_data = {}

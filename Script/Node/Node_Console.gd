@@ -1,8 +1,8 @@
 extends Control
 
-@onready var Nvbox:Node = $VBoxContainer
-@onready var Npanel:Node = $Panel
-@onready var Ninput:Node = $Input
+@onready var Nvbox:Control = $VBoxContainer
+@onready var Npanel:Control = $Panel
+@onready var Ninput:LineEdit = $Input
 var settlement:Node
 var selection:Node
 var players_panel:Node
@@ -28,13 +28,10 @@ func _ready():
 	suggestion_labels_load()
 	GlobalConsole.register_console(self)  # 注册到全局控制台系统
 	pass
-
-
 	
 func _process(_delta):
 	panel_animation_control()
 	pass
-	
 	
 func panel_animation_control():
 	if panel_display:
@@ -58,13 +55,13 @@ func suggestion_labels_load():
 	labels = Nvbox.get_children()
 	Nvbox.visible = false
 	for i in range(Nvbox.get_child_count()):
-		labels[i].mouse_filter = Control.MOUSE_FILTER_PASS
+		labels[i].mouse_filter = Control.MOUSE_FILTER_STOP
 		labels[i].focus_mode = Control.FOCUS_ALL
 		labels[i].visible = false
 		labels[i].connect("focus_entered", _on_suggestion_focused.bind(i))
 		labels[i].text_submitted.connect( _suggestion_submitted)
 		labels[i].gui_input.connect(_on_suggestion_clicked.bind(i)) # 新增点击事件连接
-		labels[i].mouse_entered.connect(labels[i].grab_focus) 
+		labels[i].mouse_entered.connect(labels[i].call_deferred.bind("grab_focus")) 
 
 #####信号触发函数####
 func _on_focus_entered():
@@ -92,7 +89,7 @@ func _on_text_changed(new_text):
 
 func _suggestion_submitted(suggestion:String):
 	Ninput.text = suggestion+"()"
-	Ninput.grab_focus()
+	Ninput.call_deferred("grab_focus")
 	Ninput.caret_column = suggestion.length() + 1
 	current_page = 0
 	Ninput.emit_signal("text_changed",Ninput.text)
@@ -108,8 +105,9 @@ func _on_suggestion_clicked(event: InputEvent, index: int):
 		_suggestion_submitted(suggestion)
 
 func _on_suggestion_focused(index: int):
-	if labels[index].text == "...":
-		Ninput.grab_focus()
+	labels[index].select_all()
+	if labels[index].text == "..."||!labels[index].visible:
+		Ninput.call_deferred("grab_focus")
 		current_page = 0
 		return	
 	if current_selection == 0 && index== 8 && current_page:
@@ -178,9 +176,9 @@ func _input(event):
 	if Input.is_action_just_pressed("ui_get_panel"):
 		panel_display = (panel_display==false)
 		if panel_display:
-			Ninput.grab_focus()
+			Ninput.call_deferred("grab_focus")
 		else:
-			get_parent().grab_focus()
+			get_parent().call_deferred("grab_focus")
 	if event is InputEventKey && event.pressed:
 		if Ninput.has_focus():#处理输入框的动作事件
 			match event.keycode:
