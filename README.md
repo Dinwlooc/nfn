@@ -19,7 +19,8 @@
 
 - **系统**：由且仅由服务器端运行System类实例实现。通过Area类和Player类等管理游戏数据，不负责任何渲染部分，允许通过控制台指令游玩。
 - **渲染**：通过不同的RealArea类和RealCard类实现。接收来自于服务端的基础数据，转换为渲染数据并存储，总控RealAreaFace类和RealCardFace类的渲染。RealAreaFace类和RealCardFace类定义图形交互逻辑，决定信号的发送，可通过场景文件加载，允许实时切换。
-- **全局控制**： 通过全局脚本实现。GlobalConsole提供调试指令定义和节点引用注册接口。GlobalTransition提供场景文件切换时的转场方案。GlobalUIAnimation预备了动画控制函数。GlobalConfig提供用户数据与游戏配置信息。GlobalRPCManager提供了序列化方法，处理数据打包、分发、接收和转发。
+- **全局控制**： 通过全局脚本实现。GlobalConsole提供调试指令定义和节点引用注册接口。GlobalConfig提供用户数据与游戏配置信息。GlobalRPCManager处理网络连接、数据序列化与通信。
+- **其他**：全局脚本GlobalTransition提供场景文件切换时的转场方案，GlobalUIAnimation预备了动画控制函数。
 
 
 ## 开发环境与依赖
