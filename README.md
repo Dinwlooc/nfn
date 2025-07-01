@@ -1,33 +1,30 @@
-根据代码结构分析，该项目是一个基于 Godot 引擎开发的游戏项目，包含多个场景、脚本和资源文件。以下是该项目的 README 内容：
-
----
 
 # 游戏项目简介
 
-这是一个使用 [Godot 引擎](https://godotengine.org/) 开发的卡牌类游戏项目，包含了完整的场景构建、角色控制、卡牌系统、背景管理以及部分 UI 动画和过渡效果。
+本项目使用 [Godot 引擎](https://godotengine.org/) 开发，目标为实现多人卡牌对战游戏。目前仍在开发阶段。开发者属于业余爱好者，项目结构不具有参考价值。
 
 ## 项目结构概览
 
-- **Picture/**: 存放游戏所需的图像资源，包括背景、角色、卡牌、道具等。
-- **Resource/Card/**: 卡牌资源定义文件（`.tres` 格式）。
-- **Script/**: 游戏逻辑脚本，分为 `Class`、`Global`、`Node` 等模块。
-  - `Class/`: 核心类定义，如玩家、卡牌、区域、系统等。
-  - `Global/`: 全局管理脚本，如控制台、RPC 管理、UI 动画等。
-  - `Node/`: 场景节点脚本，用于控制具体的游戏界面和交互。
-- **tscn/**: Godot 场景文件（`.tscn`），包括主游戏界面、菜单、卡牌展示等。
+- **Picture/**: 存放游戏所需的图像资源。
+- **Resource/Card/**: 卡牌资源定义文件。
+- **Script/**: 游戏逻辑脚本。
+  - `Class/`: 核心类定义。
+  - `Global/`: 全局管理脚本。
+  - `Node/`: 场景节点脚本。
+- **tscn/**: Godot 场景文件。
+  - `real_card/`:RealAreaFace类的场景文件。
 - **addons/godot-git-plugin/**: Git 插件支持，用于版本控制集成。
 
 ## 主要功能模块
 
-- **卡牌系统**：支持基础攻击、激光等卡牌行为，通过 `Class_Card.gd` 和相关场景实现。
-- **区域控制**：包括手牌区、战场区、丢弃区等，由 `Class_AreaHand.gd`、`Class_AreaAttack.gd` 等类管理。
-- **玩家与系统**：玩家状态、系统配置、全局 RPC 管理等功能由 `Class_Player.gd`、`Class_System.gd`、`global_rpcManager.gd` 等实现。
-- **UI 与动画**：使用 `global_uiAnimation.gd` 和 `Transition.gd` 实现场景切换与动画效果。
-- **背景与特效**：背景图片和着色器（如 `shader_wave.gd`、`shader_lights.gd`）用于视觉增强。
+- **系统**：由且仅由服务器端运行System类实例实现。通过Area类和Player类等管理游戏数据，不负责任何渲染部分，允许通过控制台指令游玩。
+- **渲染**：通过不同的RealArea类和RealCard类实现。接收来自于服务端的基础数据，转换为渲染数据并存储，总控RealAreaFace类和RealCardFace类的渲染。RealAreaFace类和RealCardFace类定义图形交互逻辑，决定信号的发送，可通过场景文件加载，允许实时切换。
+- **全局控制**： 通过全局脚本实现。GlobalConsole提供调试指令定义和节点引用注册接口。GlobalTransition提供场景文件切换时的转场方案。GlobalUIAnimation预备了动画控制函数。GlobalConfig提供用户数据与游戏配置信息。GlobalRPCManager提供了序列化方法，处理数据打包、分发、接收和转发。
+
 
 ## 开发环境与依赖
 
-- **Godot 引擎**：项目使用 Godot 4.x 开发，请确保使用兼容版本打开。
+- **Godot 引擎**：项目使用 Godot 4.4.1 开发，请确保使用兼容版本打开。
 - **Git 插件**：项目中集成了 `godot-git-plugin`，用于版本控制。
 
 ## 如何运行项目
