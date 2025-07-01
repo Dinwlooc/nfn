@@ -9,8 +9,8 @@ var choose_list:Array[int]
 var choose_limit:int = 1
 
 func _ready():
-	areaface = get_child(0)
-	areaface.area = self
+	if !areaface:
+		areaface = RealAreaFace.new()
 	ready_expand()
 	pass
 

@@ -10,7 +10,7 @@ signal area_cards_add
 
 func cards_add(new_cardpool:Array[Card]):
 	card_pool.append_array(new_cardpool)
-	var data = GlobalRpcManager.cards_rpc(self,"cards_add",new_cardpool)
+	var data = GlobalServer.cards_rpc(self,"cards_add",new_cardpool)
 	pass
 
 func set_player(new_player:Player):
