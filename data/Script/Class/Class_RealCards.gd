@@ -20,8 +20,8 @@ var texture_path:String
 
 var type:String = "void"
 const path = {
-	"void": "res://mods/offcial/default/tscn/cardface/voidcard.tscn",
-	"attack": "res://mods/offcial/default/tscn/cardface/attackcard.tscn",
+	"void": "res://offcial/default/Card/cardface/voidcard.tscn",
+	"attack": "res://offcial/default/Card/cardface/attackcard.tscn",
 	# 内置卡牌类型。
 }
 signal select
@@ -57,7 +57,7 @@ func get_texture_path(card_name:String,card_type:String) -> String:
 	elif name_parts.size() == 1:
 		card_key = name_parts[0]
 	# 构建贴图路径
-	return "res://mods/offcial/%s/Picture/cards/%s/%s.png" % [name_space, card_type, card_key]
+	return "res://offcial/%s/Card/cardicon/%s.png" % [name_space, card_key]
 	
 	
 func render_update()->RealCard:

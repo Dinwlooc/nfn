@@ -1,7 +1,7 @@
 extends Node
 class_name System
 
-var all_cards = load("res://mods/offcial/default/Card/Card_load.tres").all_cards as Array
+var all_cards = load("res://offcial/default/Card/Card_load.tres").all_cards as Array
 var system = Player.new()
 var areaAttack = AreaAttack.new().set_player(system)
 var areaDrawing = AreaDrawing.new().set_player(system)
