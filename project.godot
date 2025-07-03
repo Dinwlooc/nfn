@@ -11,17 +11,17 @@ config_version=5
 [application]
 
 config/name="NFN Game"
-run/main_scene="res://tscn/main_meum.tscn"
+run/main_scene="uid://c624f44o3dyxc"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
-GlobalConsole="*res://Script/Global/global_console.gd"
-GlobalServer="*res://Script/Global/global_server.gd"
-GlobalConfig="*res://Script/Global/global_config.gd"
-GlobalUIAnimation="*res://Script/Global/global_uiAnimation.gd"
-GlobalTransition="*res://Script/Global/global_transition.gd"
+GlobalConsole="*res://data/Script/Global/global_console.gd"
+GlobalServer="*res://data/Script/Global/global_server.gd"
+GlobalConfig="*res://data/Script/Global/global_config.gd"
+GlobalUIAnimation="*res://data/Script/Global/global_uiAnimation.gd"
+GlobalTransition="*res://data/Script/Global/global_transition.gd"
 
 [display]
 

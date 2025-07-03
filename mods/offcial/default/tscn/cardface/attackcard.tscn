@@ -1,0 +1,155 @@
+[gd_scene load_steps=5 format=3 uid="uid://db51joyx0uc86"]
+
+[ext_resource type="Script" uid="uid://bbo5r3nm8gklu" path="res://mods/offcial/tscn/cardface/Node_RealCardAttack.gd" id="1_e6d5b"]
+[ext_resource type="Texture2D" uid="uid://ljvviksp78nn" path="res://mods/offcial/Picture/suit/suit.png" id="2_u6ebe"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wshpf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tg7if"]
+
+[node name="RealCardFace" type="Control"]
+clip_contents = true
+custom_minimum_size = Vector2(58, 88)
+layout_mode = 3
+anchor_right = 0.09
+anchor_bottom = 0.256
+offset_right = -87.0
+offset_bottom = -142.4
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(2.5, 2.5)
+focus_mode = 2
+script = ExtResource("1_e6d5b")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 57.0
+offset_bottom = 88.0
+color = Color(0.741176, 0.741176, 0.741176, 1)
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 5.0
+offset_right = 54.0
+offset_bottom = 49.0
+
+[node name="ColorRect3" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 56.4
+offset_right = 54.0
+offset_bottom = 85.4
+
+[node name="ColorRect5" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 50.0
+offset_right = 54.0
+offset_bottom = 55.0
+
+[node name="ColorRect6" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 50.0
+offset_right = 28.0
+offset_bottom = 55.0
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 5.0
+offset_right = 472.0
+offset_bottom = 340.0
+scale = Vector2(0.11, 0.11)
+
+[node name="TextureRect" type="TextureRect" parent="CenterContainer"]
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+stretch_mode = 1
+
+[node name="Name" type="Label" parent="."]
+layout_mode = 2
+offset_left = 3.0
+offset_top = 37.0
+offset_right = 174.0
+offset_bottom = 76.0
+scale = Vector2(0.3, 0.3)
+size_flags_stretch_ratio = 4.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.698039)
+text = "【名称未加载】"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="VerticalName" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 3.8
+offset_top = 5.0
+offset_right = 39.8
+offset_bottom = 172.0
+scale = Vector2(0.3, 0.3)
+size_flags_stretch_ratio = 4.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.698039)
+text = "竖向名称"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 1
+
+[node name="Suit" type="Sprite2D" parent="."]
+position = Vector2(7.13249, 11.275)
+scale = Vector2(0.0506632, 0.057)
+texture = ExtResource("2_u6ebe")
+hframes = 2
+vframes = 2
+frame = 2
+
+[node name="Description" type="Label" parent="."]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 56.0
+offset_right = 206.0
+offset_bottom = 163.0
+scale = Vector2(0.25, 0.25)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.254902)
+text = "【内容未加载】"
+autowrap_mode = 1
+
+[node name="Cost" type="Label" parent="."]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 49.0
+offset_right = 129.0
+offset_bottom = 85.0
+scale = Vector2(0.2, 0.2)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.560784)
+text = "消耗？"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Damage" type="Label" parent="."]
+layout_mode = 0
+offset_left = 30.0
+offset_top = 49.0
+offset_right = 149.0
+offset_bottom = 85.0
+scale = Vector2(0.2, 0.2)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.47451)
+text = "伤害？"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_right = 58.0
+offset_bottom = 88.0
+theme_override_styles/hover = SubResource("StyleBoxTexture_wshpf")
+theme_override_styles/normal = SubResource("StyleBoxEmpty_tg7if")
+toggle_mode = true
+action_mode = 0
+flat = true
