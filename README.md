@@ -5,14 +5,17 @@
 
 ## 项目结构概览
 
-- **Picture/**: 存放游戏所需的图像资源。
-- **Resource/Card/**: 卡牌资源定义文件。
-- **Script/**: 游戏逻辑脚本。
+- **data/Script**: 存放游戏运行所需的逻辑类与场景文件。
   - `Class/`: 核心类定义。
   - `Global/`: 全局管理脚本。
   - `Node/`: 场景节点脚本。
-- **tscn/**: Godot 场景文件。
-  - `real_card/`:RealAreaFace类的场景文件。
+- **offical/**: 官方资源包文件夹。
+  - `Area/`: 区域渲染资源。
+  - `Backgound/`: 背景图资源。
+  - `Card/`: 卡牌及其渲染资源。
+  - `Character/`: 角色及其渲染资源。
+  - `Shader/`: 着色器资源。
+- **mods/**: 预备给mod开发者的资源包文件夹。
 - **addons/godot-git-plugin/**: Git 插件支持，用于版本控制集成。
 
 ## 主要功能模块
