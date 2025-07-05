@@ -75,7 +75,7 @@ func command(signal_name:String,args:Array)->void:
 	if args.size()<min_arg_num:
 		_print(["Error:参数不足，",signal_name,"未发送。目标：",min_arg_num])
 		return
-	if args.size()>min_arg_num:
+	if args.size()>max_arg_num:
 		_print(["Error:参数过多，",signal_name,"未发送。限制：",max_arg_num])
 		return
 	else:
