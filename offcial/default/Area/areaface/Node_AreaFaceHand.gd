@@ -13,7 +13,7 @@ func ready_expand()->void:
 	area_target_size = original_size
 	pass
 
-func _process(_delta)-> void:
+func _physics_process(delta: float) -> void:
 	if Engine.get_process_frames() % 2 == 0:
 		card_move_expand()
 	pass

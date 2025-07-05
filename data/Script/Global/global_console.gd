@@ -8,23 +8,18 @@ var card_on_select:Dictionary
 var card_on_drag:Dictionary
 var system:System
 var server:Node
-var command_list: Dictionary = {
-	"c_start":{"min":0,"max":0},
- 	"c_draw":{"min":0,"max":0},
-	"c_help":{"min":1,"max":1}, 
-	"c_connect_to":{"min":1,"max":1},
-	"c_close":{"min":0,"max":0}
-	}
-
+var command_list: Dictionary = load("res://data/Script/Global/command.tres").command as Dictionary
+#godot会按照键的名称自动排列
 signal c_start
 signal c_draw
 signal c_connect_to(url:String)
 signal c_close 
+signal c_help(command:String)
 
-
+func _ready() -> void:
+	c_help.connect(print_help)
 func register_console(console_instance)->void:
 	console = console_instance
- 
 func register_maingame(maingame_instance)->void:
 	maingame = maingame_instance
 	
@@ -73,7 +68,7 @@ func _print(text:Variant)->void:
 		
 func command(signal_name:String,args:Array)->void:
 	if !command_list.has(signal_name):
-		_print(["无效输入：",signal_name])
+		_print(["指令未登记：",signal_name])
 		return
 	var min_arg_num = command_list[signal_name]["min"]
 	var max_arg_num = command_list[signal_name]["max"]
@@ -88,3 +83,9 @@ func command(signal_name:String,args:Array)->void:
 		_print(["发送指令：",signal_name])
 		emit_signal.callv(args)
 		return
+
+func print_help(command:String = "c_help"):
+	if !command_list.has(command):
+		_print(["c_help:指令未登记：",command])
+		return
+	_print(["c_help:",command_list[command].get("mes","暂无提示")])

@@ -3,8 +3,6 @@ extends Node
 var server = WebSocketMultiplayerPeer.new()
 var users:Array[User]
 var url:String
-var server_status:int
-var status:int 
 var id:int
 signal peer_update(peer_id:int)
 
@@ -18,7 +16,6 @@ func _ready():
 func _process(delta):
 	if Engine.get_process_frames() % 5 == 0:
 		server.poll()
-		status = server.get_connection_status()
 	pass
 
 #########
@@ -71,7 +68,7 @@ func random_create():
 		return false
 
 func url_connect(new_url):
-	if status == MultiplayerPeer.CONNECTION_CONNECTED:
+	if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		server.close()
 	if server.create_client(new_url) == OK:
 		GlobalConsole._print(["Client:Start to connect:",new_url])
@@ -81,15 +78,15 @@ func url_connect(new_url):
 		pass
 		return false
 
-func cconnect_status():
-	if status == MultiplayerPeer.CONNECTION_DISCONNECTED:
-		return("Client:Missing\n")
-	if status == MultiplayerPeer.CONNECTION_CONNECTING:
-		return("Client:Connecting\n")
-	if status == MultiplayerPeer.CONNECTION_CONNECTED:
-		return("Client:OK\n")
+#func get_connect_status():
+	#if server.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
+		#return("Client:Missing\n")
+	#if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTING:
+		#return("Client:Connecting\n")
+	#if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
+		#return("Client:OK\n")
 
-func completely_close():
+func close():
 	server.close()
 	users = []
 	id = 0
@@ -137,27 +134,28 @@ func unpack_card(bytes: PackedByteArray)->Dictionary:
 	return data_dict
 
 func serialize_cards(cards:Array[Card])-> PackedByteArray:
-	var bytes:Array = cards.map(func(card):return pack_card(card))
-	return var_to_bytes(bytes)
+	return var_to_bytes(cards.map(pack_card))
 	
 func deserialize_cards(serialized_data: PackedByteArray)->Array[Dictionary]:
-	var byte:Array = bytes_to_var(serialized_data)
-	var card_data_array:Array[Dictionary] = []
-	card_data_array.append_array(byte.map(func(data):return unpack_card(data)))
+	var card_data_array:Array[Dictionary]
+	card_data_array.append_array(bytes_to_var(serialized_data).map(unpack_card))
+	if not card_data_array is Array[Dictionary]:
+		push_error("Invalid data format: Expected Array[Dictionary]")
+		return [{}]
 	return card_data_array
 
 func cards_rpc(area:Area,rpc_name:String,cards:Array[Card]):
 	var data  = serialize_cards(cards)
 	rpc_id(area.player.id,"cards_rpc_receive",rpc_name,area.area_name,data)
 
-@rpc("authority","call_local") func cards_rpc_receive(rpc_name:String,area_name:String,data:PackedByteArray):
-	GlobalConsole.realarea[area_name].call(rpc_name,deserialize_cards(data))
+@rpc("authority","call_local","reliable") func cards_rpc_receive(rpc_name:String,area_name:String,data:PackedByteArray):
+	if GlobalConsole.realarea[area_name]:
+		GlobalConsole.realarea[area_name].call(rpc_name,deserialize_cards(data))
 	pass
 
 @rpc("authority","call_remote")func receive_server_data(data)-> void:
-	if server.status == MultiplayerPeer.CONNECTION_CONNECTED:
 		unpack_server(data)
 	
 @rpc("any_peer","call_remote")func ask_server_data(peer_id)-> void:
-	if server.status == MultiplayerPeer.CONNECTION_CONNECTED:
+	if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		rpc_id(peer_id,"receive_server_data",pack_server())

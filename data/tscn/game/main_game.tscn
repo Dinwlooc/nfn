@@ -333,15 +333,3 @@ shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
-
-[node name="Command" type="Control" parent="Control/Console"]
-visible = false
-layout_mode = 1
-anchor_left = -0.334375
-anchor_top = -0.00444444
-anchor_right = -0.334375
-anchor_bottom = -0.00444444
-offset_right = 528.0
-offset_bottom = 617.0
-mouse_filter = 2
-metadata/_edit_use_anchors_ = true
