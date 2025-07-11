@@ -34,8 +34,8 @@ func data_update(new_card_data:Dictionary)-> void:
 	texture_path = get_card_main_icon(new_card_data["name"])
 	basic_cost = new_card_data["basic_cost"]
 	basic_damage = new_card_data["basic_damage"]
-	description = new_card_data["description"]
-	real_name = new_card_data["real_name"]
+	description = GlobalConfig.get_translation(new_card_data["name"]+"_DES")
+	real_name = GlobalConfig.get_translation(new_card_data["name"])
 	suit = new_card_data["suit"]
 	if !(cardface)||new_card_data["type"] != cardface.type:
 		type = new_card_data["type"]
@@ -44,8 +44,7 @@ func data_update(new_card_data:Dictionary)-> void:
 	pass
 	
 func get_card_main_icon(card_name:String) -> String:
-	return GlobalConfig._resource_registry["card_main_icon"][card_name]
-	
+	return GlobalConfig.get_resource_path("card_main_icon",card_name)
 	
 func render_update()->RealCard:
 	cardface.render_update()

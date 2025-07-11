@@ -2,10 +2,7 @@ extends Resource
 class_name Card
 
 @export var name: String #卡牌名，命名规范为 命名空间:牌组_卡牌名 如NFN_default:basic_attack
-@export var real_name: String#显示给玩家的卡牌名。
-@export var description: String #卡牌描述
 @export var type: String  # 卡牌类型，如attack
-
 @export var basic_damage: int
  # 基础威力
 @export var basic_cost: int    

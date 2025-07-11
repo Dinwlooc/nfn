@@ -16,8 +16,6 @@ func settlement_damage()->int:
 resource_local_to_scene = true
 script = SubResource("GDScript_xmloq")
 name = "nfn:basic_laser"
-real_name = "激光"
-description = "【压制】摧毁次层牌与此牌。"
 type = "attack"
 basic_damage = 3
 basic_cost = 1

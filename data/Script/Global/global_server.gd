@@ -116,8 +116,6 @@ func unpack_server(bytes: PackedByteArray):
 func pack_card(card:Card) -> PackedByteArray:
 	var data_dict :Dictionary= {
 	"name":card.name,
-	"real_name":card.real_name,
-	"description":card.description,
 	"type":card.type,
 	"suit":card.suit,
 	"basic_damage":card.basic_damage,

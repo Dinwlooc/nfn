@@ -1,35 +1,34 @@
 extends Node
 
-var resource_type_registry = [
-	"cards",       
-	"card_main_icon",  
-	"cardface",   
-]#渲染层需求的资源类型。自定义渲染层应该注册自己需要的资源类型。
 var _debug_packs: Dictionary = {
 	"official": ["default"],
 	"mods": []
 }
 var _resource_registry: Dictionary = {}
+const cards_list_path:String =  "res://cards_load_list.cfg"
 signal resource_packs_reloaded
 
 func _ready() -> void:
 	# 初始化时加载所有资源包
 	load_all_resource_packs()
-	
 
-func get_cards_list(list_name:String = "default")->Array[String]:
-	var config = ConfigFile.new()
-	var config_path = "res://cards_load_list.cfg"
-	var err = config.load("res://cards_load_list.cfg")
-	if err != OK:
-		push_error("未找到配置: %s (错误码: %d)" % [config_path, err])
-		return []
-	var cards_array:Array[String]
-	for card_name in config.get_section_keys(list_name):
-		for i in range(config.get_value(list_name, card_name)):
-			cards_array.append(_resource_registry["cards"][card_name])
-	return cards_array as Array[String]
+func get_translation(key:String,lang:String="Zh_CN")->String:
+	if load_resource("translation",lang)&&load_resource("translation",lang).get_message(key):
+		return load_resource("translation",lang).get_message(key)
+	return key
 	
+func get_cards_list(list_name:String = "default")->Array[String]:
+	var config:ConfigFile = _load_config(cards_list_path)
+	if config:
+		var cards_array:Array[String]
+		for card_name in config.get_section_keys(list_name):
+			var count = config.get_value(list_name, card_name)
+			var new_cards_array:Array[String]
+			new_cards_array.resize(count)
+			new_cards_array.fill(get_resource_path("cards",card_name))
+			cards_array.append_array(new_cards_array)
+		return cards_array as Array[String]
+	return []
 ## 加载所有资源包配置
 func load_all_resource_packs() -> void:
 	clear_registry()
@@ -48,25 +47,19 @@ func load_resource_pack(pack_path: String, pack_name: String) -> void:
 	if not FileAccess.file_exists(config_path):
 		push_error("资源包 '%s' 缺少配置文件: %s" % [pack_name, config_path])
 		return
-	var config = ConfigFile.new()
-	var err = config.load(config_path)
-	if err != OK:
-		push_error("加载资源包配置失败: %s (错误码: %d)" % [config_path, err])
-		return
 	# 处理所有资源类型部分
-	for resource_type in config.get_sections():
-		# 跳过特殊部分
-		if not resource_type in resource_type_registry:
-			_resource_registry[resource_type] = {}
-			continue
-		if not _resource_registry.has(resource_type):
-			_resource_registry[resource_type] = {}
-		# 处理当前资源类型的所有键值对
-		for resource_key in config.get_section_keys(resource_type):
-			var relative_path = config.get_value(resource_type, resource_key)
-			var full_path = "%s/%s" % [pack_path, relative_path]
-			_resource_registry[resource_type][resource_key] = full_path
-			print("加载资源: [%s] %s -> %s" % [resource_type, resource_key, full_path])
+	var config:ConfigFile = _load_config(config_path)
+	if config:
+		for resource_type in config.get_sections():
+			# 跳过特殊部分
+			if not _resource_registry.has(resource_type):
+				_resource_registry[resource_type] = {}
+			# 处理当前资源类型的所有键值对
+			for resource_key in config.get_section_keys(resource_type):
+				var relative_path = config.get_value(resource_type, resource_key)
+				var full_path = "%s/%s" % [pack_path, relative_path]
+				_resource_registry[resource_type][resource_key] = full_path
+				print("加载资源: [%s] %s -> %s" % [resource_type, resource_key, full_path])
 
 ## 获取资源路径
 func get_resource_path(resource_type: String, resource_key: String) -> String:
@@ -96,3 +89,11 @@ func clear_registry() -> void:
 func reload_resource_packs() -> void:
 	load_all_resource_packs()
 	emit_signal("resource_packs_reloaded")
+
+func _load_config(path: String) -> ConfigFile:
+	var config = ConfigFile.new()
+	var err = config.load(path)
+	if err != OK:
+		push_error("Config load failed: %s (err %d)" % [path, err])
+		return null
+	return config

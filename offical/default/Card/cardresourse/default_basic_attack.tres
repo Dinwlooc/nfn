@@ -16,8 +16,6 @@ func settlement_damage()->int:
 resource_local_to_scene = true
 script = SubResource("GDScript_xmloq")
 name = "nfn:basic_attack"
-real_name = "交锋"
-description = "【结算】结算伤害+1。"
 type = "attack"
 basic_damage = 4
 basic_cost = 1
