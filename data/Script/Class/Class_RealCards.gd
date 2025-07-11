@@ -12,12 +12,10 @@ var dragging:int = 0
 var hovering:bool = false
 var path:Dictionary
 
+var card_name:String
 var basic_cost:int
 var basic_damage:int
-var description:String
-var real_name:String
 var suit:String
-var texture_path:String
 
 var type:String = "void"
 signal select
@@ -31,11 +29,9 @@ func _ready()-> void:
 	
 
 func data_update(new_card_data:Dictionary)-> void:
-	texture_path = get_card_main_icon(new_card_data["name"])
+	card_name = new_card_data["name"]
 	basic_cost = new_card_data["basic_cost"]
 	basic_damage = new_card_data["basic_damage"]
-	description = GlobalConfig.get_translation(new_card_data["name"]+"_DES")
-	real_name = GlobalConfig.get_translation(new_card_data["name"])
 	suit = new_card_data["suit"]
 	if !(cardface)||new_card_data["type"] != cardface.type:
 		type = new_card_data["type"]
@@ -43,8 +39,7 @@ func data_update(new_card_data:Dictionary)-> void:
 	cardface.data_update()
 	pass
 	
-func get_card_main_icon(card_name:String) -> String:
-	return GlobalConfig.get_resource_path("card_main_icon",card_name)
+
 	
 func render_update()->RealCard:
 	cardface.render_update()

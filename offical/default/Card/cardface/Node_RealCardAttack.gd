@@ -26,13 +26,13 @@ func _process(_delta):
 	pass
 
 func data_update()-> void:
-	var texture = load(card.texture_path) as Texture
+	var texture = get_card_main_icon(card.card_name)
 	Ntexture.texture = texture
 	Ncost.text = "消耗"+str(card.basic_cost)
 	Ndamage.text = "伤害"+str(card.basic_damage)
-	Ndescription.text = card.description
-	Nname.text = card.real_name
-	NverticalName.text = card.real_name
+	Ndescription.text = get_description(card.card_name)
+	Nname.text = get_real_name(card.card_name)
+	NverticalName.text = get_real_name(card.card_name)
 	Nsuit.frame = get_suit(card.suit)
 	pass	
 	

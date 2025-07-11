@@ -21,4 +21,11 @@ func get_suit(suit:String) ->int:
 		return 3
 	return 0
 
+func get_card_main_icon(card_name:String) -> Texture:
+	return load(GlobalConfig.get_resource_path("card_main_icon",card_name)) as Texture
 
+func get_real_name(card_name:String) -> String:
+	return 	GlobalConfig.get_translation(card_name)
+
+func get_description(card_name:String) -> String:
+	return 	GlobalConfig.get_translation(card_name+"_DES")
