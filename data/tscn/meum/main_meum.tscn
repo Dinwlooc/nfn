@@ -2,14 +2,14 @@
 
 [ext_resource type="Script" uid="uid://bsycek868a820" path="res://data/Script/Node/Node_MeumControl.gd" id="1_x1yqv"]
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://data/Script/Node/Node_Backgound.gd" id="2_0deb0"]
-[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://offcial/default/shader/shader_lights.gdshader" id="3_j0cbf"]
-[ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://offcial/default/Backgound/backgound6.png" id="4_j0cbf"]
-[ext_resource type="Texture2D" uid="uid://v20ylpnaw8mc" path="res://offcial/default/Backgound/backgound2.png" id="6_m1fcx"]
-[ext_resource type="Script" uid="uid://062bg815jifb" path="res://offcial/default/shader/shaderScript/shader_lights.gd" id="7_71pag"]
-[ext_resource type="Texture2D" uid="uid://c3ants1otolio" path="res://offcial/default/Backgound/backgound3icon3png.png" id="7_j0cbf"]
-[ext_resource type="Texture2D" uid="uid://csli57il02lge" path="res://offcial/default/Backgound/backgound3icon2.png" id="8_m1fcx"]
+[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://offical/default/shader/shader_lights.gdshader" id="3_j0cbf"]
+[ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://offical/default/Backgound/backgound6.png" id="4_j0cbf"]
+[ext_resource type="Texture2D" uid="uid://v20ylpnaw8mc" path="res://offical/default/Backgound/backgound2.png" id="6_m1fcx"]
+[ext_resource type="Script" uid="uid://062bg815jifb" path="res://offical/default/shader/shaderScript/shader_lights.gd" id="7_71pag"]
+[ext_resource type="Texture2D" uid="uid://c3ants1otolio" path="res://offical/default/Backgound/backgound3icon3png.png" id="7_j0cbf"]
+[ext_resource type="Texture2D" uid="uid://csli57il02lge" path="res://offical/default/Backgound/backgound3icon2.png" id="8_m1fcx"]
 [ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://data/Script/Node/Node_Console.gd" id="9_pl1dq"]
-[ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://offcial/default/tres/LineEdit_theme.tres" id="10_i1bfy"]
+[ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://offical/default/tres/LineEdit_theme.tres" id="10_i1bfy"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fu0d1"]
 shader = ExtResource("3_j0cbf")

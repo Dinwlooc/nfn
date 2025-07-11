@@ -49,6 +49,10 @@ ui_get_panel={
 ]
 }
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://offcial/default/translations/translations - cards.zh_CN.translation")
+
 [rendering]
 
 renderer/rendering_method="mobile"

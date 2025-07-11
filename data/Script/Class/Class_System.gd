@@ -1,7 +1,6 @@
 extends Node
 class_name System
 
-var all_cards = load("res://offcial/default/Card/Card_load.tres").all_cards as Array
 var system = Player.new()
 var areaAttack = AreaAttack.new().set_player(system)
 var areaDrawing = AreaDrawing.new().set_player(system)
@@ -17,6 +16,7 @@ func _ready() -> void:
 	load_cards()
 
 func load_cards() -> void:
+	var all_cards:Array[String] = GlobalConfig.get_cards_list()
 	for i in range(0,all_cards.size()):
 		areaDrawing.card_pool.append(load(all_cards[i]).duplicate().set_suit("Spade") )
 		areaDrawing.card_pool.append(load(all_cards[i]).duplicate().set_suit("Heart"))

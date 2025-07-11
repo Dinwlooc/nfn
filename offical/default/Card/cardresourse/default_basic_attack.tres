@@ -1,0 +1,24 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://cgtkfk7idnwsk"]
+
+[sub_resource type="GDScript" id="GDScript_xmloq"]
+script/source = "extends Card
+
+func settlement_damage()->int:
+	var damage:int = basic_damage+1
+	return damage
+
+
+
+
+"
+
+[resource]
+resource_local_to_scene = true
+script = SubResource("GDScript_xmloq")
+name = "nfn:basic_attack"
+real_name = "交锋"
+description = "【结算】结算伤害+1。"
+type = "attack"
+basic_damage = 4
+basic_cost = 1
+custom_data = {}

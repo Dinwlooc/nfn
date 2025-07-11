@@ -1,7 +1,7 @@
 extends Resource
 class_name Card
 
-@export var name: String #卡牌名，命名规范为 命名空间:牌组_卡牌名 如default:basic_attack
+@export var name: String #卡牌名，命名规范为 命名空间:牌组_卡牌名 如NFN_default:basic_attack
 @export var real_name: String#显示给玩家的卡牌名。
 @export var description: String #卡牌描述
 @export var type: String  # 卡牌类型，如attack
@@ -48,4 +48,3 @@ func is_equal_to(other: Card) -> bool:
 		self.basic_cost == other.basic_cost and
 		self.texture_path == other.texture_path
 	)
-

@@ -10,6 +10,7 @@ var selected:bool = false
 var dragged:bool = false
 var dragging:int = 0
 var hovering:bool = false
+var path:Dictionary
 
 var basic_cost:int
 var basic_damage:int
@@ -19,22 +20,18 @@ var suit:String
 var texture_path:String
 
 var type:String = "void"
-const path = {
-	"void": "res://offcial/default/Card/cardface/voidcard.tscn",
-	"attack": "res://offcial/default/Card/cardface/attackcard.tscn",
-	# 内置卡牌类型。
-}
 signal select
 signal drag
 
 
 func _ready()-> void:
 	name = "RealCardContorl"
+	path = GlobalConfig._resource_registry["cardface"]
 	pass
 	
 
 func data_update(new_card_data:Dictionary)-> void:
-	texture_path = get_texture_path(new_card_data["name"],new_card_data["type"])
+	texture_path = get_card_main_icon(new_card_data["name"])
 	basic_cost = new_card_data["basic_cost"]
 	basic_damage = new_card_data["basic_damage"]
 	description = new_card_data["description"]
@@ -46,18 +43,8 @@ func data_update(new_card_data:Dictionary)-> void:
 	cardface.data_update()
 	pass
 	
-func get_texture_path(card_name:String,card_type:String) -> String:
-	# 分割命名空间和卡牌名
-	var name_parts := card_name.split(":")
-	var name_space = "default"
-	var card_key = card_name
-	if name_parts.size() >= 2:
-		name_space = name_parts[0]
-		card_key = name_parts[1]
-	elif name_parts.size() == 1:
-		card_key = name_parts[0]
-	# 构建贴图路径
-	return "res://offcial/%s/Card/cardicon/%s.png" % [name_space, card_key]
+func get_card_main_icon(card_name:String) -> String:
+	return GlobalConfig._resource_registry["card_main_icon"][card_name]
 	
 	
 func render_update()->RealCard:
