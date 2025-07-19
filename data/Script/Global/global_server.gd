@@ -78,14 +78,6 @@ func url_connect(new_url):
 		pass
 		return false
 
-#func get_connect_status():
-	#if server.get_connection_status() == MultiplayerPeer.CONNECTION_DISCONNECTED:
-		#return("Client:Missing\n")
-	#if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTING:
-		#return("Client:Connecting\n")
-	#if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
-		#return("Client:OK\n")
-
 func close():
 	server.close()
 	users = []
@@ -114,14 +106,12 @@ func unpack_server(bytes: PackedByteArray):
 	return self
 
 func pack_card(card:Card) -> PackedByteArray:
-	var data_dict :Dictionary= {
-	"name":card.name,
-	"type":card.type,
-	"suit":card.suit,
-	"basic_damage":card.basic_damage,
-	"basic_cost":card.basic_cost,
-	}
-	return var_to_bytes(data_dict)  # Godot内置序列化方法
+	var serialized_data = card.data.duplicate(true)
+	if card.data.has("power"):
+		serialized_data["modified_power"] = card.get_attribute("power")
+	if card.data.has("cost"):
+		serialized_data["modified_cost"] = card.get_attribute("cost")
+	return var_to_bytes(serialized_data)  # Godot内置序列化方法
 	
 func unpack_card(bytes: PackedByteArray)->Dictionary:
 	var data_dict = bytes_to_var(bytes)  # 反序列化字典

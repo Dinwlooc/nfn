@@ -55,7 +55,7 @@ func start_stage()-> void:
 	pass	
 
 func draw_stage()->void:
-	draw_cards(alive_players[current_player_index].get_NCD_initial(),current_player_index)
+	draw_cards(alive_players[current_player_index].get_attribute("NCD"),current_player_index)
 	pass
 
 func turn_stage(status:String):

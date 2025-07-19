@@ -1,6 +1,5 @@
 extends RealAreaFace
 
-
 var original_position
 var original_size
 var area_target_position:Vector2

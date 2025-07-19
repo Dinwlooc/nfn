@@ -12,10 +12,7 @@ var dragging:int = 0
 var hovering:bool = false
 var path:Dictionary
 
-var card_name:String
-var basic_cost:int
-var basic_damage:int
-var suit:String
+var data:Dictionary
 
 var type:String = "void"
 signal select
@@ -29,10 +26,7 @@ func _ready()-> void:
 	
 
 func data_update(new_card_data:Dictionary)-> void:
-	card_name = new_card_data["name"]
-	basic_cost = new_card_data["basic_cost"]
-	basic_damage = new_card_data["basic_damage"]
-	suit = new_card_data["suit"]
+	data = new_card_data
 	if !(cardface)||new_card_data["type"] != cardface.type:
 		type = new_card_data["type"]
 		_load_scene_by_type(type)
@@ -49,10 +43,7 @@ func _load_scene_by_type(card_type: String) -> void:
 	if cardface:
 		remove_child(cardface)
 		cardface.queue_free()
-	var type_to_path = path["void"]
-	if path[card_type]:
-		type_to_path = path[card_type]
-	cardface = load(type_to_path).instantiate()
+	cardface = load(path.get(card_type, path["void"])).instantiate()
 	add_child(cardface)
 	cardface.card = self
 	if cardface.has_node("Button"):

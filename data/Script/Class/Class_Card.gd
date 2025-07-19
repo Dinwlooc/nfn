@@ -1,47 +1,41 @@
+@tool
 extends Resource
 class_name Card
 
-@export var name: String #卡牌名，命名规范为 命名空间:牌组_卡牌名 如NFN_default:basic_attack
-@export var type: String  # 卡牌类型，如attack
-@export var basic_damage: int
- # 基础威力
-@export var basic_cost: int    
-# 基础消耗
-@export var custom_data:Dictionary
-var suit: String
-
+var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
+const PREST_INIT:Dictionary = {
+	"attack":{
+		"power":0,
+		"cost":0
+	},
+	"void":{
+		"name": "",
+		"type": "void"
+	}
 	
-func start_status_start():
-	pass
-
-func settlement_damage()->int:
-	var damage:int = basic_damage
-	return damage
+}
+@export var data:Dictionary = {
+		"name": "",
+		"type": "",
+	}
 	
-func settlement_move():
-	var area:String = "areaDiscard"
-	return area
-	
-func play_cost():
-		var cost = basic_cost
-		return cost
-		
-
+@export_enum("attack","spell","void") var preset_type:String:
+	set(value):
+		if Engine.is_editor_hint():
+			if value != "void"&&value != "":
+				var init = data.duplicate()
+				init.merge(PREST_INIT[value])
+				init["type"] = value
+				data = init
+			else:
+				data = PREST_INIT[value]
+			notify_property_list_changed()
+			
+func get_attribute(attribute: String) -> int:
+	if data.has(attribute):
+		return attributeModifiers.modify(attribute,data.get(attribute, 0))
+	return 0
 
 func set_suit(newsuit:String):
-	suit = newsuit
+	data["suit"] = newsuit
 	return self
-
-func is_equal_to(other: Card) -> bool:
-	if not other is Card:
-		return false
-	return (
-		self.name == other.name and
-		self.real_name == other.real_name and
-		self.description == other.description and
-		self.type == other.type and
-		self.suit == other.suit and
-		self.basic_damage == other.basic_damage and
-		self.basic_cost == other.basic_cost and
-		self.texture_path == other.texture_path
-	)

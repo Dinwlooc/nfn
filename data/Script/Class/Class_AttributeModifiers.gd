@@ -19,9 +19,8 @@ func removeAttributeModifier(attribute:String, modifier_name:String)->void:
 		dic[attribute].erase(modifier_name)
 	pass
 
-func modify(attribute:String):
-	var data = 0
-	for modifier in dic[attribute]:
-		data = dic[attribute][modifier].call(data)
+func modify(attribute:String,data:int):
+	if dic.has(attribute):
+		for modifier in dic[attribute]:
+			data = dic[attribute][modifier].call(data)
 	return data
-

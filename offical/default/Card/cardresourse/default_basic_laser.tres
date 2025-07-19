@@ -1,22 +1,17 @@
 [gd_resource type="Resource" load_steps=2 format=3 uid="uid://1l6tj4jptudl"]
 
 [sub_resource type="GDScript" id="GDScript_xmloq"]
-script/source = "extends Card
-
-func settlement_damage()->int:
-	var damage:int = basic_damage+1
-	return damage
-
-
-
-
+script/source = "@tool
+extends Card
 "
 
 [resource]
 resource_local_to_scene = true
 script = SubResource("GDScript_xmloq")
-name = "nfn:basic_laser"
-type = "attack"
-basic_damage = 3
-basic_cost = 1
-custom_data = {}
+data = {
+"cost": 1,
+"name": "nfn:basic_laser",
+"power": 4,
+"type": "attack"
+}
+preset_type = ""
