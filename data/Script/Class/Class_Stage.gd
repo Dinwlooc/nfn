@@ -29,21 +29,22 @@ func enter()->void:
 func enter_expand()->void:
 	pass
 
-# 由system调用的阶段结束方法，不建议覆盖。
 func exit():
+	end_stage()
 	GlobalConsole.timer.timeout.disconnect(on_timeout)
 	GlobalConsole.timer.timer_stop()
+	emit_signal("stage_ended")
 
 func handle_operation(op_data: Dictionary):
 	pass
 
 func on_timeout():
-	end_stage()
+	exit()
 	
 # 由自身调用的阶段结束方法，由子类覆盖。
 func end_stage():
 	pass
-	emit_signal("stage_ended")
+
 # 游戏功能函数
 
 func draw_cards(draw_count:int)-> void:
