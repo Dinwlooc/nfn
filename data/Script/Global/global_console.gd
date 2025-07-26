@@ -6,8 +6,8 @@ var	realarea:Dictionary
 var console:Node
 var card_on_select:Dictionary
 var card_on_drag:Dictionary
+var timer:GameTimer
 var system:System
-var server:Node
 var command_list: Dictionary = load("res://data/Script/Global/command.tres").command as Dictionary
 #godot会按照键的名称自动排列
 signal c_start
@@ -22,13 +22,10 @@ func register_console(console_instance)->void:
 	console = console_instance
 func register_maingame(maingame_instance)->void:
 	maingame = maingame_instance
-	
 func register_system(system_instance:System)->void:
 	system = system_instance
-	
-func register_server(server_instance)->void:
-	server = server_instance
-
+func register_timer(timer_instance)->void:
+	timer = timer_instance
 func register_realarea(realarea_name:String,realareahand_instance:RealArea)->void:
 	realarea[realarea_name] = realareahand_instance
 	

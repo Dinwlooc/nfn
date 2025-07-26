@@ -12,13 +12,11 @@ const PREST_INIT:Dictionary = {
 		"name": "",
 		"type": "void"
 	}
-	
 }
 @export var data:Dictionary = {
 		"name": "",
 		"type": "",
 	}
-	
 @export_enum("attack","spell","void") var preset_type:String:
 	set(value):
 		if Engine.is_editor_hint():

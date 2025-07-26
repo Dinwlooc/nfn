@@ -1,6 +1,7 @@
-[gd_scene load_steps=18 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=19 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://bdgr2qa4v5oq7" path="res://data/Script/Node/Node_MainGame.gd" id="1_ak5wu"]
+[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://data/Script/Class/Class_GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://data/Script/Class/Class_System.gd" id="2_gpy5h"]
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://offical/default/shader/shader_lights.gdshader" id="4_2w2we"]
 [ext_resource type="Texture2D" uid="uid://ktb06y62py2r" path="res://offical/default/Backgound/backgound5.png" id="5_2w2we"]
@@ -28,6 +29,11 @@ shader_parameter/luminance_max = 0.2
 
 [node name="MainGame" type="Node2D"]
 script = ExtResource("1_ak5wu")
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true
+ignore_time_scale = true
+script = ExtResource("2_4k47o")
 
 [node name="System" type="Node" parent="."]
 script = ExtResource("2_gpy5h")

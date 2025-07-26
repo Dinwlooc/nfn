@@ -1,15 +1,18 @@
 extends Node
 class_name System
 
-var system = Player.new()
-var areaAttack = AreaAttack.new().set_player(system)
-var areaDrawing = AreaDrawing.new().set_player(system)
+
+var game_stages:Dictionary = {
+	"start":StageStart.new(self),
+	"draw":StageDraw.new(self)
+}
+@export_enum("null","start","draw") var game_stage_name:String = "null"
+var areaAttack = AreaAttack.new()
+var areaDrawing = AreaDrawing.new()
 var alive_players:Array[Player]
 var current_player_index:int
-var game_status:String = "Null"
 signal data_update
 	
-
 func _ready() -> void:
 	GlobalConsole.register_system(self)
 	signal_connect_tesy()#调试模式
@@ -24,8 +27,21 @@ func load_cards() -> void:
 		areaDrawing.card_pool.append(load(all_cards[i]).duplicate().set_suit("Club")) 
 	areaDrawing.card_pool.shuffle()
 
+func change_stage(new_stage_name: String) -> void:
+	var current_stage:Stage = game_stages[game_stage_name]
+	if current_stage:
+		current_stage.exit()
+		current_stage.stage_ended.disconnect(_on_stage_ended)
+	if new_stage_name in game_stages:
+		game_stage_name = new_stage_name
+		current_stage = game_stages[new_stage_name]	
+		current_stage.stage_ended.connect(_on_stage_ended)
+		current_stage.enter()
+	else:
+		push_error("Invalid stage name: " + new_stage_name)
+#####预置功能函数#####
 func draw_cards(draw_count:int,players_index:int)-> void:
-	if game_status != "Null":
+	if game_stage_name != "null":
 		var card_pool:Array[Card]
 		for i in range(0,draw_count):
 			if alive_players.size()&&areaDrawing.card_pool.size():
@@ -35,10 +51,10 @@ func draw_cards(draw_count:int,players_index:int)-> void:
 
 #####信号调用函数#####
 func _start_game()-> void:
-	if game_status != "Null":
+	if game_stage_name != "null":
 		GlobalConsole._print("Error:c_start未生效。游戏已开始。")
 		return
-	game_status = "start"
+	game_stage_name = "start"
 	for i in range(0,GlobalServer.users.size()):
 		alive_players.append(Player.new())
 		alive_players[i].id = GlobalServer.users[i].id
@@ -46,22 +62,14 @@ func _start_game()-> void:
 	for i in range(0,alive_players.size()):
 		draw_cards(4,i)
 	current_player_index = randi_range(0,alive_players.size()-1)
-	start_stage()
+	change_stage("start")
 	GlobalConsole._print("游戏开始！System Vesion:Beta")
 	pass
 
-func start_stage()-> void:
-	draw_stage()
-	pass	
-
-func draw_stage()->void:
-	draw_cards(alive_players[current_player_index].get_attribute("NCD"),current_player_index)
+func _on_stage_ended():
+	if game_stage_name=="start":
+		change_stage("draw")
 	pass
-
-func turn_stage(status:String):
-	var statuss = status
-	pass
-	
 	#########仅调试时使用的函数########
 	
 func _draw_cards_test()->void:
