@@ -2,10 +2,7 @@ extends Node
 class_name System
 
 
-var game_stages:Dictionary = {
-	"start":StageStart.new(self),
-	"draw":StageDraw.new(self)
-}
+var game_stages:Dictionary
 @export_enum("null","start","draw") var game_stage_name:String = "null"
 var areaAttack = AreaAttack.new()
 var areaDrawing = AreaDrawing.new()
@@ -15,6 +12,10 @@ signal data_update
 	
 func _ready() -> void:
 	GlobalConsole.register_system(self)
+	game_stages = {
+	"start":StageStart.new(),
+	"draw":StageDraw.new()
+}
 	signal_connect_tesy()#调试模式
 	load_cards()
 

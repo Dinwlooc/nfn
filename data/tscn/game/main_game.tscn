@@ -98,7 +98,8 @@ script = ExtResource("14_a6oxl")
 
 [node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("14_8v20q")]
 
-[node name="Console" type="Control" parent="Control"]
+[node name="Console" type="Control" parent="."]
+layout_mode = 3
 anchors_preset = 0
 offset_left = -493.0
 offset_right = -5.0
@@ -106,7 +107,7 @@ offset_bottom = 590.0
 mouse_filter = 2
 script = ExtResource("17_qle8x")
 
-[node name="Panel" type="TextEdit" parent="Control/Console"]
+[node name="Panel" type="TextEdit" parent="Console"]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 1.0
@@ -122,7 +123,7 @@ virtual_keyboard_enabled = false
 middle_mouse_paste_enabled = false
 wrap_mode = 1
 
-[node name="Input" type="LineEdit" parent="Control/Console"]
+[node name="Input" type="LineEdit" parent="Console"]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 560.0
@@ -144,7 +145,7 @@ clear_button_enabled = true
 flat = true
 caret_blink = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/Console"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Console"]
 custom_minimum_size = Vector2(150, 300)
 layout_mode = 2
 offset_left = 3.0
@@ -154,7 +155,7 @@ offset_bottom = 684.0
 scale = Vector2(0.7, 0.7)
 mouse_filter = 2
 
-[node name="Label" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -174,7 +175,7 @@ middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
 
-[node name="Label2" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label2" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -195,7 +196,7 @@ middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
 
-[node name="Label3" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label3" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -214,7 +215,7 @@ middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
 
-[node name="Label4" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label4" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -235,7 +236,7 @@ middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
 
-[node name="Label5" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label5" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -256,7 +257,7 @@ middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
 
-[node name="Label6" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label6" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -277,7 +278,7 @@ middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
 
-[node name="Label7" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label7" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -298,7 +299,7 @@ middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
 
-[node name="Label8" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label8" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -319,7 +320,7 @@ middle_mouse_paste_enabled = false
 flat = true
 select_all_on_focus = true
 
-[node name="Label9" type="LineEdit" parent="Control/Console/VBoxContainer"]
+[node name="Label9" type="LineEdit" parent="Console/VBoxContainer"]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")

@@ -3,14 +3,13 @@ class_name RealArea
 #总控区域渲染与交互。
 
 var area_name:String
-var real_card_pool:Array[RealCard]#储存经过排列的RealCard类
-var areaface:RealAreaFace
+var real_card_pool:Array[RealCard]
 var choose_list:Array[int]
 var choose_limit:int = 1
+signal render_requested()
+signal tween_requested()
 
 func _ready():
-	if !areaface:
-		areaface = RealAreaFace.new()
 	ready_expand()
 	pass
 
@@ -18,13 +17,12 @@ func ready_expand()->void:
 	pass
 
 func render_update()-> void:
-	areaface.render_update()
+	emit_signal("render_requested")
 	real_card_pool.map(func(card:RealCard):return card.render_update())
 	pass
 	
 func tween_update()->void:
-	if areaface:
-		areaface.tween_update()
+	emit_signal("tween_requested")
 	pass
 	
 func cards_add(cards:Array[Dictionary])->void:
@@ -51,7 +49,7 @@ func on_select(pool_id:int)-> void:
 		real_card_pool[choose_list[0]].selected = 0
 		choose_list.remove_at(0)
 	GlobalConsole.set_card_on_select(area_name,choose_list)
-	areaface.tween_update()
+	tween_update()
 	pass
 	
 func on_drag(pool_id:int)->void:

@@ -11,7 +11,8 @@ signal outto_area
 func _ready():
 	if get_parent_control()&&get_parent_control() is RealArea:
 		area = get_parent_control()
-		area.areaface = self
+		area.render_requested.connect(render_update)
+		area.tween_requested.connect(tween_update)
 	into_area.connect(_into_area)
 	outto_area.connect(_outto_area)
 	ready_expand()

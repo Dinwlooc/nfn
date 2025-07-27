@@ -5,16 +5,14 @@ enum StageType {
 	MAIN,          # 主阶段
 	INTERRUPT      # 插入阶段
 }
-signal stage_enter
 signal stage_ended
 var system: System
 var type: int = StageType.MAIN
 var stage_name: String = "Unnamed Stage"
 var time_limit: float = 30.0
 
-func _init(system_ref: System)->void:
-	stage_enter.connect(enter)
-	system = system_ref
+func _init()->void:
+	system = GlobalConsole.system
 	_init_expand()
 
 func  _init_expand()->void:
