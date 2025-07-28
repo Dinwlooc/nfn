@@ -1,12 +1,10 @@
-[gd_scene load_steps=19 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=16 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://bdgr2qa4v5oq7" path="res://data/Script/Node/Node_MainGame.gd" id="1_ak5wu"]
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://data/Script/Class/Class_GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://data/Script/Class/Class_System.gd" id="2_gpy5h"]
-[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://offical/default/shader/shader_lights.gdshader" id="4_2w2we"]
-[ext_resource type="Texture2D" uid="uid://ktb06y62py2r" path="res://offical/default/Backgound/backgound5.png" id="5_2w2we"]
-[ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://data/Script/Node/Node_Backgound.gd" id="5_3yxmy"]
-[ext_resource type="Script" uid="uid://062bg815jifb" path="res://offical/default/shader/shaderScript/shader_lights.gd" id="8_4k6qy"]
+[ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://data/Script/Class/Class_RealAreaStage.gd" id="4_8dpeo"]
+[ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://offical/default/Area/areaface/backgound.tscn" id="5_2w2we"]
 [ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://data/Script/Class/Class_RealAreaHand.gd" id="9_0w8dv"]
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://offical/default/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
 [ext_resource type="Script" uid="uid://cbddakxiujtqr" path="res://data/Script/Class/Class_Arrow.gd" id="9_a5vnv"]
@@ -17,15 +15,6 @@
 [ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://data/Script/Class/Class_RealAreaTargets.gd" id="14_a6oxl"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://offical/default/tres/LineEdit_theme.tres" id="16_2w2we"]
 [ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://data/Script/Node/Node_Console.gd" id="17_qle8x"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_riwjx"]
-shader = ExtResource("4_2w2we")
-shader_parameter/cooldown_speed = 1.0
-shader_parameter/range_max = 0.0
-shader_parameter/glow_luminance_min = 0.3
-shader_parameter/glow_intensity = 0.3
-shader_parameter/time = 0.0
-shader_parameter/luminance_max = 0.2
 
 [node name="MainGame" type="Node2D"]
 script = ExtResource("1_ak5wu")
@@ -46,20 +35,13 @@ offset_right = 1600.0
 offset_bottom = 900.0
 focus_mode = 1
 
-[node name="Backgound" type="Control" parent="Control"]
+[node name="AreaStage" type="Control" parent="Control"]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
-scale = Vector2(1.008, 1.008)
-script = ExtResource("5_3yxmy")
+script = ExtResource("4_8dpeo")
 
-[node name="ColorRect" type="TextureRect" parent="Control/Backgound"]
-material = SubResource("ShaderMaterial_riwjx")
-layout_mode = 1
-offset_right = 1600.0
-offset_bottom = 900.0
-texture = ExtResource("5_2w2we")
-script = ExtResource("8_4k6qy")
+[node name="Backgound" parent="Control/AreaStage" instance=ExtResource("5_2w2we")]
 
 [node name="ArrowControl" type="Control" parent="Control"]
 anchors_preset = 0

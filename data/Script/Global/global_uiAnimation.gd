@@ -1,11 +1,24 @@
 extends Node
+# GlobeUIAnimation，以全局脚本的形式提供UI动画插值函数。
+const  DEFAULT_SPEED = 0.07704  # 使任意6帧(0.1s)中的总移动与目标距离呈现为黄金比例
 
-func smooth_move_animation(current_position:Vector2,target_position:Vector2,smooth_move_speed:float = 4):
-	if  !is_equal_approx(current_position.x,target_position.x):
-		current_position.x = current_position.x + (target_position.x-current_position.x)*smooth_move_speed/12
-	if  !is_equal_approx(current_position.y,target_position.y):
-		current_position.y = current_position.y + (target_position.y-current_position.y)*smooth_move_speed/12
-	return current_position
+func smooth_move_animation(
+	current_position: Vector2,
+	target_position: Vector2,
+	smooth_move_speed: float = DEFAULT_SPEED
+) -> Vector2:
+	if smooth_move_speed >= 1.0:
+		return target_position
+	if smooth_move_speed <= 0.0:
+		return current_position
+	var coefficient = smooth_move_speed 
+	var new_position = current_position
+	var delta = target_position - current_position
+	if !is_equal_approx(delta.x, 0.0):
+		new_position.x += delta.x * coefficient
+	if !is_equal_approx(delta.y, 0.0):
+		new_position.y += delta.y * coefficient
+	return new_position
 
 func tween_animations(node:Node,list:Dictionary,time = 0.5,trans_type = Tween.TRANS_CUBIC,ease_type = Tween.EASE_OUT)->Tween:
 	var tween:Tween = node.create_tween()
