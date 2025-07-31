@@ -155,18 +155,18 @@ func cards_remove_rpc(area: Area, uids: Array[String])->void:
 # 新增的RPC接收函数（移除原来的 cards_rpc_receive）
 @rpc("authority", "call_local", "reliable")
 func cards_add_receive(area_name: String, data: PackedByteArray)->void:
-	if GlobalConsole.realarea.has(area_name):
-		GlobalConsole.realarea[area_name].cards_add(deserialize_cards(data))
+	if GlobalConsole.renderarea.has(area_name):
+		GlobalConsole.renderarea[area_name].cards_add(deserialize_cards(data))
 
 @rpc("authority", "call_local", "reliable")
 func cards_change_receive(area_name: String, data: PackedByteArray)->void:
-	if GlobalConsole.realarea.has(area_name):
-		GlobalConsole.realarea[area_name].cards_change(deserialize_cards(data))
+	if GlobalConsole.renderarea.has(area_name):
+		GlobalConsole.renderarea[area_name].cards_change(deserialize_cards(data))
 
 @rpc("authority", "call_local", "reliable")
 func cards_remove_receive(area_name: String, uids: Array[String])->void:
-	if GlobalConsole.realarea.has(area_name):
-		GlobalConsole.realarea[area_name].cards_remove(uids)
+	if GlobalConsole.renderarea.has(area_name):
+		GlobalConsole.renderarea[area_name].cards_remove(uids)
 
 
 @rpc("authority","call_remote")func receive_server_data(data)-> void:

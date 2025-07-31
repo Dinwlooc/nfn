@@ -1,4 +1,4 @@
-extends RealCardFace
+extends RenderCardFace
 
 @onready var Nicon = $ColorRect
 @onready var NverticalName = $VerticalName

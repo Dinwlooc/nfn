@@ -1,8 +1,8 @@
 extends Control
-class_name RealCardFace
+class_name RenderCardFace
 #卡面渲染的基类
 
-var card:RealCard
+var card:RenderCard
 
 func _ready():
 	pass

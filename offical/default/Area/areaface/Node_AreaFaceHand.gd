@@ -1,4 +1,4 @@
-extends RealAreaFace
+extends RenderAreaFace
 
 var original_position
 var original_size
@@ -18,7 +18,7 @@ func _physics_process(delta: float) -> void:
 	pass
 
 func render_update():
-	target_position = GlobalUIAnimation.generate_coordinates(area_target_position,area_target_size,area.real_card_pool.size())
+	target_position = GlobalUIAnimation.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
 	tween_update()
 
 func tween_update():
@@ -46,21 +46,21 @@ func _outto_area():
 	render_update()
 
 func card_move_expand()->void:
-	for i in range(0,area.real_card_pool.size()):
-		area.real_card_pool[i].position.y += 0.3*sin((Time.get_ticks_msec()+i*200)*0.004)
+	for i in range(0,area.card_pool.size()):
+		area.card_pool[i].position.y += 0.3*sin((Time.get_ticks_msec()+i*200)*0.004)
 
 func dragging_move(card):
 	var _target_position = get_global_mouse_position()
 	GlobalUIAnimation.tween_animations(card,{"position":_target_position},time)
 
 func card_move()-> void:
-	if area.real_card_pool.size() == 0||target_position.size()==0:
+	if area.card_pool.size() == 0||target_position.size()==0:
 		return
-	for i in range(0,area.real_card_pool.size()):
-		var card_position = area.real_card_pool[i].position
+	for i in range(0,area.card_pool.size()):
+		var card_position = area.card_pool[i].position
 		var _target_position = target_position[i]
-		if area.real_card_pool[i].selected:
+		if area.card_pool[i].selected:
 			_target_position.y += -40.0
-		if !area.real_card_pool[i].dragged:
-			GlobalUIAnimation.tween_animations(area.real_card_pool[i],{"position":_target_position},time)
+		if !area.card_pool[i].dragged:
+			GlobalUIAnimation.tween_animations(area.card_pool[i],{"position":_target_position},time)
 	pass

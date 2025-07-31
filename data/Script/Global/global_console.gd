@@ -2,7 +2,7 @@ extends Node
  
 ###全局控制台####
 var maingame:Node
-var	realarea:Dictionary
+var	renderarea:Dictionary
 var console:Node
 var card_on_select:Dictionary
 var card_on_drag:Dictionary
@@ -26,10 +26,10 @@ func register_system(system_instance:System)->void:
 	system = system_instance
 func register_timer(timer_instance)->void:
 	timer = timer_instance
-func register_realarea(realarea_name:String,realareahand_instance:RealArea)->void:
-	realarea[realarea_name] = realareahand_instance
+func register_renderarea(renderarea_name:String,renderarea_instance:RenderArea)->void:
+	renderarea[renderarea_name] = renderarea_instance
 	
-func set_card_on_drag(area:RealArea,realcard:RealCard):
+func set_card_on_drag(area:RenderArea,realcard:RenderCard):
 	remove_card_on_drag()
 	card_on_drag["area"] = area
 	card_on_drag["card"] = realcard

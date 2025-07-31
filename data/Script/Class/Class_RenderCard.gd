@@ -1,9 +1,9 @@
 extends Control
-class_name RealCard
+class_name RenderCard
 #总控卡牌渲染和并处理交互。
 
-var cardface:RealCardFace
-var area:RealArea
+var cardface:RenderCardFace
+var area:RenderArea
 var move_state:bool = false
 var pool_id:int
 var selected:bool = false
@@ -35,7 +35,7 @@ func data_update(new_card_data:Dictionary)-> void:
 	
 
 	
-func render_update()->RealCard:
+func render_update()->RenderCard:
 	cardface.render_update()
 	return self
 

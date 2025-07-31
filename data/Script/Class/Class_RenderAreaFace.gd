@@ -1,15 +1,15 @@
 extends Control
-class_name RealAreaFace
+class_name RenderAreaFace
 
 var hovering_id:int = -1
 var target_position:Array
-var area:RealArea
+var area:RenderArea
 var in_area:bool = false
 signal into_area
 signal outto_area
 
 func _ready():
-	if get_parent_control()&&get_parent_control() is RealArea:
+	if get_parent_control()&&get_parent_control() is RenderArea:
 		area = get_parent_control()
 		area.render_requested.connect(render_update)
 		area.tween_requested.connect(tween_update)
@@ -47,42 +47,42 @@ func _input(event):
 
 func hover_card()->void:
 	var mouse_position = get_global_mouse_position()
-	if hovering_id >= area.real_card_pool.size():
+	if hovering_id >= area.card_pool.size():
 		hovering_id = -1
-	if hovering_id!=-1&&!area.real_card_pool[hovering_id].is_hovering(mouse_position):
-		area.real_card_pool[hovering_id].hovering = false
+	if hovering_id!=-1&&!area.card_pool[hovering_id].is_hovering(mouse_position):
+		area.card_pool[hovering_id].hovering = false
 		hovering_id = -1
 	if hovering_id == -1:
-		for i in range(0,area.real_card_pool.size()):
-			if area.real_card_pool[-1-i].is_hovering(mouse_position):
-				hovering_id = area.real_card_pool.size()-i-1
+		for i in range(0,area.card_pool.size()):
+			if area.card_pool[-1-i].is_hovering(mouse_position):
+				hovering_id = area.card_pool.size()-i-1
 				break
 		if hovering_id != -1:
-			area.real_card_pool[hovering_id].hovering = true
+			area.card_pool[hovering_id].hovering = true
 		return
-	elif hovering_id >= area.real_card_pool.size()-1||!area.real_card_pool[hovering_id+1].is_hovering(mouse_position):
+	elif hovering_id >= area.card_pool.size()-1||!area.card_pool[hovering_id+1].is_hovering(mouse_position):
 		#检查重叠情况
 		return
 	else:
-		area.real_card_pool[hovering_id].hovering = false
+		area.card_pool[hovering_id].hovering = false
 		#对重叠进行正序扫描
-		for i in range(hovering_id+1,area.real_card_pool.size()):
+		for i in range(hovering_id+1,area.card_pool.size()):
 			hovering_id = i
-			if !area.real_card_pool[i].is_hovering(mouse_position):
+			if !area.card_pool[i].is_hovering(mouse_position):
 				hovering_id += -1
 				break
-		area.real_card_pool[hovering_id].hovering = true
+		area.card_pool[hovering_id].hovering = true
 
 	
 	
 func card_move()-> void:
-	if area.real_card_pool.size() == 0||target_position.size()==0:
+	if area.card_pool.size() == 0||target_position.size()==0:
 		return
-	for i in range(0,area.real_card_pool.size()):
-		var card_position = area.real_card_pool[i].position
+	for i in range(0,area.card_pool.size()):
+		var card_position = area.card_pool[i].position
 		var _target_position = target_position[i]
-		if !area.real_card_pool[i].dragged:
-			GlobalUIAnimation.tween_animations(area.real_card_pool[i],{"position":_target_position})
+		if !area.card_pool[i].dragged:
+			GlobalUIAnimation.tween_animations(area.card_pool[i],{"position":_target_position})
 	pass
 
 func dragging_move(card)->void:
