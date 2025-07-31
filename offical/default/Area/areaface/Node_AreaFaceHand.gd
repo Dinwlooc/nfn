@@ -4,7 +4,8 @@ var original_position
 var original_size
 var area_target_position:Vector2
 var area_target_size:Vector2
-const time = 0.4
+const time = 0.35
+
 func ready_expand()->void:
 	original_position = position
 	original_size = size
@@ -49,18 +50,32 @@ func card_move_expand()->void:
 	for i in range(0,area.card_pool.size()):
 		area.card_pool[i].position.y += 0.3*sin((Time.get_ticks_msec()+i*200)*0.004)
 
-func dragging_move(card):
+func dragging_move(card:RenderCard):
 	var _target_position = get_global_mouse_position()
-	GlobalUIAnimation.tween_animations(card,{"position":_target_position},time)
+	card_move_rotate(card,_target_position)
+	GlobalUIAnimation.tween_animations(card,{"position":_target_position},time).finished.connect(card_move_rotate.bind(card,_target_position))
+
+func card_move_rotate(card:RenderCard, _target_position:Vector2):
+	# 计算水平距离差
+	var dx = card.position.x - _target_position.x
+	var abs_dx = abs(dx)
+	const max_distance = 300.0
+	const max_rotation = -PI*0.167
+	const rotate_time = 0.35
+	var rotation_ratio = min(abs_dx / max_distance, 1.0)
+	var rotation_sign = 1.0 if dx < 0 else -1.0
+	var _target_rotation = rotation_sign * rotation_ratio * max_rotation
+	GlobalUIAnimation.tween_animations(card, {"rotation": _target_rotation}, rotate_time)
 
 func card_move()-> void:
 	if area.card_pool.size() == 0||target_position.size()==0:
 		return
 	for i in range(0,area.card_pool.size()):
-		var card_position = area.card_pool[i].position
+		var card:RenderCard = area.card_pool[i]
+		var card_position = card.position
 		var _target_position = target_position[i]
-		if area.card_pool[i].selected:
+		if card.selected:
 			_target_position.y += -40.0
-		if !area.card_pool[i].dragged:
-			GlobalUIAnimation.tween_animations(area.card_pool[i],{"position":_target_position},time)
+		if !card.dragged:
+			GlobalUIAnimation.tween_animations(card,{"position":_target_position},time).finished.connect(card_move_rotate.bind(card,_target_position))
 	pass

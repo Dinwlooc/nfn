@@ -20,7 +20,7 @@ func smooth_move_animation(
 		new_position.y += delta.y * coefficient
 	return new_position
 
-func tween_animations(node:Node,list:Dictionary,time = 0.5,trans_type = Tween.TRANS_CUBIC,ease_type = Tween.EASE_OUT)->Tween:
+func tween_animations(node:Node,list:Dictionary,time:float = 0.5,trans_type:Tween.TransitionType = Tween.TRANS_CUBIC,ease_type = Tween.EASE_OUT)->Tween:
 	var tween:Tween = node.create_tween()
 	if list:
 		for key in list:

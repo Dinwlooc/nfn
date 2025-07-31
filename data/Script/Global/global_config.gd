@@ -59,7 +59,7 @@ func load_resource_pack(pack_path: String, pack_name: String) -> void:
 				var relative_path = config.get_value(resource_type, resource_key)
 				var full_path = "%s/%s" % [pack_path, relative_path]
 				_resource_registry[resource_type][resource_key] = full_path
-				print("加载资源: [%s] %s -> %s" % [resource_type, resource_key, full_path])
+				print("获取资源路径: [%s] %s -> %s" % [resource_type, resource_key, full_path])
 
 ## 获取资源路径
 func get_resource_path(resource_type: String, resource_key: String) -> String:
