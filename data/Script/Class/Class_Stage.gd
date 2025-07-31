@@ -6,7 +6,7 @@ enum StageType {
 	INTERRUPT      # 插入阶段
 }
 signal stage_ended
-var system: System
+var system:System
 var type: int = StageType.MAIN
 var stage_name: String = "Unnamed Stage"
 var time_limit: float = 30.0
@@ -36,14 +36,12 @@ func exit():
 func handle_operation(op_data: Dictionary):
 	pass
 
-func on_timeout():
+func on_timeout()->void:
 	exit()
 	
-# 由自身调用的阶段结束方法，由子类覆盖。
-func end_stage():
+func end_stage()->void:
 	pass
 
 # 游戏功能函数
-
 func draw_cards(draw_count:int)-> void:
 	system.draw_cards(draw_count,system.current_player_index)

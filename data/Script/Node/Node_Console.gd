@@ -35,9 +35,9 @@ func _process(_delta):
 	
 func panel_animation_control():
 	if panel_display:
-		position = GlobalUIAnimation.smooth_move_animation(position,display_position)
+		position = GlobalUIAnimation.smooth_move_animation(position,display_position,GlobalUIAnimation.GOLDEN_SPEED_3FRAMES)
 	else:
-		position = GlobalUIAnimation.smooth_move_animation(position,original_position)
+		position = GlobalUIAnimation.smooth_move_animation(position,original_position,GlobalUIAnimation.GOLDEN_SPEED_3FRAMES)
 	pass
 
 func command_load():

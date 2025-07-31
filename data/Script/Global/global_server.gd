@@ -6,21 +6,21 @@ var url:String
 var id:int
 signal peer_update(peer_id:int)
 
-func _ready():
+func _ready()->void:
 		multiplayer.peer_connected.connect(_peer_connected)
 		multiplayer.peer_disconnected.connect(_peer_disconnected)
 		multiplayer.connected_to_server.connect(_connected_to_server)
 		multiplayer.server_disconnected.connect(_server_disconnected)
 	
 
-func _process(delta):
+func _process(delta)->void:
 	if Engine.get_process_frames() % 5 == 0:
 		server.poll()
 	pass
 
 #########
 
-func _connected_to_server():
+func _connected_to_server()->void:
 	id = server.get_unique_id()
 	GlobalConsole._print(["服务器已经连接。你的ID： ",id])
 	emit_signal("peer_update",id)
@@ -52,7 +52,7 @@ func _peer_disconnected(new_id)-> void:
 	users = users.filter(func(player):return (player.id != new_id))
 	pass
 ######
-func random_create():
+func random_create()->bool:
 	var port = randi_range(1024,65535)
 	if server.create_server(port) == OK:
 		id = 1
@@ -67,7 +67,7 @@ func random_create():
 		print("Server:Server creation failed")
 		return false
 
-func url_connect(new_url):
+func url_connect(new_url)->bool:
 	if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		server.close()
 	if server.create_client(new_url) == OK:
@@ -78,7 +78,7 @@ func url_connect(new_url):
 		pass
 		return false
 
-func close():
+func close()->void:
 	server.close()
 	users = []
 	id = 0
@@ -132,18 +132,46 @@ func deserialize_cards(serialized_data: PackedByteArray)->Array[Dictionary]:
 		return [{}]
 	return card_data_array
 
-func cards_rpc(area:Area,rpc_name:String,cards:Array[Card]):
-	var data  = serialize_cards(cards)
-	rpc_id(area.player.id,"cards_rpc_receive",rpc_name,area.area_name,data)
+#func cards_rpc(area:Area,rpc_name:String,cards:Array[Card])->void:
+	#var data  = serialize_cards(cards)
+	#rpc_id(area.player.id,"cards_rpc_receive",rpc_name,area.area_name,data)
+#
+#@rpc("authority","call_local","reliable") func cards_rpc_receive(rpc_name:String,area_name:String,data:PackedByteArray):
+	#if GlobalConsole.realarea[area_name]:
+		#GlobalConsole.realarea[area_name].call(rpc_name,deserialize_cards(data))
+	#pass
 
-@rpc("authority","call_local","reliable") func cards_rpc_receive(rpc_name:String,area_name:String,data:PackedByteArray):
-	if GlobalConsole.realarea[area_name]:
-		GlobalConsole.realarea[area_name].call(rpc_name,deserialize_cards(data))
-	pass
+func cards_add_rpc(area: Area, cards: Array[Card])->void:
+	var data = serialize_cards(cards)
+	rpc_id(area.player.id, "cards_add_receive", area.area_name, data)
+
+func cards_change_rpc(area: Area, cards: Array[Card])->void:
+	var data = serialize_cards(cards)
+	rpc_id(area.player.id, "cards_change_receive", area.area_name, data)
+
+func cards_remove_rpc(area: Area, uids: Array[String])->void:
+	rpc_id(area.player.id, "cards_remove_receive", area.area_name, uids)
+
+# 新增的RPC接收函数（移除原来的 cards_rpc_receive）
+@rpc("authority", "call_local", "reliable")
+func cards_add_receive(area_name: String, data: PackedByteArray)->void:
+	if GlobalConsole.realarea.has(area_name):
+		GlobalConsole.realarea[area_name].cards_add(deserialize_cards(data))
+
+@rpc("authority", "call_local", "reliable")
+func cards_change_receive(area_name: String, data: PackedByteArray)->void:
+	if GlobalConsole.realarea.has(area_name):
+		GlobalConsole.realarea[area_name].cards_change(deserialize_cards(data))
+
+@rpc("authority", "call_local", "reliable")
+func cards_remove_receive(area_name: String, uids: Array[String])->void:
+	if GlobalConsole.realarea.has(area_name):
+		GlobalConsole.realarea[area_name].cards_remove(uids)
+
 
 @rpc("authority","call_remote")func receive_server_data(data)-> void:
 		unpack_server(data)
-	
+
 @rpc("any_peer","call_remote")func ask_server_data(peer_id)-> void:
 	if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		rpc_id(peer_id,"receive_server_data",pack_server())
