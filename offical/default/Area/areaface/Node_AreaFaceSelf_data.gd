@@ -1,1 +1,1 @@
-extends RenderArea
+extends RenderAreaFace

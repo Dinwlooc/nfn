@@ -3,7 +3,7 @@ class_name RenderArea
 #总控区域渲染与交互。
 
 var area_name:String
-var card_pool:Array[RenderCard]
+@export var card_pool:Array[RenderCard]
 var choose_list:Array[int]
 var choose_limit:int = 1
 signal render_requested()

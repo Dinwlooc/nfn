@@ -14,12 +14,16 @@ const SELECT_COLOR:Color = Color(1,0.3,0.3)
 const HOVERING_COLOR:Color = Color(1,0.7,0.6)
 const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
 
-
+func _ready() -> void:
+	var button = get_node("Button")
+	button.button_down.connect(card.emit_signal_select)
+	button.button_down.connect(card.emit_signal_dragging)
+	button.button_up.connect(card.emit_signal_dragging)
 
 func _process(_delta):
-	if get_parent_control().selected:
+	if card.selected:
 		Nicon.color = SELECT_COLOR
-	elif get_parent_control().hovering:
+	elif card.hovering:
 		Nicon.color = HOVERING_COLOR
 	else:
 		Nicon.color = NORMAL_COLOR

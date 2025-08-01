@@ -1,0 +1,65 @@
+[gd_scene load_steps=3 format=3 uid="uid://s0d734yjh7uc"]
+
+[ext_resource type="Script" uid="uid://onljydwdxj4o" path="res://data/Script/Class/RanderFace/Class_RenderlCardFace.gd" id="1_1lsym"]
+[ext_resource type="Texture2D" uid="uid://bnyo0uw1gbm0c" path="res://offical/default/Character/NFN_Mizukagami/NFN_Mizukagami.png" id="2_4qsti"]
+
+[node name="CharacterTargetCard" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_1lsym")
+metadata/_custom_type_script = "uid://onljydwdxj4o"
+
+[node name="Backgound" type="ColorRect" parent="."]
+texture_filter = 1
+layout_mode = 2
+offset_left = 6.0
+offset_right = 202.0
+offset_bottom = 203.0
+color = Color(0.968627, 0.482353, 0.219608, 0.411765)
+
+[node name="BackgoundAbility" type="ColorRect" parent="."]
+texture_filter = 1
+layout_mode = 2
+offset_left = 14.0
+offset_top = 152.0
+offset_right = 194.0
+offset_bottom = 195.0
+color = Color(1, 0.639216, 0.329412, 0.823529)
+
+[node name="BackgoundCharacter" type="ColorRect" parent="."]
+texture_filter = 1
+layout_mode = 2
+anchor_left = 0.023
+anchor_right = 0.023
+offset_left = 9.746
+offset_top = 6.0
+offset_right = 110.746
+offset_bottom = 144.0
+color = Color(0.309804, 0.152941, 0.0509804, 0.486275)
+
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+texture_filter = 1
+texture_repeat = 1
+clip_contents = true
+layout_mode = 0
+offset_left = 12.0
+offset_top = 34.0
+offset_right = 114.0
+offset_bottom = 142.0
+stretch_mode = 1
+
+[node name="Character" type="TextureRect" parent="AspectRatioContainer"]
+layout_mode = 2
+texture = ExtResource("2_4qsti")
+flip_h = true
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 1.0
+offset_right = 204.0
+offset_bottom = 203.0
+action_mode = 0
+flat = true

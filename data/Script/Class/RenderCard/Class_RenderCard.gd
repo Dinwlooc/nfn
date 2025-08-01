@@ -2,7 +2,7 @@ extends Control
 class_name RenderCard
 #总控卡牌渲染和并处理交互。
 
-var cardface:RenderCardFace
+@export var cardface:RenderCardFace
 var area:RenderArea
 var move_state:bool = false
 var pool_id:int
@@ -11,19 +11,16 @@ var dragged:bool = false
 var dragging:int = 0
 var hovering:bool = false
 var path:Dictionary
-
 var data:Dictionary
 
 var type:String = "void"
 signal select
 signal drag
 
-
 func _ready()-> void:
-	name = "RealCardContorl"
+	name = "RenderCard"
 	path = GlobalConfig._resource_registry["cardface"]
 	pass
-	
 
 func data_update(new_card_data:Dictionary)-> void:
 	data = new_card_data
@@ -32,8 +29,6 @@ func data_update(new_card_data:Dictionary)-> void:
 		_load_scene_by_type(type)
 	cardface.data_update()
 	pass
-	
-
 	
 func render_update()->RenderCard:
 	cardface.render_update()
@@ -44,13 +39,10 @@ func _load_scene_by_type(card_type: String) -> void:
 		remove_child(cardface)
 		cardface.queue_free()
 	cardface = load(path.get(card_type, path["void"])).instantiate()
-	add_child(cardface)
-	cardface.card = self
-	if cardface.has_node("Button"):
-		var button = cardface.get_node("Button")
-		button.button_down.connect(emit_signal_select)
-		button.button_down.connect(emit_signal_dragging)
-		button.button_up.connect(emit_signal_dragging)
+	if cardface:
+		cardface.card = self
+		add_child(cardface)
+
 
 func emit_signal_select():
 	emit_signal("select",pool_id)

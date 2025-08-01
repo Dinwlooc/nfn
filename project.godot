@@ -51,4 +51,7 @@ ui_get_panel={
 
 [rendering]
 
+textures/canvas_textures/default_texture_repeat=1
 renderer/rendering_method="mobile"
+textures/decals/filter=0
+textures/light_projectors/filter=0
