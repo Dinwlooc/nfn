@@ -5,27 +5,33 @@ var original_size
 var area_target_position:Vector2
 var area_target_size:Vector2
 const time = 0.35
+var swap_cooldown: float = 0.0
+var pending_swap = false
+const SWAP_COOLDOWN_DURATION: float = 0.3
 
 func ready_expand()->void:
 	original_position = position
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size
-	pass
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if Engine.get_process_frames() % 2 == 0:
 		card_move_expand()
-	pass
+	if swap_cooldown > 0:
+		swap_cooldown -= delta
+		if pending_swap && swap_cooldown <= 0:
+			swap_cards()
+			pending_swap = false
 
-func render_update():
+func render_update()->void:
 	target_position = GlobalUIAnimation.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
 	tween_update()
 
-func tween_update():
+func tween_update()->void:
 	card_move()
 
-func _into_area():
+func _into_area()->void:
 	area_target_position = original_position - Vector2(0, 80)
 	area_target_size = original_size + Vector2(0, 80)
 	var list = {
@@ -36,7 +42,7 @@ func _into_area():
 	render_update()
 	pass
 	
-func _outto_area():
+func _outto_area()->void:
 	area_target_position = original_position
 	area_target_size = original_size
 	var list = {
@@ -50,12 +56,26 @@ func card_move_expand()->void:
 	for i in range(0,area.card_pool.size()):
 		area.card_pool[i].position.y += 0.3*sin((Time.get_ticks_msec()+i*200)*0.004)
 
-func dragging_move(card:RenderCard):
+func dragging_move(card:RenderCard)->void:
 	var _target_position = get_global_mouse_position()
 	card_move_rotate(card,_target_position)
 	GlobalUIAnimation.tween_animations(card,{"position":_target_position},time).finished.connect(card_move_rotate.bind(card,_target_position))
+	call_deferred("swap_cards")
+	
+func swap_cards()->void:
+	if swap_cooldown > 0:
+		pending_swap = true
+		return
+	hover_card()
+	if hovering_id != -1 && GlobalConsole.card_on_drag && GlobalConsole.card_on_drag["area"] == area:
+		var drag_card = GlobalConsole.card_on_drag["card"]
+		area.card_pool[hovering_id].hovering = false
+		var drag_id = drag_card.pool_id
+		area.move_card_to_index(drag_id, hovering_id)
+		hovering_id = -1
+		swap_cooldown = SWAP_COOLDOWN_DURATION
 
-func card_move_rotate(card:RenderCard, _target_position:Vector2):
+func card_move_rotate(card:RenderCard, _target_position:Vector2)->void:
 	# 计算水平距离差
 	var dx = card.position.x - _target_position.x
 	var abs_dx = abs(dx)
@@ -78,5 +98,4 @@ func card_move()-> void:
 			_target_position.y += -40.0
 		if !card.dragged:
 			GlobalUIAnimation.tween_animations(card,{"position":_target_position},time)
-			#.finished.connect(card_move_rotate.bind(card,_target_position))
 	pass

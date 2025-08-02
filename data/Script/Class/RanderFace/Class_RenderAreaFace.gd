@@ -8,7 +8,7 @@ var in_area:bool = false
 signal into_area
 signal outto_area
 
-func _ready():
+func _ready()->void:
 	if get_parent_control()&&get_parent_control() is RenderArea:
 		area = get_parent_control()
 		area.render_requested.connect(render_update)
@@ -29,7 +29,7 @@ func tween_update()->void:
 	#只更新动画。
 	pass
 
-func _input(event):
+func _input(event)->void:
 	if event is InputEventMouseMotion:
 		var mouse_position = get_local_mouse_position()
 		if GlobalConsole.card_on_drag&&GlobalConsole.card_on_drag["area"] == area:
@@ -47,34 +47,36 @@ func _input(event):
 
 func hover_card()->void:
 	var mouse_position = get_global_mouse_position()
-	if hovering_id >= area.card_pool.size():
+		# 检查当前悬停卡片是否有效或被拖拽
+	if hovering_id >= 0 && (hovering_id >= area.card_pool.size() || area.card_pool[hovering_id].dragged):
+		if hovering_id < area.card_pool.size():
+			area.card_pool[hovering_id].hovering = false
 		hovering_id = -1
-	if hovering_id!=-1&&!area.card_pool[hovering_id].is_hovering(mouse_position):
+	# 如果当前有悬停卡片但不再悬停或被拖拽
+	if hovering_id != -1 && !area.card_pool[hovering_id].is_hovering(mouse_position):
 		area.card_pool[hovering_id].hovering = false
 		hovering_id = -1
 	if hovering_id == -1:
-		for i in range(0,area.card_pool.size()):
-			if area.card_pool[-1-i].is_hovering(mouse_position):
-				hovering_id = area.card_pool.size()-i-1
+		for i in range(area.card_pool.size()-1,-1,-1):
+			if !area.card_pool[i].dragged && area.card_pool[i].is_hovering(mouse_position):
+				hovering_id = i
+				area.card_pool[hovering_id].hovering = true
 				break
-		if hovering_id != -1:
+		return
+	elif hovering_id < area.card_pool.size()-1:
+		# 从当前悬停卡片上方开始检查
+		var new_hover_id = -1
+		for i in range(hovering_id + 1, area.card_pool.size()):
+			if !area.card_pool[i].dragged:
+				if area.card_pool[i].is_hovering(mouse_position):
+					new_hover_id = i
+				else:
+					break#利用规范排序的性质
+		if new_hover_id != -1:
+			area.card_pool[hovering_id].hovering = false
+			hovering_id = new_hover_id
 			area.card_pool[hovering_id].hovering = true
-		return
-	elif hovering_id >= area.card_pool.size()-1||!area.card_pool[hovering_id+1].is_hovering(mouse_position):
-		#检查重叠情况
-		return
-	else:
-		area.card_pool[hovering_id].hovering = false
-		#对重叠进行正序扫描
-		for i in range(hovering_id+1,area.card_pool.size()):
-			hovering_id = i
-			if !area.card_pool[i].is_hovering(mouse_position):
-				hovering_id += -1
-				break
-		area.card_pool[hovering_id].hovering = true
 
-	
-	
 func card_move()-> void:
 	if area.card_pool.size() == 0||target_position.size()==0:
 		return
@@ -88,8 +90,8 @@ func card_move()-> void:
 func dragging_move(card)->void:
 	pass
 
-func _into_area():
+func _into_area()->void:
 	pass
 	
-func _outto_area():
+func _outto_area()->void:
 	pass

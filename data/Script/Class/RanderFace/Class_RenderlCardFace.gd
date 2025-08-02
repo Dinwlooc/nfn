@@ -2,7 +2,7 @@ extends Control
 class_name RenderCardFace
 #卡面渲染的基类
 
-var card:RenderCard
+@export var card:RenderCard
 
 func _ready():
 	pass

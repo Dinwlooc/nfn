@@ -786,5 +786,6 @@ LineEdit/constants/outline_size = 0
 LineEdit/font_sizes/font_size = 19
 LineEdit/fonts/font = SubResource("FontFile_dm7f5")
 LineEdit/icons/clear = SubResource("ImageTexture_56dok")
+LineEdit/styles/focus = null
 LineEdit/styles/normal = SubResource("StyleBoxFlat_rfdjm")
 LineEdit/styles/read_only = SubResource("StyleBoxFlat_pki67")

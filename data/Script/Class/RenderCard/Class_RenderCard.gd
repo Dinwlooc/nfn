@@ -3,7 +3,7 @@ class_name RenderCard
 #总控卡牌渲染和并处理交互。
 
 @export var cardface:RenderCardFace
-var area:RenderArea
+@export var area:RenderArea
 var move_state:bool = false
 var pool_id:int
 var selected:bool = false
@@ -44,24 +44,24 @@ func _load_scene_by_type(card_type: String) -> void:
 		add_child(cardface)
 
 
-func emit_signal_select():
-	emit_signal("select",pool_id)
+func request_select():
+	area.on_select(pool_id)
 	pass
 	
-func emit_signal_dragging():
+func request_dragging():
 	#0为准备就绪，1为长按检测中，2为长按中，3为长按检测失败。
 	if dragging == 0:
 		dragging = 1
 		await get_tree().create_timer(0.1).timeout
 		if dragging == 1:
-			emit_signal("drag",pool_id)
+			area.on_drag(pool_id)
 			dragging = 2
 		elif dragging == 3:
 			dragging = 0
 	elif dragging == 1:
 		dragging = 3
 	elif dragging == 2:
-		emit_signal("drag",pool_id)
+		area.on_drag(pool_id)
 		dragging = 0
 	pass
 

@@ -16,11 +16,11 @@ const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
 
 func _ready() -> void:
 	var button = get_node("Button")
-	button.button_down.connect(card.emit_signal_select)
-	button.button_down.connect(card.emit_signal_dragging)
-	button.button_up.connect(card.emit_signal_dragging)
+	button.button_down.connect(card.request_select)
+	button.button_down.connect(card.request_dragging)
+	button.button_up.connect(card.request_dragging)
 
-func _process(_delta):
+func _input(event: InputEvent) -> void:
 	if card.selected:
 		Nicon.color = SELECT_COLOR
 	elif card.hovering:

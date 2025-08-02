@@ -4,7 +4,6 @@ extends Node
 var maingame:Node
 var	renderarea:Dictionary
 var console:Node
-var card_on_select:Dictionary
 var card_on_drag:Dictionary
 var timer:GameTimer
 var system:System
@@ -41,11 +40,6 @@ func remove_card_on_drag():
 		card_on_drag["card"].dragged = false
 		card_on_drag["area"].tween_update()
 	card_on_drag.clear()
-	
-func set_card_on_select(area_name,choose_list:Array[int]):
-	if card_on_select:
-		card_on_select[area_name] = choose_list
-	pass
 		
 func _print(text:Variant)->void:
 	if console:

@@ -132,15 +132,6 @@ func deserialize_cards(serialized_data: PackedByteArray)->Array[Dictionary]:
 		return [{}]
 	return card_data_array
 
-#func cards_rpc(area:Area,rpc_name:String,cards:Array[Card])->void:
-	#var data  = serialize_cards(cards)
-	#rpc_id(area.player.id,"cards_rpc_receive",rpc_name,area.area_name,data)
-#
-#@rpc("authority","call_local","reliable") func cards_rpc_receive(rpc_name:String,area_name:String,data:PackedByteArray):
-	#if GlobalConsole.realarea[area_name]:
-		#GlobalConsole.realarea[area_name].call(rpc_name,deserialize_cards(data))
-	#pass
-
 func cards_add_rpc(area: Area, cards: Array[Card])->void:
 	var data = serialize_cards(cards)
 	rpc_id(area.player.id, "cards_add_receive", area.area_name, data)
@@ -164,9 +155,9 @@ func cards_change_receive(area_name: String, data: PackedByteArray)->void:
 		GlobalConsole.renderarea[area_name].cards_change(deserialize_cards(data))
 
 @rpc("authority", "call_local", "reliable")
-func cards_remove_receive(area_name: String, uids: Array[String])->void:
+func cards_remove_receive(area_name: String, ids: Array[String])->void:
 	if GlobalConsole.renderarea.has(area_name):
-		GlobalConsole.renderarea[area_name].cards_remove(uids)
+		GlobalConsole.renderarea[area_name].cards_remove(ids)
 
 
 @rpc("authority","call_remote")func receive_server_data(data)-> void:

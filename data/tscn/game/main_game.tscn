@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=18 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://bdgr2qa4v5oq7" path="res://data/Script/Node/Node_MainGame.gd" id="1_ak5wu"]
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://data/Script/Class/Class_GameTimer.gd" id="2_4k47o"]
@@ -11,6 +11,8 @@
 [ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://offical/default/Area/areaface/areaface_self.tscn" id="11_4k47o"]
 [ext_resource type="Script" uid="uid://boamtyqq4276a" path="res://data/Script/Class/RenderArea/Class_RenderAreaSelf.gd" id="11_5huyi"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://offical/default/Area/areaface/areaface_self_properties.tscn" id="12_f8lnr"]
+[ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://data/Script/Class/RenderCard/Class_RenderCard.gd" id="13_4k47o"]
+[ext_resource type="PackedScene" uid="uid://s0d734yjh7uc" path="res://offical/default/Character/charactercard/charactertargetcard.tscn" id="14_2w2we"]
 [ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://offical/default/Area/areaface/areaface_targets.tscn" id="14_8v20q"]
 [ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://data/Script/Class/RenderArea/Class_RenderAreaTargets.gd" id="14_a6oxl"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://offical/default/tres/LineEdit_theme.tres" id="16_2w2we"]
@@ -72,13 +74,29 @@ script = ExtResource("11_5huyi")
 [node name="AreaFaceSelf_Properties" parent="Control/AreaSelf" instance=ExtResource("12_f8lnr")]
 layout_mode = 1
 
-[node name="AreaTargets" type="Control" parent="Control"]
+[node name="AreaTargets" type="Control" parent="Control" node_paths=PackedStringArray("card_pool")]
 anchors_preset = 0
-offset_right = 1605.0
-offset_bottom = 244.0
 script = ExtResource("14_a6oxl")
+card_pool = [NodePath("RenderCard")]
+
+[node name="RenderCard" type="Control" parent="Control/AreaTargets" node_paths=PackedStringArray("cardface", "area")]
+anchors_preset = 0
+offset_left = 697.44
+offset_top = -213.456
+offset_right = 697.44
+offset_bottom = -213.456
+script = ExtResource("13_4k47o")
+cardface = NodePath("CharacterTargetCard")
+area = NodePath("..")
+metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
+
+[node name="CharacterTargetCard" parent="Control/AreaTargets/RenderCard" node_paths=PackedStringArray("card") instance=ExtResource("14_2w2we")]
+card = NodePath("..")
 
 [node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("14_8v20q")]
+offset_top = 0.0
+offset_right = 1421.0
+offset_bottom = 0.0
 
 [node name="Console" type="Control" parent="Control"]
 layout_mode = 3

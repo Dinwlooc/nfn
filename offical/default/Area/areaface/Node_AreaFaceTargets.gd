@@ -11,6 +11,7 @@ func ready_expand()->void:
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size
+	render_update()
 	pass
 
 func render_update():
@@ -21,24 +22,10 @@ func tween_update():
 	card_move()
 
 func _into_area():
-	area_target_position = original_position - Vector2(0, 80)
-	area_target_size = original_size + Vector2(0, 80)
-	var list = {
-		"position":area_target_position,
-		"size":area_target_size,
-		}
-	GlobalUIAnimation.tween_animations(self,list,time)
 	render_update()
 	pass
 	
 func _outto_area():
-	area_target_position = original_position
-	area_target_size = original_size
-	var list = {
-		"position":area_target_position,
-		"size":area_target_size,
-		}
-	GlobalUIAnimation.tween_animations(self,list,time)
 	render_update()
 
 func card_move()-> void:
@@ -48,8 +35,5 @@ func card_move()-> void:
 		var card:RenderCard = area.card_pool[i]
 		var card_position = card.position
 		var _target_position = target_position[i]
-		if card.selected:
-			_target_position.y += -40.0
-		if !card.dragged:
-			GlobalUIAnimation.tween_animations(card,{"position":_target_position},time)
+		GlobalUIAnimation.tween_animations(card,{"position":_target_position},time)
 	pass

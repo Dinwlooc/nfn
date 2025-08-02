@@ -31,6 +31,7 @@ func create_new_cards_all_suit(template_path: String) -> Array[Card]:
 	var card_template:Card = load(template_path)
 	for suit in ["Spade", "Heart", "Diamond", "Club"]:
 		var card:Card = card_template.duplicate().set_suit(suit)
+		assign_id(card)
 		if card:
 			cards.append(card)
 	return cards
