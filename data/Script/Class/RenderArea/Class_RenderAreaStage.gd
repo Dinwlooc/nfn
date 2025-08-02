@@ -1,1 +1,2 @@
 extends RenderArea
+class_name RenderAreaStage

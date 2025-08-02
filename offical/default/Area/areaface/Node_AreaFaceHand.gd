@@ -8,7 +8,7 @@ const time = 0.35
 var swap_cooldown: float = 0.0
 var pending_swap = false
 const SWAP_COOLDOWN_DURATION: float = 0.3
-const SWAP_DELTA:float = 0.1
+const SWAP_DELTA:float = 0.07
 
 func ready_expand()->void:
 	original_position = position
