@@ -20,12 +20,12 @@ func _ready()->void:
 func ready_expand()->void:
 	pass
 
-func render_update()-> void:
+func render_update(expend_render_property:Dictionary = {})-> void:
 	#更新动画和渲染控制参数。
-	tween_update()
+	tween_update(expend_render_property)
 	pass
 
-func tween_update()->void:
+func tween_update(expend_render_property:Dictionary = {})->void:
 	#只更新动画。
 	pass
 

@@ -6,8 +6,11 @@ class_name RenderCardFace
 
 func _ready():
 	pass
-	
-func render_update()->void:
+
+func data_update()->void:
+	pass
+
+func render_update(expend_render_property:Dictionary = {})->void:
 	pass
 	
 func get_suit(suit:String) ->int:

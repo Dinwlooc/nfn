@@ -40,7 +40,7 @@ func data_update()-> void:
 	Nsuit.frame = get_suit(card.data["suit"])
 	pass	
 	
-func render_update()->void:
+func render_update(expend_render_property:Dictionary = {})->void:
 	if card.area.real_card_pool.size()>12:
 		NverticalName.visible = true
 	else:

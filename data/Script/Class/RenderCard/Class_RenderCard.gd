@@ -30,8 +30,8 @@ func data_update(new_card_data:Dictionary)-> void:
 	cardface.data_update()
 	pass
 	
-func render_update()->RenderCard:
-	cardface.render_update()
+func render_update(expend_render_property:Dictionary = {})->RenderCard:
+	cardface.render_update(expend_render_property)
 	return self
 
 func _load_scene_by_type(card_type: String) -> void:

@@ -8,8 +8,8 @@ var card_id_to_pool_id: Dictionary[int,int] = {}
 var on_select_list:Array[int]
 var select_limit:int = 1
 var init_child_count:int
-signal render_requested()
-signal tween_requested()
+signal render_requested(expend_render_property)
+signal tween_requested(expend_render_property)
 
 func _ready():
 	init_child_count = get_child_count()
@@ -19,12 +19,12 @@ func _ready():
 func ready_expand()->void:
 	pass
 
-func render_update()-> void:
-	emit_signal("render_requested")
+func render_update(expend_render_property:Dictionary={})-> void:
+	emit_signal("render_requested",expend_render_property)
 	pass
 	
-func tween_update()->void:
-	emit_signal("tween_requested")
+func tween_update(expend_render_property:Dictionary={})->void:
+	emit_signal("tween_requested",expend_render_property)
 	pass
 	
 func cards_add(cards:Array[Dictionary])->void:
@@ -91,7 +91,7 @@ func swap_cards(pool_id_a:int, pool_id_b:int)->void:
 	move_child(card_pool[pool_id_b], pool_id_b+init_child_count)
 	render_update()
 
-func move_card_to_index(current_pool_id: int, target_index: int) -> void:
+func move_card_to_index(current_pool_id: int, target_index: int , expend_render_property:Dictionary={}) -> void:
 	# 边界检查
 	if current_pool_id < 0 || current_pool_id >= card_pool.size():
 		push_error("Invalid current_pool_id: " + str(current_pool_id))
@@ -124,4 +124,4 @@ func move_card_to_index(current_pool_id: int, target_index: int) -> void:
 	card_id_to_pool_id[moved_card.data["id"]] = target_index
 	for i in range(min(target_index, current_pool_id), max(target_index, current_pool_id) + 1):
 		move_child(card_pool[i], i + init_child_count)
-	render_update()
+	render_update(expend_render_property)
