@@ -21,12 +21,12 @@ func render_update(render_event:RenderEvent = RenderEvent.new()):
 func tween_update(render_event:RenderEvent = RenderEvent.new()):
 	card_move()
 
-func _into_area():
-	render_update()
+func _into_area()->void:
+	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
 	pass
 	
-func _outto_area():
-	render_update()
+func _outto_area()->void:
+	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
 func card_move()-> void:
 	if area.card_pool.size() == 0||target_position.size()==0:

@@ -66,6 +66,7 @@ script = ExtResource("9_0w8dv")
 
 [node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_2w2we")]
 layout_mode = 1
+mouse_filter = 1
 
 [node name="AreaSelf" type="Control" parent="Control"]
 anchors_preset = 0
@@ -86,6 +87,12 @@ card_id_to_pool_id = Dictionary[int, int]({
 0: 0
 })
 
+[node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("14_8v20q")]
+offset_top = -156.0
+offset_right = 1359.0
+offset_bottom = 193.0
+mouse_filter = 1
+
 [node name="RenderCard" type="Control" parent="Control/AreaTargets" node_paths=PackedStringArray("cardface", "area")]
 anchors_preset = 0
 offset_left = 697.44
@@ -102,11 +109,6 @@ metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
 
 [node name="CharacterTargetCard" parent="Control/AreaTargets/RenderCard" node_paths=PackedStringArray("card") instance=ExtResource("14_2w2we")]
 card = NodePath("..")
-
-[node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("14_8v20q")]
-offset_top = 0.0
-offset_right = 1421.0
-offset_bottom = 0.0
 
 [node name="Console" type="Control" parent="Control"]
 layout_mode = 3

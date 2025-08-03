@@ -40,7 +40,7 @@ func _into_area()->void:
 		"size":area_target_size,
 		}
 	GlobalUIAnimation.tween_animations(self,list,time)
-	render_update()
+	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
 	pass
 	
 func _outto_area()->void:
@@ -51,7 +51,7 @@ func _outto_area()->void:
 		"size":area_target_size,
 		}
 	GlobalUIAnimation.tween_animations(self,list,time)
-	render_update()
+	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
 func card_move_expand()->void:
 	for i in range(0,area.card_pool.size()):

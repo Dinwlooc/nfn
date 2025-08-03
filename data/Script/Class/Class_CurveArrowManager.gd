@@ -2,8 +2,8 @@ extends Control
 class_name CurveArrowManager
 
 # 曲线属性
-const COLOR_1 = Color.AQUA
-const COLOR_2 = Color(Color.AQUA,0)
+const COLOR_1 = Color(Color.AQUA,0) 
+const COLOR_2 = Color.AQUA
 const TWEEN_TIME = 1.0
 const ARROW_WIDTH_FACTOR = 4.0
 const ARROW_HEIGHT_FACTOR = 5.0
@@ -25,7 +25,7 @@ func create_smooth_curve(start: Vector2, end: Vector2) -> Curve2D:
 	end.y += curve_width * ARROW_HEIGHT_FACTOR
 	var horizontal_dist = abs(start.x - end.x)
 	var vertical_dist = abs(start.y - end.y)
-	var offset_multiplier = clamp(300.0 / max(horizontal_dist, 1.0), 1.0, 2.0)
+	var offset_multiplier = clamp(200.0 / max(horizontal_dist, 1.0), 1.0, 1.5)
 	var vertical_offset = vertical_dist * 0.5 * offset_multiplier
 	curve.add_point(start, Vector2.ZERO, Vector2(0, -vertical_offset))
 	curve.add_point(end, Vector2(0, vertical_offset), Vector2.ZERO)   

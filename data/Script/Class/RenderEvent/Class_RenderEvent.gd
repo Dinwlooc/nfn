@@ -17,6 +17,6 @@ func set_config(new_config:Dictionary)->RenderEvent:
 	config = new_config
 	return self
 
-func set_from_method(new_type:DefaultType)->RenderEvent:
+func set_type(new_type:DefaultType)->RenderEvent:
 	type = new_type
 	return self

@@ -76,7 +76,6 @@ func get_selected_cards()->Array[RenderCard]:
 		var pool_id = card_id_to_pool_id.get(card_id)
 		if pool_id != null && pool_id < card_pool.size():
 			selected.append(card_pool[pool_id])
-			print(selected)
 	return selected
 
 func swap_cards(pool_id_a:int, pool_id_b:int)->void:
