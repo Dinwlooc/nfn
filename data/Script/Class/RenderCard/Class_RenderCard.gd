@@ -17,7 +17,7 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var path:Dictionary
-var data:Dictionary
+@export var data:Dictionary
 
 var type:String = "void"
 signal select
@@ -49,6 +49,11 @@ func _load_scene_by_type(card_type: String) -> void:
 		cardface.card = self
 		add_child(cardface)
 
+func get_face_size()->Vector2:
+	if cardface:
+		return cardface.size
+	else:
+		return Vector2.ZERO
 
 func request_select():
 	area.on_select(pool_id)

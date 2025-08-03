@@ -8,8 +8,8 @@
 [node name="CharacterTargetCard" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 204.0
+offset_bottom = 203.0
 mouse_filter = 2
 script = ExtResource("1_1lsym")
 metadata/_custom_type_script = "uid://onljydwdxj4o"

@@ -4,12 +4,13 @@ class_name RenderArea
 
 var area_name:String
 @export var card_pool:Array[RenderCard]
-var card_id_to_pool_id: Dictionary[int,int] = {}
+@export var card_id_to_pool_id: Dictionary[int,int] = {}
 var on_select_list:Array[int]
 var select_limit:int = 1
 var init_child_count:int
 signal render_requested(expend_render_property)
 signal tween_requested(expend_render_property)
+signal selected
 
 func _ready():
 	init_child_count = get_child_count()
@@ -59,6 +60,7 @@ func on_select(pool_id:int)-> void:
 		if removed_pool_id != null:
 			card_pool[removed_pool_id].selected = false
 	tween_update()
+	selected.emit()
 	pass
 
 func on_drag(pool_id:int)->void:
@@ -69,11 +71,12 @@ func on_drag(pool_id:int)->void:
 	pass
 
 func get_selected_cards()->Array[RenderCard]:
-	var selected = []
+	var selected:Array[RenderCard] = []
 	for card_id in on_select_list:
 		var pool_id = card_id_to_pool_id.get(card_id)
 		if pool_id != null && pool_id < card_pool.size():
 			selected.append(card_pool[pool_id])
+			print(selected)
 	return selected
 
 func swap_cards(pool_id_a:int, pool_id_b:int)->void:
