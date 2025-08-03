@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://cwwsimyoypxle"]
+
+[ext_resource type="Script" uid="uid://cwk8mdw1p6uep" path="res://offical/default/Area/areaface/Node_AreaFaceTargets.gd" id="1_h4lv7"]
+
+[node name="AreaFaceTargets" type="Control"]
+clip_contents = true
+layout_mode = 3
+anchors_preset = 0
+offset_top = 5.0
+offset_right = 1598.0
+offset_bottom = 173.0
+script = ExtResource("1_h4lv7")
+metadata/_custom_type_script = "uid://btwt7f8flx66t"

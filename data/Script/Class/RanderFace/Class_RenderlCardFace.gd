@@ -10,7 +10,7 @@ func _ready():
 func data_update()->void:
 	pass
 
-func render_update(expend_render_property:Dictionary = {})->void:
+func render_update(render_event:RenderEvent = RenderEvent.new())->void:
 	pass
 	
 func get_suit(suit:String) ->int:

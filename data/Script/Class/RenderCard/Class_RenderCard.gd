@@ -26,6 +26,7 @@ signal drag
 func _ready()-> void:
 	name = "RenderCard"
 	path = GlobalConfig._resource_registry["cardface"]
+	area.render_requested.connect(render_update)
 	pass
 
 func data_update(new_card_data:Dictionary)-> void:
@@ -36,9 +37,9 @@ func data_update(new_card_data:Dictionary)-> void:
 	cardface.data_update()
 	pass
 	
-func render_update(expend_render_property:Dictionary = {})->RenderCard:
-	cardface.render_update(expend_render_property)
-	return self
+func render_update(render_event:RenderEvent = RenderEvent.new())->void:
+	if cardface:
+		cardface.render_update(render_event)
 
 func _load_scene_by_type(card_type: String) -> void:
 	if cardface:

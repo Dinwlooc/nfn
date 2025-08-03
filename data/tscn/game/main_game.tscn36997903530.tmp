@@ -1,0 +1,352 @@
+[gd_scene load_steps=18 format=3 uid="uid://cq8jj35acobqx"]
+
+[ext_resource type="Script" uid="uid://bdgr2qa4v5oq7" path="res://data/Script/Node/Node_MainGame.gd" id="1_ak5wu"]
+[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://data/Script/Class/Class_GameTimer.gd" id="2_4k47o"]
+[ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://data/Script/Class/Class_System.gd" id="2_gpy5h"]
+[ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://data/Script/Class/RenderArea/Class_RenderAreaStage.gd" id="4_8dpeo"]
+[ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://offical/default/Area/areaface/backgound.tscn" id="5_2w2we"]
+[ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://offical/default/Area/areaface/Node_arrow.gd" id="5_4k47o"]
+[ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://data/Script/Class/RenderArea/Class_RenderAreaHand.gd" id="9_0w8dv"]
+[ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://offical/default/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
+[ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://offical/default/Area/areaface/areaface_self.tscn" id="11_4k47o"]
+[ext_resource type="Script" uid="uid://boamtyqq4276a" path="res://data/Script/Class/RenderArea/Class_RenderAreaSelf.gd" id="11_5huyi"]
+[ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://offical/default/Area/areaface/areaface_self_properties.tscn" id="12_f8lnr"]
+[ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://data/Script/Class/RenderCard/Class_RenderCard.gd" id="13_4k47o"]
+[ext_resource type="PackedScene" uid="uid://s0d734yjh7uc" path="res://offical/default/Character/charactercard/charactertargetcard.tscn" id="14_2w2we"]
+[ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://offical/default/Area/areaface/areaface_targets.tscn" id="14_8v20q"]
+[ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://data/Script/Class/RenderArea/Class_RenderAreaTargets.gd" id="14_a6oxl"]
+[ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://offical/default/tres/LineEdit_theme.tres" id="16_2w2we"]
+[ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://data/Script/Node/Node_Console.gd" id="17_qle8x"]
+
+[node name="MainGame" type="Node2D"]
+script = ExtResource("1_ak5wu")
+
+[node name="Timer" type="Timer" parent="."]
+one_shot = true
+ignore_time_scale = true
+script = ExtResource("2_4k47o")
+
+[node name="System" type="Node" parent="."]
+script = ExtResource("2_gpy5h")
+
+[node name="Control" type="Control" parent="."]
+custom_minimum_size = Vector2(1600, 900)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1600.0
+offset_bottom = 900.0
+focus_mode = 1
+
+[node name="AreaStage" type="Control" parent="Control"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_8dpeo")
+
+[node name="Backgound" parent="Control/AreaStage" instance=ExtResource("5_2w2we")]
+
+[node name="Arrow" type="Control" parent="Control/AreaStage"]
+layout_mode = 1
+anchor_left = 1.025
+anchor_top = -2.175
+anchor_right = 40.3
+anchor_bottom = 19.375
+offset_left = -40.0
+offset_top = 87.9999
+offset_bottom = 128.0
+script = ExtResource("5_4k47o")
+metadata/_edit_use_anchors_ = true
+
+[node name="AreaHand" type="Control" parent="Control"]
+anchors_preset = 0
+offset_right = 1613.0
+offset_bottom = 907.0
+mouse_filter = 2
+script = ExtResource("9_0w8dv")
+
+[node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_2w2we")]
+layout_mode = 1
+
+[node name="AreaSelf" type="Control" parent="Control"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("11_5huyi")
+
+[node name="AreaFaceSelf" parent="Control/AreaSelf" instance=ExtResource("11_4k47o")]
+
+[node name="AreaFaceSelf_Properties" parent="Control/AreaSelf" instance=ExtResource("12_f8lnr")]
+layout_mode = 1
+
+[node name="AreaTargets" type="Control" parent="Control" node_paths=PackedStringArray("card_pool")]
+anchors_preset = 0
+script = ExtResource("14_a6oxl")
+card_pool = [NodePath("RenderCard")]
+card_id_to_pool_id = Dictionary[int, int]({
+0: 0
+})
+
+[node name="RenderCard" type="Control" parent="Control/AreaTargets" node_paths=PackedStringArray("cardface", "area")]
+anchors_preset = 0
+offset_left = 697.44
+offset_top = -213.456
+offset_right = 697.44
+offset_bottom = -213.456
+script = ExtResource("13_4k47o")
+cardface = NodePath("CharacterTargetCard")
+area = NodePath("..")
+data = {
+"id": 0
+}
+metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
+
+[node name="CharacterTargetCard" parent="Control/AreaTargets/RenderCard" node_paths=PackedStringArray("card") instance=ExtResource("14_2w2we")]
+card = NodePath("..")
+
+[node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("14_8v20q")]
+offset_top = 0.0
+offset_right = 1421.0
+offset_bottom = 0.0
+
+[node name="Console" type="Control" parent="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -483.0
+offset_right = -5.0
+offset_bottom = 587.0
+mouse_filter = 2
+script = ExtResource("17_qle8x")
+
+[node name="Panel" type="TextEdit" parent="Control/Console"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 698.0
+offset_bottom = 841.0
+scale = Vector2(0.7, 0.7)
+focus_mode = 0
+mouse_filter = 1
+text = "Waiting..."
+editable = false
+shortcut_keys_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+wrap_mode = 1
+
+[node name="Input" type="LineEdit" parent="Control/Console"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 560.0
+offset_right = 606.0
+offset_bottom = 597.0
+scale = Vector2(0.8, 0.8)
+focus_neighbor_left = NodePath(".")
+focus_neighbor_top = NodePath(".")
+focus_neighbor_right = NodePath(".")
+focus_neighbor_bottom = NodePath(".")
+focus_next = NodePath(".")
+focus_previous = NodePath(".")
+focus_mode = 1
+theme_override_colors/selection_color = Color(1, 1, 1, 1)
+theme_override_colors/font_selected_color = Color(0, 0, 0, 1)
+placeholder_text = "请输入指令..."
+keep_editing_on_text_submit = true
+clear_button_enabled = true
+flat = true
+caret_blink = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/Console"]
+custom_minimum_size = Vector2(150, 300)
+layout_mode = 2
+offset_left = 3.0
+offset_top = 311.0
+offset_right = 153.0
+offset_bottom = 684.0
+scale = Vector2(0.7, 0.7)
+mouse_filter = 2
+
+[node name="Label" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label9")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label2")
+focus_next = NodePath("../Label2")
+focus_previous = NodePath("../Label9")
+theme = ExtResource("16_2w2we")
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label2" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label3")
+focus_next = NodePath("../Label3")
+theme = ExtResource("16_2w2we")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label3" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label2")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label4")
+focus_next = NodePath("../Label4")
+theme = ExtResource("16_2w2we")
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label4" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label3")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label5")
+focus_next = NodePath("../Label5")
+theme = ExtResource("16_2w2we")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label5" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label4")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label6")
+focus_next = NodePath("../Label6")
+theme = ExtResource("16_2w2we")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label6" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label5")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label7")
+focus_next = NodePath("../Label7")
+theme = ExtResource("16_2w2we")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label7" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label6")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label8")
+focus_next = NodePath("../Label8")
+theme = ExtResource("16_2w2we")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label8" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label7")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label9")
+focus_next = NodePath("../Label9")
+theme = ExtResource("16_2w2we")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label9" type="LineEdit" parent="Control/Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label8")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label")
+focus_next = NodePath("../Label")
+theme = ExtResource("16_2w2we")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true

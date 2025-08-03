@@ -40,8 +40,8 @@ func data_update()-> void:
 	Nsuit.frame = get_suit(card.data["suit"])
 	pass	
 	
-func render_update(expend_render_property:Dictionary = {})->void:
-	if card.area.real_card_pool.size()>12:
+func render_update(render_event:RenderEvent = RenderEvent.new())->void:
+	if card.area.card_pool.size()>12 && NverticalName.text.length() <= 4 :
 		NverticalName.visible = true
 	else:
 		NverticalName.visible = false

@@ -25,12 +25,12 @@ func _physics_process(delta: float) -> void:
 			swap_cards()
 			pending_swap = false
 
-func render_update(expend:Dictionary = {})->void:
+func render_update(render_event:RenderEvent = RenderEvent.new())->void:
 	target_position = GlobalUIAnimation.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
-	tween_update(expend)
+	tween_update(render_event)
 
-func tween_update(expend:Dictionary = {})->void:
-	card_move(expend)
+func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
+	card_move(render_event)
 
 func _into_area()->void:
 	area_target_position = original_position - Vector2(0, 80)
@@ -89,7 +89,7 @@ func card_move_rotate(card:RenderCard, _target_position:Vector2)->void:
 	var _target_rotation = rotation_sign * rotation_ratio * max_rotation
 	GlobalUIAnimation.tween_animations(card, {"rotation": _target_rotation}, rotate_time)
 
-func card_move(expend:Dictionary = {})-> void:
+func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
 	if area.card_pool.size() == 0||target_position.size()==0:
 		return
 	for i in range(0,area.card_pool.size()):
@@ -99,7 +99,7 @@ func card_move(expend:Dictionary = {})-> void:
 		if card.selected:
 			_target_position.y += -40.0
 		if !card.dragged:
-			if expend.has("rotate") && expend["rotate"]:
+			if render_event.config.get("rotate"):
 				card_move_rotate(card,_target_position)
 				GlobalUIAnimation.tween_animations(card,{"position":_target_position},time).finished.connect(card_move_rotate.bind(card,_target_position))
 			else:

@@ -8,8 +8,8 @@ var area_name:String
 var on_select_list:Array[int]
 var select_limit:int = 1
 var init_child_count:int
-signal render_requested(expend_render_property)
-signal tween_requested(expend_render_property)
+signal render_requested(render_event:RenderEvent)
+signal tween_requested(render_event:RenderEvent)
 signal selected
 
 func _ready():
@@ -20,12 +20,12 @@ func _ready():
 func ready_expand()->void:
 	pass
 
-func render_update(expend_render_property:Dictionary={})-> void:
-	emit_signal("render_requested",expend_render_property)
+func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
+	emit_signal("render_requested",render_event)
 	pass
 	
-func tween_update(expend_render_property:Dictionary={})->void:
-	emit_signal("tween_requested",expend_render_property)
+func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
+	emit_signal("tween_requested",render_event)
 	pass
 	
 func cards_add(cards:Array[Dictionary])->void:
@@ -127,4 +127,4 @@ func move_card_to_index(current_pool_id: int, target_index: int , expend_render_
 	card_id_to_pool_id[moved_card.data["id"]] = target_index
 	for i in range(min(target_index, current_pool_id), max(target_index, current_pool_id) + 1):
 		move_child(card_pool[i], i + init_child_count)
-	render_update(expend_render_property)
+	render_update(RenderEvent.new().set_config(expend_render_property))

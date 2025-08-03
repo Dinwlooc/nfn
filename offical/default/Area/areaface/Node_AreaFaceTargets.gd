@@ -14,11 +14,11 @@ func ready_expand()->void:
 	render_update()
 	pass
 
-func render_update(expend_render_property:Dictionary = {}):
+func render_update(render_event:RenderEvent = RenderEvent.new()):
 	target_position = GlobalUIAnimation.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
 	tween_update()
 
-func tween_update(expend_render_property:Dictionary = {}):
+func tween_update(render_event:RenderEvent = RenderEvent.new()):
 	card_move()
 
 func _into_area():
