@@ -11,6 +11,9 @@ var init_child_count:int
 signal render_requested(render_event:RenderEvent)
 signal tween_requested(render_event:RenderEvent)
 signal selected
+class DefaultArea:
+	const HAND = "areahand"
+	const TARGETS = "areatargets"
 
 func _ready():
 	init_child_count = get_child_count()

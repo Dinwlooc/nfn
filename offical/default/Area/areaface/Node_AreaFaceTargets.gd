@@ -4,7 +4,7 @@ var original_position
 var original_size
 var area_target_position:Vector2
 var area_target_size:Vector2
-const time = 0.35
+const TWEEN_TIME = 0.35
 
 func ready_expand()->void:
 	original_position = position
@@ -35,5 +35,5 @@ func card_move()-> void:
 		var card:RenderCard = area.card_pool[i]
 		var card_position = card.position
 		var _target_position = target_position[i]
-		GlobalUIAnimation.tween_animations(card,{"position":_target_position},time)
+		GlobalUIAnimation.tween_animations(card,{"position":_target_position},TWEEN_TIME)
 	pass

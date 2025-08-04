@@ -88,9 +88,9 @@ card_id_to_pool_id = Dictionary[int, int]({
 })
 
 [node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("14_8v20q")]
-offset_top = -156.0
+offset_top = -173.0
 offset_right = 1359.0
-offset_bottom = 193.0
+offset_bottom = 181.0
 mouse_filter = 1
 
 [node name="RenderCard" type="Control" parent="Control/AreaTargets" node_paths=PackedStringArray("cardface", "area")]

@@ -18,8 +18,12 @@ var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var path:Dictionary
 @export var data:Dictionary
-
-var type:String = "void"
+class DefaultKey:
+	const TYPE = "type"
+class DefaultType:
+	const ATTACK = "attack"
+	const VOID = "void"
+var type:String = DefaultType.VOID
 signal select
 signal drag
 
@@ -31,8 +35,8 @@ func _ready()-> void:
 
 func data_update(new_card_data:Dictionary)-> void:
 	data = new_card_data
-	if !(cardface)||new_card_data["type"] != cardface.type:
-		type = new_card_data["type"]
+	if !(cardface)||new_card_data[DefaultKey.TYPE] != cardface.type:
+		type = new_card_data[DefaultKey.TYPE]
 		_load_scene_by_type(type)
 	cardface.data_update()
 	pass
@@ -45,7 +49,7 @@ func _load_scene_by_type(card_type: String) -> void:
 	if cardface:
 		remove_child(cardface)
 		cardface.queue_free()
-	cardface = load(path.get(card_type, path["void"])).instantiate()
+	cardface = load(path.get(card_type, path[DefaultType.VOID])).instantiate()
 	if cardface:
 		cardface.card = self
 		add_child(cardface)

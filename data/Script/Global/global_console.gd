@@ -8,7 +8,6 @@ var card_on_drag:Dictionary
 var timer:GameTimer
 var system:System
 var command_list: Dictionary = load("res://data/Script/Global/command.tres").command as Dictionary
-#godot会按照键的名称自动排列
 signal global_dragged
 signal c_start
 signal c_draw

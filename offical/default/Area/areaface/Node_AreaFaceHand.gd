@@ -4,11 +4,11 @@ var original_position
 var original_size
 var area_target_position:Vector2
 var area_target_size:Vector2
-const time = 0.35
 var swap_cooldown: float = 0.0
 var pending_swap = false
 const SWAP_COOLDOWN_DURATION: float = 0.3
 const SWAP_DELTA:float = 0.07
+const TWEEN_TIME = 0.35
 
 func ready_expand()->void:
 	original_position = position
@@ -39,7 +39,7 @@ func _into_area()->void:
 		"position":area_target_position,
 		"size":area_target_size,
 		}
-	GlobalUIAnimation.tween_animations(self,list,time)
+	GlobalUIAnimation.tween_animations(self,list,TWEEN_TIME)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
 	pass
 	
@@ -50,7 +50,7 @@ func _outto_area()->void:
 		"position":area_target_position,
 		"size":area_target_size,
 		}
-	GlobalUIAnimation.tween_animations(self,list,time)
+	GlobalUIAnimation.tween_animations(self,list,TWEEN_TIME)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
 func card_move_expand()->void:
@@ -60,7 +60,7 @@ func card_move_expand()->void:
 func dragging_move(card:RenderCard)->void:
 	var _target_position = get_global_mouse_position()
 	card_move_rotate(card,_target_position)
-	GlobalUIAnimation.tween_animations(card,{"position":_target_position},time).finished.connect(card_move_rotate.bind(card,_target_position))
+	GlobalUIAnimation.tween_animations(card,{"position":_target_position},TWEEN_TIME).finished.connect(card_move_rotate.bind(card,_target_position))
 	call_deferred("swap_cards")
 	
 func swap_cards()->void:
@@ -101,7 +101,7 @@ func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
 		if !card.dragged:
 			if render_event.config.get("rotate"):
 				card_move_rotate(card,_target_position)
-				GlobalUIAnimation.tween_animations(card,{"position":_target_position},time).finished.connect(card_move_rotate.bind(card,_target_position))
+				GlobalUIAnimation.tween_animations(card,{"position":_target_position},TWEEN_TIME).finished.connect(card_move_rotate.bind(card,_target_position))
 			else:
-				GlobalUIAnimation.tween_animations(card,{"position":_target_position},time)
+				GlobalUIAnimation.tween_animations(card,{"position":_target_position},TWEEN_TIME)
 	pass
