@@ -60,7 +60,8 @@ func card_move_expand()->void:
 func dragging_move(card:RenderCard)->void:
 	var _target_position = get_global_mouse_position()
 	card_move_rotate(card,_target_position)
-	GlobalUIAnimation.tween_animations(card,{"position":_target_position},TWEEN_TIME).finished.connect(card_move_rotate.bind(card,_target_position))
+	var tween =  GlobalUIAnimation.tween_animations(card,{"position":_target_position},TWEEN_TIME)
+	tween.finished.connect(card_move_rotate.bind(card,_target_position))
 	call_deferred("swap_cards")
 	
 func swap_cards()->void:
@@ -68,14 +69,14 @@ func swap_cards()->void:
 		if swap_cooldown < SWAP_COOLDOWN_DURATION - SWAP_DELTA:
 			pending_swap = true
 		return
-	hover_card()
-	if hovering_id != -1 && GlobalConsole.card_on_drag && GlobalConsole.card_on_drag["area"] == area:
+	if  GlobalConsole.card_on_drag && GlobalConsole.card_on_drag["area"] == area:
 		var drag_card = GlobalConsole.card_on_drag["card"]
-		area.card_pool[hovering_id].hovering = false
-		var drag_id = drag_card.pool_id
-		area.move_card_to_index(drag_id, hovering_id,{"rotate" = true})
-		hovering_id = -1
-		swap_cooldown = SWAP_COOLDOWN_DURATION
+		hover_detect_when_dragging(drag_card)
+		if hovering_card:
+			hovering_card.hovering = false
+			area.move_card_to_index(drag_card.pool_id, hovering_card.pool_id,RenderEvent.new().set_config({"rotate" = true}))
+			hovering_card = null
+			swap_cooldown = SWAP_COOLDOWN_DURATION
 
 func card_move_rotate(card:RenderCard, _target_position:Vector2)->void:
 	# 计算水平距离差

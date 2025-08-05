@@ -1,7 +1,7 @@
 extends Control
 class_name RenderAreaFace
 
-var hovering_id:int = -1
+var hovering_card:RenderCard = null
 var target_position:Array
 var area:RenderArea
 var in_area:bool = false
@@ -13,6 +13,8 @@ func _ready()->void:
 		area = get_parent_control()
 		area.render_requested.connect(render_update)
 		area.tween_requested.connect(tween_update)
+		area.card_added.connect(connect_card_signals)
+		area.card_removed.connect(disconnect_card_signals)
 	into_area.connect(_into_area)
 	outto_area.connect(_outto_area)
 	ready_expand()
@@ -35,7 +37,7 @@ func _input(event)->void:
 		if GlobalConsole.card_on_drag&&GlobalConsole.card_on_drag["area"] == area:
 			dragging_move(GlobalConsole.card_on_drag["card"])
 		if Rect2(Vector2.ZERO,size).has_point(mouse_position):
-			hover_card()
+			#hover_card()
 			if !in_area:
 				emit_signal("into_area")
 			in_area = true
@@ -45,37 +47,31 @@ func _input(event)->void:
 			in_area = false
 		pass
 
-func hover_card()->void:
-	var mouse_position = get_global_mouse_position()
-		# 检查当前悬停卡片是否有效或被拖拽
-	if hovering_id >= 0 && (hovering_id >= area.card_pool.size() || area.card_pool[hovering_id].dragged):
-		if hovering_id < area.card_pool.size():
-			area.card_pool[hovering_id].hovering = false
-		hovering_id = -1
-	# 如果当前有悬停卡片但不再悬停或被拖拽
-	if hovering_id != -1 && !area.card_pool[hovering_id].is_hovering(mouse_position):
-		area.card_pool[hovering_id].hovering = false
-		hovering_id = -1
-	if hovering_id == -1:
-		for i in range(area.card_pool.size()-1,-1,-1):
-			if !area.card_pool[i].dragged && area.card_pool[i].is_hovering(mouse_position):
-				hovering_id = i
-				area.card_pool[hovering_id].hovering = true
-				break
+func connect_card_signals(card: RenderCard):
+	if card.has_signal("mouse_entered"):
+		card.mouse_entered.connect(_on_card_mouse_entered.bind(card))
+	if card.has_signal("mouse_exited"):
+		card.mouse_exited.connect(_on_card_mouse_exited.bind(card))
+
+# 当卡牌从card_pool移除时，您需要调用此方法断开信号
+func disconnect_card_signals(card: RenderCard):
+	if card.is_connected("mouse_entered", _on_card_mouse_entered):
+		card.mouse_entered.disconnect(_on_card_mouse_entered)
+	if card.is_connected("mouse_exited", _on_card_mouse_exited):
+		card.mouse_exited.disconnect(_on_card_mouse_exited)
+
+func _on_card_mouse_entered(card: RenderCard):
+	if card.dragged:
 		return
-	elif hovering_id < area.card_pool.size()-1:
-		# 从当前悬停卡片上方开始检查
-		var new_hover_id = -1
-		for i in range(hovering_id + 1, area.card_pool.size()):
-			if !area.card_pool[i].dragged:
-				if area.card_pool[i].is_hovering(mouse_position):
-					new_hover_id = i
-				else:
-					break#利用规范排序的性质
-		if new_hover_id != -1:
-			area.card_pool[hovering_id].hovering = false
-			hovering_id = new_hover_id
-			area.card_pool[hovering_id].hovering = true
+	if hovering_card and hovering_card != card:
+		hovering_card.hovering = false
+	hovering_card = card
+	card.hovering = true
+
+func _on_card_mouse_exited(card: RenderCard):
+	if hovering_card == card:
+		card.hovering = false
+		hovering_card = null
 
 func card_move()-> void:
 	if area.card_pool.size() == 0||target_position.size()==0:
@@ -87,7 +83,7 @@ func card_move()-> void:
 			GlobalUIAnimation.tween_animations(area.card_pool[i],{"position":_target_position})
 	pass
 
-func dragging_move(card)->void:
+func dragging_move(card:RenderCard)->void:
 	pass
 
 func _into_area()->void:
@@ -95,3 +91,45 @@ func _into_area()->void:
 	
 func _outto_area()->void:
 	pass
+
+func hover_detect_when_dragging(dragged_card:RenderCard)->void:
+	var mouse_position = get_global_mouse_position()
+	if !hovering_card && dragged_card.is_hovering(mouse_position):
+		for i in range(dragged_card.pool_id ,-1,-1):
+			if !area.card_pool[i].dragged && area.card_pool[i].is_hovering(mouse_position):
+				hovering_card = area.card_pool[i]
+				hovering_card.hovering = true
+				break
+		return
+
+#func hover_card()->void:
+	#var mouse_position = get_global_mouse_position()
+		## 检查当前悬停卡片是否有效或被拖拽
+	#if hovering_id >= 0 && (hovering_id >= area.card_pool.size() || area.card_pool[hovering_id].dragged):
+		#if hovering_id < area.card_pool.size():
+			#area.card_pool[hovering_id].hovering = false
+		#hovering_id = -1
+	## 如果当前有悬停卡片但不再悬停或被拖拽
+	#if hovering_id != -1 && !area.card_pool[hovering_id].is_hovering(mouse_position):
+		#area.card_pool[hovering_id].hovering = false
+		#hovering_id = -1
+	#if hovering_id == -1:
+		#for i in range(area.card_pool.size()-1,-1,-1):
+			#if !area.card_pool[i].dragged && area.card_pool[i].is_hovering(mouse_position):
+				#hovering_id = i
+				#area.card_pool[hovering_id].hovering = true
+				#break
+		#return
+	#elif hovering_id < area.card_pool.size()-1:
+		## 从当前悬停卡片上方开始检查
+		#var new_hover_id = -1
+		#for i in range(hovering_id + 1, area.card_pool.size()):
+			#if !area.card_pool[i].dragged:
+				#if area.card_pool[i].is_hovering(mouse_position):
+					#new_hover_id = i
+				#else:
+					#break#利用规范排序的性质
+		#if new_hover_id != -1:
+			#area.card_pool[hovering_id].hovering = false
+			#hovering_id = new_hover_id
+			#area.card_pool[hovering_id].hovering = true

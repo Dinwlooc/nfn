@@ -1,22 +1,21 @@
 extends RefCounted
 class_name RenderEvent
 
-var type:DefaultType = DefaultType.NULL
+var type:String = DefaultType.NULL
 var config:Dictionary
-enum DefaultType {
-	NULL,
-	INTO_AREA,
-	OUTTO_AREA,
-	SELECT,
-}
+class DefaultType:
+	const NULL = "null"
+	const INTO_AREA = "into_area"
+	const OUTTO_AREA = "outto_area"
+	const SELECT = "select"
 
-func _init(init_type:DefaultType = DefaultType.NULL) -> void:
+func _init(init_type:String = DefaultType.NULL) -> void:
 	type = init_type
 
 func set_config(new_config:Dictionary)->RenderEvent:
 	config = new_config
 	return self
 
-func set_type(new_type:DefaultType)->RenderEvent:
+func set_type(new_type:String)->RenderEvent:
 	type = new_type
 	return self

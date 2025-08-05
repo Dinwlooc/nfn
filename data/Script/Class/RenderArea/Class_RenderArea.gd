@@ -10,7 +10,9 @@ var select_limit:int = 1
 var init_child_count:int
 signal render_requested(render_event:RenderEvent)
 signal tween_requested(render_event:RenderEvent)
-signal selected
+signal selected()
+signal card_added(card:RenderCard)
+signal card_removed(card:RenderCard)
 class DefaultArea:
 	const HAND = "areahand"
 	const TARGETS = "areatargets"
@@ -41,7 +43,7 @@ func cards_add(cards:Array[Dictionary])->void:
 			add_child(new_card)
 			new_card.data_update(cards[i])
 			card_id_to_pool_id[ cards[i]["id"] ] = array_position
-
+			card_added.emit(new_card)
 	render_update()
 	pass
 
@@ -96,7 +98,7 @@ func swap_cards(pool_id_a:int, pool_id_b:int)->void:
 	move_child(card_pool[pool_id_b], pool_id_b+init_child_count)
 	render_update()
 
-func move_card_to_index(current_pool_id: int, target_index: int , expend_render_property:Dictionary={}) -> void:
+func move_card_to_index(current_pool_id: int, target_index: int , render_event:RenderEvent = RenderEvent.new()) -> void:
 	# 边界检查
 	if current_pool_id < 0 || current_pool_id >= card_pool.size():
 		push_error("Invalid current_pool_id: " + str(current_pool_id))
@@ -129,4 +131,4 @@ func move_card_to_index(current_pool_id: int, target_index: int , expend_render_
 	card_id_to_pool_id[moved_card.data["id"]] = target_index
 	for i in range(min(target_index, current_pool_id), max(target_index, current_pool_id) + 1):
 		move_child(card_pool[i], i + init_child_count)
-	render_update(RenderEvent.new().set_config(expend_render_property))
+	render_update(render_event)
