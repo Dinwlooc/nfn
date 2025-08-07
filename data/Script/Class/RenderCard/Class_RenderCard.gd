@@ -20,6 +20,7 @@ var path:Dictionary
 @export var data:Dictionary
 class DefaultKey:
 	const TYPE = "type"
+	const ID = "id"
 class DefaultType:
 	const ATTACK = "attack"
 	const VOID = "void"
@@ -88,3 +89,8 @@ func is_hovering(mouse_pos):
 		return true
 	else:
 		return false
+
+func get_id()->int:
+	if !data.has(DefaultKey.ID):
+		return -1
+	return data.get(DefaultKey.ID)

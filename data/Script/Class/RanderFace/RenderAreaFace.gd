@@ -53,8 +53,10 @@ func connect_card_signals(card: RenderCard):
 	if card.has_signal("mouse_exited"):
 		card.mouse_exited.connect(_on_card_mouse_exited.bind(card))
 
-# 当卡牌从card_pool移除时，您需要调用此方法断开信号
 func disconnect_card_signals(card: RenderCard):
+	if hovering_card == card:
+		card.hovering = false
+		hovering_card = null 
 	if card.is_connected("mouse_entered", _on_card_mouse_entered):
 		card.mouse_entered.disconnect(_on_card_mouse_entered)
 	if card.is_connected("mouse_exited", _on_card_mouse_exited):

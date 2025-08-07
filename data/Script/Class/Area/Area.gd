@@ -17,5 +17,7 @@ func set_player(new_player:Player):
 	player = new_player
 	return self
 
-
+func cards_remove()->Array[Card]:
+	#未实现，返回值是移出的卡牌数组。
+	return [null]
 	

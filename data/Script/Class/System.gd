@@ -1,7 +1,7 @@
 extends Node
 class_name System
 
-enum GameStage { NULL, START, DRAW }
+enum GameStage { NULL, START, DRAW , MAIN , DISCARD , END}
 var game_stages:Dictionary
 var game_stage: GameStage = GameStage.NULL
 var areaAttack = AreaAttack.new()

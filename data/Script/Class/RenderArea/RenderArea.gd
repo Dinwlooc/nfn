@@ -50,8 +50,7 @@ func cards_add(cards:Array[Dictionary])->void:
 func on_select(pool_id:int)-> void:
 	var card:RenderCard = card_pool[pool_id]
 	var card_id:int = -1
-	if card.data.has("id"):
-		card_id = card.data["id"]
+	card_id = card.get_id()
 	if card.selected:
 		card.selected = 0
 		on_select_list.erase(card_id)
@@ -92,8 +91,8 @@ func swap_cards(pool_id_a:int, pool_id_b:int)->void:
 	card_pool[pool_id_a].pool_id = pool_id_a
 	card_pool[pool_id_b].pool_id = pool_id_b
 	# 更新映射
-	card_id_to_pool_id[card_pool[pool_id_a].data["id"]] = pool_id_a
-	card_id_to_pool_id[card_pool[pool_id_b].data["id"]] = pool_id_b
+	card_id_to_pool_id[card_pool[pool_id_a].get_id()] = pool_id_a
+	card_id_to_pool_id[card_pool[pool_id_b].get_id()] = pool_id_b
 	move_child(card_pool[pool_id_a], pool_id_a+init_child_count)
 	move_child(card_pool[pool_id_b], pool_id_b+init_child_count)
 	render_update()
@@ -125,10 +124,10 @@ func move_card_to_index(current_pool_id: int, target_index: int , render_event:R
 		var new_id = card.pool_id - 1 if current_pool_id < target_index else card.pool_id + 1
 		card_pool[new_id] = card
 		card.pool_id = new_id
-		card_id_to_pool_id[card.data["id"]] = new_id
+		card_id_to_pool_id[card.get_id()] = new_id
 	card_pool[target_index] = moved_card
 	moved_card.pool_id = target_index
-	card_id_to_pool_id[moved_card.data["id"]] = target_index
+	card_id_to_pool_id[moved_card.get_id()] = target_index
 	for i in range(min(target_index, current_pool_id), max(target_index, current_pool_id) + 1):
 		move_child(card_pool[i], i + init_child_count)
 	render_update(render_event)
