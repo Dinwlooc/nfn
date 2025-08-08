@@ -3,7 +3,7 @@ extends Node
 var server = WebSocketMultiplayerPeer.new()
 var users:Array[User]
 var url:String
-var id:int
+var id:int = -1
 signal peer_update(peer_id:int)
 
 func _ready()->void:
@@ -17,6 +17,9 @@ func _process(delta)->void:
 	if Engine.get_process_frames() % 5 == 0:
 		server.poll()
 	pass
+
+func get_id()->int:
+	return id
 
 #########
 
@@ -86,7 +89,7 @@ func close()->void:
 const _PACK_WHITELIST = [
 	"url"
 ]
- 
+ ###########
 # 序列化方法：将数据打包为二进制
 func pack_server() -> PackedByteArray:
 	var data_dict :Dictionary= {
@@ -106,20 +109,10 @@ func unpack_server(bytes: PackedByteArray):
 	return self
 
 func pack_card(card:Card) -> PackedByteArray:
-	var serialized_data = card.data.duplicate(true)
-	if card.data.has("power"):
-		serialized_data["modified_power"] = card.get_attribute("power")
-	if card.data.has("cost"):
-		serialized_data["modified_cost"] = card.get_attribute("cost")
-	return var_to_bytes(serialized_data)  # Godot内置序列化方法
+	return card.serialize() 
 	
 func unpack_card(bytes: PackedByteArray)->Dictionary:
-	var data_dict = bytes_to_var(bytes)  # 反序列化字典
-	# 验证数据有效性
-	if not data_dict is Dictionary:
-		push_error("Invalid data format: Expected Dictionary")
-		return {}
-	return data_dict
+	return Card.deserialize(bytes)
 
 func serialize_cards(cards:Array[Card])-> PackedByteArray:
 	return var_to_bytes(cards.map(pack_card))
@@ -147,7 +140,8 @@ func cards_remove_rpc(area: Area, uids: Array[String])->void:
 @rpc("authority", "call_local", "reliable")
 func cards_add_receive(area_name: String, data: PackedByteArray)->void:
 	if GlobalConsole.renderarea.has(area_name):
-		GlobalConsole.renderarea[area_name].cards_add(deserialize_cards(data))
+		var cards_data:Array[Dictionary] = deserialize_cards(data)
+		GlobalConsole.renderarea[area_name].cards_add(cards_data)
 
 @rpc("authority", "call_local", "reliable")
 func cards_change_receive(area_name: String, data: PackedByteArray)->void:

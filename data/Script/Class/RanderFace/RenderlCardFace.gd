@@ -13,16 +13,8 @@ func data_update()->void:
 func render_update(render_event:RenderEvent = RenderEvent.new())->void:
 	pass
 	
-func get_suit(suit:String) ->int:
-	if suit == "Heart":
-		return 0
-	if suit == "Diamond":
-		return 1
-	if suit == "Spade":
-		return 2
-	if suit == "Club":
-		return 3
-	return 0
+func get_suit(suit:HandCard.Suit) ->int:
+	return suit
 
 func get_card_main_icon(card_name:String) -> Texture:
 	return load(GlobalConfig.get_resource_path("card_main_icon",card_name)) as Texture

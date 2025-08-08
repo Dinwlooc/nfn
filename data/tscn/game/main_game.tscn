@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://offical/default/Area/areaface/areaface_self.tscn" id="11_4k47o"]
 [ext_resource type="Script" uid="uid://boamtyqq4276a" path="res://data/Script/Class/RenderArea/RenderAreaSelf.gd" id="11_5huyi"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://offical/default/Area/areaface/areaface_self_properties.tscn" id="12_f8lnr"]
-[ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://data/Script/Class/RenderCard/Class_RenderCard.gd" id="13_4k47o"]
+[ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://data/Script/Class/RenderCard/RenderCard.gd" id="13_4k47o"]
 [ext_resource type="PackedScene" uid="uid://s0d734yjh7uc" path="res://offical/default/Character/charactercard/charactertargetcard.tscn" id="14_2w2we"]
 [ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://offical/default/Area/areaface/areaface_targets.tscn" id="14_8v20q"]
 [ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://data/Script/Class/RenderArea/RenderAreaTargets.gd" id="14_a6oxl"]
