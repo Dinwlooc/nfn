@@ -24,7 +24,7 @@ func tween_update(render_event:RenderEvent = RenderEvent.new()):
 func _into_area()->void:
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
 	pass
-	
+
 func _outto_area()->void:
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
@@ -35,5 +35,5 @@ func card_move()-> void:
 		var card:RenderCard = area.card_pool[i]
 		var card_position = card.position
 		var _target_position = target_position[i]
-		GlobalUIAnimation.tween_animations(card,{"position":_target_position},TWEEN_TIME)
+		GlobalUIAnimation.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
 	pass

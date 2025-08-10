@@ -4,6 +4,14 @@ class_name HandCard
 @export var power:int
 @export var cost:int
 @export var suit:Suit
+enum SubKeys {
+	POWER = BaseKeys.END ,
+	COST ,
+	SUIT ,
+	MODIFIED_POWER ,
+	MODIFIED_COST ,
+	END
+}
 enum Suit{
 	HEART,
 	DIAMOND,
@@ -17,10 +25,10 @@ func set_suit(newsuit:Suit)->HandCard:
 	return self
 
 func serialize_expand(serialized_data:Dictionary)->Dictionary:
-	serialized_data.set("power",power)
-	serialized_data.set("cost",cost)
-	serialized_data.set("suit",suit)
-	serialized_data["modified_power"] = get_attribute(&"power")
-	serialized_data["modified_cost"] = get_attribute(&"cost")
+	serialized_data.set(SubKeys.POWER,power)
+	serialized_data.set(SubKeys.COST,cost)
+	serialized_data.set(SubKeys.SUIT,suit)
+	serialized_data[SubKeys.MODIFIED_POWER] = get_attribute(&"power")
+	serialized_data[SubKeys.MODIFIED_COST] = get_attribute(&"cost")
 	serialized_data = serialize_expand_instance(serialized_data)
 	return serialized_data

@@ -43,7 +43,7 @@ func cards_add(cards:Array[Dictionary])->void:
 			card_pool.append(new_card)
 			add_child(new_card)
 			new_card.data_update(cards[i])
-			card_id_to_pool_id[cards[i][&"id"]] = array_position
+			card_id_to_pool_id[cards[i][Card.BaseKeys.ID]] = array_position
 			card_added.emit(new_card)
 	render_update()
 	pass

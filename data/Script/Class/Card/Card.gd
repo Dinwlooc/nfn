@@ -6,14 +6,21 @@ class_name Card
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 var id:int
 
+enum BaseKeys {
+	ID ,
+	NAME ,
+	TYPE ,
+	END #用于调整子类枚举的标识符，不应用于字典键
+}
+
 func get_attribute(attribute: StringName) -> int:
 	return attributeModifiers.modify(attribute,self.get(attribute))
 
 func serialize()->PackedByteArray:
 	var serialized_data:Dictionary
-	serialized_data.set(&"id",id)
-	serialized_data.set(&"name",name)
-	serialized_data.set(&"type",type)
+	serialized_data.set(BaseKeys.ID,id)
+	serialized_data.set(BaseKeys.NAME,name)
+	serialized_data.set(BaseKeys.TYPE,type)
 	serialize_expand(serialized_data)
 	return var_to_bytes(serialized_data)
 	
