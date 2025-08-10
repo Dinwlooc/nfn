@@ -106,18 +106,12 @@ func unpack_server(bytes: PackedByteArray):
 	url = data_dict[PackKey.URL]
 	return self
 
-func pack_card(card:Card) -> PackedByteArray:
-	return card.serialize() 
-	
-func unpack_card(bytes: PackedByteArray)->Dictionary:
-	return Card.deserialize(bytes)
-
 func serialize_cards(cards:Array[Card])-> PackedByteArray:
-	return var_to_bytes(cards.map(pack_card))
+	return var_to_bytes(cards.map(func(card):return card.serialize()))
 	
 func deserialize_cards(serialized_data: PackedByteArray)->Array[Dictionary]:
 	var card_data_array:Array[Dictionary]
-	card_data_array.append_array(bytes_to_var(serialized_data).map(unpack_card))
+	card_data_array.append_array(bytes_to_var(serialized_data).map(Card.deserialize))
 	if not card_data_array is Array[Dictionary]:
 		push_error("Invalid data format: Expected Array[Dictionary]")
 		return [{}]
@@ -134,6 +128,15 @@ func cards_change_rpc(area: Area, cards: Array[Card])->void:
 func cards_remove_rpc(area: Area, uids: Array[String])->void:
 	rpc_id(area.player.id, &"cards_remove_receive", area.area_name, uids)
 
+func upload_operation_event(serialized_event: PackedByteArray) -> void:
+	var target = MultiplayerPeer.TARGET_PEER_SERVER
+	rpc_id(target, "receive_operation_event", serialized_event,)
+
+@rpc("any_peer", "call_local", "reliable")
+func receive_operation_event(serialized_event: PackedByteArray) -> void:
+	var event_dict = OperationEvent.deserialize(serialized_event)
+	event_dict[OperationEvent.OpKey.PEER_ID] = get_tree().get_multiplayer().get_remote_sender_id()
+	pass #字典应该传入System，以生成行为事件。待实现。
 # 新增的RPC接收函数（移除原来的 cards_rpc_receive）
 @rpc("authority", "call_local", "reliable")
 func cards_add_receive(area_name: String, data: PackedByteArray)->void:

@@ -12,7 +12,6 @@ func _ready() -> void:
 	
 func _setup_transition_rect() -> void:
 	_transition_rect = ColorRect.new()
-	_transition_rect.name = "GlobalTransition"
 	_transition_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_transition_rect.z_index = 100
 	add_child(_transition_rect)
@@ -25,16 +24,16 @@ func _setup_transition_rect() -> void:
 func fade_in(duration:float = 1.5) -> void:
 	if fade_in_tween:
 		fade_in_tween.kill()
-	emit_signal("fade_in_started")
-	fade_in_tween = GlobalUIAnimation.tween_animations(_transition_rect, {"color": Color.BLACK}, duration)
-	fade_in_tween.finished.connect(emit_signal.bind("fade_in_completed"))
+	fade_in_started.emit()
+	fade_in_tween = GlobalUIAnimation.tween_animations(_transition_rect, {^"color": Color.BLACK}, duration)
+	fade_in_tween.finished.connect(emit_signal.bind(&"fade_in_completed"))
 # 播放淡出效果
 func fade_out(duration:float = 1.5) -> void:
 	if fade_out_tween:
 		fade_out_tween.kill()
-	emit_signal("fade_out_started")
-	fade_out_tween = GlobalUIAnimation.tween_animations(_transition_rect, {"color": Color(Color.BLACK, 0)},duration)
-	fade_out_tween.finished.connect(emit_signal.bind("fade_out_completed"))
+	fade_out_started.emit()
+	fade_out_tween = GlobalUIAnimation.tween_animations(_transition_rect, {^"color": Color(Color.BLACK, 0)},duration)
+	fade_out_tween.finished.connect(emit_signal.bind(&"fade_out_completed"))
 
 # 带转场的场景切换
 func change_scene_with_transition(scene_path: String, fade_in_duration:float = 0.4, fade_out_duration:float = 2.5) -> void:

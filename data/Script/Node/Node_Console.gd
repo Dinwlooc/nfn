@@ -92,7 +92,7 @@ func _suggestion_submitted(suggestion:String):
 	Ninput.call_deferred(&"grab_focus")
 	Ninput.caret_column = suggestion.length() + 1
 	current_page = 0
-	Ninput.emit_signal(&"text_changed",Ninput.text)
+	Ninput.text_changed.emit(Ninput.text)
 
 func _on_suggestion_clicked(event: InputEvent, index: int):
 	if event is InputEventMouseButton and event.pressed && event.button_mask == 1:
@@ -188,7 +188,7 @@ func _input(event):
 					else:
 						Ninput.focus_next = Ninput.get_path()
 						if Ninput.text == "":
-							Ninput.emit_signal(&"text_changed","c")
+							Ninput.text_changed.emit("c")
 				KEY_UP:
 					navigate_history(true)
 				KEY_DOWN:

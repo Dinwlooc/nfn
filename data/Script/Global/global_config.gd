@@ -90,7 +90,7 @@ func clear_registry() -> void:
 ## 重新加载所有资源包
 func reload_resource_packs() -> void:
 	load_all_resource_packs()
-	emit_signal(&"resource_packs_reloaded")
+	resource_packs_reloaded.emit()
 
 func _load_config(path: String) -> ConfigFile:
 	var config = ConfigFile.new()

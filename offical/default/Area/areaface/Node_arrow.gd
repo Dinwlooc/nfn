@@ -13,7 +13,7 @@ func _ready() -> void:
 		var manager = CurveArrowManager.new()
 		add_child(manager)
 		curve_managers.append(manager)
-	call_deferred("connect_signal")
+	call_deferred(&"connect_signal")
 	
 func _physics_process(delta: float) -> void:
 	if draw_cooldown > 0:
@@ -38,7 +38,7 @@ func connect_signal()->void:
 func draw_arrow() -> void:
 	pending_draw = false
 	clear_arrow()
-	if GlobalConsole.card_on_drag.get("card") != null:
+	if GlobalConsole.card_on_drag:
 		return
 	var start_points = get_start_point_array()
 	if start_points.is_empty():

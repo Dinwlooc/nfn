@@ -16,6 +16,7 @@ signal card_removed(card:RenderCard)
 class DefaultArea:
 	const HAND:StringName = &"areahand"
 	const TARGETS:StringName = &"areatargets"
+	const SELF:StringName = &"areaself"
 
 func _ready():
 	init_child_count = get_child_count()
@@ -26,11 +27,11 @@ func ready_expand()->void:
 	pass
 
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
-	emit_signal(&"render_requested",render_event)
+	render_requested.emit(render_event)
 	pass
 	
 func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
-	emit_signal(&"tween_requested",render_event)
+	tween_requested.emit(render_event)
 	pass
 	
 func cards_add(cards:Array[Dictionary])->void:

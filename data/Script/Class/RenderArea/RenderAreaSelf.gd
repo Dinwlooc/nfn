@@ -2,6 +2,6 @@ extends RenderArea
 class_name RenderAreaSelf
 
 func ready_expand()->void:
-	area_name = "areaself"
-	GlobalConsole.register_renderarea("areaself",self)
+	area_name = DefaultArea.SELF
+	GlobalConsole.register_renderarea(area_name,self)
 	pass

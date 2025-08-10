@@ -31,7 +31,7 @@ func exit():
 	end_stage()
 	GlobalConsole.timer.timeout.disconnect(on_timeout)
 	GlobalConsole.timer.timer_stop()
-	emit_signal("stage_ended")
+	stage_ended.emit()
 
 func handle_operation(op_data: Dictionary):
 	pass

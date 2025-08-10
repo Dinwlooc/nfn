@@ -2,12 +2,11 @@ extends Area
 class_name AreaHand
 
 func _init():
-	area_name = "areahand"
+	area_name = &"areahand"
 
 func play()->void:
 	if card_pool[0]:
 		var settlement_cost = card_pool[0].play_cost()
-		emit_signal("cost_data",settlement_cost)
 		print("消耗：",settlement_cost)
 	pass
 	#打出手牌的方法。
