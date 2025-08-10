@@ -20,7 +20,7 @@ func serialize_expand(serialized_data:Dictionary)->Dictionary:
 	serialized_data.set("power",power)
 	serialized_data.set("cost",cost)
 	serialized_data.set("suit",suit)
-	serialized_data["modified_power"] = get_attribute("power")
-	serialized_data["modified_cost"] = get_attribute("cost")
+	serialized_data["modified_power"] = get_attribute(&"power")
+	serialized_data["modified_cost"] = get_attribute(&"cost")
 	serialized_data = serialize_expand_instance(serialized_data)
 	return serialized_data

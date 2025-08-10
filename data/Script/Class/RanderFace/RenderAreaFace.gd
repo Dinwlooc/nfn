@@ -2,7 +2,7 @@ extends Control
 class_name RenderAreaFace
 
 var hovering_card:RenderCard = null
-var target_position:Array
+var target_position:PackedVector2Array
 var area:RenderArea
 var in_area:bool = false
 signal into_area
@@ -34,32 +34,32 @@ func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 func _input(event)->void:
 	if event is InputEventMouseMotion:
 		var mouse_position = get_local_mouse_position()
-		if GlobalConsole.card_on_drag&&GlobalConsole.card_on_drag["area"] == area:
-			dragging_move(GlobalConsole.card_on_drag["card"])
+		if GlobalConsole.card_on_drag&&GlobalConsole.card_on_drag[&"area"] == area:
+			dragging_move(GlobalConsole.card_on_drag[&"card"])
 		if Rect2(Vector2.ZERO,size).has_point(mouse_position):
 			#hover_card()
 			if !in_area:
-				emit_signal("into_area")
+				emit_signal(&"into_area")
 			in_area = true
 		else:
 			if in_area:
-				emit_signal("outto_area")
+				emit_signal(&"outto_area")
 			in_area = false
 		pass
 
 func connect_card_signals(card: RenderCard):
-	if card.has_signal("mouse_entered"):
+	if card.has_signal(&"mouse_entered"):
 		card.mouse_entered.connect(_on_card_mouse_entered.bind(card))
-	if card.has_signal("mouse_exited"):
+	if card.has_signal(&"mouse_exited"):
 		card.mouse_exited.connect(_on_card_mouse_exited.bind(card))
 
 func disconnect_card_signals(card: RenderCard):
 	if hovering_card == card:
 		card.hovering = false
 		hovering_card = null 
-	if card.is_connected("mouse_entered", _on_card_mouse_entered):
+	if card.is_connected(&"mouse_entered", _on_card_mouse_entered):
 		card.mouse_entered.disconnect(_on_card_mouse_entered)
-	if card.is_connected("mouse_exited", _on_card_mouse_exited):
+	if card.is_connected(&"mouse_exited", _on_card_mouse_exited):
 		card.mouse_exited.disconnect(_on_card_mouse_exited)
 
 func _on_card_mouse_entered(card: RenderCard):
@@ -82,7 +82,7 @@ func card_move()-> void:
 		var card_position = area.card_pool[i].position
 		var _target_position = target_position[i]
 		if !area.card_pool[i].dragged:
-			GlobalUIAnimation.tween_animations(area.card_pool[i],{"position":_target_position})
+			GlobalUIAnimation.tween_animations(area.card_pool[i],{^"position":_target_position})
 	pass
 
 func dragging_move(card:RenderCard)->void:

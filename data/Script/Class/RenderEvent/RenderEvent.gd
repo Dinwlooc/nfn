@@ -12,7 +12,7 @@ class DefaultType:
 func _init(init_type:String = DefaultType.NULL) -> void:
 	type = init_type
 
-func set_config(new_config:Dictionary)->RenderEvent:
+func set_config(new_config:Dictionary[StringName,Variant])->RenderEvent:
 	config = new_config
 	return self
 

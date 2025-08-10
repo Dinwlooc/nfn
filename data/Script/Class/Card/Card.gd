@@ -6,14 +6,14 @@ class_name Card
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 var id:int
 
-func get_attribute(attribute: String) -> int:
+func get_attribute(attribute: StringName) -> int:
 	return attributeModifiers.modify(attribute,self.get(attribute))
 
 func serialize()->PackedByteArray:
 	var serialized_data:Dictionary
-	serialized_data.set("id",id)
-	serialized_data.set("name",name)
-	serialized_data.set("type",type)
+	serialized_data.set(&"id",id)
+	serialized_data.set(&"name",name)
+	serialized_data.set(&"type",type)
 	serialize_expand(serialized_data)
 	return var_to_bytes(serialized_data)
 	

@@ -5,8 +5,8 @@ var curve_managers: Array[CurveArrowManager] = []
 var draw_cooldown: float = 0.0
 var pending_draw = false
 const DRAW_COOLDOWN_DURATION: float = 0.35
-const AREA_HAND = "areahand"
-const AREA_TARGETS = "areatargets"
+const AREA_HAND:StringName = &"areahand"
+const AREA_TARGETS:StringName = &"areatargets"
 
 func _ready() -> void:
 	for i in range(1):  # 根据最大可能数量调整

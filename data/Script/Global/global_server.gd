@@ -5,6 +5,7 @@ var users:Array[User]
 var url:String
 var id:int = -1
 signal peer_update(peer_id:int)
+enum PackKey{URL}
 
 func _ready()->void:
 		multiplayer.peer_connected.connect(_peer_connected)
@@ -86,14 +87,11 @@ func close()->void:
 	users = []
 	id = 0
 	
-const _PACK_WHITELIST = [
-	"url"
-]
  ###########
 # 序列化方法：将数据打包为二进制
 func pack_server() -> PackedByteArray:
 	var data_dict :Dictionary= {
-	"url":url,
+	PackKey.URL:url,
 	}
 	return var_to_bytes(data_dict)  # Godot内置序列化方法
  
@@ -105,7 +103,7 @@ func unpack_server(bytes: PackedByteArray):
 		push_error("Invalid data format: Expected Dictionary")
 		return self
 	# 按白名单顺序设置属性（保证兼容性）
-	url = data_dict["url"]
+	url = data_dict[PackKey.URL]
 	return self
 
 func pack_card(card:Card) -> PackedByteArray:
@@ -127,14 +125,14 @@ func deserialize_cards(serialized_data: PackedByteArray)->Array[Dictionary]:
 
 func cards_add_rpc(area: Area, cards: Array[Card])->void:
 	var data = serialize_cards(cards)
-	rpc_id(area.player.id, "cards_add_receive", area.area_name, data)
+	rpc_id(area.player.id, &"cards_add_receive", area.area_name, data)
 
 func cards_change_rpc(area: Area, cards: Array[Card])->void:
 	var data = serialize_cards(cards)
-	rpc_id(area.player.id, "cards_change_receive", area.area_name, data)
+	rpc_id(area.player.id, &"cards_change_receive", area.area_name, data)
 
 func cards_remove_rpc(area: Area, uids: Array[String])->void:
-	rpc_id(area.player.id, "cards_remove_receive", area.area_name, uids)
+	rpc_id(area.player.id, &"cards_remove_receive", area.area_name, uids)
 
 # 新增的RPC接收函数（移除原来的 cards_rpc_receive）
 @rpc("authority", "call_local", "reliable")

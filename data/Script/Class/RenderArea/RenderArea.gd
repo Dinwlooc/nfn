@@ -2,7 +2,7 @@ extends Control
 class_name RenderArea
 #总控区域渲染与交互。
 
-var area_name:String
+var area_name:StringName
 @export var card_pool:Array[RenderCard]
 @export var card_id_to_pool_id: Dictionary[int,int] = {}
 var on_select_list:Array[int]
@@ -14,8 +14,8 @@ signal selected()
 signal card_added(card:RenderCard)
 signal card_removed(card:RenderCard)
 class DefaultArea:
-	const HAND = "areahand"
-	const TARGETS = "areatargets"
+	const HAND:StringName = &"areahand"
+	const TARGETS:StringName = &"areatargets"
 
 func _ready():
 	init_child_count = get_child_count()
@@ -26,11 +26,11 @@ func ready_expand()->void:
 	pass
 
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
-	emit_signal("render_requested",render_event)
+	emit_signal(&"render_requested",render_event)
 	pass
 	
 func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
-	emit_signal("tween_requested",render_event)
+	emit_signal(&"tween_requested",render_event)
 	pass
 	
 func cards_add(cards:Array[Dictionary])->void:
@@ -42,7 +42,7 @@ func cards_add(cards:Array[Dictionary])->void:
 			card_pool.append(new_card)
 			add_child(new_card)
 			new_card.data_update(cards[i])
-			card_id_to_pool_id[cards[i]["id"]] = array_position
+			card_id_to_pool_id[cards[i][&"id"]] = array_position
 			card_added.emit(new_card)
 	render_update()
 	pass
@@ -130,4 +130,4 @@ func move_card_to_index(current_pool_id: int, target_index: int , render_event:R
 	card_id_to_pool_id[moved_card.get_id()] = target_index
 	for i in range(min(target_index, current_pool_id), max(target_index, current_pool_id) + 1):
 		move_child(card_pool[i], i + init_child_count)
-	render_update(render_event)
+	tween_update(render_event)

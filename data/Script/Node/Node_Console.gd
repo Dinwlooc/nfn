@@ -58,10 +58,10 @@ func suggestion_labels_load():
 		labels[i].mouse_filter = Control.MOUSE_FILTER_STOP
 		labels[i].focus_mode = Control.FOCUS_ALL
 		labels[i].visible = false
-		labels[i].connect("focus_entered", _on_suggestion_focused.bind(i))
+		labels[i].connect(&"focus_entered", _on_suggestion_focused.bind(i))
 		labels[i].text_submitted.connect( _suggestion_submitted)
 		labels[i].gui_input.connect(_on_suggestion_clicked.bind(i)) # 新增点击事件连接
-		labels[i].mouse_entered.connect(labels[i].call_deferred.bind("grab_focus")) 
+		labels[i].mouse_entered.connect(labels[i].call_deferred.bind(&"grab_focus")) 
 
 #####信号触发函数####
 func _on_focus_entered():
@@ -71,7 +71,7 @@ func _on_focus_entered():
 func _on_focus_exited():
 	history_navigation_enabled = false
  
-func _on_text_changed(new_text):
+func _on_text_changed(new_text:String):
 	if new_text.to_lower().begins_with("c"):
 		filtered = []
 		if new_text.length() > 2:
@@ -89,10 +89,10 @@ func _on_text_changed(new_text):
 
 func _suggestion_submitted(suggestion:String):
 	Ninput.text = suggestion+"()"
-	Ninput.call_deferred("grab_focus")
+	Ninput.call_deferred(&"grab_focus")
 	Ninput.caret_column = suggestion.length() + 1
 	current_page = 0
-	Ninput.emit_signal("text_changed",Ninput.text)
+	Ninput.emit_signal(&"text_changed",Ninput.text)
 
 func _on_suggestion_clicked(event: InputEvent, index: int):
 	if event is InputEventMouseButton and event.pressed && event.button_mask == 1:
@@ -107,7 +107,7 @@ func _on_suggestion_clicked(event: InputEvent, index: int):
 func _on_suggestion_focused(index: int):
 	labels[index].select_all()
 	if labels[index].text == "..."||!labels[index].visible:
-		Ninput.call_deferred("grab_focus")
+		Ninput.call_deferred(&"grab_focus")
 		current_page = 0
 		return	
 	if current_selection == 0 && index== 8 && current_page:
@@ -119,7 +119,7 @@ func _on_suggestion_focused(index: int):
 	update_page_display(current_page)
 		
 		
-func _on_command_submitted(new_text):
+func _on_command_submitted(new_text:String):
 	var command_with_args = new_text.strip_edges().to_lower()
 	if not command_with_args.is_empty():
 		command_history.append(command_with_args)
@@ -173,12 +173,12 @@ func navigate_history(is_up: bool):
 		Ninput.text = command_history[current_history_index]
 
 func _input(event):
-	if Input.is_action_just_pressed("ui_get_panel"):
+	if Input.is_action_just_pressed(&"ui_get_panel"):
 		panel_display = (panel_display==false)
 		if panel_display:
-			Ninput.call_deferred("grab_focus")
+			Ninput.call_deferred(&"grab_focus")
 		else:
-			get_parent().call_deferred("grab_focus")
+			get_parent().call_deferred(&"grab_focus")
 	if event is InputEventKey && event.pressed:
 		if Ninput.has_focus():#处理输入框的动作事件
 			match event.keycode:
@@ -188,7 +188,7 @@ func _input(event):
 					else:
 						Ninput.focus_next = Ninput.get_path()
 						if Ninput.text == "":
-							Ninput.emit_signal("text_changed","c")
+							Ninput.emit_signal(&"text_changed","c")
 				KEY_UP:
 					navigate_history(true)
 				KEY_DOWN:
