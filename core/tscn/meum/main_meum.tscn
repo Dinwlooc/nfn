@@ -1,0 +1,362 @@
+[gd_scene load_steps=14 format=3 uid="uid://c624f44o3dyxc"]
+
+[ext_resource type="Script" uid="uid://bsycek868a820" path="res://core/Script/Node/Node_MeumControl.gd" id="1_x1yqv"]
+[ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://core/Script/Node/Node_Backgound.gd" id="2_0deb0"]
+[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://official/default/shader/shader_lights.gdshader" id="3_j0cbf"]
+[ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://official/default/assets/Backgound/backgound6.png" id="4_j0cbf"]
+[ext_resource type="Texture2D" uid="uid://v20ylpnaw8mc" path="res://official/default/assets/Backgound/backgound2.png" id="6_m1fcx"]
+[ext_resource type="Script" uid="uid://062bg815jifb" path="res://official/default/shader/shaderScript/shader_lights.gd" id="7_71pag"]
+[ext_resource type="Texture2D" uid="uid://c3ants1otolio" path="res://official/default/assets/Backgound/backgound3icon3png.png" id="7_j0cbf"]
+[ext_resource type="Texture2D" uid="uid://csli57il02lge" path="res://official/default/assets/Backgound/backgound3icon2.png" id="8_m1fcx"]
+[ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://core/Script/Node/Node_Console.gd" id="9_pl1dq"]
+[ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://official/default/tres/LineEdit_theme.tres" id="10_i1bfy"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fu0d1"]
+shader = ExtResource("3_j0cbf")
+shader_parameter/cooldown_speed = 1.0
+shader_parameter/range_max = 0.0
+shader_parameter/glow_luminance_min = 0.3
+shader_parameter/glow_intensity = 0.3
+shader_parameter/time = 0.0
+shader_parameter/luminance_max = 0.8
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_d576q"]
+shader = ExtResource("3_j0cbf")
+shader_parameter/cooldown_speed = 0.5
+shader_parameter/range_max = 1.0
+shader_parameter/glow_luminance_min = 0.4
+shader_parameter/glow_intensity = 0.2
+shader_parameter/time = 0.0
+shader_parameter/luminance_max = 0.4
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6du6q"]
+
+[node name="Node2D" type="Node2D"]
+
+[node name="MeumControl" type="Control" parent="."]
+custom_minimum_size = Vector2(1600, 900)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1600.0
+offset_bottom = 900.0
+script = ExtResource("1_x1yqv")
+metadata/_edit_use_anchors_ = true
+
+[node name="Backgound" type="Control" parent="MeumControl"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+scale = Vector2(1.02, 1.02)
+script = ExtResource("2_0deb0")
+
+[node name="ColorRect" type="TextureRect" parent="MeumControl/Backgound"]
+material = SubResource("ShaderMaterial_fu0d1")
+layout_mode = 1
+offset_right = 1600.0
+offset_bottom = 900.0
+texture = ExtResource("4_j0cbf")
+expand_mode = 1
+stretch_mode = 6
+script = ExtResource("7_71pag")
+
+[node name="ColorRect_icon" type="TextureRect" parent="MeumControl"]
+material = SubResource("ShaderMaterial_d576q")
+clip_contents = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.075
+anchor_top = 0.182
+anchor_right = -0.0725
+anchor_bottom = 0.425
+offset_right = 1600.0
+offset_bottom = 900.0
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("6_m1fcx")
+expand_mode = 1
+stretch_mode = 3
+script = ExtResource("7_71pag")
+metadata/_edit_use_anchors_ = true
+
+[node name="ItemList_Set" type="ItemList" parent="MeumControl"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.071
+anchor_bottom = 0.04
+offset_left = 1177.0
+offset_top = 307.0
+offset_right = 1455.4
+offset_bottom = 415.0
+theme_override_colors/font_selected_color = Color(0, 0.898039, 0.87451, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/panel = SubResource("StyleBoxTexture_6du6q")
+auto_height = true
+text_overrun_behavior = 0
+item_count = 1
+icon_scale = 0.8
+item_0/text = "退出游戏"
+item_0/icon = ExtResource("7_j0cbf")
+item_0/selectable = false
+
+[node name="ItemList_TestGame" type="ItemList" parent="MeumControl"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.071
+anchor_bottom = 0.04
+offset_left = 1241.0
+offset_top = 207.0
+offset_right = 1433.4
+offset_bottom = 303.0
+theme_override_colors/font_selected_color = Color(0, 0.898039, 0.87451, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 35
+theme_override_styles/panel = SubResource("StyleBoxTexture_6du6q")
+auto_height = true
+text_overrun_behavior = 0
+item_count = 1
+icon_scale = 0.8
+item_0/text = "开始游戏"
+item_0/icon = ExtResource("8_m1fcx")
+
+[node name="Console" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -493.0
+offset_right = -5.0
+offset_bottom = 590.0
+mouse_filter = 2
+script = ExtResource("9_pl1dq")
+
+[node name="Panel" type="TextEdit" parent="Console"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 698.0
+offset_bottom = 841.0
+scale = Vector2(0.7, 0.7)
+focus_mode = 0
+mouse_filter = 1
+text = "Waiting..."
+editable = false
+shortcut_keys_enabled = false
+virtual_keyboard_enabled = false
+middle_mouse_paste_enabled = false
+wrap_mode = 1
+
+[node name="Input" type="LineEdit" parent="Console"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 560.0
+offset_right = 606.0
+offset_bottom = 597.0
+scale = Vector2(0.8, 0.8)
+focus_neighbor_left = NodePath(".")
+focus_neighbor_top = NodePath(".")
+focus_neighbor_right = NodePath(".")
+focus_neighbor_bottom = NodePath(".")
+focus_next = NodePath(".")
+focus_previous = NodePath(".")
+focus_mode = 1
+theme_override_colors/selection_color = Color(1, 1, 1, 1)
+theme_override_colors/font_selected_color = Color(0, 0, 0, 1)
+placeholder_text = "请输入指令..."
+keep_editing_on_text_submit = true
+clear_button_enabled = true
+flat = true
+caret_blink = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Console"]
+custom_minimum_size = Vector2(150, 300)
+layout_mode = 2
+offset_left = 3.0
+offset_top = 311.0
+offset_right = 153.0
+offset_bottom = 684.0
+scale = Vector2(0.7, 0.7)
+mouse_filter = 2
+
+[node name="Label" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label9")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label2")
+focus_next = NodePath("../Label2")
+focus_previous = NodePath("../Label9")
+theme = ExtResource("10_i1bfy")
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label2" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label3")
+focus_next = NodePath("../Label3")
+theme = ExtResource("10_i1bfy")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label3" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label2")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label4")
+focus_next = NodePath("../Label4")
+theme = ExtResource("10_i1bfy")
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label4" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label3")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label5")
+focus_next = NodePath("../Label5")
+theme = ExtResource("10_i1bfy")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label5" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label4")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label6")
+focus_next = NodePath("../Label6")
+theme = ExtResource("10_i1bfy")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label6" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label5")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label7")
+focus_next = NodePath("../Label7")
+theme = ExtResource("10_i1bfy")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label7" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label6")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label8")
+focus_next = NodePath("../Label8")
+theme = ExtResource("10_i1bfy")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label8" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label7")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label9")
+focus_next = NodePath("../Label9")
+theme = ExtResource("10_i1bfy")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
+
+[node name="Label9" type="LineEdit" parent="Console/VBoxContainer"]
+custom_minimum_size = Vector2(150, 30)
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Input")
+focus_neighbor_top = NodePath("../Label8")
+focus_neighbor_right = NodePath("../../Input")
+focus_neighbor_bottom = NodePath("../Label")
+focus_next = NodePath("../Label")
+theme = ExtResource("10_i1bfy")
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
+theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+text = "
+"
+context_menu_enabled = false
+emoji_menu_enabled = false
+virtual_keyboard_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+flat = true
+select_all_on_focus = true
