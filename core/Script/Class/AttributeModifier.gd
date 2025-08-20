@@ -7,7 +7,7 @@ var modify:Callable
 var permanent:bool
 
 	
-func create(attribute_name:String,modifier_name:String,new_modify:Callable):
+func create(attribute_name:StringName,modifier_name:StringName,new_modify:Callable):
 	attribute = attribute_name
 	modifier = modifier_name
 	modify = new_modify

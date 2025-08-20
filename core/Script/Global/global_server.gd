@@ -109,12 +109,12 @@ func unpack_server(bytes: PackedByteArray):
 func serialize_cards(cards:Array[Card])-> PackedByteArray:
 	return var_to_bytes(cards.map(func(card):return card.serialize()))
 	
-func deserialize_cards(serialized_data: PackedByteArray)->Array[Dictionary]:
-	var card_data_array:Array[Dictionary]
+func deserialize_cards(serialized_data: PackedByteArray)->Array[Array]:
+	var card_data_array:Array[Array]
 	card_data_array.append_array(bytes_to_var(serialized_data).map(Card.deserialize))
-	if not card_data_array is Array[Dictionary]:
+	if not card_data_array is Array[Array]:
 		push_error("Invalid data format: Expected Array[Dictionary]")
-		return [{}]
+		return [[]]
 	return card_data_array
 
 func cards_add_rpc(area: Area, cards: Array[Card])->void:
@@ -141,7 +141,7 @@ func receive_operation_event(serialized_event: PackedByteArray) -> void:
 @rpc("authority", "call_local", "reliable")
 func cards_add_receive(area_name: String, data: PackedByteArray)->void:
 	if GlobalConsole.renderarea.has(area_name):
-		var cards_data:Array[Dictionary] = deserialize_cards(data)
+		var cards_data:Array[Array] = deserialize_cards(data)
 		GlobalConsole.renderarea[area_name].cards_add(cards_data)
 
 @rpc("authority", "call_local", "reliable")

@@ -102,9 +102,7 @@ offset_bottom = -213.456
 script = ExtResource("13_4k47o")
 cardface = NodePath("CharacterTargetCard")
 area = NodePath("..")
-data = {
-"id": 0
-}
+data = [0, "", "", null]
 metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
 
 [node name="CharacterTargetCard" parent="Control/AreaTargets/RenderCard" node_paths=PackedStringArray("card") instance=ExtResource("14_2w2we")]

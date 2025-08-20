@@ -34,7 +34,7 @@ func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 	tween_requested.emit(render_event)
 	pass
 	
-func cards_add(cards:Array[Dictionary])->void:
+func cards_add(cards:Array[Array])->void:
 	for i in range(0,cards.size()):
 			var array_position = card_pool.size()
 			var new_card:RenderCard = RenderCard.new()

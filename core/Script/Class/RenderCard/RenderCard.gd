@@ -17,11 +17,10 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var path:Dictionary
-@export var data:Dictionary
+@export var data:Array
 class DefaultType:
-	const ATTACK = "attack"
-	const VOID = "void"
-var type:String = DefaultType.VOID
+	const ATTACK = &"attack"
+	const VOID = &"void"
 signal select
 signal drag
 
@@ -31,11 +30,10 @@ func _ready()-> void:
 	area.render_requested.connect(render_update)
 	pass
 
-func data_update(new_card_data:Dictionary)-> void:
+func data_update(new_card_data:Array)-> void:
 	data = new_card_data
 	if !(cardface)||new_card_data[Card.BaseKeys.TYPE] != cardface.type:
-		type = new_card_data[Card.BaseKeys.TYPE]
-		_load_scene_by_type(type)
+		_load_scene_by_type(new_card_data[Card.BaseKeys.TYPE])
 	cardface.data_update()
 	pass
 	
@@ -88,6 +86,4 @@ func is_hovering(mouse_pos):
 		return false
 
 func get_id()->int:
-	if !data.has(Card.BaseKeys.ID):
-		return -1
 	return data.get(Card.BaseKeys.ID)
