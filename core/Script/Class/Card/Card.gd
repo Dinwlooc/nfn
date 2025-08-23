@@ -5,6 +5,7 @@ class_name Card
 @export var type:String
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 var id:int
+const DESER_STR_MARK = 0x7FFFFFFF
 
 enum BaseKeys {
 	ID ,
@@ -16,7 +17,6 @@ enum BaseKeys {
 func get_attribute(attribute:StringName,value:int) -> int:
 	return attributeModifiers.modify(attribute,value)
 	
-
 func serialize()->PackedByteArray:
 	var serialized_data:Array
 	serialized_data.resize(get_enum_size())
@@ -24,20 +24,54 @@ func serialize()->PackedByteArray:
 	serialized_data.set(BaseKeys.NAME,name)
 	serialized_data.set(BaseKeys.TYPE,type)
 	serialize_expand(serialized_data)
+	#print(var_to_bytes(serialized_data))
 	return var_to_bytes(serialized_data)
 	
 func get_enum_size()->int:
 	#子类扩展枚举时需要覆盖它
 	return BaseKeys.END
-	
+
+func serialize_2()->PackedByteArray:
+	var main_data:PackedInt32Array
+	var str_data:PackedStringArray
+	main_data.resize(get_enum_size())
+	serialize_write(BaseKeys.ID, id, main_data, str_data)
+	serialize_write(BaseKeys.NAME, name, main_data, str_data)
+	serialize_write(BaseKeys.TYPE, type, main_data, str_data)
+	serialize_2_expand(main_data,str_data)
+	var serialized_data:PackedByteArray = main_data.to_byte_array()
+	var slice_mark:int = serialized_data.size()
+	serialized_data.append_array(str_data.to_byte_array())
+	serialized_data.resize(serialized_data.size() + 4)
+	serialized_data.encode_s32(serialized_data.size()-4,slice_mark)
+	print(serialized_data)
+	return serialized_data
+
 func serialize_expand(serialized_data:Array)->Array:
 	#子类的扩展
 	serialized_data = serialize_expand_instance(serialized_data)
 	return serialized_data
 
-func serialize_expand_instance(serialized_data:Array)->Array:
+func serialize_2_expand(_main_data: PackedInt32Array, _str_data: PackedStringArray) -> void:
+	pass
+
+func serialize_expand_instance(_serialized_data:Array)->Array:
 	#实例的扩展
-	return serialized_data
+	return _serialized_data
+	
+static func serialize_write(key: int, value, main_data: PackedInt32Array, str_data: PackedStringArray) -> void:
+	match typeof(value):
+		TYPE_STRING:
+			main_data.set(key, DESER_STR_MARK)
+			str_data.append(value)
+		TYPE_INT:
+			main_data.set(key, value)
+		TYPE_FLOAT:
+			push_warning("Float type not fully supported, casting to int: " + str(value))
+			main_data.set(key, int(value))
+		_:
+			push_error("Unsupported type for key %s: %s" % [key, typeof(value)])
+			main_data.set(key, 0)
 
 static func deserialize(serialize_data:PackedByteArray)->Array:
 	var data_dict = bytes_to_var(serialize_data)  # 反序列化数组，传输给渲染层时使用
@@ -45,3 +79,30 @@ static func deserialize(serialize_data:PackedByteArray)->Array:
 		push_error("Invalid data format: Expected Dictionary")
 		return []
 	return data_dict
+
+static func deserialize_2(serialized_data: PackedByteArray) -> Array:
+	# 1. 检查数据长度有效性
+	if serialized_data.size() < 4:
+		push_error("Invalid data: Too short")
+		return []
+	var str_start_index = serialized_data.decode_s32(serialized_data.size()-4)
+	if str_start_index >= serialized_data.size() - 4:
+		push_error("Invalid string offset")
+		return []
+	var int_data = serialized_data.slice(0, str_start_index)  # 整数部分二进制
+	var str_data_bytes = serialized_data.slice(str_start_index, - 4)  # 字符串部分二进制
+	var int_array = int_data.to_int32_array()
+	var str_array = GlobalServer.bytes_to_PackedStringArray(str_data_bytes)
+	var str_index = 0  # 当前读取的字符串索引
+	var output = []
+	for value in int_array:
+		if value == DESER_STR_MARK:
+			if str_index < str_array.size():
+				output.append(str_array[str_index])
+				str_index += 1
+			else:
+				output.append("")  # 防御性处理
+				push_error("Missing string data")
+		else:
+			output.append(value)
+	return output

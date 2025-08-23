@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Script/Class/RenderArea/RenderAreaStage.gd" id="4_8dpeo"]
 [ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://official/default/assets/Area/areaface/backgound.tscn" id="5_2w2we"]
 [ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://official/default/assets/Area/areaface/Node_arrow.gd" id="5_4k47o"]
-[ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Script/Class/RenderArea/RenderAreaHand.gd" id="9_0w8dv"]
+[ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Script/Class/RenderArea/RenderAreaHand.gd" id="7_jjejj"]
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://official/default/assets/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
 [ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://official/default/assets/Area/areaface/areaface_self.tscn" id="11_4k47o"]
 [ext_resource type="Script" uid="uid://boamtyqq4276a" path="res://core/Script/Class/RenderArea/RenderAreaSelf.gd" id="11_5huyi"]
@@ -62,7 +62,7 @@ anchors_preset = 0
 offset_right = 1613.0
 offset_bottom = 907.0
 mouse_filter = 2
-script = ExtResource("9_0w8dv")
+script = ExtResource("7_jjejj")
 
 [node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_2w2we")]
 layout_mode = 1
@@ -88,17 +88,17 @@ card_id_to_pool_id = Dictionary[int, int]({
 })
 
 [node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("14_8v20q")]
-offset_top = -173.0
-offset_right = 1359.0
-offset_bottom = 181.0
+offset_top = -157.0
+offset_right = 1377.0
+offset_bottom = 165.0
 mouse_filter = 1
 
 [node name="RenderCard" type="Control" parent="Control/AreaTargets" node_paths=PackedStringArray("cardface", "area")]
 anchors_preset = 0
-offset_left = 697.44
-offset_top = -213.456
-offset_right = 697.44
-offset_bottom = -213.456
+offset_left = 714.258
+offset_top = -239.541
+offset_right = 714.258
+offset_bottom = -239.541
 script = ExtResource("13_4k47o")
 cardface = NodePath("CharacterTargetCard")
 area = NodePath("..")

@@ -107,11 +107,11 @@ func unpack_server(bytes: PackedByteArray):
 	return self
 
 func serialize_cards(cards:Array[Card])-> PackedByteArray:
-	return var_to_bytes(cards.map(func(card):return card.serialize()))
+	return var_to_bytes(cards.map(func(card):return card.serialize_2()))
 	
 func deserialize_cards(serialized_data: PackedByteArray)->Array[Array]:
 	var card_data_array:Array[Array]
-	card_data_array.append_array(bytes_to_var(serialized_data).map(Card.deserialize))
+	card_data_array.append_array(bytes_to_var(serialized_data).map(Card.deserialize_2))
 	if not card_data_array is Array[Array]:
 		push_error("Invalid data format: Expected Array[Dictionary]")
 		return [[]]
@@ -161,3 +161,18 @@ func cards_remove_receive(area_name: String, ids: Array[String])->void:
 @rpc("any_peer","call_remote")func ask_server_data(peer_id)-> void:
 	if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		rpc_id(peer_id,"receive_server_data",pack_server())
+
+	
+static func bytes_to_PackedStringArray(data: PackedByteArray) -> PackedStringArray:
+	var result := PackedStringArray([])
+	var start_idx := 0
+	var end_idx := 0
+	while end_idx < data.size():
+		while end_idx < data.size() and data[end_idx] != 0:
+			end_idx += 1
+		if end_idx > start_idx:
+			var str_bytes = data.slice(start_idx, end_idx)
+			result.append(str_bytes.get_string_from_utf8())
+		end_idx += 1
+		start_idx = end_idx
+	return result

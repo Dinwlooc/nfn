@@ -33,5 +33,13 @@ func serialize_expand(serialized_data:Array)->Array:
 	serialized_data = serialize_expand_instance(serialized_data)
 	return serialized_data
 
+func serialize_2_expand(main_data: PackedInt32Array, str_data: PackedStringArray) -> void:
+	serialize_write(SubKeys.POWER, power, main_data, str_data)
+	serialize_write(SubKeys.COST, cost, main_data, str_data)
+	serialize_write(SubKeys.SUIT, suit, main_data, str_data)
+	serialize_write(SubKeys.MODIFIED_POWER, get_attribute(&"power", power), main_data, str_data)
+	serialize_write(SubKeys.MODIFIED_COST, get_attribute(&"cost", cost), main_data, str_data)
+	#serialize_expand_instance()
+
 func get_enum_size()->int:
 	return SubKeys.END
