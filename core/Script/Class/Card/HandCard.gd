@@ -24,22 +24,13 @@ func set_suit(newsuit:Suit)->HandCard:
 	suit = newsuit
 	return self
 
-func serialize_expand(serialized_data:Array)->Array:
-	serialized_data.set(SubKeys.POWER,power)
-	serialized_data.set(SubKeys.COST,cost)
-	serialized_data.set(SubKeys.SUIT,suit)
-	serialized_data.set(SubKeys.MODIFIED_POWER,get_attribute(&"power",power))
-	serialized_data.set(SubKeys.MODIFIED_COST,get_attribute(&"cost",cost))
-	serialized_data = serialize_expand_instance(serialized_data)
-	return serialized_data
-
-func serialize_2_expand(main_data: PackedInt32Array, str_data: PackedStringArray) -> void:
-	serialize_write(SubKeys.POWER, power, main_data, str_data)
-	serialize_write(SubKeys.COST, cost, main_data, str_data)
-	serialize_write(SubKeys.SUIT, suit, main_data, str_data)
-	serialize_write(SubKeys.MODIFIED_POWER, get_attribute(&"power", power), main_data, str_data)
-	serialize_write(SubKeys.MODIFIED_COST, get_attribute(&"cost", cost), main_data, str_data)
-	#serialize_expand_instance()
+func property_to_byte(serialize_array:Array[PackedByteArray])->void:
+	super.property_to_byte(serialize_array)
+	serialize_write(SubKeys.POWER, power, serialize_array)
+	serialize_write(SubKeys.COST, cost, serialize_array)
+	serialize_write(SubKeys.SUIT, suit, serialize_array)
+	serialize_write(SubKeys.MODIFIED_POWER, get_attribute(&"power", power), serialize_array)
+	serialize_write(SubKeys.MODIFIED_COST, get_attribute(&"cost", cost), serialize_array)
 
 func get_enum_size()->int:
 	return SubKeys.END

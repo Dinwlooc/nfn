@@ -107,11 +107,11 @@ func unpack_server(bytes: PackedByteArray):
 	return self
 
 func serialize_cards(cards:Array[Card])-> PackedByteArray:
-	return var_to_bytes(cards.map(func(card):return card.serialize_2()))
+	return var_to_bytes(cards.map(func(card):return card.serialize()))
 	
 func deserialize_cards(serialized_data: PackedByteArray)->Array[Array]:
 	var card_data_array:Array[Array]
-	card_data_array.append_array(bytes_to_var(serialized_data).map(Card.deserialize_2))
+	card_data_array.append_array(bytes_to_var(serialized_data).map(Card.deserialize))
 	if not card_data_array is Array[Array]:
 		push_error("Invalid data format: Expected Array[Dictionary]")
 		return [[]]
