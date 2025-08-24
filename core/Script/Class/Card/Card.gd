@@ -5,7 +5,7 @@ class_name Card
 @export var type:String
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 var id:int
-const DESER_STR_MARK = 0x7FFFFFFF
+const DESER_STR_MARK = 255
 
 enum BaseKeys {
 	ID ,
@@ -39,11 +39,11 @@ func serialize_2()->PackedByteArray:
 	serialize_write(BaseKeys.NAME, name, main_data, str_data)
 	serialize_write(BaseKeys.TYPE, type, main_data, str_data)
 	serialize_2_expand(main_data,str_data)
-	var serialized_data:PackedByteArray = main_data.to_byte_array()
+	var serialized_data:PackedByteArray = GlobalServer.PackedInt32Array_to_bytes_8(main_data)
 	var slice_mark:int = serialized_data.size()
-	serialized_data.append_array(str_data.to_byte_array())
-	serialized_data.resize(serialized_data.size() + 4)
-	serialized_data.encode_s32(serialized_data.size()-4,slice_mark)
+	serialized_data.append_array(GlobalServer.PackedStringArray_to_bytes_ascii(str_data))
+	serialized_data.resize(serialized_data.size() + 2)
+	serialized_data.encode_u16(serialized_data.size()-2,slice_mark)
 	print(serialized_data)
 	return serialized_data
 
@@ -82,19 +82,17 @@ static func deserialize(serialize_data:PackedByteArray)->Array:
 
 static func deserialize_2(serialized_data: PackedByteArray) -> Array:
 	# 1. 检查数据长度有效性
-	if serialized_data.size() < 4:
+	if serialized_data.size() < 2:
 		push_error("Invalid data: Too short")
 		return []
-	var str_start_index = serialized_data.decode_s32(serialized_data.size()-4)
-	if str_start_index >= serialized_data.size() - 4:
+	var str_start_index:int = serialized_data.decode_u16(serialized_data.size()-2)
+	if str_start_index >= serialized_data.size() - 2:
 		push_error("Invalid string offset")
 		return []
-	var int_data = serialized_data.slice(0, str_start_index)  # 整数部分二进制
-	var str_data_bytes = serialized_data.slice(str_start_index, - 4)  # 字符串部分二进制
-	var int_array = int_data.to_int32_array()
-	var str_array = GlobalServer.bytes_to_PackedStringArray(str_data_bytes)
-	var str_index = 0  # 当前读取的字符串索引
-	var output = []
+	var int_array:PackedInt32Array = GlobalServer.bytes_to_PackedByteArray_8(serialized_data.slice(0, str_start_index))
+	var str_array:PackedStringArray = GlobalServer.bytes_to_PackedStringArray_ascii(serialized_data.slice(str_start_index, - 2))
+	var str_index:int = 0  # 当前读取的字符串索引
+	var output:Array = []
 	for value in int_array:
 		if value == DESER_STR_MARK:
 			if str_index < str_array.size():

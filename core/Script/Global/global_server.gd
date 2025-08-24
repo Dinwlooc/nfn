@@ -164,15 +164,52 @@ func cards_remove_receive(area_name: String, ids: Array[String])->void:
 
 	
 static func bytes_to_PackedStringArray(data: PackedByteArray) -> PackedStringArray:
-	var result := PackedStringArray([])
+	var result := PackedStringArray()
 	var start_idx := 0
 	var end_idx := 0
 	while end_idx < data.size():
 		while end_idx < data.size() and data[end_idx] != 0:
 			end_idx += 1
-		if end_idx > start_idx:
-			var str_bytes = data.slice(start_idx, end_idx)
-			result.append(str_bytes.get_string_from_utf8())
+		result.append(data.slice(start_idx, end_idx).get_string_from_utf8())
 		end_idx += 1
 		start_idx = end_idx
+	return result
+
+# 新增：ASCII编码方法 (PackedStringArray -> PackedByteArray)
+static func PackedStringArray_to_bytes_ascii(strings: PackedStringArray) -> PackedByteArray:
+	var result = PackedByteArray()
+	for s in strings:
+		var ascii_bytes = s.to_ascii_buffer()
+		result.append_array(ascii_bytes)
+		result.append(0)  
+	return result
+
+# 新增：ASCII解码方法 (PackedByteArray -> PackedStringArray)
+static func bytes_to_PackedStringArray_ascii(data: PackedByteArray) -> PackedStringArray:
+	var result := PackedStringArray()
+	var start_idx := 0
+	var end_idx := 0
+	while end_idx < data.size():
+		while end_idx < data.size() and data[end_idx] != 0:
+			end_idx += 1
+		result.append(data.slice(start_idx, end_idx).get_string_from_ascii())
+		end_idx += 1
+		start_idx = end_idx
+	return result
+	
+static func PackedInt32Array_to_bytes_8(int_array: PackedInt32Array) -> PackedByteArray:
+	var result = PackedByteArray()
+	result.resize(int_array.size())  # 预分配空间提高性能
+	for idx in range(int_array.size()):
+		var value := int_array[idx]
+		result[idx] = clampi(value,0,255)
+	return result
+
+# 8位无符号整数字节数组 -> 32位整数紧缩数组
+static func bytes_to_PackedByteArray_8(byte_array: PackedByteArray) -> PackedInt32Array:
+	var result = PackedInt32Array()
+	result.resize(byte_array.size())  # 预分配空间提高性能
+	for idx in range(byte_array.size()):
+		# 直接读取字节值转为32位整数
+		result[idx] = byte_array[idx]
 	return result
