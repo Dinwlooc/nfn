@@ -41,7 +41,7 @@ func render_update(render_event:RenderEvent = RenderEvent.new())->void:
 	if cardface:
 		cardface.render_update(render_event)
 
-func _load_scene_by_type(card_type: String) -> void:
+func _load_scene_by_type(card_type: StringName) -> void:
 	if cardface:
 		remove_child(cardface)
 		cardface.queue_free()

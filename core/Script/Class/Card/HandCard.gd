@@ -24,13 +24,13 @@ func set_suit(newsuit:Suit)->HandCard:
 	suit = newsuit
 	return self
 
-func property_to_byte(serialize_array:Array[PackedByteArray])->void:
-	super.property_to_byte(serialize_array)
-	serialize_write(SubKeys.POWER, power, serialize_array)
-	serialize_write(SubKeys.COST, cost, serialize_array)
-	serialize_write(SubKeys.SUIT, suit, serialize_array)
-	serialize_write(SubKeys.MODIFIED_POWER, get_attribute(&"power", power), serialize_array)
-	serialize_write(SubKeys.MODIFIED_COST, get_attribute(&"cost", cost), serialize_array)
+func property_to_byte(serialize_data:SerializeData)->void:
+	super.property_to_byte(serialize_data)
+	serialize_write(SubKeys.POWER, power, serialize_data)
+	serialize_write(SubKeys.COST, cost, serialize_data)
+	serialize_write(SubKeys.SUIT, suit, serialize_data)
+	serialize_write(SubKeys.MODIFIED_POWER, get_attribute(&"power", power), serialize_data)
+	serialize_write(SubKeys.MODIFIED_COST, get_attribute(&"cost", cost), serialize_data)
 
 func get_enum_size()->int:
 	return SubKeys.END

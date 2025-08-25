@@ -4,7 +4,7 @@ var _debug_packs:Dictionary[StringName,PackedStringArray] = {
 	&"official": PackedStringArray(["default"]),
 	&"mods": []
 }
-var _resource_registry: Dictionary = {}
+var _resource_registry: Dictionary[StringName,Dictionary]
 const cards_list_path:String =  "res://cards_load_list.cfg"
 signal resource_packs_reloaded
 
@@ -12,7 +12,6 @@ func _ready() -> void:
 	# 初始化时加载所有资源包
 	load_all_resource_packs()
 	load_resource(&"translation", &"Zh_CN")
-	
 	
 func get_translation(key:StringName,lang:StringName=&"Zh_CN")->String:
 	var tran:String = load_resource(&"translation",lang).get_message(key)

@@ -186,13 +186,24 @@ static func PackedStringArray_to_bytes_ascii(strings: PackedStringArray) -> Pack
 
 # 新增：ASCII解码方法 (PackedByteArray -> PackedStringArray)
 static func bytes_to_PackedStringArray_ascii(data: PackedByteArray) -> PackedStringArray:
+	if data.is_empty():
+		return PackedStringArray()
+	var count:= 0
+	for byte in data:
+		if byte == 0:
+			count += 1  # 每个0都标记一个字符串结束
 	var result := PackedStringArray()
+	result.resize(count)
 	var start_idx := 0
 	var end_idx := 0
+	var current_index := 0 
 	while end_idx < data.size():
 		while end_idx < data.size() and data[end_idx] != 0:
 			end_idx += 1
-		result.append(data.slice(start_idx, end_idx).get_string_from_ascii())
-		end_idx += 1
-		start_idx = end_idx
+		var byte_slice := data.slice(start_idx, end_idx)
+		result.set(current_index, byte_slice.get_string_from_ascii())
+		current_index += 1
+		if end_idx < data.size() and data[end_idx] == 0:
+			end_idx += 1  # 跳过0字节
+		start_idx = end_idx  # 移动起始位置
 	return result
