@@ -196,20 +196,3 @@ static func bytes_to_PackedStringArray_ascii(data: PackedByteArray) -> PackedStr
 		end_idx += 1
 		start_idx = end_idx
 	return result
-	
-static func PackedInt32Array_to_bytes_8(int_array: PackedInt32Array) -> PackedByteArray:
-	var result = PackedByteArray()
-	result.resize(int_array.size())  # 预分配空间提高性能
-	for idx in range(int_array.size()):
-		var value := int_array[idx]
-		result[idx] = clampi(value,0,255)
-	return result
-
-# 8位无符号整数字节数组 -> 32位整数紧缩数组
-static func bytes_to_PackedByteArray_8(byte_array: PackedByteArray) -> PackedInt32Array:
-	var result = PackedInt32Array()
-	result.resize(byte_array.size())  # 预分配空间提高性能
-	for idx in range(byte_array.size()):
-		# 直接读取字节值转为32位整数
-		result[idx] = byte_array[idx]
-	return result
