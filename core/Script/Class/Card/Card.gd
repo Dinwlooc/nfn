@@ -92,10 +92,12 @@ static func static_serialize(card:Card)->PackedByteArray:
 
 static func serialize_write(key: int, value, serialize_data:SerializeData) -> void:
 	match typeof(value):
-		TYPE_STRING:
+		TYPE_STRING: #规范：255长度以内的纯ASCII字符。
 			serialize_data.main_data.set(key,DeserMark.STRING)
 			var buffer:PackedByteArray = value.to_ascii_buffer()
-			buffer.append(0)
+			if buffer.size() > 255:
+				buffer.resize(255)
+			serialize_data.str_data.append(buffer.size())  # 写入长度前缀
 			serialize_data.str_data.append_array(buffer)
 		TYPE_INT:
 			if (value <= DeserMark.END && value>=0):
@@ -133,7 +135,7 @@ static func deserialize(serialized_data: PackedByteArray) -> Array:
 			var ptr_start:int = ptr_end - slice_array[i]
 			match i+1:
 				DataTypeKeys.STRING:
-					str_arr = GlobalServer.bytes_to_PackedStringArray_ascii(serialized_data.slice(ptr_start, ptr_end))
+					str_arr = bytes_to_strings(serialized_data.slice(ptr_start, ptr_end))
 				DataTypeKeys.INT32:
 					int32_arr = serialized_data.slice(ptr_start, ptr_end).to_int32_array()
 				DataTypeKeys.VAR:
@@ -169,3 +171,13 @@ static func deserialize(serialized_data: PackedByteArray) -> Array:
 				output.set(i,var_arr[var_index])
 				var_index += 1
 	return output #渲染层不重建Card类，只返回数组。
+
+static func bytes_to_strings(data: PackedByteArray) -> PackedStringArray:
+	var result := PackedStringArray()
+	var idx := 0
+	while idx < data.size():
+		var len := data.decode_u8(idx) as int
+		idx += 1
+		result.append(data.slice(idx, idx + len).get_string_from_utf8())
+		idx += len
+	return result
