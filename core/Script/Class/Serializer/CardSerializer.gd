@@ -25,18 +25,6 @@ enum HandCardKeys {
 	END
 }
 
-class CardData:
-	var id:int
-	var name:StringName
-	var type:StringName
-
-class HandCardData extends CardData:
-	var power:int
-	var cost:int
-	var suit:int
-	var modified_power:int
-	var modified_cost:int
-
 static func obj_to_byte(obj)->Data:
 	var data:Data
 	if obj is not Card:
@@ -60,10 +48,10 @@ static func obj_to_byte(obj)->Data:
 	return data
 
 static func data_array_to_obj(data_array:Array):
-	var data:CardData
+	var data:RenderDataContainer.CardData
 	match data_array[CardKeys.CLASS]:
 		CardClass.HAND:
-			var hand_data = HandCardData.new()
+			var hand_data = RenderDataContainer.HandCardData.new()
 			hand_data.id = data_array[CardKeys.ID]
 			hand_data.name = data_array[CardKeys.NAME]
 			hand_data.type = data_array[CardKeys.TYPE]
@@ -74,7 +62,7 @@ static func data_array_to_obj(data_array:Array):
 			hand_data.modified_cost = data_array[HandCardKeys.MODIFIED_COST]
 			data = hand_data
 		_: # 默认处理基类
-			var card_data = CardData.new()
+			var card_data = RenderDataContainer.CardData.new()
 			card_data.id = data_array[CardKeys.ID]
 			card_data.name = data_array[CardKeys.NAME]
 			card_data.type = data_array[CardKeys.TYPE]

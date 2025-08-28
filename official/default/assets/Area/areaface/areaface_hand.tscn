@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://pq8byw2ywuri"]
 
-[ext_resource type="Script" uid="uid://yi3uwit7y1dv" path="res://offical/default/assets/Area/areaface/Node_AreaFaceHand.gd" id="1_08dya"]
+[ext_resource type="Script" uid="uid://yi3uwit7y1dv" path="res://official/default/assets/Area/areaface/Node_AreaFaceHand.gd" id="1_08dya"]
 
 [node name="AreaFaceHand" type="Control"]
 layout_mode = 3

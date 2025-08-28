@@ -30,7 +30,7 @@ func _input(event: InputEvent) -> void:
 	pass
 
 func data_update()-> void:
-	var data:CardSerializer.HandCardData = card.data
+	var data:HandCardData = card.data
 	var texture = get_card_main_icon(data.name)
 	Ntexture.texture = texture
 	Ncost.text = "消耗"+str(data.modified_cost)

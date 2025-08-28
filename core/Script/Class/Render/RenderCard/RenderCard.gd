@@ -17,7 +17,7 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var path:Dictionary
-const Data = CardSerializer.CardData
+const Data = RenderDataContainer.CardData
 var data:Data
 class DefaultType:
 	const ATTACK = &"attack"

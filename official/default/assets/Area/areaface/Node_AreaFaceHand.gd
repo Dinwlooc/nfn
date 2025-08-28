@@ -56,8 +56,9 @@ func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 	card_move(render_event)
 
 func _into_area()->void:
-	area_target_position = original_position - Vector2(0, 80)
-	area_target_size = original_size + Vector2(0, 80)
+	const MOVE_LENGTH:float= 100
+	area_target_position = original_position - Vector2(0, MOVE_LENGTH)
+	area_target_size = original_size + Vector2(0, MOVE_LENGTH)
 	var list:Dictionary[NodePath,Variant] = {
 		^"position":area_target_position,
 		^"size":area_target_size,

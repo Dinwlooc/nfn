@@ -103,35 +103,3 @@ func hover_detect_when_dragging(dragged_card:RenderCard)->void:
 				hovering_card.hovering = true
 				break
 		return
-
-#func hover_card()->void:
-	#var mouse_position = get_global_mouse_position()
-		## 检查当前悬停卡片是否有效或被拖拽
-	#if hovering_id >= 0 && (hovering_id >= area.card_pool.size() || area.card_pool[hovering_id].dragged):
-		#if hovering_id < area.card_pool.size():
-			#area.card_pool[hovering_id].hovering = false
-		#hovering_id = -1
-	## 如果当前有悬停卡片但不再悬停或被拖拽
-	#if hovering_id != -1 && !area.card_pool[hovering_id].is_hovering(mouse_position):
-		#area.card_pool[hovering_id].hovering = false
-		#hovering_id = -1
-	#if hovering_id == -1:
-		#for i in range(area.card_pool.size()-1,-1,-1):
-			#if !area.card_pool[i].dragged && area.card_pool[i].is_hovering(mouse_position):
-				#hovering_id = i
-				#area.card_pool[hovering_id].hovering = true
-				#break
-		#return
-	#elif hovering_id < area.card_pool.size()-1:
-		## 从当前悬停卡片上方开始检查
-		#var new_hover_id = -1
-		#for i in range(hovering_id + 1, area.card_pool.size()):
-			#if !area.card_pool[i].dragged:
-				#if area.card_pool[i].is_hovering(mouse_position):
-					#new_hover_id = i
-				#else:
-					#break#利用规范排序的性质
-		#if new_hover_id != -1:
-			#area.card_pool[hovering_id].hovering = false
-			#hovering_id = new_hover_id
-			#area.card_pool[hovering_id].hovering = true

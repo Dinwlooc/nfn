@@ -13,6 +13,12 @@ func _ready() -> void:
 	button.button_down.connect(card.request_select)
 	button.button_down.connect(card.request_dragging)
 	button.button_up.connect(card.request_dragging)
+	call_deferred(&"test_init")
+
+func test_init() -> void:
+	#测试用初始化
+	card.data = RenderDataContainer.CardData.new()
+	card.data.id = 0
 
 func _physics_process(delta: float) -> void:
 	card_move_expand()

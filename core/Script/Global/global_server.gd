@@ -5,7 +5,7 @@ var users:Array[User]
 var url:String
 var id:int = -1
 signal peer_update(peer_id:int)
-const CardData = CardSerializer.CardData
+const CardData = RenderDataContainer.CardData
 enum PackKey{
 	URL
 	}
