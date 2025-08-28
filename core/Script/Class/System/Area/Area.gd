@@ -10,7 +10,7 @@ signal area_cards_add
 
 func cards_add(new_cardpool:Array[Card]):
 	card_pool.append_array(new_cardpool)
-	GlobalServer.cards_add_rpc(self,new_cardpool)
+	GlobalTransport.cards_add_rpc(self,new_cardpool)
 	pass
 
 func set_player(new_player:Player):

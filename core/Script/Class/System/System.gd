@@ -51,10 +51,10 @@ func _start_game()-> void:
 	if game_stage != GameStage.NULL:
 		GlobalConsole._print("Error:c_start未生效。游戏已开始。")
 		return
-	for i in range(0,GlobalServer.users.size()):
+	for i in range(0,GlobalTransport.users.size()):
 		alive_players.append(Player.new())
-		alive_players[i].id = GlobalServer.users[i].id
-		GlobalServer.users[i].seat = i
+		alive_players[i].id = GlobalTransport.users[i].id
+		GlobalTransport.users[i].seat = i
 	for i in range(0,alive_players.size()):
 		draw_cards(4,i)
 	current_player_index = randi_range(0,alive_players.size()-1)

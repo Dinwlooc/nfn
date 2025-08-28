@@ -18,7 +18,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GlobalConsole="*res://core/Script/Global/global_console.gd"
-GlobalServer="*res://core/Script/Global/global_server.gd"
+GlobalServer="*res://core/Script/Global/global_transport.gd"
 GlobalConfig="*res://core/Script/Global/global_config.gd"
 GlobalTransition="*res://core/Script/Global/global_transition.gd"
 

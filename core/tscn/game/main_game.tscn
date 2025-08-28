@@ -1,8 +1,8 @@
 [gd_scene load_steps=18 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://bdgr2qa4v5oq7" path="res://core/Script/Node/Node_MainGame.gd" id="1_ak5wu"]
-[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Script/Class/Logic/GameTimer.gd" id="2_4k47o"]
-[ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Script/Class/Logic/System.gd" id="2_gpy5h"]
+[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Script/Class/System/GameTimer.gd" id="2_4k47o"]
+[ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Script/Class/System/System.gd" id="2_gpy5h"]
 [ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Script/Class/Render/RenderArea/RenderAreaStage.gd" id="4_8dpeo"]
 [ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://official/default/assets/Area/areaface/backgound.tscn" id="5_2w2we"]
 [ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://official/default/assets/Area/areaface/Node_arrow.gd" id="5_4k47o"]

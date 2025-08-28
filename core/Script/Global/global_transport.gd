@@ -1,5 +1,5 @@
 extends Node
-#GlobalServer.gd。管理全部rpc和数据转发。
+#GlobalTransport.gd。管理全部rpc和数据转发。
 var server = WebSocketMultiplayerPeer.new()
 var users:Array[User]
 var url:String

@@ -8,7 +8,7 @@ static func smooth_move_animation(
 	current_position: Vector2,
 	target_position: Vector2,
 	smooth_move_speed: float = DEFAULT_SPEED
-) -> Vector2:
+	) -> Vector2:
 	if smooth_move_speed >= 1.0:
 		return target_position
 	if smooth_move_speed <= 0.0:
