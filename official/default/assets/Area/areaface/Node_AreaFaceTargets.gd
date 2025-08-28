@@ -15,7 +15,7 @@ func ready_expand()->void:
 	pass
 
 func render_update(render_event:RenderEvent = RenderEvent.new()):
-	target_position = GlobalUIAnimation.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
+	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
 	tween_update()
 
 func tween_update(render_event:RenderEvent = RenderEvent.new()):
@@ -35,5 +35,5 @@ func card_move()-> void:
 		var card:RenderCard = area.card_pool[i]
 		var card_position = card.position
 		var _target_position = target_position[i]
-		GlobalUIAnimation.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
+		UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
 	pass

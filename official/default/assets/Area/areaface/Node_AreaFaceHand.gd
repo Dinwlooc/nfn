@@ -49,7 +49,7 @@ func _physics_process(delta: float) -> void:
 			pending_swap = false
 
 func render_update(render_event:RenderEvent = RenderEvent.new())->void:
-	target_position = GlobalUIAnimation.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
+	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
 	tween_update(render_event)
 
 func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
@@ -63,7 +63,7 @@ func _into_area()->void:
 		^"position":area_target_position,
 		^"size":area_target_size,
 		}
-	GlobalUIAnimation.tween_animations(self,list,TWEEN_TIME)
+	UIAnimationUtils.tween_animations(self,list,TWEEN_TIME)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
 	pass
 	
@@ -74,7 +74,7 @@ func _outto_area()->void:
 		^"position":area_target_position,
 		^"size":area_target_size,
 		}
-	GlobalUIAnimation.tween_animations(self,list,TWEEN_TIME)
+	UIAnimationUtils.tween_animations(self,list,TWEEN_TIME)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
 func card_move_expand() -> void:
@@ -88,7 +88,7 @@ func card_move_expand() -> void:
 func dragging_move(card:RenderCard)->void:
 	var _target_position = get_global_mouse_position()
 	card_move_rotate(card,_target_position)
-	var tween =  GlobalUIAnimation.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
+	var tween =  UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
 	tween.finished.connect(card_move_rotate.bind(card,_target_position))
 	call_deferred(&"swap_cards")
 	
@@ -116,7 +116,7 @@ func card_move_rotate(card:RenderCard, _target_position:Vector2)->void:
 	var rotation_ratio = min(abs_dx / max_distance, 1.0)
 	var rotation_sign = 1.0 if dx < 0 else -1.0
 	var _target_rotation = rotation_sign * rotation_ratio * max_rotation
-	GlobalUIAnimation.tween_animations(card, {^"rotation": _target_rotation}, rotate_time)
+	UIAnimationUtils.tween_animations(card, {^"rotation": _target_rotation}, rotate_time)
 
 func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
 	if area.card_pool.size() == 0||target_position.size()==0:
@@ -130,7 +130,7 @@ func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
 		if !card.dragged:
 			if render_event.config.get(&"rotate"):
 				card_move_rotate(card,_target_position)
-				GlobalUIAnimation.tween_animations(card,{^"position":_target_position},TWEEN_TIME).finished.connect(card_move_rotate.bind(card,_target_position))
+				UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME).finished.connect(card_move_rotate.bind(card,_target_position))
 			else:
-				GlobalUIAnimation.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
+				UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
 	pass

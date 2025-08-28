@@ -1,5 +1,5 @@
 extends RefCounted
-class_name GlobalUIAnimation
+class_name UIAnimationUtils
 #以全局脚本的形式提供UI动画插值函数。
 const  DEFAULT_SPEED = 0.07704  # 使任意6帧(0.1s)中的总移动与目标距离呈现为黄金比例
 const  GOLDEN_SPEED_3FRAMES = 0.14935

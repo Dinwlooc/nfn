@@ -25,14 +25,14 @@ func fade_in(duration:float = 1.5) -> void:
 	if fade_in_tween:
 		fade_in_tween.kill()
 	fade_in_started.emit()
-	fade_in_tween = GlobalUIAnimation.tween_animations(_transition_rect, {^"color": Color.BLACK}, duration)
+	fade_in_tween = UIAnimationUtils.tween_animations(_transition_rect, {^"color": Color.BLACK}, duration)
 	fade_in_tween.finished.connect(emit_signal.bind(&"fade_in_completed"))
 # 播放淡出效果
 func fade_out(duration:float = 1.5) -> void:
 	if fade_out_tween:
 		fade_out_tween.kill()
 	fade_out_started.emit()
-	fade_out_tween = GlobalUIAnimation.tween_animations(_transition_rect, {^"color": Color(Color.BLACK, 0)},duration)
+	fade_out_tween = UIAnimationUtils.tween_animations(_transition_rect, {^"color": Color(Color.BLACK, 0)},duration)
 	fade_out_tween.finished.connect(emit_signal.bind(&"fade_out_completed"))
 
 # 带转场的场景切换

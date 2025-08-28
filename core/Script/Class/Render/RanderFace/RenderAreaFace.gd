@@ -82,7 +82,7 @@ func card_move()-> void:
 		var card_position = area.card_pool[i].position
 		var _target_position = target_position[i]
 		if !area.card_pool[i].dragged:
-			GlobalUIAnimation.tween_animations(area.card_pool[i],{^"position":_target_position})
+			UIAnimationUtils.tween_animations(area.card_pool[i],{^"position":_target_position})
 	pass
 
 func dragging_move(card:RenderCard)->void:
