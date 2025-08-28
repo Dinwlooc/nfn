@@ -25,7 +25,7 @@ signal select
 signal drag
 
 func _ready()-> void:
-	name = "RenderCard"
+	name = &"RenderCard"
 	path = GlobalConfig._resource_registry[&"cardface"]
 	area.render_requested.connect(render_update)
 	pass

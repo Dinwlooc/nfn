@@ -135,7 +135,7 @@ func upload_operation_event(serialized_event: PackedByteArray) -> void:
 @rpc("any_peer", "call_local", "reliable")
 func receive_operation_event(serialized_event: PackedByteArray) -> void:
 	var event_dict = OperationEvent.deserialize(serialized_event)
-	event_dict[OperationEvent.OpKey.PEER_ID] = get_tree().get_multiplayer().get_remote_sender_id()
+	event_dict[OperationEvent.BaseKey.PEER_ID] = get_tree().get_multiplayer().get_remote_sender_id()
 	pass #字典应该传入System，以生成行为事件。待实现。
 # 新增的RPC接收函数（移除原来的 cards_rpc_receive）
 @rpc("authority", "call_local", "reliable")

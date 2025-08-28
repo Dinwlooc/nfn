@@ -24,7 +24,7 @@ func set_suit(newsuit:Suit)->HandCard:
 	suit = newsuit
 	return self
 
-func property_to_byte(serialize_data:SerializeData)->void:
+func property_to_byte(serialize_data:SerializationUtils.Data)->void:
 	super.property_to_byte(serialize_data)
 	serialize_write(SubKeys.POWER, power, serialize_data)
 	serialize_write(SubKeys.COST, cost, serialize_data)

@@ -1,42 +1,44 @@
 extends RefCounted
 class_name OperationEvent
-#操作事件，客户端渲染层与服务器端逻辑层通信的媒介。在构建时即使用可序列化的字典和严格的枚举
-enum OpKey {
-	EVENT_TYPE,
-	CARD_ID,
-	TARGET_ID,
-	PEER_ID
+#操作事件，客户端渲染层向服务器端逻辑层单向通信的媒介。
+#需要重建对象。
+enum BaseKey {
+	PEER_ID,#传输层写入 INT32
+	EVENT_TYPE,#INT8
+	CARD_ID,#INT32
+	TARGET_ID,#INT8
+	END,#扩展标识符
 }
-enum OpType {
+enum EventType {
 	   PLAY_CARDS,
 	}
 var event_data:Dictionary = {}
 
 func _init(init_type:int) -> void:
-	event_data.set(OpKey.EVENT_TYPE,init_type)
+	event_data.set( BaseKey.EVENT_TYPE,init_type)
 
 func set_cards(cards:Array[RenderCard]) -> OperationEvent:
-	event_data.set(OpKey.CARD_ID,[])
+	event_data.set( BaseKey.CARD_ID,[])
 	for card in cards:
-			event_data.get(OpKey.CARD_ID).append(card.get_id())
+			event_data.get( BaseKey.CARD_ID).append(card.get_id())
 	return self
 	
 func add_card(card:RenderCard)-> OperationEvent:
-	if !event_data.get(OpKey.CARD_ID):
-		event_data.set(OpKey.CARD_ID,[])
-	event_data.get(OpKey.CARD_ID).append(card.get_id())
+	if !event_data.get( BaseKey.CARD_ID):
+		event_data.set( BaseKey.CARD_ID,[])
+	event_data.get( BaseKey.CARD_ID).append(card.get_id())
 	return self
 
 func add_target(target_card:RenderCard) -> OperationEvent:
-	if !event_data.get(OpKey.TARGET_ID):
-		event_data.set(OpKey.TARGET_ID,[])
-	event_data.get(OpKey.TARGET_ID).append(target_card.get_id())
+	if !event_data.get( BaseKey.TARGET_ID):
+		event_data.set( BaseKey.TARGET_ID,[])
+	event_data.get( BaseKey.TARGET_ID).append(target_card.get_id())
 	return self
 	
 func set_targets(target_cards:Array[RenderCard])-> OperationEvent:
-	event_data.set(OpKey.TARGET_ID,[])
+	event_data.set( BaseKey.TARGET_ID,[])
 	for card in target_cards:
-			event_data.get(OpKey.TARGET_ID).append(card.get_id())
+			event_data.get( BaseKey.TARGET_ID).append(card.get_id())
 	return self
 	
 func set_params(key:String,value:Variant)-> OperationEvent:

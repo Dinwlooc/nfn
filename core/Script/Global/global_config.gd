@@ -17,7 +17,7 @@ func get_translation(key:StringName,lang:StringName=&"Zh_CN")->String:
 	var tran:String = load_resource(&"translation",lang).get_message(key)
 	if tran:
 		return tran
-	return key
+	return String(key)
 	
 func get_cards_list(list_name:StringName = &"default")->Array[String]:
 	var config:ConfigFile = _load_config(cards_list_path)
@@ -35,10 +35,10 @@ func get_cards_list(list_name:StringName = &"default")->Array[String]:
 func load_all_resource_packs(packs:Dictionary[StringName,PackedStringArray] = _debug_packs) -> void:
 	clear_registry()
 	for pack_name:String in packs[&"official"]:
-		var pack_path = "res://official/%s" % pack_name
+		var pack_path:String = "res://official/%s" % pack_name
 		load_resource_pack(pack_path, pack_name)
 	for pack_name:String in packs[&"mods"]:
-		var pack_path = "res://mods/%s" % pack_name
+		var pack_path:String = "res://mods/%s" % pack_name
 		load_resource_pack(pack_path, pack_name)
 
 ## 加载单个资源包配置
@@ -67,10 +67,10 @@ func load_resource_pack(pack_path: String, pack_name: String = "Unknow") -> void
 ## 获取资源路径
 func get_resource_path(resource_type: StringName, resource_key: StringName) -> String:
 	if not _resource_registry.has(resource_type):
-		push_error("请求的资源类型不存在: %s" % resource_type)
+		push_error("请求的资源类型不存在: %s" % String(resource_type))
 		return ""   
 	if not _resource_registry[resource_type].has(resource_key):
-		push_error("资源键 '%s' 在类型 '%s' 中不存在" % [resource_key, resource_type])
+		push_error("资源键 '%s' 在类型 '%s' 中不存在" % [String(resource_key), String(resource_type)])
 		return ""
 	return _resource_registry[resource_type][resource_key]
 
@@ -94,8 +94,8 @@ func reload_resource_packs() -> void:
 	resource_packs_reloaded.emit()
 
 func _load_config(path: String) -> ConfigFile:
-	var config = ConfigFile.new()
-	var err = config.load(path)
+	var config := ConfigFile.new()
+	var err:Error = config.load(path)
 	if err != OK:
 		push_error("Config load failed: %s (err %d)" % [path, err])
 		return null
