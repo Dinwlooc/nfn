@@ -1,5 +1,5 @@
-extends Object
-class_name SerializationUtils
+extends RefCounted
+class_name BaseSerializer
 
 const INT16_BYTE_LEN:int = 2
 const INT32_BYTE_LEN:int = 4
@@ -18,18 +18,25 @@ class Data:
 		main_data.resize(main_size)
 		extra_data = PackedByteArray()
 
+##应该重写的方法：
+static func obj_to_byte(obj)->Data:
+	return null
+	
+static func data_array_to_obj(data_array:Array):
+	return null
 
-static func serialize(obj:Object) -> PackedByteArray:
-	if not (obj.has_method(&"get_enum_size") and obj.has_method(&"property_to_byte")):
-		push_error("Object does not implement required serialization methods")
-		return PackedByteArray()
-	var serialize_data := Data.new(obj.get_enum_size())
-	obj.property_to_byte(serialize_data)
+static func serialize(obj:Object)->PackedByteArray:
+	return data_to_byte(obj_to_byte(obj))
+
+static func deserialize(data:PackedByteArray):
+	return data_array_to_obj(byte_to_data_array(data))
+#####
+static func data_to_byte(data:Data) -> PackedByteArray:
 	var all_data := PackedByteArray()
 	all_data.resize(INT16_BYTE_LEN)
-	all_data.encode_u16(0, serialize_data.main_data.size())
-	all_data.append_array(serialize_data.main_data)
-	all_data.append_array(serialize_data.extra_data)
+	all_data.encode_u16(0, data.main_data.size())
+	all_data.append_array(data.main_data)
+	all_data.append_array(data.extra_data)
 	return all_data
 
 static func serialize_write(key: int, value, serialize_data: Data) -> void:
@@ -65,7 +72,7 @@ static func _serialize_var(key: int, value, serialize_data: Data) -> void:
 	serialize_data.extra_data.append(buffer.size() & 0xFF)
 	serialize_data.extra_data.append_array(buffer)
 
-static func deserialize(serialized_data: PackedByteArray) -> Array:
+static func byte_to_data_array(serialized_data: PackedByteArray) -> Array:
 	var main_data_len := serialized_data.decode_u16(0)
 	var ptr_main := INT16_BYTE_LEN  # 主数据起始位置
 	var ptr_type := ptr_main + main_data_len  # 类型数据起始位置

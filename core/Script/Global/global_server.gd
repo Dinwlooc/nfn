@@ -5,7 +5,10 @@ var users:Array[User]
 var url:String
 var id:int = -1
 signal peer_update(peer_id:int)
-enum PackKey{URL}
+const CardData = CardSerializer.CardData
+enum PackKey{
+	URL
+	}
 
 func _ready()->void:
 		multiplayer.peer_connected.connect(_peer_connected)
@@ -109,12 +112,9 @@ func unpack_server(bytes: PackedByteArray):
 func serialize_cards(cards:Array[Card])-> PackedByteArray:
 	return var_to_bytes(cards.map(func(card):return card.serialize()))
 	
-func deserialize_cards(serialized_data: PackedByteArray)->Array[Array]:
-	var card_data_array:Array[Array]
-	card_data_array.append_array(bytes_to_var(serialized_data).map(Card.deserialize))
-	if not card_data_array is Array[Array]:
-		push_error("Invalid data format: Expected Array[Dictionary]")
-		return [[]]
+func deserialize_cards(serialized_data: PackedByteArray)->Array[CardData]:
+	var card_data_array:Array[CardData]
+	card_data_array.append_array(bytes_to_var(serialized_data).map(CardSerializer.deserialize))
 	return card_data_array
 
 func cards_add_rpc(area: Area, cards: Array[Card])->void:
@@ -130,18 +130,17 @@ func cards_remove_rpc(area: Area, uids: Array[String])->void:
 
 func upload_operation_event(serialized_event: PackedByteArray) -> void:
 	var target = MultiplayerPeer.TARGET_PEER_SERVER
-	rpc_id(target, "receive_operation_event", serialized_event,)
+	rpc_id(target, &"receive_operation_event", serialized_event)
 
 @rpc("any_peer", "call_local", "reliable")
 func receive_operation_event(serialized_event: PackedByteArray) -> void:
-	var event_dict = OperationEvent.deserialize(serialized_event)
-	event_dict[OperationEvent.BaseKey.PEER_ID] = get_tree().get_multiplayer().get_remote_sender_id()
-	pass #字典应该传入System，以生成行为事件。待实现。
-# 新增的RPC接收函数（移除原来的 cards_rpc_receive）
+	pass #待实现。
+
 @rpc("authority", "call_local", "reliable")
 func cards_add_receive(area_name: String, data: PackedByteArray)->void:
-	if GlobalConsole.renderarea.has(area_name):
-		var cards_data:Array[Array] = deserialize_cards(data)
+	var _area_name:= StringName(area_name)
+	if GlobalConsole.renderarea.has(_area_name):
+		var cards_data:Array[CardData] = deserialize_cards(data)
 		GlobalConsole.renderarea[area_name].cards_add(cards_data)
 
 @rpc("authority", "call_local", "reliable")

@@ -2,11 +2,8 @@ extends RefCounted
 class_name OperationEvent
 #操作事件，客户端渲染层向服务器端逻辑层单向通信的媒介。
 #需要重建对象。
-enum BaseKey {
-	PEER_ID,#传输层写入 INT32
-	EVENT_TYPE,#INT8
-	CARD_ID,#INT32
-	TARGET_ID,#INT8
+enum BaseKeys {
+	EVENT_TYPE,
 	END,#扩展标识符
 }
 enum EventType {
@@ -55,7 +52,3 @@ static func deserialize(serialized_data: PackedByteArray) -> Dictionary:
 		return data
 	push_error("OperationEvent deserialize failed: data is not a dictionary")
 	return {}
-
-# OperationEvent.gd
-func upload() -> void:
-	GlobalServer.upload_operation_event(serialize())

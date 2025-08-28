@@ -17,7 +17,8 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var path:Dictionary
-@export var data:Array
+const Data = CardSerializer.CardData
+var data:Data
 class DefaultType:
 	const ATTACK = &"attack"
 	const VOID = &"void"
@@ -30,10 +31,10 @@ func _ready()-> void:
 	area.render_requested.connect(render_update)
 	pass
 
-func data_update(new_card_data:Array)-> void:
+func data_update(new_card_data:Data)-> void:
 	data = new_card_data
-	if !(cardface)||new_card_data[Card.BaseKeys.TYPE] != cardface.type:
-		_load_scene_by_type(new_card_data[Card.BaseKeys.TYPE])
+	if !(cardface)||data.type != cardface.type:
+		_load_scene_by_type(data.type)
 	cardface.data_update()
 	pass
 	
@@ -86,4 +87,4 @@ func is_hovering(mouse_pos):
 		return false
 
 func get_id()->int:
-	return data.get(Card.BaseKeys.ID)
+	return data.id

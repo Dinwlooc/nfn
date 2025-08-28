@@ -1,20 +1,20 @@
 [gd_scene load_steps=18 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://bdgr2qa4v5oq7" path="res://core/Script/Node/Node_MainGame.gd" id="1_ak5wu"]
-[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Script/Class/GameTimer.gd" id="2_4k47o"]
-[ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Script/Class/System.gd" id="2_gpy5h"]
-[ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Script/Class/RenderArea/RenderAreaStage.gd" id="4_8dpeo"]
+[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Script/Class/Logic/GameTimer.gd" id="2_4k47o"]
+[ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Script/Class/Logic/System.gd" id="2_gpy5h"]
+[ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Script/Class/Render/RenderArea/RenderAreaStage.gd" id="4_8dpeo"]
 [ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://official/default/assets/Area/areaface/backgound.tscn" id="5_2w2we"]
 [ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://official/default/assets/Area/areaface/Node_arrow.gd" id="5_4k47o"]
-[ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Script/Class/RenderArea/RenderAreaHand.gd" id="7_jjejj"]
+[ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Script/Class/Render/RenderArea/RenderAreaHand.gd" id="7_jjejj"]
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://official/default/assets/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
 [ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://official/default/assets/Area/areaface/areaface_self.tscn" id="11_4k47o"]
-[ext_resource type="Script" uid="uid://boamtyqq4276a" path="res://core/Script/Class/RenderArea/RenderAreaSelf.gd" id="11_5huyi"]
+[ext_resource type="Script" uid="uid://boamtyqq4276a" path="res://core/Script/Class/Render/RenderArea/RenderAreaSelf.gd" id="11_5huyi"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://official/default/assets/Area/areaface/areaface_self_properties.tscn" id="12_f8lnr"]
-[ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://core/Script/Class/RenderCard/RenderCard.gd" id="13_4k47o"]
+[ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://core/Script/Class/Render/RenderCard/RenderCard.gd" id="13_4k47o"]
 [ext_resource type="PackedScene" uid="uid://s0d734yjh7uc" path="res://official/default/assets/Character/charactercard/charactertargetcard.tscn" id="14_2w2we"]
 [ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://official/default/assets/Area/areaface/areaface_targets.tscn" id="14_8v20q"]
-[ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://core/Script/Class/RenderArea/RenderAreaTargets.gd" id="14_a6oxl"]
+[ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://core/Script/Class/Render/RenderArea/RenderAreaTargets.gd" id="14_a6oxl"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://official/default/tres/LineEdit_theme.tres" id="16_2w2we"]
 [ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://core/Script/Node/Node_Console.gd" id="17_qle8x"]
 
@@ -102,7 +102,6 @@ offset_bottom = -239.541
 script = ExtResource("13_4k47o")
 cardface = NodePath("CharacterTargetCard")
 area = NodePath("..")
-data = [0, "", "", null]
 metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
 
 [node name="CharacterTargetCard" parent="Control/AreaTargets/RenderCard" node_paths=PackedStringArray("card") instance=ExtResource("14_2w2we")]

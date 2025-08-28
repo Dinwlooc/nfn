@@ -30,14 +30,15 @@ func _input(event: InputEvent) -> void:
 	pass
 
 func data_update()-> void:
-	var texture = get_card_main_icon(card.data[Card.BaseKeys.NAME])
+	var data:CardSerializer.HandCardData = card.data
+	var texture = get_card_main_icon(data.name)
 	Ntexture.texture = texture
-	Ncost.text = "消耗"+str(card.data[HandCard.SubKeys.MODIFIED_COST])
-	Ndamage.text = "威力"+str(card.data[HandCard.SubKeys.MODIFIED_POWER])
-	Ndescription.text = get_description(card.data[Card.BaseKeys.NAME])
-	Nname.text = get_real_name(card.data[Card.BaseKeys.NAME])
-	NverticalName.text = get_real_name(card.data[Card.BaseKeys.NAME])
-	Nsuit.frame = get_suit(card.data[HandCard.SubKeys.SUIT])
+	Ncost.text = "消耗"+str(data.modified_cost)
+	Ndamage.text = "威力"+str(data.modified_power)
+	Ndescription.text = get_description(data.name)
+	Nname.text = get_real_name(data.name)
+	NverticalName.text = get_real_name(data.name)
+	Nsuit.frame = get_suit(data.suit)
 	pass	
 	
 func render_update(render_event:RenderEvent = RenderEvent.new())->void:
