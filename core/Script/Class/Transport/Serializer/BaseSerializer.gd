@@ -25,7 +25,7 @@ static func obj_to_byte(obj)->Data:
 static func data_array_to_obj(data_array:Array):
 	return null
 
-static func serialize(obj:Object)->PackedByteArray:
+static func serialize(obj)->PackedByteArray:
 	return data_to_byte(obj_to_byte(obj))
 
 static func deserialize(data:PackedByteArray):

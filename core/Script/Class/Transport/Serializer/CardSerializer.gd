@@ -69,7 +69,7 @@ static func data_array_to_obj(data_array:Array):
 			data = card_data
 	return data
 
-static func serialize(obj:Object)->PackedByteArray:
+static func serialize(obj:Card)->PackedByteArray:
 	return data_to_byte(obj_to_byte(obj))
 
 static func deserialize(data:PackedByteArray):
