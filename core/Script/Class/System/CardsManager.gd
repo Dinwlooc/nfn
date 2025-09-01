@@ -2,7 +2,6 @@ extends RefCounted
 class_name CardManager
 
 var next_id: int = 0  # 下一个可用的卡牌ID
-
 # 为单张卡牌分配ID
 func assign_id(card: Card) -> void:
 	card.id = next_id

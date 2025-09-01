@@ -1,2 +1,0 @@
-extends BaseEvent
-class_name CardEvent

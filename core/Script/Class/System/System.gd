@@ -4,46 +4,52 @@ class_name System
 enum GameStage { NULL, START, DRAW , MAIN , DISCARD , END}
 var game_stages:Dictionary
 var game_stage: GameStage = GameStage.NULL
-var areaAttack = AreaAttack.new()
-var areaDrawing = AreaDrawing.new()
+var area_attack = AreaAttack.new()
+var area_drawing = AreaDrawing.new()
 var alive_players:Array[Player]
 var current_player_index:int
 var cardsmanager = CardManager.new()
+var event_processor = EventProcessor.new(self)
+var _process_active := false
 signal data_update
 	
 func _ready() -> void:
 	GlobalConsole.register_system(self)
 	game_stages = {
-	GameStage.START:StageStart.new(),
-	GameStage.DRAW:StageDraw.new()
+	GameStage.START:StageStart.new(self),
+	GameStage.DRAW:StageDraw.new(self)
 }
-	signal_connect_tesy()#调试模式
+	signal_connect_test()#调试模式
 	load_cards()
+	
+func _process(delta: float) -> void:
+	if _process_active:
+		event_processor.process_events()
 
 func load_cards() -> void:
-	areaDrawing.card_pool = cardsmanager.load_all_cards()
-	areaDrawing.card_pool.shuffle()
+	area_drawing.card_pool = cardsmanager.load_all_cards()
+	area_drawing.card_pool.shuffle()
+	
 
-func change_stage(new_stage_name:GameStage) -> void:
-	var current_stage:Stage
+func enable_processing(enable: bool) -> void:
+	_process_active = enable
+	set_process(enable)
+
+
+func change_stage(new_stage: GameStage) -> void:
 	if game_stage != GameStage.NULL:
-		current_stage = game_stages[game_stage]
-	if current_stage:
-		current_stage.stage_ended.disconnect(_on_stage_ended)
-	if new_stage_name in game_stages:
-		game_stage = new_stage_name
-		current_stage = game_stages[new_stage_name]	
-		current_stage.stage_ended.connect(_on_stage_ended)
-		current_stage.enter()
-	else:
-		push_error("Invalid stage:" + str(new_stage_name))
+		var current: Stage = game_stages[game_stage]
+	if new_stage in game_stages:
+		game_stage = new_stage
+		var next_stage: Stage = game_stages[new_stage]
+		next_stage.enter()
 #####预置功能函数#####
 func draw_cards(draw_count:int,players_index:int)-> void:
 	var card_pool:Array[Card]
 	for i in range(0,draw_count):
-		if alive_players.size()&&areaDrawing.card_pool.size():
-			card_pool.append(areaDrawing.card_pool.pop_back())
-	alive_players[players_index].areaHand.cards_add(card_pool)
+		if alive_players.size()&&area_drawing.card_pool.size():
+			card_pool.append(area_drawing.card_pool.pop_back())
+	alive_players[players_index].area_hand.cards_add(card_pool)
 	pass
 
 #####信号调用函数#####
@@ -62,7 +68,7 @@ func _start_game()-> void:
 	GlobalConsole._print("游戏开始！System Vesion:Beta")
 	pass
 
-func _on_stage_ended():
+func stage_ended():
 	if game_stage==GameStage.START:
 		change_stage(GameStage.DRAW)
 	pass
@@ -72,10 +78,10 @@ func _draw_cards_test()->void:
 	draw_cards(2,0)
 	pass
 	
-func signal_connect_tesy():
+func signal_connect_test():
 	GlobalConsole.c_start.connect(_start_game)
 	GlobalConsole.c_draw.connect(_draw_cards_test)
 
-func signal_disconnect_tesy():
+func signal_disconnect_test():
 	GlobalConsole.c_start.disconnect(_start_game)
 	GlobalConsole.c_draw.disconnect(_draw_cards_test)

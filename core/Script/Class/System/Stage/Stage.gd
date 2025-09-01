@@ -1,27 +1,23 @@
 extends RefCounted
 class_name Stage
 
-enum StageType {
-	MAIN,          # 主阶段
-	INTERRUPT      # 插入阶段
-}
-signal stage_ended
 var system:System
-var type: int = StageType.MAIN
-var stage_name: String = "Unnamed Stage"
+var stage_name: StringName = &"Null"
 var time_limit: float = 30.0
+var event_processor: EventProcessor
+signal stage_ended
 
-func _init()->void:
-	system = GlobalConsole.system
+func _init(p_system:System) -> void:
+	system = p_system
+	event_processor = system.event_processor
 	_init_expand()
 
 func  _init_expand()->void:
 	pass
 
 func enter()->void:
-	if type == StageType.MAIN:
-		GlobalConsole.timer.timer_create(time_limit)
-		GlobalConsole.timer.timeout.connect(on_timeout)
+	GlobalConsole.timer.timer_create(time_limit)
+	GlobalConsole.timer.timeout.connect(on_timeout)
 	enter_expand()
 
 func enter_expand()->void:
@@ -31,9 +27,9 @@ func exit():
 	end_stage()
 	GlobalConsole.timer.timeout.disconnect(on_timeout)
 	GlobalConsole.timer.timer_stop()
-	stage_ended.emit()
+	system.stage_ended()
 
-func handle_operation(op_data: Dictionary):
+func handle_operation(op_data:OperationRequest):
 	pass
 
 func on_timeout()->void:
@@ -41,7 +37,6 @@ func on_timeout()->void:
 	
 func end_stage()->void:
 	pass
-
-# 游戏功能函数
-func draw_cards(draw_count:int)-> void:
-	system.draw_cards(draw_count,system.current_player_index)
+	
+func complete_stage() -> void:
+	exit()

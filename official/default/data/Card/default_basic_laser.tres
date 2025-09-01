@@ -10,6 +10,5 @@ script = SubResource("GDScript_xmloq")
 power = 4
 cost = 1
 suit = null
-type = "attack"
 name = "nfn:basic_laser"
-data = {}
+type = &"attack"

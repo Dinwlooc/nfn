@@ -1,10 +1,15 @@
 extends Stage
 class_name StageDraw
 
-func _init_expand()->void:
+func _init_expand() -> void:
 	time_limit = 0.5
-	pass
 
-func enter_expand()->void:
-	draw_cards(system.alive_players[system.current_player_index].get_attribute("NCD"))
-	pass
+func enter_expand() -> void:
+	var player_index = system.current_player_index
+	var draw_count = system.alive_players[player_index].draw_cards_count
+	var draw_event = DrawCardsEvent.new(player_index, draw_count)
+	event_processor.queue_behavior(draw_event)
+	event_processor.all_completed.connect(_on_all_completed, CONNECT_ONE_SHOT)
+	
+func _on_all_completed() -> void:
+	complete_stage()

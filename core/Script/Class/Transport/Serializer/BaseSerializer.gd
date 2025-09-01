@@ -19,18 +19,18 @@ class Data:
 		extra_data = PackedByteArray()
 
 ##应该重写的方法：
+static func serialize(obj)->PackedByteArray:
+	return data_to_byte(obj_to_byte(obj))
+
+static func deserialize(data:PackedByteArray):
+	return data_array_to_obj(byte_to_data_array(data))
+##建议使用的写法###
 static func obj_to_byte(obj)->Data:
 	return null
 	
 static func data_array_to_obj(data_array:Array):
 	return null
 
-static func serialize(obj)->PackedByteArray:
-	return data_to_byte(obj_to_byte(obj))
-
-static func deserialize(data:PackedByteArray):
-	return data_array_to_obj(byte_to_data_array(data))
-#####
 static func data_to_byte(data:Data) -> PackedByteArray:
 	var all_data := PackedByteArray()
 	all_data.resize(INT16_BYTE_LEN)
@@ -45,6 +45,8 @@ static func serialize_write(key: int, value, serialize_data: Data) -> void:
 			_serialize_string(key, value, serialize_data)
 		TYPE_INT:
 			_serialize_int(key, value, serialize_data)
+		TYPE_STRING_NAME:
+			_serialize_string(key, String(value), serialize_data)
 		_:  # VAR类型
 			_serialize_var(key, value, serialize_data)
 
