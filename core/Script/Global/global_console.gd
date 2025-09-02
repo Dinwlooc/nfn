@@ -1,15 +1,7 @@
 extends Node
- 
+ #GlobalConsole
 ###全局控制台####
-var maingame:Node
-var	renderarea:Dictionary[StringName,RenderArea]
-var console:Node
-class DragState:
-	var area:RenderArea
-	var card:RenderCard
-var timer:GameTimer
-var system:System
-var card_on_drag:DragState
+
 var command_resource:Resource = load("res://core/Script/Global/command.tres")
 var command_list: Dictionary = command_resource.command as Dictionary
 var command_name_list:PackedStringArray = command_resource.command_name as PackedStringArray
@@ -24,38 +16,10 @@ signal c_play_a_card(pool_id:int)
 
 func _ready() -> void:
 	c_help.connect(print_help)
-func register_console(console_instance:Node)->void:
-	console = console_instance
-func register_maingame(maingame_instance:Node)->void:
-	maingame = maingame_instance
-func register_system(system_instance:System)->void:
-	system = system_instance
-func register_timer(timer_instance:GameTimer)->void:
-	timer = timer_instance
-func register_renderarea(renderarea_name:StringName,renderarea_instance:RenderArea)->void:
-	renderarea[renderarea_name] = renderarea_instance
-	
-func set_card_on_drag(area:RenderArea,realcard:RenderCard)->void:
-	remove_card_on_drag()
-	card_on_drag = DragState.new()
-	card_on_drag.area = area
-	card_on_drag.card = realcard
-	card_on_drag.card.dragged = true
-	card_on_drag.area.tween_update()
-	global_dragged.emit()
 
-func get_renderarea(renderarea_name:StringName)->RenderArea:
-	if renderarea.has(renderarea_name):
-		return renderarea[renderarea_name]
-	return null
-
-func remove_card_on_drag():
-	if card_on_drag:
-		card_on_drag.card.dragged = false
-		card_on_drag.area.tween_update()
-	card_on_drag = null
 		
 func _print(text:Variant)->void:
+	var console = GlobalRegistry.console
 	if console:
 		match typeof(text):
 			4:
@@ -93,5 +57,4 @@ func print_help(command_name:String = "c_help"):
 	if !command_name_list.has(command_name):
 		_print(["c_help:指令未登记：",command_name])
 		return
-	
 	_print(["c_help:",command_list[StringName(command_name)].get(&"mes","暂无提示")])

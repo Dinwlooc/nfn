@@ -1,8 +1,7 @@
 extends Node2D
 
 func _ready() -> void:
-	GlobalConsole.register_maingame(self)
-	signal_connect_tesy()#调试模式
+	signal_connect_test()#调试模式
 	GlobalTransport.random_create()
 	multiplayer.multiplayer_peer = GlobalTransport.server
 
@@ -11,7 +10,7 @@ func _connect_to(url:String):
 		GlobalConsole._print("c_connerct_to未执行：服务器端请先使用c_close()关闭服务器。")
 		return
 	if url == "0":
-		GlobalTransport.url_connect(GlobalConsole.server.url)
+		GlobalTransport.url_connect(GlobalRegistry.server.url)
 		return
 	else:
 		GlobalTransport.url_connect(url)
@@ -23,8 +22,8 @@ func _close():
 	else:
 		GlobalConsole._print("客户端已关闭。")
 	GlobalTransport.close()
-	GlobalConsole.system.signal_disconnect_tesy()
+	GlobalRegistry.system.signal_disconnect_test()
 	
-func signal_connect_tesy():
+func signal_connect_test():
 	GlobalConsole.c_connect_to.connect(_connect_to)
 	GlobalConsole.c_close.connect(_close)

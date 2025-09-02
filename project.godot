@@ -21,6 +21,7 @@ GlobalConsole="*res://core/Script/Global/global_console.gd"
 GlobalTransport="*res://core/Script/Global/global_transport.gd"
 GlobalConfig="*res://core/Script/Global/global_config.gd"
 GlobalTransition="*res://core/Script/Global/global_transition.gd"
+GlobalRegistry="*res://core/Script/Global/global_registry.gd"
 
 [display]
 

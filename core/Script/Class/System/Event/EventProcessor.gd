@@ -6,7 +6,7 @@ var current_runtime: RuntimeEvent = null
 var system:System
 signal all_completed()
 
-func _init(init_system:System = GlobalConsole.system) -> void:
+func _init(init_system:System) -> void:
 	system = init_system
 
 # 主事件处理循环

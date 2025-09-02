@@ -5,19 +5,22 @@ var system:System
 var stage_name: StringName = &"Null"
 var time_limit: float = 30.0
 var event_processor: EventProcessor
+var is_exit:bool = false
+var timer:GameTimer
 signal stage_ended
 
-func _init(p_system:System) -> void:
+func _init(p_system:System,p_timer:GameTimer) -> void:
 	system = p_system
 	event_processor = system.event_processor
+	timer = p_timer
 	_init_expand()
 
 func  _init_expand()->void:
 	pass
 
 func enter()->void:
-	GlobalConsole.timer.timer_create(time_limit)
-	GlobalConsole.timer.timeout.connect(on_timeout)
+	timer.timer_create(time_limit)
+	timer.timeout.connect(on_timeout)
 	enter_expand()
 
 func enter_expand()->void:
@@ -25,8 +28,9 @@ func enter_expand()->void:
 
 func exit():
 	end_stage()
-	GlobalConsole.timer.timeout.disconnect(on_timeout)
-	GlobalConsole.timer.timer_stop()
+	GlobalRegistry.timer.timeout.disconnect(on_timeout)
+	GlobalRegistry.timer.timer_stop()
+	is_exit = true
 	system.stage_ended()
 
 func handle_operation(op_data:OperationRequest):

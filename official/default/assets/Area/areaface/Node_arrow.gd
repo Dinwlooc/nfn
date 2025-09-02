@@ -22,23 +22,23 @@ func _physics_process(delta: float) -> void:
 			draw_arrow()
 
 func connect_signal()->void:
-	var areahand:RenderArea = GlobalConsole.get_renderarea(AREA_HAND)
+	var areahand:RenderArea = GlobalRegistry.get_renderarea(AREA_HAND)
 	if areahand:
 		areahand.selected.connect(draw_arrow)
 		areahand.render_requested.connect(render_event_handler)
 		areahand.tween_requested.connect(render_event_handler)
-	var areatargets = GlobalConsole.get_renderarea(AREA_TARGETS)
+	var areatargets = GlobalRegistry.get_renderarea(AREA_TARGETS)
 	if areatargets:
 		areatargets.selected.connect(draw_arrow)
 		areatargets.render_requested.connect(render_event_handler)
 		areatargets.tween_requested.connect(render_event_handler)
-	GlobalConsole.global_dragged.connect(clear_arrow)
+	GlobalRegistry.global_dragged.connect(clear_arrow)
 	pass
 
 func draw_arrow() -> void:
 	pending_draw = false
 	clear_arrow()
-	if GlobalConsole.card_on_drag:
+	if GlobalRegistry.card_on_drag:
 		return
 	var start_points = get_start_point_array()
 	if start_points.is_empty():
@@ -73,7 +73,7 @@ func delay_draw_arrow()->void:
 
 func get_start_point_array() -> Array[Vector2]:
 	var array:Array[Vector2] = []
-	var cards:Array[RenderCard] = GlobalConsole.get_renderarea(AREA_HAND).get_selected_cards()
+	var cards:Array[RenderCard] = GlobalRegistry.get_renderarea(AREA_HAND).get_selected_cards()
 	if cards:
 		var card_size = cards[0].get_face_size() #规范条件，同一区域的卡牌大小一致
 		array.append_array(cards.map(
@@ -84,7 +84,7 @@ func get_start_point_array() -> Array[Vector2]:
 
 func get_end_point_array() -> Array[Vector2]:
 	var array:Array[Vector2] = []
-	var cards:Array[RenderCard] = GlobalConsole.get_renderarea(AREA_TARGETS).get_selected_cards()
+	var cards:Array[RenderCard] = GlobalRegistry.get_renderarea(AREA_TARGETS).get_selected_cards()
 	if cards:
 		var card_size = cards[0].get_face_size() #规范条件，同一区域的卡牌大小一致
 		array.append_array(cards.map(

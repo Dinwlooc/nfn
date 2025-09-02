@@ -97,8 +97,8 @@ func swap_cards()->void:
 		if swap_cooldown < SWAP_COOLDOWN_DURATION - SWAP_DELTA:
 			pending_swap = true
 		return
-	if  GlobalConsole.card_on_drag && GlobalConsole.card_on_drag.area == area:
-		var drag_card = GlobalConsole.card_on_drag.card
+	if  GlobalRegistry.card_on_drag && GlobalRegistry.card_on_drag.area == area:
+		var drag_card = GlobalRegistry.card_on_drag.card
 		hover_detect_when_dragging(drag_card)
 		if hovering_card:
 			hovering_card.hovering = false

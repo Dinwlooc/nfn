@@ -139,19 +139,19 @@ func receive_operation_event(serialized_event: PackedByteArray) -> void:
 @rpc("authority", "call_local", "reliable")
 func cards_add_receive(area_name: String, data: PackedByteArray)->void:
 	var _area_name:= StringName(area_name)
-	if GlobalConsole.renderarea.has(_area_name):
+	if GlobalRegistry.renderarea.has(_area_name):
 		var cards_data:Array[CardData] = deserialize_cards(data)
-		GlobalConsole.renderarea[area_name].cards_add(cards_data)
+		GlobalRegistry.renderarea[area_name].cards_add(cards_data)
 
 @rpc("authority", "call_local", "reliable")
 func cards_change_receive(area_name: String, data: PackedByteArray)->void:
-	if GlobalConsole.renderarea.has(area_name):
-		GlobalConsole.renderarea[area_name].cards_change(deserialize_cards(data))
+	if GlobalRegistry.renderarea.has(area_name):
+		GlobalRegistry.renderarea[area_name].cards_change(deserialize_cards(data))
 
 @rpc("authority", "call_local", "reliable")
 func cards_remove_receive(area_name: String, ids: Array[String])->void:
-	if GlobalConsole.renderarea.has(area_name):
-		GlobalConsole.renderarea[area_name].cards_remove(ids)
+	if GlobalRegistry.renderarea.has(area_name):
+		GlobalRegistry.renderarea[area_name].cards_remove(ids)
 
 
 @rpc("authority","call_remote")func receive_server_data(data)-> void:
