@@ -70,10 +70,13 @@ func on_select(pool_id:int)-> void:
 	pass
 
 func on_drag(pool_id:int)->void:
+	var control:RenderControl = GlobalRegistry.render_control
+	if !control :
+		return
 	if Input.get_mouse_button_mask()==1:
-		GlobalRegistry.set_card_on_drag(self,card_pool[pool_id])
+		control.set_card_on_drag(self,card_pool[pool_id])
 	else:
-		GlobalRegistry.remove_card_on_drag()
+		control.remove_card_on_drag()
 	pass
 
 func get_selected_cards()->Array[RenderCard]:

@@ -32,13 +32,15 @@ func connect_signal()->void:
 		areatargets.selected.connect(draw_arrow)
 		areatargets.render_requested.connect(render_event_handler)
 		areatargets.tween_requested.connect(render_event_handler)
-	GlobalRegistry.global_dragged.connect(clear_arrow)
+	var control:RenderControl = GlobalRegistry.render_control
+	if control:
+		control.dragged_update.connect(clear_arrow)
 	pass
 
 func draw_arrow() -> void:
 	pending_draw = false
 	clear_arrow()
-	if GlobalRegistry.card_on_drag:
+	if GlobalRegistry.render_control && GlobalRegistry.render_control.card_on_drag:
 		return
 	var start_points = get_start_point_array()
 	if start_points.is_empty():

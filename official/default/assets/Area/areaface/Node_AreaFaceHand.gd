@@ -23,6 +23,7 @@ func ready_expand()->void:
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size
+	area.selected.connect(quickly_select_the_target)
 	_generate_sine_table()
 	
 func _generate_sine_table() -> void:
@@ -97,8 +98,9 @@ func swap_cards()->void:
 		if swap_cooldown < SWAP_COOLDOWN_DURATION - SWAP_DELTA:
 			pending_swap = true
 		return
-	if  GlobalRegistry.card_on_drag && GlobalRegistry.card_on_drag.area == area:
-		var drag_card = GlobalRegistry.card_on_drag.card
+	var control:RenderControl = GlobalRegistry.render_control
+	if  control && control.card_on_drag && control.card_on_drag.area == area:
+		var drag_card = control.card_on_drag.card
 		hover_detect_when_dragging(drag_card)
 		if hovering_card:
 			hovering_card.hovering = false
@@ -133,4 +135,12 @@ func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
 				UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME).finished.connect(card_move_rotate.bind(card,_target_position))
 			else:
 				UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
+	pass
+
+func quickly_select_the_target():
+	var areatargets = GlobalRegistry.get_renderarea(RenderArea.DefaultArea.TARGETS)
+	if !areatargets:
+		return
+	if area.get_selected_cards().size() == 1 && area.get_selected_cards()[0].data.type == RenderCard.DefaultType.ATTACK && areatargets.card_pool.size() > 0 && areatargets.get_selected_cards().size() == 0:
+		areatargets.on_select(0)
 	pass

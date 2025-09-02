@@ -32,10 +32,11 @@ func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 	pass
 
 func _input(event)->void:
-	if event is InputEventMouseMotion:
+	var control:RenderControl = GlobalRegistry.render_control 
+	if event is InputEventMouseMotion && control:
 		var mouse_position = get_local_mouse_position()
-		if GlobalRegistry.card_on_drag&&GlobalRegistry.card_on_drag.area == area:
-			dragging_move(GlobalRegistry.card_on_drag.card)
+		if control.card_on_drag&&control.card_on_drag.area == area:
+			dragging_move(control.card_on_drag.card)
 		if Rect2(Vector2.ZERO,size).has_point(mouse_position):
 			#hover_card()
 			if !in_area:
