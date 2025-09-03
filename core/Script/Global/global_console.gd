@@ -13,6 +13,7 @@ signal c_connect_to(url:String)
 signal c_close 
 signal c_help(command:StringName)
 signal c_play_a_card(pool_id:int)
+signal c_reload()
 
 func _ready() -> void:
 	c_help.connect(print_help)

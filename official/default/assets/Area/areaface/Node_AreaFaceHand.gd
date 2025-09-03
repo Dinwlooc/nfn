@@ -10,11 +10,14 @@ const SWAP_COOLDOWN_DURATION: float = 0.3
 const SWAP_DELTA:float = 0.07
 const TWEEN_TIME:float = 0.35
 
-const TABLE_SIZE: int = 64  #采样点数量(2^N优化)，使用64保证能被4整除
+const TABLE_SIZE: int = 64  #采样点数量(2^N)
 const AMPLITUDE: float = 0.3
 const PHASE_INCREMENT: int = 1     # 相位索引增量
 const MASK: int = TABLE_SIZE - 1   # 位掩码用于快速取模
 const CARD_PHASE_OFFSET: int = 4  # 卡牌间相位差
+const max_distance = 400.0
+const max_rotation = -PI*0.167
+const rotate_time = 0.5
 var _sine_table := PackedFloat64Array() # 类型化数组存储采样点
 var _global_phase_index: int = 0
 
@@ -23,18 +26,15 @@ func ready_expand()->void:
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size
-	area.selected.connect(quickly_select_the_target)
 	_generate_sine_table()
-	
+
 func _generate_sine_table() -> void:
 	_sine_table.resize(TABLE_SIZE)
 	var quarter = TABLE_SIZE / 4
 	for i in range(0, quarter + 1):
 		_sine_table[i] = sin(TAU * i / TABLE_SIZE)
-	# 第二象限(π/2~π)
 	for i in range(1, quarter):
 		_sine_table[quarter + i] = _sine_table[quarter - i]
-	# 第三四象限(π~2π)
 	for i in range(0, 2 * quarter):
 		_sine_table[2 * quarter + i] = -_sine_table[i]
 
@@ -46,7 +46,7 @@ func _physics_process(delta: float) -> void:
 	if swap_cooldown > 0:
 		swap_cooldown -= delta
 		if pending_swap && swap_cooldown <= 0:
-			swap_cards()
+			try_dragging_move()
 			pending_swap = false
 
 func render_update(render_event:RenderEvent = RenderEvent.new())->void:
@@ -91,30 +91,23 @@ func dragging_move(card:RenderCard)->void:
 	card_move_rotate(card,_target_position)
 	var tween =  UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
 	tween.finished.connect(card_move_rotate.bind(card,_target_position))
-	call_deferred(&"swap_cards")
+	swap_cards(card)
 	
-func swap_cards()->void:
+func swap_cards(drag_card:RenderCard)->void:
 	if swap_cooldown > 0:
 		if swap_cooldown < SWAP_COOLDOWN_DURATION - SWAP_DELTA:
 			pending_swap = true
 		return
-	var control:RenderControl = GlobalRegistry.render_control
-	if  control && control.card_on_drag && control.card_on_drag.area == area:
-		var drag_card = control.card_on_drag.card
-		hover_detect_when_dragging(drag_card)
-		if hovering_card:
-			hovering_card.hovering = false
-			area.move_card_to_index(drag_card.pool_id, hovering_card.pool_id,RenderEvent.new().set_config({&"rotate":true}))
-			hovering_card = null
-			swap_cooldown = SWAP_COOLDOWN_DURATION
+	if hovering_card:
+		hovering_card.hovering = false
+		area.move_card_to_index(drag_card.pool_id, hovering_card.pool_id,RenderEvent.new().set_config({&"rotate":true}))
+		hovering_card = null
+		swap_cooldown = SWAP_COOLDOWN_DURATION
 
 func card_move_rotate(card:RenderCard, _target_position:Vector2)->void:
 	# 计算水平距离差
 	var dx = card.position.x - _target_position.x
 	var abs_dx = abs(dx)
-	const max_distance = 400.0
-	const max_rotation = -PI*0.167
-	const rotate_time = 0.5
 	var rotation_ratio = min(abs_dx / max_distance, 1.0)
 	var rotation_sign = 1.0 if dx < 0 else -1.0
 	var _target_rotation = rotation_sign * rotation_ratio * max_rotation
@@ -135,12 +128,4 @@ func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
 				UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME).finished.connect(card_move_rotate.bind(card,_target_position))
 			else:
 				UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
-	pass
-
-func quickly_select_the_target():
-	var areatargets = GlobalRegistry.get_renderarea(RenderArea.DefaultArea.TARGETS)
-	if !areatargets:
-		return
-	if area.get_selected_cards().size() == 1 && area.get_selected_cards()[0].data.type == RenderCard.DefaultType.ATTACK && areatargets.card_pool.size() > 0 && areatargets.get_selected_cards().size() == 0:
-		areatargets.on_select(0)
 	pass

@@ -27,3 +27,6 @@ func get_renderarea(renderarea_name:StringName)->RenderArea:
 	if renderarea.has(renderarea_name):
 		return renderarea[renderarea_name]
 	return null
+	
+func get_render_control()->RenderControl:
+	return render_control

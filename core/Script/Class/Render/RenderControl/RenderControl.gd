@@ -24,3 +24,13 @@ func remove_card_on_drag():
 		card_on_drag.card.dragged = false
 		card_on_drag.area.tween_update()
 	card_on_drag = null
+
+func get_dragged_area()->RenderArea:
+	if !card_on_drag:
+		return null
+	return card_on_drag.area
+	
+func get_dragged_card()->RenderCard:
+	if !card_on_drag:
+		return null
+	return card_on_drag.card

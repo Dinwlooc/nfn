@@ -3,24 +3,38 @@ class_name RenderAreaFace
 
 var hovering_card:RenderCard = null
 var target_position:PackedVector2Array
-var area:RenderArea
+@export var area:RenderArea
+@export var area_name:StringName = &""
+var control:RenderControl
 var in_area:bool = false
 signal into_area
 signal outto_area
 
 func _ready()->void:
-	if get_parent_control()&&get_parent_control() is RenderArea:
-		area = get_parent_control()
-		area.render_requested.connect(render_update)
-		area.tween_requested.connect(tween_update)
-		area.card_added.connect(connect_card_signals)
-		area.card_removed.connect(disconnect_card_signals)
+	GlobalConsole.c_reload.connect(request_global_area)
+	if !area && get_parent_control() is RenderArea:
+		connect_to_area(get_parent_control())
+	else:
+		request_global_area()
 	into_area.connect(_into_area)
 	outto_area.connect(_outto_area)
 	ready_expand()
+	
+func request_global_area()->void:
+	if GlobalRegistry.get_renderarea(area_name):
+		connect_to_area(GlobalRegistry.get_renderarea(area_name))
 
-func ready_expand()->void:
-	pass
+func connect_to_area(_area:RenderArea):
+	if area:
+		area.render_requested.disconnect(render_update)
+		area.tween_requested.disconnect(tween_update)
+		area.card_added.disconnect(connect_card_signals)
+		area.card_removed.disconnect(disconnect_card_signals)
+	area = _area
+	area.render_requested.connect(render_update)
+	area.tween_requested.connect(tween_update)
+	area.card_added.connect(connect_card_signals)
+	area.card_removed.connect(disconnect_card_signals)
 
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
 	#更新动画和渲染控制参数。
@@ -32,13 +46,10 @@ func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 	pass
 
 func _input(event)->void:
-	var control:RenderControl = GlobalRegistry.render_control 
-	if event is InputEventMouseMotion && control:
+	if event is InputEventMouseMotion:
+		try_dragging_move()
 		var mouse_position = get_local_mouse_position()
-		if control.card_on_drag&&control.card_on_drag.area == area:
-			dragging_move(control.card_on_drag.card)
 		if Rect2(Vector2.ZERO,size).has_point(mouse_position):
-			#hover_card()
 			if !in_area:
 				into_area.emit()
 			in_area = true
@@ -47,6 +58,15 @@ func _input(event)->void:
 				outto_area.emit()
 			in_area = false
 		pass
+
+func try_dragging_move()->bool:
+	var control:RenderControl = GlobalRegistry.get_render_control()
+	if control && control.get_dragged_area() == area:
+		hover_detect_when_dragging(control.get_dragged_card())
+		dragging_move(control.get_dragged_card())
+		return true
+	return false
+
 
 func connect_card_signals(card: RenderCard):
 	if card.has_signal(&"mouse_entered"):
@@ -75,15 +95,21 @@ func _on_card_mouse_exited(card: RenderCard):
 	if hovering_card == card:
 		card.hovering = false
 		hovering_card = null
+		
+func hover_detect_when_dragging(dragged_card:RenderCard)->void:
+	var mouse_position = get_global_mouse_position()
+	if !hovering_card && dragged_card.is_hovering(mouse_position):
+		for i in range(dragged_card.pool_id ,-1,-1):
+			if !area.card_pool[i].dragged && area.card_pool[i].is_hovering(mouse_position):
+				hovering_card = area.card_pool[i]
+				hovering_card.hovering = true
+				break
+		return
 
 func card_move()-> void:
-	if area.card_pool.size() == 0||target_position.size()==0:
-		return
-	for i in range(0,area.card_pool.size()):
-		var card_position = area.card_pool[i].position
-		var _target_position = target_position[i]
-		if !area.card_pool[i].dragged:
-			UIAnimationUtils.tween_animations(area.card_pool[i],{^"position":_target_position})
+	pass
+
+func ready_expand()->void:
 	pass
 
 func dragging_move(card:RenderCard)->void:
@@ -94,13 +120,3 @@ func _into_area()->void:
 	
 func _outto_area()->void:
 	pass
-
-func hover_detect_when_dragging(dragged_card:RenderCard)->void:
-	var mouse_position = get_global_mouse_position()
-	if !hovering_card && dragged_card.is_hovering(mouse_position):
-		for i in range(dragged_card.pool_id ,-1,-1):
-			if !area.card_pool[i].dragged && area.card_pool[i].is_hovering(mouse_position):
-				hovering_card = area.card_pool[i]
-				hovering_card.hovering = true
-				break
-		return

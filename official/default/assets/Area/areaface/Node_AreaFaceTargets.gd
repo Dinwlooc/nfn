@@ -1,7 +1,7 @@
 extends RenderAreaFace
 
-var original_position
-var original_size
+var original_position:Vector2
+var original_size:Vector2
 var area_target_position:Vector2
 var area_target_size:Vector2
 const TWEEN_TIME = 0.35
@@ -12,7 +12,13 @@ func ready_expand()->void:
 	area_target_position = original_position
 	area_target_size = original_size
 	render_update()
+	connect_to_other_area()
 	pass
+
+func connect_to_other_area()->void:
+	var area:RenderArea =  GlobalRegistry.get_renderarea(&"areahand")
+	if area:
+		area.selected.connect(quickly_select)
 
 func render_update(render_event:RenderEvent = RenderEvent.new()):
 	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
@@ -36,4 +42,9 @@ func card_move()-> void:
 		var card_position = card.position
 		var _target_position = target_position[i]
 		UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
+	pass
+
+func quickly_select():
+	if area.card_pool.size() > 0 && area.get_selected_cards().size() == 0:
+		area.on_select(0)
 	pass
