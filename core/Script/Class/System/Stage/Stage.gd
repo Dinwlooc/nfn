@@ -27,20 +27,26 @@ func enter_expand()->void:
 	pass
 
 func exit():
+	if !event_processor.is_empty && !event_processor.all_completed.is_connected(exit):
+		event_processor.all_completed.connect(exit,CONNECT_ONE_SHOT)
 	end_stage()
-	GlobalRegistry.timer.timeout.disconnect(on_timeout)
-	GlobalRegistry.timer.timer_stop()
+	timer.timeout.disconnect(on_timeout)
+	timer.timer_stop()
 	is_exit = true
-	system.stage_ended()
+	
+func request_change_stage()->void:
+		system.stage_ended()
 
 func handle_operation(op_data:OperationRequest):
 	pass
 
 func on_timeout()->void:
 	exit()
+	request_change_stage()
 	
 func end_stage()->void:
 	pass
 	
 func complete_stage() -> void:
 	exit()
+	request_change_stage()

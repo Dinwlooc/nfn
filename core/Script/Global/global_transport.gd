@@ -16,7 +16,6 @@ func _ready()->void:
 		multiplayer.connected_to_server.connect(_connected_to_server)
 		multiplayer.server_disconnected.connect(_server_disconnected)
 	
-
 func _process(delta)->void:
 	if Engine.get_process_frames() % 5 == 0:
 		server.poll()
@@ -24,9 +23,7 @@ func _process(delta)->void:
 
 func get_id()->int:
 	return id
-
 #########
-
 func _connected_to_server()->void:
 	id = server.get_unique_id()
 	GlobalConsole._print(["服务器已经连接。你的ID： ",id])
@@ -89,7 +86,6 @@ func close()->void:
 	server.close()
 	users = []
 	id = 0
-	
  ###########
 # 序列化方法：将数据打包为二进制
 func pack_server() -> PackedByteArray:
@@ -97,7 +93,6 @@ func pack_server() -> PackedByteArray:
 	PackKey.URL:url,
 	}
 	return var_to_bytes(data_dict)  # Godot内置序列化方法
- 
 # 反序列化方法：从二进制还原数据
 func unpack_server(bytes: PackedByteArray):
 	var data_dict = bytes_to_var(bytes)  # 反序列化字典
@@ -128,12 +123,13 @@ func cards_change_rpc(area: Area, cards: Array[Card])->void:
 func cards_remove_rpc(area: Area, uids: Array[String])->void:
 	rpc_id(area.player.id, &"cards_remove_receive", area.area_name, uids)
 
-func upload_operation_event(serialized_event: PackedByteArray) -> void:
+func upload_operation_request(op: OperationRequest) -> void:
 	var target = MultiplayerPeer.TARGET_PEER_SERVER
-	rpc_id(target, &"receive_operation_event", serialized_event)
+	rpc_id(target, &"receive_operation_event", op.serialize())
 
 @rpc("any_peer", "call_local", "reliable")
-func receive_operation_event(serialized_event: PackedByteArray) -> void:
+func receive_operation_event(data: PackedByteArray) -> void:
+	var op:OperationRequest = OperationRequest.deserialize(data)
 	pass #待实现。
 
 @rpc("authority", "call_local", "reliable")

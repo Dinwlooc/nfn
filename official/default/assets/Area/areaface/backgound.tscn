@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://core/Script/Node/Node_Backgound.gd" id="1_f1hya"]
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://official/default/shader/shader_lights.gdshader" id="2_cj81x"]
-[ext_resource type="Texture2D" uid="uid://ktb06y62py2r" path="res://official/default/assets/Backgound/backgound5.png" id="3_yj14f"]
+[ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://official/default/assets/Backgound/backgound6.png" id="3_pxvu5"]
 [ext_resource type="Script" uid="uid://062bg815jifb" path="res://official/default/shader/shaderScript/shader_lights.gd" id="4_m3pmx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_riwjx"]
@@ -27,5 +27,5 @@ material = SubResource("ShaderMaterial_riwjx")
 layout_mode = 1
 offset_right = 1600.0
 offset_bottom = 900.0
-texture = ExtResource("3_yj14f")
+texture = ExtResource("3_pxvu5")
 script = ExtResource("4_m3pmx")

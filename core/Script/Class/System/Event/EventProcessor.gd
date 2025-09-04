@@ -4,6 +4,7 @@ class_name EventProcessor
 var behavior_stack: Array[BehaviorEvent] = []
 var current_runtime: RuntimeEvent = null
 var system:System
+var is_empty:bool = true
 signal all_completed()
 
 func _init(init_system:System) -> void:
@@ -17,6 +18,7 @@ func process_events():
 		_process_behavior()
 	else:
 		all_completed.emit()
+		is_empty = true
 		system.enable_processing(false)
 
 # 处理行为事件
@@ -41,3 +43,4 @@ func _process_runtime():
 func queue_behavior(event: BehaviorEvent):
 	behavior_stack.push_back(event)
 	system.enable_processing(true)
+	is_empty = false

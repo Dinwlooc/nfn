@@ -4,14 +4,12 @@ class_name OperationRequest
 #需要重建对象。
 var type: int
 
-
-
 func serialize() -> PackedByteArray:
 	return OperationRequestSerializer.serialize(self)
 
 static func deserialize(serialized_data: PackedByteArray) -> OperationRequest:
 	return OperationRequestSerializer.deserialize(serialized_data)
 
-class PlayCards extends OperationRequest:
-	var card_ids:PackedInt32Array
-	var target_ids:PackedInt32Array
+class PlayCard extends OperationRequest:
+	var card_id:int
+	var target_ids:int

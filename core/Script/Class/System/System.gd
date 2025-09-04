@@ -25,21 +25,18 @@ func load_cards() -> void:
 	area_drawing.card_pool = cardsmanager.load_all_cards()
 	area_drawing.card_pool.shuffle()
 	
-
 func enable_processing(enable: bool) -> void:
 	_process_active = enable
 	set_process(enable)
 
-
 func change_stage(new_stage: GameStage) -> void:
-	if game_stage != GameStage.NULL && !_process_active:
-		var current: Stage = game_stages[game_stage]
-		if !current.is_exit:
-			current.exit()
-	if new_stage in game_stages:
-		game_stage = new_stage
-		var next_stage: Stage = game_stages[new_stage]
-		next_stage.enter()
+	var event = StageTransitionEvent.new(new_stage)
+	event_processor.queue_behavior(event)
+
+func stage_ended():
+	if game_stage == GameStage.START:
+		change_stage(GameStage.DRAW)
+	pass
 #####信号调用函数#####
 func _start_game()-> void:
 	const INIT_CARDS_COUNT:int = 4
@@ -64,16 +61,10 @@ func _start_game()-> void:
 	current_player_index = randi_range(0,alive_players.size()-1)
 	change_stage(GameStage.START)
 	GlobalConsole._print("游戏开始！System Vesion:Beta")
-	pass
-
-func stage_ended():
-	if game_stage==GameStage.START:
-		change_stage(GameStage.DRAW)
-	pass
 	#########仅调试时使用的函数########
 func _draw_cards_test() -> void:
 	if _process_active:
-		GlobalConsole._print("Error:c_draw未生效。无法插入事件至处理堆栈。")
+		GlobalConsole._print("Error:c_draw未生效。无法插入事件至处理中的堆栈。")
 		return
 	if game_stage == GameStage.NULL:
 		GlobalConsole._print("Error:c_draw未生效。游戏未开始。")
