@@ -22,6 +22,10 @@ func enter()->void:
 	timer.timer_create(time_limit)
 	timer.timeout.connect(on_timeout)
 	enter_expand()
+	call_deferred(&"run")
+
+func run()->void:
+	pass
 
 func enter_expand()->void:
 	pass
@@ -29,6 +33,7 @@ func enter_expand()->void:
 func exit():
 	if !event_processor.is_empty && !event_processor.all_completed.is_connected(exit):
 		event_processor.all_completed.connect(exit,CONNECT_ONE_SHOT)
+		return
 	end_stage()
 	timer.timeout.disconnect(on_timeout)
 	timer.timer_stop()
