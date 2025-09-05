@@ -38,9 +38,9 @@
 ## 主要功能模块
 - **系统**：由且仅由服务器端运行System类实例实现。System储存并管理游戏数据，创建Stage类数组和EventProcessor。BehaviorEvent由Stage或事件修饰器(未实现)置入EventProcessor堆栈，执行时创建RuntimeEvent，RuntimeEvent执行时对System进行操作。Area和Player等数据类提供事件修饰并通知传输层同步。
 - **渲染**：由Render*类和Render*Face类共同实现。RenderArea、RenderCard等类及其子类储存传入数据、基本逻辑和信号，Face及其子类则监听信号并操作其指向的Render*类。
-- **全局控制**： 全局单例GlobalConsole管理调试指令。GlobalRegistry提供引用注册接口，为传输层GlobalServer定位目标节点。
+- **全局控制**： 全局单例GlobalConsole管理调试指令。GlobalRegistry提供引用注册接口，为传输层GlobalTransport定位目标节点。
 - **配置与资源文件**：全局单例GlobalConfig提供游戏配置与资源包加载。资源包内置resource_config.cfg以声明渲染资源。
-- **通信**：全局单例GlobalServer处理网络连接与调用RPC，BaseSerializer及其子类负责数据打包与解包，数据容器RenderDataContainer及其子类封装客户端需要接收的数据结构。客户端通过OperationRequest上传操作请求。
+- **通信**：全局单例GlobalTransport处理网络连接与调用RPC，BaseSerializer及其子类负责数据打包与解包，数据容器RenderDataContainer及其子类封装客户端需要接收的数据结构。客户端通过OperationRequest上传操作请求。
 - **其他**：全局单例GlobalTransition提供场景文件切换时的转场方案，工具类UIAnimationUtils预备了动画控制函数。
 ## 开发环境与依赖
 - **Godot 引擎**：项目使用 Godot 4.4.1 开发，请确保使用兼容版本打开。
