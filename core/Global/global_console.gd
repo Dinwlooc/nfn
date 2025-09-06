@@ -1,8 +1,7 @@
 extends Node
  #GlobalConsole
 ###全局控制台####
-
-var command_resource:Resource = load("res://core/Script/Global/command.tres")
+var command_resource:Resource = load("res://core/Global/command.tres")
 var command_list: Dictionary = command_resource.command as Dictionary
 var command_name_list:PackedStringArray = command_resource.command_name as PackedStringArray
 
@@ -38,19 +37,19 @@ func _print(text:Variant)->void:
 		
 func command(signal_name:String,args:Array)->void:
 	if !command_name_list.has(signal_name):#玩家输入不可控，故先验证合法性再转化
-		_print(["指令未登记：",signal_name])
+		_print(["Console：指令未登记：",signal_name])
 		return
 	var signal_stringname = StringName(signal_name)
 	var min_arg_num = command_list[signal_stringname][&"min"]
 	var max_arg_num = command_list[signal_stringname][&"max"]
 	if args.size()<min_arg_num:
-		_print(["Error:参数不足，",signal_name,"未发送。目标：",min_arg_num])
+		_print(["Console：Error:参数不足，",signal_name,"未发送。目标：",min_arg_num])
 		return
 	if args.size()>max_arg_num:
-		_print(["Error:参数过多，",signal_name,"未发送。限制：",max_arg_num])
+		_print(["Console：Error:参数过多，",signal_name,"未发送。限制：",max_arg_num])
 		return
 	else:
-		_print(["发送指令：",signal_name])
+		_print(["Console：发送指令：",signal_name])
 		emit_signal.bindv(args).call(signal_stringname)
 		return
 

@@ -26,25 +26,25 @@ func get_id()->int:
 #########
 func _connected_to_server()->void:
 	id = server.get_unique_id()
-	GlobalConsole._print(["服务器已经连接。你的ID： ",id])
-	emit_signal("peer_update",id)
-	rpc_id(1,"ask_server_data",id)
+	GlobalConsole._print(["Server:服务器已经连接。你的ID： ",id])
+	emit_signal(&"peer_update",id)
+	rpc_id(1,&"ask_server_data",id)
 	pass
 	
 func _server_disconnected():
-	GlobalConsole._print("您已断连。")
+	GlobalConsole._print("Server:您已断连。")
 	pass
 	
 func _peer_connected(new_id)-> void:
 	if new_id == id:
 		return
-	GlobalConsole._print(["Server:Player connected with ID: ", new_id])
+	GlobalConsole._print(["Server:玩家接入，ID: ", new_id])
 	# 创建一个新的用户实例并添加到 uers 数组
 	var new_user = User.new()
 	new_user.id = new_id
 	users.append(new_user)
 	# 打印当前所有玩家及其序号
-	GlobalConsole._print("当前房间内的玩家有：")
+	GlobalConsole._print("Server:当前房间内的玩家有：")
 	for i in range(0,users.size()):
 		GlobalConsole._print([users[i].name,"ID：",users[i].id])
 	pass
@@ -52,7 +52,7 @@ func _peer_connected(new_id)-> void:
 func _peer_disconnected(new_id)-> void:
 	if new_id == id:
 		return
-	GlobalConsole._print(["Server:Player disconnected with ID: ", new_id])
+	GlobalConsole._print(["Server:玩家断离，ID: ", new_id])
 	users = users.filter(func(player):return (player.id != new_id))
 	pass
 ######
@@ -61,24 +61,24 @@ func random_create()->bool:
 	if server.create_server(port) == OK:
 		id = 1
 		url = "ws://localhost:"+str(port)
-		GlobalConsole._print(["Server:Server created on: ",url,"。ID:",server.get_unique_id()])
+		GlobalConsole._print(["Server:服务器创建于: ",url,"。ID:",server.get_unique_id()])
 		var user = User.new()
 		user.id = 1
 		user.get_config()
 		users.append(user)
 		return true
 	else:
-		print("Server:Server creation failed")
+		print("Server:服务器创建失败")
 		return false
 
 func url_connect(new_url)->bool:
 	if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		server.close()
 	if server.create_client(new_url) == OK:
-		GlobalConsole._print(["Client:Start to connect:",new_url])
+		GlobalConsole._print(["Client:开始连接:",new_url])
 		return true
 	else :
-		GlobalConsole._print("Client:Failed to connect")
+		GlobalConsole._print("Client:连接失败")
 		pass
 		return false
 
@@ -98,7 +98,7 @@ func unpack_server(bytes: PackedByteArray):
 	var data_dict = bytes_to_var(bytes)  # 反序列化字典
 	# 验证数据有效性
 	if not data_dict is Dictionary:
-		push_error("Invalid data format: Expected Dictionary")
+		push_error("Transport：Invalid data format: Expected Dictionary")
 		return self
 	# 按白名单顺序设置属性（保证兼容性）
 	url = data_dict[PackKey.URL]

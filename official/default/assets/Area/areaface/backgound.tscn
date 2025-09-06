@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://di6xhhto3hhci"]
 
-[ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://core/Script/Node/Node_Backgound.gd" id="1_f1hya"]
+[ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://official/default/assets/Area/areaface/Node_Backgound.gd" id="1_f1hya"]
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://official/default/shader/shader_lights.gdshader" id="2_cj81x"]
 [ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://official/default/assets/Backgound/backgound6.png" id="3_pxvu5"]
 [ext_resource type="Script" uid="uid://062bg815jifb" path="res://official/default/shader/shaderScript/shader_lights.gd" id="4_m3pmx"]

@@ -16,6 +16,7 @@ signal data_update
 func _ready() -> void:
 	signal_connect_test()#调试模式
 	load_cards()
+	GlobalConsole.c_close.connect(signal_disconnect_test)
 	
 func _process(delta: float) -> void:
 	if _process_active:
@@ -41,7 +42,7 @@ func stage_ended():
 func _start_game()-> void:
 	const INIT_CARDS_COUNT:int = 4
 	if game_stage != GameStage.NULL:
-		GlobalRegistry._print("Error:c_start未生效。游戏已开始。")
+		GlobalRegistry._print("System:Error:c_start未生效。游戏已开始。")
 		return
 	var timer:GameTimer = GlobalRegistry.timer
 	game_stages = {
@@ -60,29 +61,31 @@ func _start_game()-> void:
 		alive_players[players_index].area_hand.cards_add(card_pool)
 	current_player_index = randi_range(0,alive_players.size()-1)
 	change_stage(GameStage.START)
-	GlobalConsole._print("游戏开始！System Vesion:Beta")
+	GlobalConsole._print("System:游戏开始！System Vesion:Beta")
 	#########仅调试时使用的函数########
 func _draw_cards_test() -> void:
 	if _process_active:
-		GlobalConsole._print("Error:c_draw未生效。无法插入事件至处理中的堆栈。")
+		GlobalConsole._print("System:Error:c_draw未生效。无法插入事件至处理中的堆栈。")
 		return
 	if game_stage == GameStage.NULL:
-		GlobalConsole._print("Error:c_draw未生效。游戏未开始。")
+		GlobalConsole._print("System:Error:c_draw未生效。游戏未开始。")
 		return
 	if alive_players.is_empty():
-		GlobalConsole._print("Error:c_draw未生效。无存活玩家。")
+		GlobalConsole._print("System:Error:c_draw未生效。无存活玩家。")
 		return
 	var draw_event = DrawCardsEvent.new(
 		current_player_index,
 		2  # 默认抽卡数量
 		)
 	event_processor.queue_behavior(draw_event)
-	GlobalConsole._print("调试抽卡，（玩家 %s）" % current_player_index)
+	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % current_player_index)
 	
 func signal_connect_test():
 	GlobalConsole.c_start.connect(_start_game)
 	GlobalConsole.c_draw.connect(_draw_cards_test)
+	GlobalConsole._print("System:调试模式已接入系统")
 
 func signal_disconnect_test():
 	GlobalConsole.c_start.disconnect(_start_game)
 	GlobalConsole.c_draw.disconnect(_draw_cards_test)
+	GlobalConsole._print("System:调试模式已断离系统")
