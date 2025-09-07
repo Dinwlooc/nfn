@@ -10,7 +10,6 @@ enum DeserMark {
 	VAR = 253,
 	END = 252
 }
-
 class Data:
 	var main_data: PackedByteArray
 	var extra_data: PackedByteArray

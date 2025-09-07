@@ -18,7 +18,7 @@ func get_translation(key:StringName,lang:StringName=&"Zh_CN")->String:
 	if tran:
 		return tran
 	return String(key)
-	
+
 func get_cards_list(list_name:StringName = &"default")->Array[String]:
 	var config:ConfigFile = _load_config(cards_list_path)
 	if config:

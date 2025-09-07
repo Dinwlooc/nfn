@@ -1,6 +1,6 @@
 [gd_scene load_steps=19 format=3 uid="uid://cq8jj35acobqx"]
 
-[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/System/GameTimer.gd" id="2_4k47o"]
+[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System.gd" id="2_gpy5h"]
 [ext_resource type="Script" uid="uid://c237fwh31qfh2" path="res://core/Class/Transport/NetworkManager/NetworkManager.gd" id="3_t5eyl"]
 [ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Class/Render/RenderArea/RenderAreaStage.gd" id="4_8dpeo"]

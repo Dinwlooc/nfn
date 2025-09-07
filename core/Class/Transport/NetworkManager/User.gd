@@ -7,8 +7,4 @@ var name: String #玩家名
 var seat:int
 
 func get_config():
-	
 	pass
-
-
-

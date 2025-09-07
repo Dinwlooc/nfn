@@ -13,6 +13,6 @@ func timer_create(time:float):
 func timer_stop():
 	paused = true
 	pass
-	
+
 func timer_continue():
 	paused = false
