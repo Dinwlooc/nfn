@@ -25,6 +25,8 @@ enum HandCardKeys {
 	END
 }
 
+const CardData = RenderPack.CardData
+
 static func obj_to_byte(obj)->Data:
 	var data:Data
 	if obj is not Card:
@@ -47,11 +49,11 @@ static func obj_to_byte(obj)->Data:
 		serialize_write(CardKeys.CLASS,CardClass.NULL,data)
 	return data
 
-static func data_array_to_obj(data_array:Array):
-	var data:RenderDataContainer.CardData
+static func data_array_to_obj(data_array:Array)->CardData:
+	var data:CardData
 	match data_array[CardKeys.CLASS]:
 		CardClass.HAND:
-			var hand_data = RenderDataContainer.HandCardData.new()
+			var hand_data = RenderPack.HandCardData.new()
 			hand_data.id = data_array[CardKeys.ID]
 			hand_data.name = data_array[CardKeys.NAME]
 			hand_data.type = data_array[CardKeys.TYPE]
@@ -62,7 +64,7 @@ static func data_array_to_obj(data_array:Array):
 			hand_data.modified_cost = data_array[HandCardKeys.MODIFIED_COST]
 			data = hand_data
 		_: # 默认处理基类
-			var card_data = RenderDataContainer.CardData.new()
+			var card_data = RenderPack.CardData.new()
 			card_data.id = data_array[CardKeys.ID]
 			card_data.name = data_array[CardKeys.NAME]
 			card_data.type = data_array[CardKeys.TYPE]
@@ -72,5 +74,5 @@ static func data_array_to_obj(data_array:Array):
 static func serialize(obj:Card)->PackedByteArray:
 	return data_to_byte(obj_to_byte(obj))
 
-static func deserialize(data:PackedByteArray):
+static func deserialize(data:PackedByteArray)->CardData:
 	return data_array_to_obj(byte_to_data_array(data))

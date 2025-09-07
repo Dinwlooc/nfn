@@ -15,5 +15,5 @@ func get_attribute(attribute:StringName,value:int = get(attribute) ) -> int:
 func serialize()->PackedByteArray:
 	return CardSerializer.serialize(self)
 	
-static func deserialize(serialized_data: PackedByteArray) -> RenderDataContainer.CardData :
+static func deserialize(serialized_data: PackedByteArray) -> RenderPack.CardData :
 	return CardSerializer.deserialize(serialized_data)

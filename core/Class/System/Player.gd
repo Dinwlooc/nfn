@@ -17,3 +17,6 @@ func _damage(damageType:String,amout:int,to:int,fx = ""):
 	emit_signal("damage_data",damageType,amout,id,to,fx)
 	pass
 	
+func set_id(new_id:int)->Player:
+	id = new_id
+	return self

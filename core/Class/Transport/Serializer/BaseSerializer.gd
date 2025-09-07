@@ -20,16 +20,11 @@ class Data:
 
 ##应该重写的方法：
 static func serialize(obj)->PackedByteArray:
-	return data_to_byte(obj_to_byte(obj))
+	return []
 
-static func deserialize(data:PackedByteArray):
-	return data_array_to_obj(byte_to_data_array(data))
+static func deserialize(data:PackedByteArray)->Variant:
+	return null
 ##建议使用的写法###
-static func obj_to_byte(obj)->Data:
-	return null
-	
-static func data_array_to_obj(data_array:Array):
-	return null
 
 static func data_to_byte(data:Data) -> PackedByteArray:
 	var all_data := PackedByteArray()

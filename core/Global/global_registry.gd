@@ -6,7 +6,7 @@ var console:Node
 var timer:GameTimer
 var system:System
 var render_control:RenderControl
-
+var network_manager:NetworkManager
 
 func register_console(console_instance:Node)->void:
 	console = console_instance
@@ -16,17 +16,18 @@ func register_system(system_instance:System)->void:
 	system = system_instance
 func register_timer(timer_instance:GameTimer)->void:
 	timer = timer_instance
-
 func register_control(render_control_instance:RenderControl)->void:
 	render_control = render_control_instance
-	
 func register_renderarea(renderarea_name:StringName,renderarea_instance:RenderArea)->void:
 	renderarea[renderarea_name] = renderarea_instance
-
+func register_network_manager(network_manager_instance:NetworkManager)->void:
+	network_manager = network_manager_instance
+	
 func get_renderarea(renderarea_name:StringName)->RenderArea:
 	if renderarea.has(renderarea_name):
 		return renderarea[renderarea_name]
 	return null
-	
 func get_render_control()->RenderControl:
 	return render_control
+func get_network_manager()->NetworkManager:
+	return network_manager

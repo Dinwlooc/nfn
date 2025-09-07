@@ -17,7 +17,7 @@ class DefaultArea:
 	const HAND:StringName = &"areahand"
 	const TARGETS:StringName = &"areatargets"
 	const SELF:StringName = &"areaself"
-const CardData = RenderDataContainer.CardData
+const CardData = RenderPack.CardData
 
 func _ready():
 	init_child_count = get_child_count()

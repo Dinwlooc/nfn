@@ -3,8 +3,8 @@ class_name RenderCardFace
 #卡面渲染的基类
 
 @export var card:RenderCard
-const CardData = RenderDataContainer.CardData
-const HandCardData = RenderDataContainer.HandCardData
+const CardData = RenderPack.CardData
+const HandCardData = RenderPack.HandCardData
 func data_update()->void:
 	pass
 

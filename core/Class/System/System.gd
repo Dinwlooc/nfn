@@ -42,17 +42,20 @@ func stage_ended():
 func _start_game()-> void:
 	const INIT_CARDS_COUNT:int = 4
 	if game_stage != GameStage.NULL:
-		GlobalRegistry._print("System:Error:c_start未生效。游戏已开始。")
+		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
 		return
 	var timer:GameTimer = GlobalRegistry.timer
 	game_stages = {
 	GameStage.START:StageStart.new(self,timer),
 	GameStage.DRAW:StageDraw.new(self,timer)
 	}
-	for i in range(0,GlobalTransport.users.size()):
-		alive_players.append(Player.new())
-		alive_players[i].id = GlobalTransport.users[i].id
-		GlobalTransport.users[i].seat = i
+	var network_manager:NetworkManager = GlobalRegistry.get_network_manager()
+	if network_manager:
+		for i in range(0,network_manager.users.size()):
+			alive_players.append(Player.new().set_id(network_manager.users[i].id))
+			network_manager.users[i].seat = i
+	else:
+		alive_players.append(Player.new().set_id(1))
 	for players_index in range(0,alive_players.size()):
 		var card_pool:Array[Card]
 		for i in range(0,INIT_CARDS_COUNT):

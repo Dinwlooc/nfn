@@ -1,5 +1,5 @@
 extends RefCounted
-class_name RenderDataContainer
+class_name RenderPack
 #通信层向客户端生成的结果类，对客户端而言是只读类。
 
 class CardData:

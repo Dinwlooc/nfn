@@ -34,6 +34,8 @@ func _print(text:Variant)->void:
 				print(real_text)
 				return
 		push_error()
+	else :
+		print(text)
 		
 func command(signal_name:String,args:Array)->void:
 	if !command_name_list.has(signal_name):#玩家输入不可控，故先验证合法性再转化
