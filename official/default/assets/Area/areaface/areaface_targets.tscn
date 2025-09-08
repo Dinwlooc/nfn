@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://cwwsimyoypxle"]
 
-[ext_resource type="Script" uid="uid://cwk8mdw1p6uep" path="res://offical/default/assets/Area/areaface/Node_AreaFaceTargets.gd" id="1_h4lv7"]
+[ext_resource type="Script" uid="uid://cwk8mdw1p6uep" path="res://official/default/assets/Area/areaface/Node_AreaFaceTargets.gd" id="1_h4lv7"]
 
 [node name="AreaFaceTargets" type="Control"]
 clip_contents = true

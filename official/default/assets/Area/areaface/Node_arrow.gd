@@ -4,16 +4,18 @@ extends Control
 var curve_managers: Array[CurveArrowManager] = []
 var draw_cooldown: float = 0.0
 var pending_draw = false
+var areahand:RenderAreaHand
+var areatargets:RenderAreaTargets
 const DRAW_COOLDOWN_DURATION: float = 0.35
-const AREA_HAND:StringName = &"areahand"
-const AREA_TARGETS:StringName = &"areatargets"
 
 func _ready() -> void:
 	for i in range(1):  # 根据最大可能数量调整
 		var manager = CurveArrowManager.new()
 		add_child(manager)
 		curve_managers.append(manager)
-	call_deferred(&"connect_signal")
+	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.HAND,connect_to_areahand)
+	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.TARGETS,connect_to_areatargets)
+	GlobalRegistry.connect_singleton(GlobalRegistry.RENDER_CONTROL_TYPE,connect_to_control)
 	
 func _physics_process(delta: float) -> void:
 	if draw_cooldown > 0:
@@ -21,27 +23,22 @@ func _physics_process(delta: float) -> void:
 		if pending_draw && draw_cooldown <= 0:
 			draw_arrow()
 
-func connect_signal()->void:
-	var areahand:RenderArea = GlobalRegistry.get_renderarea(AREA_HAND)
-	if areahand:
-		areahand.selected.connect(draw_arrow)
-		areahand.render_requested.connect(render_event_handler)
-		areahand.tween_requested.connect(render_event_handler)
-	var areatargets = GlobalRegistry.get_renderarea(AREA_TARGETS)
-	if areatargets:
-		areatargets.selected.connect(draw_arrow)
-		areatargets.render_requested.connect(render_event_handler)
-		areatargets.tween_requested.connect(render_event_handler)
-	var control:RenderControl = GlobalRegistry.render_control
-	if control:
-		control.dragged_update.connect(clear_arrow)
-	pass
+func connect_to_areahand(_areahand:RenderAreaHand)->void:
+	areahand = _areahand 
+	areahand.selected.connect(draw_arrow)
+	areahand.render_requested.connect(render_event_handler)
+	areahand.tween_requested.connect(render_event_handler)
+func connect_to_areatargets(_areatargets:RenderAreaTargets)->void:
+	areatargets = _areatargets
+	areatargets.selected.connect(draw_arrow)
+	areatargets.render_requested.connect(render_event_handler)
+	areatargets.tween_requested.connect(render_event_handler)
+func connect_to_control(control:RenderControl)->void:
+	control.dragged_update.connect(clear_arrow)
 
 func draw_arrow() -> void:
 	pending_draw = false
 	clear_arrow()
-	if GlobalRegistry.render_control && GlobalRegistry.render_control.card_on_drag:
-		return
 	var start_points = get_start_point_array()
 	if start_points.is_empty():
 		return
@@ -75,7 +72,7 @@ func delay_draw_arrow()->void:
 
 func get_start_point_array() -> Array[Vector2]:
 	var array:Array[Vector2] = []
-	var cards:Array[RenderCard] = GlobalRegistry.get_renderarea(AREA_HAND).get_selected_cards()
+	var cards:Array[RenderCard] = areahand.get_selected_cards()
 	if cards:
 		var card_size = cards[0].get_face_size() #规范条件，同一区域的卡牌大小一致
 		array.append_array(cards.map(
@@ -86,7 +83,7 @@ func get_start_point_array() -> Array[Vector2]:
 
 func get_end_point_array() -> Array[Vector2]:
 	var array:Array[Vector2] = []
-	var cards:Array[RenderCard] = GlobalRegistry.get_renderarea(AREA_TARGETS).get_selected_cards()
+	var cards:Array[RenderCard] = areatargets.get_selected_cards()
 	if cards:
 		var card_size = cards[0].get_face_size() #规范条件，同一区域的卡牌大小一致
 		array.append_array(cards.map(

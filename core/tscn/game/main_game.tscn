@@ -30,8 +30,10 @@ script = ExtResource("2_4k47o")
 script = ExtResource("3_t5eyl")
 metadata/_custom_type_script = "uid://c237fwh31qfh2"
 
-[node name="System" type="Node" parent="."]
+[node name="System" type="Node" parent="." node_paths=PackedStringArray("timer", "network_manager")]
 script = ExtResource("2_gpy5h")
+timer = NodePath("../Timer")
+network_manager = NodePath("../NetworkManager")
 
 [node name="Control" type="Control" parent="."]
 custom_minimum_size = Vector2(1600, 900)
@@ -69,9 +71,10 @@ offset_bottom = 907.0
 mouse_filter = 2
 script = ExtResource("7_jjejj")
 
-[node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_2w2we")]
+[node name="AreaFaceHand" parent="Control/AreaHand" node_paths=PackedStringArray("area") instance=ExtResource("9_2w2we")]
 layout_mode = 1
 mouse_filter = 1
+area = NodePath("..")
 
 [node name="AreaSelf" type="Control" parent="Control"]
 anchors_preset = 0
@@ -92,11 +95,13 @@ card_id_to_pool_id = Dictionary[int, int]({
 0: 0
 })
 
-[node name="AreaFaceTargets" parent="Control/AreaTargets" instance=ExtResource("14_8v20q")]
+[node name="AreaFaceTargets" parent="Control/AreaTargets" node_paths=PackedStringArray("area_hand", "area") instance=ExtResource("14_8v20q")]
 offset_top = -157.0
 offset_right = 1377.0
 offset_bottom = 165.0
 mouse_filter = 1
+area_hand = NodePath("../../AreaHand")
+area = NodePath("..")
 
 [node name="RenderCard" type="Control" parent="Control/AreaTargets" node_paths=PackedStringArray("cardface", "area")]
 anchors_preset = 0

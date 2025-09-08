@@ -8,14 +8,12 @@ enum CardKeys {
 	TYPE ,
 	END #用于调整子类枚举的标识符
 }
-
 enum CardClass{
 	NULL,
 	HAND,
 	CHARACTER,
 	END
 }
-
 enum HandCardKeys {
 	POWER = CardKeys.END ,
 	COST ,
@@ -24,8 +22,36 @@ enum HandCardKeys {
 	MODIFIED_COST ,
 	END
 }
-
 const CardData = RenderPack.CardData
+
+static func serialize_array(cards: Array[Card]) -> PackedByteArray:
+	var buffer = StreamPeerBuffer.new()
+	buffer.put_u32(cards.size())  # 写入数组长度
+	for card in cards:
+		if card is Card:
+			var card_data = serialize(card)
+			buffer.put_u32(card_data.size())  # 写入单卡数据长度
+			buffer.put_data(card_data)         # 写入卡片数据
+		else:
+			printerr("Invalid card type in array")
+			buffer.put_u32(0)  # 写入0长度标识错误
+	return buffer.data_array
+
+# 新增：数组反序列化方法
+static func deserialize_array(data: PackedByteArray) -> Array[CardData]:
+	var buffer = StreamPeerBuffer.new()
+	buffer.data_array = data
+	var result:Array[CardData] = []
+	var count = buffer.get_u32() 
+	for i in range(count):
+		var size = buffer.get_u32() 
+		if size > 0:
+			var card_data = buffer.get_data(size)
+			if card_data[0] == OK:  
+				result.append(deserialize(card_data[1]))
+			else:
+				result.append(null)  
+	return result
 
 static func obj_to_byte(obj)->Data:
 	var data:Data

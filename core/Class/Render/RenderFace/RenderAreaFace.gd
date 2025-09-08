@@ -5,36 +5,22 @@ var hovering_card:RenderCard = null
 var target_position:PackedVector2Array
 @export var area:RenderArea
 @export var area_name:StringName = &""
-var control:RenderControl
 var in_area:bool = false
 signal into_area
 signal outto_area
 
 func _ready()->void:
-	GlobalConsole.c_reload.connect(request_global_area)
-	if !area && get_parent_control() is RenderArea:
-		connect_to_area(get_parent_control())
-	else:
-		request_global_area()
+	if area:
+		connect_to_area(area)
 	into_area.connect(_into_area)
 	outto_area.connect(_outto_area)
 	ready_expand()
-	
-func request_global_area()->void:
-	if GlobalRegistry.get_renderarea(area_name):
-		connect_to_area(GlobalRegistry.get_renderarea(area_name))
 
 func connect_to_area(_area:RenderArea):
-	if area:
-		area.render_requested.disconnect(render_update)
-		area.tween_requested.disconnect(tween_update)
-		area.card_added.disconnect(connect_card_signals)
-		area.card_removed.disconnect(disconnect_card_signals)
-	area = _area
-	area.render_requested.connect(render_update)
-	area.tween_requested.connect(tween_update)
-	area.card_added.connect(connect_card_signals)
-	area.card_removed.connect(disconnect_card_signals)
+	_area.render_requested.connect(render_update)
+	_area.tween_requested.connect(tween_update)
+	_area.card_added.connect(connect_card_signals)
+	_area.card_removed.connect(disconnect_card_signals)
 
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
 	#更新动画和渲染控制参数。
@@ -60,13 +46,12 @@ func _input(event)->void:
 		pass
 
 func try_dragging_move()->bool:
-	var control:RenderControl = GlobalRegistry.get_render_control()
+	var control:RenderControl = area.control
 	if control && control.get_dragged_area() == area:
 		hover_detect_when_dragging(control.get_dragged_card())
 		dragging_move(control.get_dragged_card())
 		return true
 	return false
-
 
 func connect_card_signals(card: RenderCard):
 	if card.has_signal(&"mouse_entered"):

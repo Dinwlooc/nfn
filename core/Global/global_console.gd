@@ -4,6 +4,7 @@ extends Node
 var command_resource:Resource = load("res://core/Global/command.tres")
 var command_list: Dictionary = command_resource.command as Dictionary
 var command_name_list:PackedStringArray = command_resource.command_name as PackedStringArray
+var console:Node
 
 signal global_dragged
 signal c_start
@@ -16,10 +17,9 @@ signal c_reload()
 
 func _ready() -> void:
 	c_help.connect(print_help)
-
+	GlobalRegistry.connect_singleton(GlobalRegistry.CONSOLE_TYPE,func(_console):console=_console)
 		
 func _print(text:Variant)->void:
-	var console = GlobalRegistry.console
 	if console:
 		match typeof(text):
 			4:

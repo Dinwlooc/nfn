@@ -3,6 +3,7 @@ class_name RenderArea
 #总控区域渲染与交互。
 
 var area_name:StringName
+@export var control:RenderControl
 @export var card_pool:Array[RenderCard]
 @export var card_id_to_pool_id: Dictionary[int,int] = {}
 var on_select_list:Array[int]
@@ -20,6 +21,12 @@ class DefaultArea:
 const CardData = RenderPack.CardData
 
 func _ready():
+	if !control && get_parent_control() is RenderControl:
+		control = get_parent_control()
+	elif GlobalRegistry.get_render_control():
+		control = GlobalRegistry.get_render_control()
+	else :
+		control = RenderControl.new()
 	init_child_count = get_child_count()
 	ready_expand()
 	pass
@@ -70,7 +77,6 @@ func on_select(pool_id:int)-> void:
 	pass
 
 func on_drag(pool_id:int)->void:
-	var control:RenderControl = GlobalRegistry.render_control
 	if !control :
 		return
 	if Input.get_mouse_button_mask()==1:

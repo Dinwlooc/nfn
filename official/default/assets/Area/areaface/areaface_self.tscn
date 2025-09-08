@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://ct8jneqmxsdoa"]
 
-[ext_resource type="Texture2D" uid="uid://c0adcrehmovsy" path="res://offical/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami _3.png" id="1_4bx5y"]
+[ext_resource type="Texture2D" uid="uid://c0adcrehmovsy" path="res://official/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami _3.png" id="1_4bx5y"]
 
 [node name="AreaFaceSelf" type="Control"]
 layout_mode = 3

@@ -2,7 +2,7 @@ extends Timer
 class_name GameTimer
 
 func _ready() -> void:
-	GlobalRegistry.register_timer(self)
+	GlobalRegistry.register_singleton(GlobalRegistry.TIMER_TYPE,self)
 	
 func timer_create(time:float):
 	paused = false

@@ -7,17 +7,13 @@ var url:String
 var id:int = -1
 signal peer_update(peer_id:int)
 
-enum PackKey{
-	URL
-	}
-
 func _ready()->void:
 		signal_connect_test()
 		multiplayer.peer_connected.connect(_peer_connected)
 		multiplayer.peer_disconnected.connect(_peer_disconnected)
 		multiplayer.connected_to_server.connect(_connected_to_server)
 		multiplayer.server_disconnected.connect(_server_disconnected)
-		GlobalRegistry.register_network_manager(self)
+		GlobalRegistry.register_singleton(GlobalRegistry.NETWORK_MANAGER_TYPE,self)
 		random_create()
 		get_multiplayer().multiplayer_peer = server
 	

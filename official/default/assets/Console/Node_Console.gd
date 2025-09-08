@@ -26,7 +26,7 @@ func _ready():
 	command_load()
 	input_load()
 	suggestion_labels_load()
-	GlobalRegistry.register_console(self)  # 注册到全局控制台系统
+	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE,self)  # 注册到全局控制台系统
 	pass
 	
 func _process(_delta):

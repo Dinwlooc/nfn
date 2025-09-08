@@ -1,8 +1,6 @@
 extends RefCounted
 class_name BaseSerializer
-
-const INT16_BYTE_LEN:int = 2
-const INT32_BYTE_LEN:int = 4
+#前置序列化工具类
 const MAX_STRING_LEN:int = 255
 enum DeserMark {
 	STRING = 255,
@@ -12,26 +10,18 @@ enum DeserMark {
 }
 class Data:
 	var main_data: PackedByteArray
-	var extra_data: PackedByteArray
+	var extra_buffer: StreamPeerBuffer 
 	func _init(main_size: int):
 		main_data.resize(main_size)
-		extra_data = PackedByteArray()
-
-##应该重写的方法：
-static func serialize(obj)->PackedByteArray:
-	return []
-
-static func deserialize(data:PackedByteArray)->Variant:
-	return null
-##建议使用的写法###
-
+		extra_buffer = StreamPeerBuffer.new()
+		extra_buffer.big_endian = true  # 大端字节序
 static func data_to_byte(data:Data) -> PackedByteArray:
-	var all_data := PackedByteArray()
-	all_data.resize(INT16_BYTE_LEN)
-	all_data.encode_u16(0, data.main_data.size())
-	all_data.append_array(data.main_data)
-	all_data.append_array(data.extra_data)
-	return all_data
+	var all_buffer := StreamPeerBuffer.new()
+	all_buffer.big_endian = true
+	all_buffer.put_u16(data.main_data.size())
+	all_buffer.put_data(data.main_data)
+	all_buffer.put_data(data.extra_buffer.get_data_array())
+	return all_buffer.get_data_array()
 
 static func serialize_write(key: int, value, serialize_data: Data) -> void:
 	match typeof(value):
@@ -49,51 +39,55 @@ static func _serialize_string(key: int, value: String, serialize_data: Data) -> 
 	var buffer: PackedByteArray = value.to_ascii_buffer()
 	if buffer.size() > MAX_STRING_LEN:
 		buffer.resize(MAX_STRING_LEN)
-	serialize_data.extra_data.append(buffer.size())
-	serialize_data.extra_data.append_array(buffer)
+	serialize_data.extra_buffer.put_u8(buffer.size())  # 字符串长度(1字节)
+	serialize_data.extra_buffer.put_data(buffer)
 
 static func _serialize_int(key: int, value: int, serialize_data: Data) -> void:
 	if value <= DeserMark.END and value >= 0:
 		serialize_data.main_data.set(key, value)
 	else:
 		serialize_data.main_data.set(key, DeserMark.INT32)
-		var pos := serialize_data.extra_data.size()
-		serialize_data.extra_data.resize(pos + INT32_BYTE_LEN)
-		serialize_data.extra_data.encode_s32(pos, value)
+		serialize_data.extra_buffer.put_32(value)
 
 static func _serialize_var(key: int, value, serialize_data: Data) -> void:
 	serialize_data.main_data.set(key, DeserMark.VAR)
 	var buffer: PackedByteArray = var_to_bytes(value)
-	serialize_data.extra_data.append(buffer.size() >> 8)
-	serialize_data.extra_data.append(buffer.size() & 0xFF)
-	serialize_data.extra_data.append_array(buffer)
+	serialize_data.extra_buffer.put_u16(buffer.size())  # 数据长度(2字节)
+	serialize_data.extra_buffer.put_data(buffer)
 
 static func byte_to_data_array(serialized_data: PackedByteArray) -> Array:
-	var main_data_len := serialized_data.decode_u16(0)
-	var ptr_main := INT16_BYTE_LEN  # 主数据起始位置
-	var ptr_type := ptr_main + main_data_len  # 类型数据起始位置
-	var output :Array= []
+	var stream := StreamPeerBuffer.new()
+	stream.big_endian = true
+	stream.put_data(serialized_data)
+	stream.seek(0)  # 重置读取位置
+	var main_data_len := stream.get_u16()
+	var main_data := stream.get_data(main_data_len)
+	if main_data[0] != OK:
+		push_error("读取主数据失败")
+		return []
+	main_data = main_data[1]  # 提取实际数据
+	var output := []
 	output.resize(main_data_len)
 	for idx in main_data_len:
-		var mark := serialized_data[ptr_main]
-		ptr_main += 1
-		if mark <= DeserMark.END:  # 直接存储的值
+		var mark: int = main_data[idx]
+		if mark <= DeserMark.END:
 			output[idx] = mark
 		else:
 			match mark:
 				DeserMark.INT32:
-					output[idx] = serialized_data.decode_s32(ptr_type)
-					ptr_type += INT32_BYTE_LEN
+					output[idx] = stream.get_32()  # 直接读取4字节整数
 				DeserMark.STRING:
-					var str_len := serialized_data[ptr_type]
-					ptr_type += 1
-					var bytes := serialized_data.slice(ptr_type, ptr_type + str_len)
-					output[idx] = bytes.get_string_from_ascii()
-					ptr_type += str_len
+					var str_len := stream.get_u8()  # 读取长度(1字节)
+					var str_data = stream.get_data(str_len)
+					if str_data[0] == OK:
+						output[idx] = str_data[1].get_string_from_ascii()
+					else:
+						output[idx] = ""
 				DeserMark.VAR:
-					var var_len := serialized_data.decode_u16(ptr_type)
-					ptr_type += INT16_BYTE_LEN
-					var bytes := serialized_data.slice(ptr_type, ptr_type + var_len)
-					output[idx] = bytes_to_var(bytes)
-					ptr_type += var_len
+					var var_len := stream.get_u16()  # 读取长度(2字节)
+					var var_data = stream.get_data(var_len)
+					if var_data[0] == OK:
+						output[idx] = bytes_to_var(var_data[1])
+					else:
+						output[idx] = null
 	return output

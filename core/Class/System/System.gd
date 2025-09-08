@@ -11,13 +11,15 @@ var current_player_index:int
 var cardsmanager = CardManager.new()
 var event_processor = EventProcessor.new(self)
 var _process_active := false
+@export var timer:GameTimer
+@export var network_manager:NetworkManager
 signal data_update
-	
+
 func _ready() -> void:
 	signal_connect_test()#调试模式
 	load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
-	
+
 func _process(delta: float) -> void:
 	if _process_active:
 		event_processor.process_events()
@@ -44,12 +46,12 @@ func _start_game()-> void:
 	if game_stage != GameStage.NULL:
 		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
 		return
-	var timer:GameTimer = GlobalRegistry.timer
 	game_stages = {
 	GameStage.START:StageStart.new(self,timer),
-	GameStage.DRAW:StageDraw.new(self,timer)
+	GameStage.DRAW:StageDraw.new(self,timer),
+	GameStage.MAIN:StageMain.new(self,timer),
+	GameStage.END:StageEnd.new(self,timer)
 	}
-	var network_manager:NetworkManager = GlobalRegistry.get_network_manager()
 	if network_manager:
 		for i in range(0,network_manager.users.size()):
 			alive_players.append(Player.new().set_id(network_manager.users[i].id))
