@@ -1,27 +1,19 @@
 extends BaseSerializer
 class_name NetworkSerializer
 
-enum NetworkKeys {
-	URL,
-	END
-}
 
-static func obj_to_byte(obj:NetworkManager) -> Data:
-	if not obj.has_method("get_network_data"):
-		printerr("Error: Object does not implement network serialization interface")
-		return null
-	var data = Data.new(NetworkKeys.END)
+# 序列化网络对象到字节数组
+static func serialize(obj: NetworkManager) -> PackedByteArray:
 	var network_data = obj.get_network_data()
-	serialize_write(NetworkKeys.URL, network_data.url, data)
-	return data
+	var buffer = StreamPeerBuffer.new()
+	write(buffer, obj.url)
+	return buffer.data_array
 
-static func data_array_to_obj(data_array: Array):
-	var result = {}
-	result.url = data_array[NetworkKeys.URL]
+# 反序列化字节数组到对象数据
+static func deserialize(bytes: PackedByteArray) -> Dictionary:
+	var buffer = StreamPeerBuffer.new()
+	buffer.put_data(bytes)
+	buffer.seek(0)
+	var result = {}    
+	result[&"url"] = read(buffer, TYPE_INT)
 	return result
-
-static func serialize(obj: Node) -> PackedByteArray:
-	return data_to_byte(obj_to_byte(obj))
-
-static func deserialize(bytes: PackedByteArray):
-	return data_array_to_obj(byte_to_data_array(bytes))

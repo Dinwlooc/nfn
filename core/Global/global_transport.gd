@@ -2,25 +2,22 @@ extends Node
 
 #GlobalTransport.gd。管理全部rpc和数据转发。
 
-const CardData = RenderPack.CardData
 
-func serialize_cards(cards:Array[Card])-> PackedByteArray:
-	return CardSerializer.serialize_array(cards)
+var render_request_handler: RenderRequestHandler
 
-func deserialize_cards(serialized_data: PackedByteArray)->Array[CardData]:
-	return CardSerializer.deserialize_array(serialized_data)
+func _ready():
+	render_request_handler = RenderRequestHandler.new()
 
-enum CARD_OP {ADD = 0, UPDATE = 1, REMOVE = 2}
+# 发送渲染请求到客户端
+func send_render_request(player_id: int, request: RenderRequest) -> void:
+	rpc_id(player_id, &"receive_render_request", request.serialize())
 
-func cards_add_rpc(area: Area, cards: Array[Card])->void:
-	var data = serialize_cards(cards)
-	rpc_id(area.player.id, &"cards_receive",CARD_OP.ADD,String(area.area_name), data)
-
-func cards_change_rpc(area: Area)->void:
-	pass
-
-func cards_remove_rpc(area: Area, uids: PackedInt32Array)->void:
-	rpc_id(area.player.id, &"cards_receive",CARD_OP.REMOVE,String(area.area_name), uids)
+# 接收来自服务器的渲染请求
+@rpc("authority", "call_local", "reliable")
+func receive_render_request(serialized_request: PackedByteArray) -> void:
+	var request = RenderRequest.deserialize(serialized_request)
+	if request and render_request_handler:
+		render_request_handler.handle_request(request)
 
 func upload_operation_request(op: OperationRequest) -> void:
 	var target = MultiplayerPeer.TARGET_PEER_SERVER
@@ -30,17 +27,6 @@ func upload_operation_request(op: OperationRequest) -> void:
 func receive_operation_request(data: PackedByteArray) -> void:
 	var op:OperationRequest = OperationRequest.deserialize(data)
 	pass #待实现。
-
-@rpc("authority", "call_local", "reliable")
-func cards_receive(card_op:CARD_OP, area_name: String,data: PackedByteArray)->void:
-	var render_area:RenderArea = GlobalRegistry._renderareas.get(StringName(area_name))
-	if !render_area:
-		return
-	match card_op:
-		CARD_OP.ADD:
-			var cards_data:Array[CardData] = deserialize_cards(data)
-			render_area.cards_add(cards_data)
-		pass
 
 @rpc("authority", "call_remote")
 func receive_server_data(data: PackedByteArray) -> void:

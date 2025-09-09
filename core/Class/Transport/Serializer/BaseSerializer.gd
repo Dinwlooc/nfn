@@ -1,93 +1,118 @@
 extends RefCounted
 class_name BaseSerializer
-#前置序列化工具类
-const MAX_STRING_LEN:int = 255
-enum DeserMark {
-	STRING = 255,
-	INT32 = 254,
-	VAR = 253,
-	END = 252
-}
-class Data:
-	var main_data: PackedByteArray
-	var extra_buffer: StreamPeerBuffer 
-	func _init(main_size: int):
-		main_data.resize(main_size)
-		extra_buffer = StreamPeerBuffer.new()
-		extra_buffer.big_endian = true  # 大端字节序
-static func data_to_byte(data:Data) -> PackedByteArray:
-	var all_buffer := StreamPeerBuffer.new()
-	all_buffer.big_endian = true
-	all_buffer.put_u16(data.main_data.size())
-	all_buffer.put_data(data.main_data)
-	all_buffer.put_data(data.extra_buffer.get_data_array())
-	return all_buffer.get_data_array()
 
-static func serialize_write(key: int, value, serialize_data: Data) -> void:
+const MAX_STRING_LEN: int = 255
+const VARINT_MASK: int = 0x7F
+const VARINT_CONTINUE_FLAG: int = 0x80
+
+# 基础类型写入（自动类型判断）
+static func write(buffer: StreamPeerBuffer, value) -> void:
 	match typeof(value):
 		TYPE_STRING:
-			_serialize_string(key, value, serialize_data)
+			_write_string(buffer, value)
 		TYPE_INT:
-			_serialize_int(key, value, serialize_data)
+			_write_varint(buffer, value)
 		TYPE_STRING_NAME:
-			_serialize_string(key, String(value), serialize_data)
-		_:  # VAR类型
-			_serialize_var(key, value, serialize_data)
+			_write_string(buffer, String(value))
+		TYPE_FLOAT:
+			buffer.put_double(value)
+		TYPE_PACKED_INT32_ARRAY:
+			_write_packed_int_array(buffer,value)
+		TYPE_PACKED_INT64_ARRAY:
+			_write_packed_int_array(buffer,value)
+		_:
+			buffer.put_var(value)
 
-static func _serialize_string(key: int, value: String, serialize_data: Data) -> void:
-	serialize_data.main_data.set(key, DeserMark.STRING)
-	var buffer: PackedByteArray = value.to_ascii_buffer()
-	if buffer.size() > MAX_STRING_LEN:
-		buffer.resize(MAX_STRING_LEN)
-	serialize_data.extra_buffer.put_u8(buffer.size())  # 字符串长度(1字节)
-	serialize_data.extra_buffer.put_data(buffer)
+# 基础类型读取（需指定类型）
+static func read(buffer: StreamPeerBuffer, type: int):
+	match type:
+		TYPE_STRING:
+			return _read_string(buffer)
+		TYPE_INT:
+			return _read_varint(buffer)
+		TYPE_STRING_NAME:
+			return StringName(_read_string(buffer))
+		TYPE_FLOAT:
+			return buffer.get_double()
+		TYPE_PACKED_INT32_ARRAY:
+			_read_packed_int32_array(buffer)
+		TYPE_PACKED_INT64_ARRAY:
+			_read_packed_int64_array(buffer)
+		_:
+			return buffer.get_var()
 
-static func _serialize_int(key: int, value: int, serialize_data: Data) -> void:
-	if value <= DeserMark.END and value >= 0:
-		serialize_data.main_data.set(key, value)
-	else:
-		serialize_data.main_data.set(key, DeserMark.INT32)
-		serialize_data.extra_buffer.put_32(value)
+# 使用标准ZigZag编码的变长整数
+static func _write_varint(buffer: StreamPeerBuffer, value: int) -> void:
+	var zigzag = (value << 1) ^ (value >> 63)
+	var unsigned = zigzag if zigzag >= 0 else (1 << 64) + zigzag
+	while unsigned >= VARINT_CONTINUE_FLAG:
+		buffer.put_u8((unsigned & VARINT_MASK) | VARINT_CONTINUE_FLAG)
+		unsigned = unsigned >> 7
+	buffer.put_u8(unsigned)
 
-static func _serialize_var(key: int, value, serialize_data: Data) -> void:
-	serialize_data.main_data.set(key, DeserMark.VAR)
-	var buffer: PackedByteArray = var_to_bytes(value)
-	serialize_data.extra_buffer.put_u16(buffer.size())  # 数据长度(2字节)
-	serialize_data.extra_buffer.put_data(buffer)
+# ZigZag解码
+static func _read_varint(buffer: StreamPeerBuffer) -> int:
+	var result = 0
+	var shift = 0
+	var byte: int
+	for i in range(10):
+		byte = buffer.get_u8()
+		result |= (byte & VARINT_MASK) << shift
+		shift += 7
+		if (byte & VARINT_CONTINUE_FLAG) == 0:
+			break
+	var sign = (result & 1) * -2 + 1  # 0->1, 1->-1
+	return (result >> 1) * sign
 
-static func byte_to_data_array(serialized_data: PackedByteArray) -> Array:
-	var stream := StreamPeerBuffer.new()
-	stream.big_endian = true
-	stream.put_data(serialized_data)
-	stream.seek(0)  # 重置读取位置
-	var main_data_len := stream.get_u16()
-	var main_data := stream.get_data(main_data_len)
-	if main_data[0] != OK:
-		push_error("读取主数据失败")
-		return []
-	main_data = main_data[1]  # 提取实际数据
-	var output := []
-	output.resize(main_data_len)
-	for idx in main_data_len:
-		var mark: int = main_data[idx]
-		if mark <= DeserMark.END:
-			output[idx] = mark
-		else:
-			match mark:
-				DeserMark.INT32:
-					output[idx] = stream.get_32()  # 直接读取4字节整数
-				DeserMark.STRING:
-					var str_len := stream.get_u8()  # 读取长度(1字节)
-					var str_data = stream.get_data(str_len)
-					if str_data[0] == OK:
-						output[idx] = str_data[1].get_string_from_ascii()
-					else:
-						output[idx] = ""
-				DeserMark.VAR:
-					var var_len := stream.get_u16()  # 读取长度(2字节)
-					var var_data = stream.get_data(var_len)
-					if var_data[0] == OK:
-						output[idx] = bytes_to_var(var_data[1])
-					else:
-						output[idx] = null
-	return output
+# 字符串序列化（保持不变）
+static func _write_string(buffer: StreamPeerBuffer, value: String) -> void:
+	var utf8_bytes = value.to_utf8_buffer()
+	var len = min(utf8_bytes.size(), MAX_STRING_LEN)
+	_write_varint(buffer, len)
+	if len > 0:
+		buffer.put_data(utf8_bytes.slice(0, len))
+
+# 字符串反序列化（保持不变）
+static func _read_string(buffer: StreamPeerBuffer) -> String:
+	var len = _read_varint(buffer)
+	if len == 0:
+		return ""
+	var result = buffer.get_utf8_string(len)
+	return result if result else ""
+
+static func _write_packed_int_array(buffer: StreamPeerBuffer, array) -> void:
+	_write_varint(buffer, array.size())
+	for i in range(array.size()):
+		_write_varint(buffer, array[i])
+
+# 反序列化 PackedInt32Array
+static func _read_packed_int32_array(buffer: StreamPeerBuffer) -> PackedInt32Array:
+	var size = _read_varint(buffer)
+	var arr = PackedInt32Array()
+	arr.resize(size)
+	for i in range(size):
+		arr[i] = _read_varint(buffer)  # 自动截断为32位
+	return arr
+
+# 反序列化 PackedInt64Array
+static func _read_packed_int64_array(buffer: StreamPeerBuffer) -> PackedInt64Array:
+	var size = _read_varint(buffer)
+	var arr = PackedInt64Array()
+	arr.resize(size)
+	for i in range(size):
+		arr[i] = _read_varint(buffer)
+	return arr
+
+# 辅助功能保持不变
+static func serialize_to_bytes(value) -> PackedByteArray:
+	var buffer = StreamPeerBuffer.new()
+	buffer.big_endian = true
+	write(buffer, value)
+	return buffer.data_array
+
+static func deserialize_from_bytes(bytes: PackedByteArray, type: int):
+	var buffer = StreamPeerBuffer.new()
+	buffer.big_endian = true
+	buffer.put_data(bytes)
+	buffer.seek(0)
+	return read(buffer, type)

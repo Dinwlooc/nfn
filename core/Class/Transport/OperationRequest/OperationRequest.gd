@@ -10,6 +10,9 @@ func serialize() -> PackedByteArray:
 static func deserialize(serialized_data: PackedByteArray) -> OperationRequest:
 	return OperationRequestSerializer.deserialize(serialized_data)
 
+func send()->void:
+	GlobalTransport.upload_operation_request(self)
+
 class PlayCard extends OperationRequest:
 	var card_id:int
 	var target_ids:int
