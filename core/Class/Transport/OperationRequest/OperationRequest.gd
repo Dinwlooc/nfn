@@ -1,18 +1,17 @@
-extends RefCounted
+extends TransPack
 class_name OperationRequest
-#操作事件，客户端渲染层向服务器端逻辑层单向通信的媒介。
-#需要重建对象。
-var type: int
 
-func serialize() -> PackedByteArray:
-	return OperationRequestSerializer.serialize(self)
-
-static func deserialize(serialized_data: PackedByteArray) -> OperationRequest:
-	return OperationRequestSerializer.deserialize(serialized_data)
-
-func send()->void:
-	GlobalTransport.upload_operation_request(self)
-
+# 实现类：打牌操作
 class PlayCard extends OperationRequest:
-	var card_id:int
-	var target_ids:int
+	var card_id: int
+	var target_id: int  # 修复变量名拼写错误
+	# 实例序列化方法
+	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
+		BaseSerializer.write(buffer, card_id)
+		BaseSerializer.write(buffer, target_id)
+	# 静态反序列化方法
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> OperationRequest:
+		var instance = PlayCard.new()
+		instance.card_id = BaseSerializer.read(buffer, TYPE_INT)
+		instance.target_id = BaseSerializer.read(buffer, TYPE_INT)
+		return instance

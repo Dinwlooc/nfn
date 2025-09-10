@@ -20,7 +20,7 @@ func upload_operation_request(op: OperationRequest) -> void:
 
 @rpc("any_peer", "call_local", "reliable")
 func receive_operation_request(data: PackedByteArray) -> void:
-	var op:OperationRequest = OperationRequest.deserialize(data)
+	var op:OperationRequest = OperationRequestSerializer.deserialize(data)
 	pass #待实现。
 
 @rpc("authority", "call_remote")

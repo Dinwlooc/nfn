@@ -2,7 +2,6 @@ extends RefCounted
 class_name TransPack
 
 # 所有传输包的公共属性
-var version: int = 1
 
 # 必须被子类实现的序列化接口
 func serialize_to_buffer(_buffer: StreamPeerBuffer) -> void:

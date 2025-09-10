@@ -1,31 +1,23 @@
-extends SerializationUtil
+extends BaseSerializer
 class_name OperationRequestSerializer
-enum Type {
-	PLAY_CARDS,
-	END
-}
-const PlayCard = OperationRequest.PlayCard
-# 序列化OperationEvent及其子类
+
+# 所有支持的操作请求类型数组
+static var operation_classes: Array[GDScript] = [
+	OperationRequest.PlayCard,
+]
+
+# 构建双向注册表
+static var _registry:  Dictionary[GDScript,int] = build_registry(operation_classes)
+
+# 序列化OperationRequest
 static func serialize(obj: OperationRequest) -> PackedByteArray:
 	var buffer = StreamPeerBuffer.new()
-	SerializationUtil.write(buffer, obj.type)
-	if obj is OperationRequest.PlayCard:
-		var play_card: OperationRequest.PlayCard = obj
-		SerializationUtil.write(buffer, play_card.card_id)
-		SerializationUtil.write(buffer, play_card.target_id)
+	serialize_with_registry(buffer, obj, _registry)
 	return buffer.data_array
 
-# 反序列化并重建对象
+# 反序列化OperationRequest
 static func deserialize(serialized_data: PackedByteArray) -> OperationRequest:
 	var buffer = StreamPeerBuffer.new()
-	buffer.put_data(serialized_data)
-	buffer.seek(0)
-	var obj_type = SerializationUtil.read(buffer, TYPE_INT)
-	match obj_type:
-		Type.PLAY_CARDS:
-			var play_card = OperationRequest.PlayCard.new()
-			play_card.card_id = SerializationUtil.read(buffer, TYPE_INT)
-			play_card.target_id = SerializationUtil.read(buffer, TYPE_INT)
-			return play_card
-	printerr("Unknown operation type: ", obj_type)
-	return null
+	buffer.data_array = serialized_data
+	var result = deserialize_with_registry(buffer,operation_classes)
+	return result as OperationRequest
