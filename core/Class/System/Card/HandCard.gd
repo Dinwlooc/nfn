@@ -16,3 +16,7 @@ enum Suit{
 func set_suit(newsuit:Suit)->HandCard:
 	suit = newsuit
 	return self
+
+func get_pack()->CardPack:
+	var pack:HandCardPack = HandCardPack.new(id,name,type,power,cost,suit,get_attribute(&"power"),get_attribute(&"cost"))
+	return pack

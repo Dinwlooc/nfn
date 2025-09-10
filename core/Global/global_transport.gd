@@ -1,21 +1,16 @@
 extends Node
-
 #GlobalTransport.gd。管理全部rpc和数据转发。
-
-
 var render_request_handler: RenderRequestHandler
 
 func _ready():
 	render_request_handler = RenderRequestHandler.new()
 
-# 发送渲染请求到客户端
 func send_render_request(player_id: int, request: RenderRequest) -> void:
-	rpc_id(player_id, &"receive_render_request", request.serialize())
+	rpc_id(player_id, &"receive_render_request", RenderRequestSerializer.serialize(request))
 
-# 接收来自服务器的渲染请求
 @rpc("authority", "call_local", "reliable")
 func receive_render_request(serialized_request: PackedByteArray) -> void:
-	var request = RenderRequest.deserialize(serialized_request)
+	var request = RenderRequestSerializer.deserialize(serialized_request)
 	if request and render_request_handler:
 		render_request_handler.handle_request(request)
 

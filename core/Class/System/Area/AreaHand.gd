@@ -1,7 +1,7 @@
 extends Area
 class_name AreaHand
 
-func _init():
+func _init_expand()->void:
 	area_name = &"areahand"
 
 func play()->void:

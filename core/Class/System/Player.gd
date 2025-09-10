@@ -7,8 +7,8 @@ var AP: int #玩家当前的行动点
 var id:int = 0
 var init_AP:int = 3
 var draw_cards_count = 2
-var area_hand = AreaHand.new().set_player(self)
-var area_ability = AreaAbility.new().set_player(self)
+var area_hand = AreaHand.new(self)
+var area_ability = AreaAbility.new(self)
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 
 signal damage_data(damageType:String,amout:int,form:int,to:int,fx)

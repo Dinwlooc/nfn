@@ -1,81 +1,72 @@
 extends BaseSerializer
 class_name CardSerializer
 
-enum CardClass{
-	NULL,
-	HAND,
-	CHARACTER,
-	END
+enum CardClass {
+	CARD_PACK ,
+	HAND_CARD_PACK,
+	MODE_CARD_PACK
 }
-const CardData = RenderPack.CardData
-const VERSION = 1  # 添加序列化版本号
 
-# 序列化卡牌对象为字节数组
-static func serialize(obj: Card) -> PackedByteArray:
+const VERSION = 1
+
+# 序列化传输包
+static func serialize(pack: TransPack) -> PackedByteArray:
 	var buffer = StreamPeerBuffer.new()
-	BaseSerializer.write(buffer, VERSION)
-	if obj is HandCard:
-		BaseSerializer.write(buffer, CardClass.HAND)
-		BaseSerializer.write(buffer, obj.id)
-		BaseSerializer.write(buffer, obj.name)
-		BaseSerializer.write(buffer, obj.type)
-		BaseSerializer.write(buffer, obj.power)
-		BaseSerializer.write(buffer, obj.cost)
-		BaseSerializer.write(buffer, obj.suit)
-		BaseSerializer.write(buffer, obj.get_attribute(&"power", obj.power))
-		BaseSerializer.write(buffer, obj.get_attribute(&"cost", obj.cost))
-	# 在这里添加其他卡牌类型的序列化逻辑
+	write(buffer, VERSION)
+	if pack is HandCardPack:
+		write(buffer, CardClass.HAND_CARD_PACK)
+	elif pack is CardPack:
+		write(buffer, CardClass.CARD_PACK)
 	else:
-		BaseSerializer.write(buffer, CardClass.NULL)
-		BaseSerializer.write(buffer, obj.id)
-		BaseSerializer.write(buffer, obj.name)
-		BaseSerializer.write(buffer, obj.type)
+		write(buffer, CardClass.MODE_CARD_PACK)
+		write(buffer,pack.get_class())
+	pack.serialize_to_buffer(buffer)
 	return buffer.data_array
 
-# 从字节数组反序列化为卡牌数据对象
-static func deserialize(data: PackedByteArray) -> CardData:
+# 反序列化传输包
+static func deserialize(data: PackedByteArray) -> CardPack:
 	var buffer = StreamPeerBuffer.new()
 	buffer.data_array = data
-	var version = BaseSerializer.read(buffer, TYPE_INT)
-	var class_type = BaseSerializer.read(buffer, TYPE_INT)
-	if class_type == CardClass.HAND:
-		var hand_data = RenderPack.HandCardData.new()
-		hand_data.id = BaseSerializer.read(buffer, TYPE_INT)
-		hand_data.name = BaseSerializer.read(buffer, TYPE_STRING_NAME)
-		hand_data.type = BaseSerializer.read(buffer, TYPE_STRING_NAME)
-		# 读取手牌特有属性
-		hand_data.power = BaseSerializer.read(buffer, TYPE_INT)
-		hand_data.cost = BaseSerializer.read(buffer, TYPE_INT)
-		hand_data.suit = BaseSerializer.read(buffer, TYPE_INT)
-		hand_data.modified_power = BaseSerializer.read(buffer, TYPE_INT)
-		hand_data.modified_cost = BaseSerializer.read(buffer, TYPE_INT)
-		return hand_data
-	var card_data = RenderPack.CardData.new()
-	card_data.id = BaseSerializer.read(buffer, TYPE_INT)
-	card_data.name = BaseSerializer.read(buffer, TYPE_STRING_NAME)
-	card_data.type = BaseSerializer.read(buffer, TYPE_STRING_NAME)
-	return card_data
+	var version = read(buffer, TYPE_INT)
+	if version != VERSION:
+		push_error("Version mismatch. Expected: " + str(VERSION) + ", Got: " + str(version))
+		return null
+	var class_type = read(buffer, TYPE_INT)
+	match class_type:
+		CardClass.CARD_PACK:
+			return CardPack.deserialize_from_buffer(buffer)
+		CardClass.HAND_CARD_PACK:
+			return HandCardPack.deserialize_from_buffer(buffer)
+		CardClass.MODE_CARD_PACK:
+			var mod_class:StringName = read(buffer, TYPE_STRING_NAME)
+			return ClassDB.class_call_static(mod_class,&"deserialize_from_buffer")
+		_:
+			push_error("Unknown card class type: " + str(class_type))
+			return null
 
-static func serialize_array(cards: Array[Card]) -> PackedByteArray:
+# 序列化传输包数组
+static func serialize_array(packs: Array[CardPack]) -> PackedByteArray:
 	var buffer = StreamPeerBuffer.new()
-	BaseSerializer.write(buffer, cards.size())
-	for card in cards:
-		var card_data = serialize(card)
-		BaseSerializer.write(buffer, card_data.size())
-		buffer.put_data(card_data)
+	write(buffer, packs.size())
+	for pack in packs:
+		var pack_data:PackedByteArray = serialize(pack)
+		write(buffer, pack_data.size())
+		buffer.put_data(pack_data)
 	return buffer.data_array
 
-# 新增：反序列化为卡牌数据数组
-static func deserialize_array(data: PackedByteArray) -> Array[CardData]:
+# 反序列化传输包数组
+static func deserialize_array(data: PackedByteArray) -> Array[CardPack]:
 	var buffer = StreamPeerBuffer.new()
 	buffer.data_array = data
-	var result: Array[CardData] = []
-	var array_size = BaseSerializer.read(buffer, TYPE_INT)
+	var result: Array[CardPack] = []
+	var array_size = read(buffer, TYPE_INT)
 	for _i in range(array_size):
-		var card_size = BaseSerializer.read(buffer, TYPE_INT)
-		var card_data = buffer.get_data(card_size)
-		if card_data[0] != OK:
-			push_error("Failed to read card data")
+		var pack_size = read(buffer, TYPE_INT)
+		var pack_data = buffer.get_data(pack_size)
+		if pack_data[0] != OK:
+			push_error("Failed to read pack data")
 			continue
-		result.append(deserialize(card_data[1]))
+		var pack:CardPack = deserialize(pack_data[1])
+		if pack:
+			result.append(pack)
 	return result

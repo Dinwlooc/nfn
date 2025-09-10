@@ -18,7 +18,6 @@ class DefaultArea:
 	const HAND:StringName = &"areahand"
 	const TARGETS:StringName = &"areatargets"
 	const SELF:StringName = &"areaself"
-const CardData = RenderPack.CardData
 
 func _ready():
 	if !control && get_parent_control() is RenderControl:
@@ -42,7 +41,7 @@ func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 	tween_requested.emit(render_event)
 	pass
 	
-func cards_add(cards:Array[CardData])->void:
+func cards_add(cards:Array[CardPack])->void:
 	for i in range(0,cards.size()):
 			var array_position = card_pool.size()
 			var new_card:RenderCard = RenderCard.new()

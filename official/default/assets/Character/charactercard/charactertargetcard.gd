@@ -17,7 +17,7 @@ func _ready() -> void:
 
 func test_init() -> void:
 	#测试用初始化
-	card.data = RenderPack.CardData.new()
+	card.data = CardPack.new()
 	card.data.id = 0
 
 func _physics_process(delta: float) -> void:

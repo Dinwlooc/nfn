@@ -12,8 +12,7 @@ func get_attribute(attribute:StringName,value:int = get(attribute) ) -> int:
 		return 0
 	return attributeModifiers.modify(attribute,value)
 
-func serialize()->PackedByteArray:
-	return CardSerializer.serialize(self)
+func get_pack()->CardPack:
+	var pack:CardPack = CardPack.new(id,name,type)
+	return pack
 	
-static func deserialize(serialized_data: PackedByteArray) -> RenderPack.CardData :
-	return CardSerializer.deserialize(serialized_data)

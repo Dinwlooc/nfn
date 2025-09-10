@@ -1,4 +1,4 @@
-extends BaseSerializer
+extends SerializationUtil
 class_name NetworkSerializer
 
 

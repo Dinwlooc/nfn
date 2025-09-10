@@ -17,8 +17,7 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var path:Dictionary
-const Data = RenderPack.CardData
-var data:Data
+var data:CardPack
 class DefaultType:
 	const ATTACK = &"attack"
 	const VOID = &"void"
@@ -31,7 +30,7 @@ func _ready()-> void:
 	area.render_requested.connect(render_update)
 	pass
 
-func data_update(new_card_data:Data)-> void:
+func data_update(new_card_data:CardPack)-> void:
 	data = new_card_data
 	if !(cardface)||data.type != cardface.type:
 		_load_scene_by_type(data.type)
