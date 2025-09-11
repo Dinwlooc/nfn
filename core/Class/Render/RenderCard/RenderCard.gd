@@ -16,7 +16,6 @@ var selected:bool = false
 var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
-var path:Dictionary
 var data:CardPack
 class DefaultType:
 	const ATTACK = &"attack"
@@ -26,7 +25,6 @@ signal drag
 
 func _ready()-> void:
 	name = &"RenderCard"
-	path = GlobalConfig._resource_registry[&"cardface"]
 	area.render_requested.connect(render_update)
 	pass
 
@@ -45,7 +43,7 @@ func _load_scene_by_type(card_type: StringName) -> void:
 	if cardface:
 		remove_child(cardface)
 		cardface.queue_free()
-	cardface = load(path.get(card_type, path[DefaultType.VOID])).instantiate()
+	cardface = load(GlobalConfig.get_resource_path(&"cardface",card_type)).instantiate()
 	if cardface:
 		cardface.card = self
 		add_child(cardface)
