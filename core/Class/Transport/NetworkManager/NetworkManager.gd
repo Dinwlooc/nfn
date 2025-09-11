@@ -16,7 +16,7 @@ func _ready()->void:
 		GlobalRegistry.register_singleton(GlobalRegistry.NETWORK_MANAGER_TYPE,self)
 		random_create()
 		get_multiplayer().multiplayer_peer = server
-	
+
 func _process(delta)->void:
 	if Engine.get_process_frames() % 5 == 0:
 		server.poll()

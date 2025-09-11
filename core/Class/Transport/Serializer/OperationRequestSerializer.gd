@@ -1,13 +1,13 @@
-extends BaseSerializer
+extends TransPackSerializer
 class_name OperationRequestSerializer
 
 # 所有支持的操作请求类型数组
-static var operation_classes: Array[GDScript] = [
+static var operation_classes: Array[Script] = [
 	OperationRequest.PlayCard,
 ]
 
 # 构建双向注册表
-static var _registry:  Dictionary[GDScript,int] = build_registry(operation_classes)
+static var _registry:  Dictionary[Script,int] = build_registry(operation_classes)
 
 # 序列化OperationRequest
 static func serialize(obj: OperationRequest) -> PackedByteArray:

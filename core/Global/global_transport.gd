@@ -5,7 +5,7 @@ var render_request_handler: RenderRequestHandler
 func _ready():
 	render_request_handler = RenderRequestHandler.new()
 
-func send_render_request(player_id: int, request: RenderRequest) -> void:
+func send_render_request(player_id:int, request: RenderRequest) -> void:
 	rpc_id(player_id, &"receive_render_request", RenderRequestSerializer.serialize(request))
 
 @rpc("authority", "call_local", "reliable")
