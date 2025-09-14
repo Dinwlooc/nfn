@@ -6,9 +6,13 @@ var area_target_position:Vector2
 var area_target_size:Vector2
 var swap_cooldown: float = 0.0
 var pending_swap:bool = false
+var current_card_tween: Tween = null
+var current_drag_tween: Tween = null
 const SWAP_COOLDOWN_DURATION: float = 0.3
 const SWAP_DELTA:float = 0.07
-const TWEEN_TIME:float = 0.35
+const TWEEN_TIME:float = 0.2
+const DRAG_TWEEN_TIME:float = 0.1
+const RESET_TIME:float = TWEEN_TIME / 2.0
 
 const TABLE_SIZE: int = 64  #采样点数量(2^N)
 const AMPLITUDE: float = 0.3
@@ -17,7 +21,7 @@ const MASK: int = TABLE_SIZE - 1   # 位掩码用于快速取模
 const CARD_PHASE_OFFSET: int = 4  # 卡牌间相位差
 const max_distance = 400.0
 const max_rotation = -PI*0.167
-const rotate_time = 0.5
+
 var _sine_table := PackedFloat64Array() # 类型化数组存储采样点
 var _global_phase_index: int = 0
 
@@ -29,14 +33,7 @@ func ready_expand()->void:
 	_generate_sine_table()
 
 func _generate_sine_table() -> void:
-	_sine_table.resize(TABLE_SIZE)
-	var quarter = TABLE_SIZE / 4
-	for i in range(0, quarter + 1):
-		_sine_table[i] = sin(TAU * i / TABLE_SIZE)
-	for i in range(1, quarter):
-		_sine_table[quarter + i] = _sine_table[quarter - i]
-	for i in range(0, 2 * quarter):
-		_sine_table[2 * quarter + i] = -_sine_table[i]
+	_sine_table = MathUtils.generate_sine_table(TABLE_SIZE)
 
 func _physics_process(delta: float) -> void:
 	if in_area:
@@ -88,9 +85,18 @@ func card_move_expand() -> void:
 
 func dragging_move(card:RenderCard)->void:
 	var _target_position = get_global_mouse_position()
-	card_move_rotate(card,_target_position)
-	var tween =  UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
-	tween.finished.connect(card_move_rotate.bind(card,_target_position))
+	if current_drag_tween:
+		current_drag_tween.kill()
+	current_drag_tween = create_tween()
+	current_drag_tween.set_parallel(true)
+	var target_rot = _compute_rotation(card, _target_position)
+	current_drag_tween.tween_property(card, ^"position", _target_position, DRAG_TWEEN_TIME) \
+		.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT_IN)
+	current_drag_tween.tween_property(card, ^"rotation", target_rot, DRAG_TWEEN_TIME) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	current_drag_tween.chain()
+	current_drag_tween.tween_property(card, ^"rotation", 0.0, RESET_TIME) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	swap_cards(card)
 	
 func swap_cards(drag_card:RenderCard)->void:
@@ -104,28 +110,36 @@ func swap_cards(drag_card:RenderCard)->void:
 		hovering_card = null
 		swap_cooldown = SWAP_COOLDOWN_DURATION
 
-func card_move_rotate(card:RenderCard, _target_position:Vector2)->void:
-	# 计算水平距离差
+func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
+	if area.card_pool.size() == 0 || target_position.size() == 0:
+		return
+	var master_tween:Tween = create_tween()
+	master_tween.set_parallel(true)
+	for i in range(area.card_pool.size()):
+		var card:RenderCard = area.card_pool[i]
+		var card_target_pos:Vector2 = target_position[i]
+		if card.selected:
+			card_target_pos.y += -40.0
+		if !card.dragged:
+			master_tween.tween_property(card, ^"position", card_target_pos, TWEEN_TIME) \
+				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
+			if render_event.config.get(&"rotate"):
+				var target_rot = _compute_rotation(card, card_target_pos)
+				master_tween.tween_property(card, ^"rotation", target_rot, TWEEN_TIME) \
+					.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	# === 阶段2: 并行执行所有卡牌的旋转复位 ===
+	master_tween.chain()
+	for card in area.card_pool:
+		if !card.dragged:
+			master_tween.tween_property(card, ^"rotation", 0.0, RESET_TIME) \
+				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	if current_card_tween:
+		current_card_tween.kill()
+	current_card_tween = master_tween
+# 新增辅助函数：仅计算旋转值不执行动画
+func _compute_rotation(card:RenderCard, _target_position:Vector2) -> float:
 	var dx = card.position.x - _target_position.x
 	var abs_dx = abs(dx)
 	var rotation_ratio = min(abs_dx / max_distance, 1.0)
 	var rotation_sign = 1.0 if dx < 0 else -1.0
-	var _target_rotation = rotation_sign * rotation_ratio * max_rotation
-	UIAnimationUtils.tween_animations(card, {^"rotation": _target_rotation}, rotate_time)
-
-func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
-	if area.card_pool.size() == 0||target_position.size()==0:
-		return
-	for i in range(0,area.card_pool.size()):
-		var card:RenderCard = area.card_pool[i]
-		var card_position:Vector2 = card.position
-		var _target_position:Vector2 = target_position[i]
-		if card.selected:
-			_target_position.y += -40.0
-		if !card.dragged:
-			if render_event.config.get(&"rotate"):
-				card_move_rotate(card,_target_position)
-				UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME).finished.connect(card_move_rotate.bind(card,_target_position))
-			else:
-				UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
-	pass
+	return rotation_sign * rotation_ratio * max_rotation

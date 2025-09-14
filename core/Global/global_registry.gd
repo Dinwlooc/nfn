@@ -46,9 +46,18 @@ func connect_singleton(type: StringName, callback: Callable) -> void:
 	singleton_registered.connect(func(t: StringName, instance: Node):
 		if t == type:
 			callback.call(instance))
+
 func connect_renderarea(name: StringName,callback: Callable) -> void:
 	if _renderareas.has(name):
 		callback.call(_renderareas[name])
 	renderarea_registered.connect(func(n: StringName, area: RenderArea):
 		if n == name:
 			callback.call(area))
+
+func get_singleton(type: StringName) -> Node:
+	assert(_singletons.has(type), "Singleton not registered: " + type)
+	return _singletons[type]
+
+func get_renderarea(name: StringName) -> RenderArea:
+	assert(_renderareas.has(name), "RenderArea not registered: " + name)
+	return _renderareas[name]
