@@ -16,34 +16,30 @@ const SYSTEM_TYPE := &"system"
 const TIMER_TYPE := &"timer"
 const RENDER_CONTROL_TYPE := &"render_control"
 const NETWORK_MANAGER_TYPE := &"network_manager"
-
 # 新增常量注册接口
 func register_constant(type: StringName, names: Array[StringName], enum_size: int) -> void:
 	assert(names.size() == enum_size, 
 		"Constant size mismatch for %s: expected %d got %d" % [type, enum_size, names.size()])
-	
 	# 创建双向映射
 	var array_map := names.duplicate()
 	var dict_map := {}
 	for i in names.size():
 		dict_map[names[i]] = i
-	
 	_constants[type] = {
-		"array": array_map,
-		"dic": dict_map
+		&"array": array_map,
+		&"dic": dict_map
 	}
 	constant_registered.emit(type)
-
 # 常量查询接口
 func get_constant_name(type: StringName, index: int) -> StringName:
 	assert(_constants.has(type), "Constant type not registered: " + type)
-	var arr: Array = _constants[type]["array"]
+	var arr: Array = _constants[type][&"array"]
 	assert(index >= 0 and index < arr.size(), "Index out of range for constant " + type)
 	return arr[index]
 
 func get_constant_index(type: StringName, name: StringName) -> int:
 	assert(_constants.has(type), "Constant type not registered: " + type)
-	var dict: Dictionary = _constants[type]["dic"]
+	var dict: Dictionary = _constants[type][&"dic"]
 	assert(dict.has(name), "Name %s not found in constant %s" % [name, type])
 	return dict[name]
 

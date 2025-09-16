@@ -15,6 +15,9 @@ var _process_active := false
 @export var network_manager:NetworkManager
 signal data_update
 
+func _init() -> void:
+	GlobalConstants.register_to(GlobalRegistry)
+
 func _ready() -> void:
 	signal_connect_test()#调试模式
 	load_cards()
@@ -52,7 +55,6 @@ func _start_game()-> void:
 	GameStage.MAIN:StageMain.new(self,timer),
 	GameStage.END:StageEnd.new(self,timer)
 	}
-	GlobalConstants.register_to(GlobalRegistry)
 	if network_manager:
 		for i in range(0,network_manager.users.size()):
 			alive_players.append(Player.new().set_id(network_manager.users[i].id))

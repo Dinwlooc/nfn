@@ -6,10 +6,13 @@ var id: int
 var name: StringName
 var type: int
 
-func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = GlobalRegistry.get_card_type_name(GlobalConstants.CardType.NULL)):
+const CardType = GlobalConstants.KEY_CARD_TYPE
+const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
+
+func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL ):
 	id = init_id
 	name = init_name
-	type = GlobalRegistry.get_card_type(init_type_name)
+	type = GlobalRegistry.get_constant_index(CardType,init_type_name)
 
 # 序列化实现
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:

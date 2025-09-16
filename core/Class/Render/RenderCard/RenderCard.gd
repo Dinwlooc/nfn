@@ -28,7 +28,7 @@ func _ready()-> void:
 func data_update(new_card_data:CardPack)-> void:
 	data = new_card_data
 	if !(cardface)||data.type != cardface.type:
-		var type_name = GlobalRegistry.get_card_type_name(data.type)
+		var type_name = GlobalRegistry.get_constant_name(GlobalConstants.KEY_CARD_TYPE,data.type)
 		_load_scene_by_type(type_name)
 	cardface.data_update()
 	pass
