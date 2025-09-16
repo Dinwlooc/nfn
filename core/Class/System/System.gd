@@ -52,6 +52,7 @@ func _start_game()-> void:
 	GameStage.MAIN:StageMain.new(self,timer),
 	GameStage.END:StageEnd.new(self,timer)
 	}
+	GlobalConstants.register_to(GlobalRegistry)
 	if network_manager:
 		for i in range(0,network_manager.users.size()):
 			alive_players.append(Player.new().set_id(network_manager.users[i].id))

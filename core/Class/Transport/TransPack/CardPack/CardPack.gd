@@ -4,12 +4,12 @@ class_name CardPack
 # 卡牌基础属性
 var id: int
 var name: StringName
-var type: StringName
+var type: int
 
-func _init(init_id: int = 0, init_name: StringName = &"", init_type: StringName = &""):
+func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = GlobalRegistry.get_card_type_name(GlobalConstants.CardType.NULL)):
 	id = init_id
 	name = init_name
-	type = init_type
+	type = GlobalRegistry.get_card_type(init_type_name)
 
 # 序列化实现
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:

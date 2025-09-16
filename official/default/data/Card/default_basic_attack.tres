@@ -1,15 +1,12 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://dnetn0ih4400d"]
+[gd_resource type="Resource" script_class="HandCard" load_steps=2 format=3 uid="uid://cvtw8wnsvyfp0"]
 
-[sub_resource type="GDScript" id="GDScript_qhc0a"]
-script/source = "extends HandCard
-"
+[ext_resource type="Script" uid="uid://dd70gbxq1gppb" path="res://core/Class/System/Card/HandCard.gd" id="1_46w4n"]
 
 [resource]
-resource_local_to_scene = true
-script = SubResource("GDScript_qhc0a")
+script = ExtResource("1_46w4n")
 power = 3
 cost = 1
-suit = 0
+suit = 4
 name = &"nfn:basic_attack"
 type = &"attack"
-metadata/_custom_type_script = "uid://dhj3yb8wf0j21"
+metadata/_custom_type_script = "uid://dd70gbxq1gppb"

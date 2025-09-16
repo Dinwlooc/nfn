@@ -1,14 +1,12 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://1l6tj4jptudl"]
+[gd_resource type="Resource" script_class="HandCard" load_steps=2 format=3 uid="uid://b58jaf3o1bkik"]
 
-[sub_resource type="GDScript" id="GDScript_xmloq"]
-script/source = "extends HandCard
-"
+[ext_resource type="Script" uid="uid://dd70gbxq1gppb" path="res://core/Class/System/Card/HandCard.gd" id="1_4o0ak"]
 
 [resource]
-resource_local_to_scene = true
-script = SubResource("GDScript_xmloq")
-power = 4
+script = ExtResource("1_4o0ak")
+power = 3
 cost = 1
-suit = null
-name = "nfn:basic_laser"
+suit = 4
+name = &"nfn:basic_laser"
 type = &"attack"
+metadata/_custom_type_script = "uid://dd70gbxq1gppb"

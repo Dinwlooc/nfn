@@ -9,7 +9,8 @@ extends RenderCardFace
 @onready var Nname = $Name
 @onready var Nsuit = $Suit
 
-const TYPE = &"attack"
+const TYPE = GlobalConstants.CardType.ATTACK
+const TYPE_NAME = GlobalConstants.CARD_TYPES[TYPE]
 const SELECT_COLOR:Color = Color(1,0.3,0.3)
 const HOVERING_COLOR:Color = Color(1,0.7,0.6)
 const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)

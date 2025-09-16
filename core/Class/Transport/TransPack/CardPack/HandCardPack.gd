@@ -8,7 +8,7 @@ var suit: int
 var modified_power: int
 var modified_cost: int
 
-func _init(init_id: int = 0, init_name: StringName = &"", init_type: StringName = &"", 
+func _init(init_id: int = 0, init_name: StringName = &"", init_type:StringName = GlobalRegistry.get_card_type_name(GlobalConstants.CardType.NULL), 
 		init_power: int = 0, init_cost: int = 0, init_suit: int = 0,
 		init_modified_power: int = 0, init_modified_cost: int = 0):
 	super._init(init_id, init_name, init_type)
@@ -32,7 +32,7 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> TransPack:
 	var pack:HandCardPack = HandCardPack.new()
 	pack.id = SerializationUtil.read(buffer, TYPE_INT)
 	pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-	pack.type = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+	pack.type = SerializationUtil.read(buffer, TYPE_INT)
 	pack.power = SerializationUtil.read(buffer, TYPE_INT)
 	pack.cost = SerializationUtil.read(buffer, TYPE_INT)
 	pack.suit = SerializationUtil.read(buffer, TYPE_INT)

@@ -17,9 +17,6 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var data:CardPack
-class DefaultType:
-	const ATTACK = &"attack"
-	const VOID = &"void"
 signal select
 signal drag
 
@@ -31,7 +28,8 @@ func _ready()-> void:
 func data_update(new_card_data:CardPack)-> void:
 	data = new_card_data
 	if !(cardface)||data.type != cardface.type:
-		_load_scene_by_type(data.type)
+		var type_name = GlobalRegistry.get_card_type_name(data.type)
+		_load_scene_by_type(type_name)
 	cardface.data_update()
 	pass
 	
