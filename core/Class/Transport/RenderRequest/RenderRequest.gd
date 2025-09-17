@@ -2,8 +2,11 @@ extends TransPack
 class_name RenderRequest
 
 var target_area: StringName 
-func send_to_player(player_id: int) -> void:
-	GlobalTransport.send_render_request(player_id, self)
+func send_to_player(peer_id: int) -> void:
+	if peer_id != -1:
+		GlobalTransport.send_render_request(peer_id, self)
+	else:
+		return
 	
 class CardAdd extends RenderRequest:
 	var card_data: Array[CardPack] 

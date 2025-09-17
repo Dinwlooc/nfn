@@ -1,5 +1,5 @@
 extends RefCounted
-class_name CardManager
+class_name CardsManager
 
 var next_id: int = 0  # 下一个可用的卡牌ID
 # 为单张卡牌分配ID

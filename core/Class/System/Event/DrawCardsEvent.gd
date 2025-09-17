@@ -19,5 +19,5 @@ func generate_runtime_event(system: System) -> RuntimeEvent:
 	var start_index: int = card_pool.size() - actual_draw_count
 	for i in range(actual_draw_count):
 		indices[i] = start_index + i
-	var target_area: Area = system.alive_players[_player_index].area_hand
+	var target_area: Area = system.player_manager.get_player_by_seat(_player_index).area_hand
 	return CardMovementEvent.new(system.area_drawing, target_area, indices, player_id)

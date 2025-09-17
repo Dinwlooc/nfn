@@ -6,9 +6,9 @@ var game_stages:Dictionary[GameStage, Stage]
 var game_stage: GameStage = GameStage.NULL
 var area_attack = AreaAttack.new()
 var area_drawing = AreaDrawing.new()
-var alive_players:Array[Player]
 var current_player_index:int
-var cardsmanager = CardManager.new()
+var cardsmanager = CardsManager.new()
+var player_manager = PlayersManager.new() 
 var event_processor = EventProcessor.new(self)
 var _process_active := false
 @export var timer:GameTimer
@@ -50,24 +50,24 @@ func _start_game()-> void:
 		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
 		return
 	game_stages = {
-	GameStage.START:StageStart.new(self,timer),
-	GameStage.DRAW:StageDraw.new(self,timer),
-	GameStage.MAIN:StageMain.new(self,timer),
-	GameStage.END:StageEnd.new(self,timer)
+		GameStage.START:StageStart.new(self,timer),
+		GameStage.DRAW:StageDraw.new(self,timer),
+		GameStage.MAIN:StageMain.new(self,timer),
+		GameStage.END:StageEnd.new(self,timer)
 	}
 	if network_manager:
-		for i in range(0,network_manager.users.size()):
-			alive_players.append(Player.new().set_id(network_manager.users[i].id))
-			network_manager.users[i].seat = i
+		for user in network_manager.users:
+			player_manager.add_player(user.id)  # 添加真实玩家
 	else:
-		alive_players.append(Player.new().set_id(1))
-	for players_index in range(0,alive_players.size()):
-		var card_pool:Array[Card]
-		for i in range(0,INIT_CARDS_COUNT):
-			if alive_players.size()&&area_drawing.card_pool.size():
+		player_manager.add_player(1)  # 单机模式添加本地玩家
+	player_manager.ensure_min_players(2)
+	for player in player_manager.players:
+		var card_pool:Array[Card] = []
+		for i in range(INIT_CARDS_COUNT):
+			if player_manager.players.size() > 0 && area_drawing.card_pool.size() > 0:
 				card_pool.append(area_drawing.card_pool.pop_back())
-		alive_players[players_index].area_hand.cards_add(card_pool)
-	current_player_index = randi_range(0,alive_players.size()-1)
+		player.area_hand.cards_add(card_pool)
+	current_player_index = randi_range(0, player_manager.players.size()-1)
 	change_stage(GameStage.START)
 	GlobalConsole._print("System:游戏开始！System Vesion:Beta")
 	#########仅调试时使用的函数########
@@ -78,7 +78,7 @@ func _draw_cards_test() -> void:
 	if game_stage == GameStage.NULL:
 		GlobalConsole._print("System:Error:c_draw未生效。游戏未开始。")
 		return
-	if alive_players.is_empty():
+	if player_manager.players.is_empty():
 		GlobalConsole._print("System:Error:c_draw未生效。无存活玩家。")
 		return
 	var draw_event = DrawCardsEvent.new(
