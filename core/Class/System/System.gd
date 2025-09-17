@@ -45,31 +45,12 @@ func stage_ended():
 	pass
 #####信号调用函数#####
 func _start_game()-> void:
-	const INIT_CARDS_COUNT:int = 4
 	if game_stage != GameStage.NULL:
 		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
 		return
-	game_stages = {
-		GameStage.START:StageStart.new(self,timer),
-		GameStage.DRAW:StageDraw.new(self,timer),
-		GameStage.MAIN:StageMain.new(self,timer),
-		GameStage.END:StageEnd.new(self,timer)
-	}
-	if network_manager:
-		for user in network_manager.users:
-			player_manager.add_player(user.id)  # 添加真实玩家
-	else:
-		player_manager.add_player(1)  # 单机模式添加本地玩家
-	player_manager.ensure_min_players(2)
-	for player in player_manager.players:
-		var card_pool:Array[Card] = []
-		for i in range(INIT_CARDS_COUNT):
-			if player_manager.players.size() > 0 && area_drawing.card_pool.size() > 0:
-				card_pool.append(area_drawing.card_pool.pop_back())
-		player.area_hand.cards_add(card_pool)
-	current_player_index = randi_range(0, player_manager.players.size()-1)
-	change_stage(GameStage.START)
-	GlobalConsole._print("System:游戏开始！System Vesion:Beta")
+	var start_event = GameStartEvent.new()
+	event_processor.queue_behavior(start_event)
+	GlobalConsole._print("System:游戏开始事件已创建")
 	#########仅调试时使用的函数########
 func _draw_cards_test() -> void:
 	if _process_active:
