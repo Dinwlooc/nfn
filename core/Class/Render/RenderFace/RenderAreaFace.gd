@@ -19,11 +19,9 @@ func _ready()->void:
 func connect_to_area(_area:RenderArea):
 	_area.render_requested.connect(render_update)
 	_area.tween_requested.connect(tween_update)
-	_area.card_added.connect(connect_card_signals)
-	_area.card_removed.connect(disconnect_card_signals)
+	_area.cards_added.connect(connect_cards_signals)
 
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
-	#更新动画和渲染控制参数。
 	tween_update(render_event)
 	pass
 
@@ -53,10 +51,9 @@ func try_dragging_move()->bool:
 		return true
 	return false
 
-func connect_card_signals(card: RenderCard):
-	if card.has_signal(&"mouse_entered"):
+func connect_cards_signals(cards:Array[RenderCard]):
+	for card in cards:
 		card.mouse_entered.connect(_on_card_mouse_entered.bind(card))
-	if card.has_signal(&"mouse_exited"):
 		card.mouse_exited.connect(_on_card_mouse_exited.bind(card))
 
 func disconnect_card_signals(card: RenderCard):

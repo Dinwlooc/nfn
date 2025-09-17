@@ -12,12 +12,13 @@ var init_child_count:int
 signal render_requested(render_event:RenderEvent)
 signal tween_requested(render_event:RenderEvent)
 signal selected()
-signal card_added(card:RenderCard)
-signal card_removed(card:RenderCard)
+signal cards_add_requested(cards:Array[CardPack])
+signal cards_added(cards:Array[RenderCard])
+signal cards_remove_requested(uids:PackedInt32Array)
 class DefaultArea:
-	const HAND:StringName = &"areahand"
-	const TARGETS:StringName = &"areatargets"
-	const SELF:StringName = &"areaself"
+	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
+	const TARGETS:StringName = &"targets"
+	const SELF:StringName = &"self"
 
 func _ready():
 	if !control && get_parent_control() is RenderControl:
@@ -27,6 +28,7 @@ func _ready():
 	else :
 		control = RenderControl.new()
 	init_child_count = get_child_count()
+	cards_add_requested.connect(cards_add)
 	ready_expand()
 	pass
 
@@ -40,18 +42,27 @@ func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
 func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 	tween_requested.emit(render_event)
 	pass
-	
+
+func process_request(request)->void:
+	if request is RenderRequest.CardAdd:
+		cards_add_requested.emit(request.card_data)
+	elif request is RenderRequest.CardRemove:
+		cards_remove_requested.emit(request.uids_data)
+
 func cards_add(cards:Array[CardPack])->void:
+	var new_cards:Array[RenderCard]
+	new_cards.resize(cards.size())
 	for i in range(0,cards.size()):
 			var array_position = card_pool.size()
 			var new_card:RenderCard = RenderCard.new()
 			new_card.area = self
-			new_card.pool_id = array_position
-			card_pool.append(new_card)
+			new_card.pool_id = array_position + i
+			new_cards.set(i,new_card)
 			add_child(new_card)
 			new_card.data_update(cards[i])
 			card_id_to_pool_id[cards[i].id] = array_position
-			card_added.emit(new_card)
+	cards_added.emit(new_cards)
+	card_pool.append_array(new_cards)
 	render_update()
 	pass
 

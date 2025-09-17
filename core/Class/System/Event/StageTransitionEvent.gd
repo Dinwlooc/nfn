@@ -17,7 +17,7 @@ class RuntimeStageTransitionEvent extends RuntimeEvent:
 	func _init(p_system: System, p_stage: System.GameStage):
 		system = p_system
 		target_stage = p_stage
-	func execute(processor: EventProcessor) -> void:
+	func execute(_processor: EventProcessor) -> void:
 		if system.game_stage != System.GameStage.NULL:
 			var current = system.game_stages[system.game_stage]
 			if !current.is_exit: current.exit()

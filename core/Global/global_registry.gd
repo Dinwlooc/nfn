@@ -37,11 +37,11 @@ func get_constant_name(type: StringName, index: int) -> StringName:
 	assert(index >= 0 and index < arr.size(), "Index out of range for constant " + type)
 	return arr[index]
 
-func get_constant_index(type: StringName, name: StringName) -> int:
+func get_constant_index(type: StringName, _name: StringName) -> int:
 	assert(_constants.has(type), "Constant type not registered: " + type)
 	var dict: Dictionary = _constants[type][&"dic"]
-	assert(dict.has(name), "Name %s not found in constant %s" % [name, type])
-	return dict[name]
+	assert(dict.has(_name), "Name %s not found in constant %s" % [_name, type])
+	return dict[_name]
 
 func register_singleton(type: StringName, instance: Node) -> void:
 	check_type(type, instance)
@@ -64,10 +64,10 @@ func check_type(type: StringName, instance: Object) -> void:
 		_:
 			push_warning("Registering unknown singleton type: " + type)
 
-func register_renderarea(name: StringName, area: RenderArea) -> void:
+func register_renderarea(_name: StringName, area: RenderArea) -> void:
 	assert(area != null, "Cannot register null RenderArea")
-	_renderareas[name] = area
-	renderarea_registered.emit(name, area)
+	_renderareas[_name] = area
+	renderarea_registered.emit(_name, area)
 
 func connect_singleton(type: StringName, callback: Callable) -> void:
 	if _singletons.has(type):
@@ -76,17 +76,17 @@ func connect_singleton(type: StringName, callback: Callable) -> void:
 		if t == type:
 			callback.call(instance))
 
-func connect_renderarea(name: StringName, callback: Callable) -> void:
-	if _renderareas.has(name):
-		callback.call(_renderareas[name])
+func connect_renderarea(_name: StringName, callback: Callable) -> void:
+	if _renderareas.has(_name):
+		callback.call(_renderareas[_name])
 	renderarea_registered.connect(func(n: StringName, area: RenderArea):
-		if n == name:
+		if n == _name:
 			callback.call(area))
 
 func get_singleton(type: StringName) -> Node:
 	assert(_singletons.has(type), "Singleton not registered: " + type)
 	return _singletons[type]
 
-func get_renderarea(name: StringName) -> RenderArea:
-	assert(_renderareas.has(name), "RenderArea not registered: " + name)
-	return _renderareas[name]
+func get_renderarea(_name: StringName) -> RenderArea:
+	assert(_renderareas.has(_name), "RenderArea not registered: " + _name)
+	return _renderareas[_name]

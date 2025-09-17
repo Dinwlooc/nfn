@@ -16,7 +16,7 @@ func _init(src_area: Area, trg_area: Area, index_arr: PackedInt32Array, init_pla
 	card_indices = index_arr
 
 # 实现运行事件的处理器接口
-func execute(processor: EventProcessor) -> void:
+func execute(_processor: EventProcessor) -> void:
 	match current_phase:
 		Phase.PRE_MOVE:
 			for idx in card_indices:

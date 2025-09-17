@@ -21,7 +21,7 @@ func _ready() -> void:
 	button.button_down.connect(card.request_dragging)
 	button.button_up.connect(card.request_dragging)
 
-func _input(event: InputEvent) -> void:
+func _input(_event: InputEvent) -> void:
 	if card.selected:
 		Nicon.color = SELECT_COLOR
 	elif card.hovering:
@@ -42,7 +42,7 @@ func data_update()-> void:
 	Nsuit.frame = get_suit(data.suit)
 	pass	
 	
-func render_update(render_event:RenderEvent = RenderEvent.new())->void:
+func render_update(_render_event:RenderEvent = RenderEvent.new())->void:
 	if card.area.card_pool.size()>12 && NverticalName.text.length() <= 4 :
 		NverticalName.visible = true
 	else:

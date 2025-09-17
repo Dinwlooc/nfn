@@ -20,14 +20,14 @@ func test_init() -> void:
 	card.data = CardPack.new()
 	card.data.id = 0
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	card_move_expand()
 
 func card_move_expand()->void:
 	if Nicon && Nicon.visible:
 		Nicon.position.y += 0.3*sin((Time.get_ticks_msec())*0.004)
 
-func _input(event: InputEvent) -> void:
+func _input(_event: InputEvent) -> void:
 	if card.selected:
 		Nicon.visible = true
 	else:

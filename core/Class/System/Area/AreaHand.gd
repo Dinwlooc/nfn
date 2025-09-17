@@ -2,7 +2,7 @@ extends Area
 class_name AreaHand
 
 func _init_expand()->void:
-	area_name = &"areahand"
+	area_name = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
 
 func play()->void:
 	if card_pool[0]:

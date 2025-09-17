@@ -57,7 +57,6 @@ func request_select():
 	pass
 	
 func request_dragging():
-	# 优化2: 拖拽时若未选中则自动选中
 	match dragging:
 		DraggingState.READY:
 			dragging = DraggingState.CHECKING

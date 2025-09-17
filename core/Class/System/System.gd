@@ -23,7 +23,7 @@ func _ready() -> void:
 	load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	if _process_active:
 		event_processor.process_events()
 

@@ -1,6 +1,9 @@
 extends TransPack
 class_name OperationRequest
 
+func send()->void:
+	GlobalTransport.upload_operation_request(self)
+	pass
 # 实现类：打牌操作
 class PlayCard extends OperationRequest:
 	var card_id: int

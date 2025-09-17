@@ -14,19 +14,19 @@ func ready_expand()->void:
 	area_target_size = original_size
 	render_update()
 	connect_to_areahand()
-	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.HAND,func(area):
+	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.HAND,func(_area):
 		area_hand.selected.disconnect(quickly_select)
-		area_hand = area
+		area_hand = _area
 		connect_to_areahand())
 
 func connect_to_areahand()->void:
 	area_hand.selected.connect(quickly_select)
 
-func render_update(render_event:RenderEvent = RenderEvent.new()):
+func render_update(_render_event:RenderEvent = RenderEvent.new()):
 	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
 	tween_update()
 
-func tween_update(render_event:RenderEvent = RenderEvent.new()):
+func tween_update(_render_event:RenderEvent = RenderEvent.new()):
 	card_move()
 
 func _into_area()->void:
@@ -41,7 +41,6 @@ func card_move()-> void:
 		return
 	for i in range(0,area.card_pool.size()):
 		var card:RenderCard = area.card_pool[i]
-		var card_position = card.position
 		var _target_position = target_position[i]
 		UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
 	pass
