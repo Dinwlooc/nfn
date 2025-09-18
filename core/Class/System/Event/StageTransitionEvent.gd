@@ -25,4 +25,4 @@ class RuntimeStageTransitionEvent extends RuntimeEvent:
 			system.game_stage = target_stage
 			var next = system.game_stages[target_stage]
 			next.enter()
-		is_completed = true
+		complete()

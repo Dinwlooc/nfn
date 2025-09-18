@@ -16,9 +16,9 @@ func process_events():
 	elif behavior_stack.size() > 0:
 		_process_behavior()
 	else:
-		all_completed.emit()
 		is_empty = true
 		system.enable_processing(false)
+		all_completed.emit()
 # 处理行为事件
 func _process_behavior():
 	var behavior = behavior_stack.back()

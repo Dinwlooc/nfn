@@ -22,7 +22,7 @@ func enter()->void:
 	timer.timer_create(time_limit)
 	timer.timeout.connect(on_timeout)
 	enter_expand()
-	call_deferred(&"run")
+	event_processor.all_completed.connect(run,CONNECT_ONE_SHOT)
 
 func run()->void:
 	pass

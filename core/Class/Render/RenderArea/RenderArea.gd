@@ -52,15 +52,15 @@ func process_request(request)->void:
 func cards_add(cards:Array[CardPack])->void:
 	var new_cards:Array[RenderCard]
 	new_cards.resize(cards.size())
+	var array_position = card_pool.size()
 	for i in range(0,cards.size()):
-			var array_position = card_pool.size()
 			var new_card:RenderCard = RenderCard.new()
 			new_card.area = self
 			new_card.pool_id = array_position + i
 			new_cards.set(i,new_card)
 			add_child(new_card)
 			new_card.data_update(cards[i])
-			card_id_to_pool_id[cards[i].id] = array_position
+			card_id_to_pool_id[cards[i].id] = array_position + i
 	cards_added.emit(new_cards)
 	card_pool.append_array(new_cards)
 	render_update()

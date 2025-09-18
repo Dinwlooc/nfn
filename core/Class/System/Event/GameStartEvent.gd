@@ -32,17 +32,14 @@ class GameStartRuntime extends RuntimeEvent:
 		system.player_manager.ensure_min_players(2)
 		
 		# 随机选择起始玩家
-		system.current_player_index = randi_range(0, system.player_manager.players.size()-1)
-		
+		#system.current_player_index = randi_range(0, system.player_manager.players.size()-1)
+		system.current_player_index = 0
 		# 阶段转换行为（将最后执行）
 		var stage_event = StageTransitionEvent.new(System.GameStage.START)
 		processor.queue_behavior(stage_event)
-		
 		# 为所有玩家创建初始抽卡行为（将先执行）
 		for i in range(system.player_manager.players.size()):
 			var draw_event = DrawCardsEvent.new(i, 4)
 			processor.queue_behavior(draw_event)
-		
-		# 标记完成
-		is_completed = true
+		complete()
 		GlobalConsole._print("System:游戏初始化完成")
