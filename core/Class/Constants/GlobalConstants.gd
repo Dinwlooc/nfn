@@ -1,9 +1,9 @@
 extends RefCounted
 class_name GlobalConstants
 
-enum AreaType { HAND }
+enum AreaType { HAND , PLAYERS }
 const KEY_AREA_TYPE = &"AreaType"
-const AREA_TYPES:Array[StringName] = [&"hand"]
+const AREA_TYPES:Array[StringName] = [&"hand",&"players"]
 enum CardType { NULL, CHARACTER, ATTACK } # 官方内置类型枚举
 const CARD_TYPES:Array[StringName] = [&"null", &"character", &"attack"]
 const KEY_CARD_TYPE = &"CardType"

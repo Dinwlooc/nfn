@@ -14,7 +14,7 @@ func _ready() -> void:
 		add_child(manager)
 		curve_managers.append(manager)
 	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.HAND,connect_to_areahand)
-	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.TARGETS,connect_to_areatargets)
+	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.PLAYERS,connect_to_areatargets)
 	GlobalRegistry.connect_singleton(GlobalRegistry.RENDER_CONTROL_TYPE,connect_to_control)
 	
 func _physics_process(delta: float) -> void:

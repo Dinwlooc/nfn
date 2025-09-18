@@ -17,8 +17,7 @@ signal cards_added(cards:Array[RenderCard])
 signal cards_remove_requested(uids:PackedInt32Array)
 class DefaultArea:
 	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
-	const TARGETS:StringName = &"targets"
-	const SELF:StringName = &"self"
+	const PLAYERS:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
 
 func _ready():
 	if !control && get_parent_control() is RenderControl:

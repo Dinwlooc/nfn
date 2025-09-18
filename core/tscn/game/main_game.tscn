@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=18 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System.gd" id="2_gpy5h"]
@@ -10,12 +10,11 @@
 [ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Class/Render/RenderArea/RenderAreaHand.gd" id="7_jjejj"]
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://official/default/assets/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
 [ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://official/default/assets/Area/areaface/areaface_self.tscn" id="11_4k47o"]
-[ext_resource type="Script" uid="uid://boamtyqq4276a" path="res://core/Class/Render/RenderArea/RenderAreaSelf.gd" id="11_5huyi"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://official/default/assets/Area/areaface/areaface_self_properties.tscn" id="12_f8lnr"]
 [ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://core/Class/Render/RenderCard/RenderCard.gd" id="13_4k47o"]
 [ext_resource type="PackedScene" uid="uid://s0d734yjh7uc" path="res://official/default/assets/Character/charactercard/charactertargetcard.tscn" id="14_2w2we"]
 [ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://official/default/assets/Area/areaface/areaface_targets.tscn" id="14_8v20q"]
-[ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://core/Class/Render/RenderArea/RenderAreaTargets.gd" id="14_a6oxl"]
+[ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://core/Class/Render/RenderArea/RenderAreaPlayers.gd" id="14_a6oxl"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://official/default/tres/LineEdit_theme.tres" id="16_2w2we"]
 [ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://official/default/assets/Console/Node_Console.gd" id="17_qle8x"]
 
@@ -76,18 +75,7 @@ layout_mode = 1
 mouse_filter = 1
 area = NodePath("..")
 
-[node name="AreaSelf" type="Control" parent="Control"]
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-script = ExtResource("11_5huyi")
-
-[node name="AreaFaceSelf" parent="Control/AreaSelf" instance=ExtResource("11_4k47o")]
-
-[node name="AreaFaceSelf_Properties" parent="Control/AreaSelf" instance=ExtResource("12_f8lnr")]
-layout_mode = 1
-
-[node name="AreaTargets" type="Control" parent="Control" node_paths=PackedStringArray("card_pool")]
+[node name="AreaPlayers" type="Control" parent="Control" node_paths=PackedStringArray("card_pool")]
 anchors_preset = 0
 script = ExtResource("14_a6oxl")
 card_pool = [NodePath("RenderCard")]
@@ -95,7 +83,7 @@ card_id_to_pool_id = Dictionary[int, int]({
 0: 0
 })
 
-[node name="AreaFaceTargets" parent="Control/AreaTargets" node_paths=PackedStringArray("area_hand", "area") instance=ExtResource("14_8v20q")]
+[node name="AreaFaceTargets" parent="Control/AreaPlayers" node_paths=PackedStringArray("area_hand", "area") instance=ExtResource("14_8v20q")]
 offset_top = -157.0
 offset_right = 1377.0
 offset_bottom = 165.0
@@ -103,7 +91,7 @@ mouse_filter = 1
 area_hand = NodePath("../../AreaHand")
 area = NodePath("..")
 
-[node name="RenderCard" type="Control" parent="Control/AreaTargets" node_paths=PackedStringArray("cardface", "area")]
+[node name="RenderCard" type="Control" parent="Control/AreaPlayers" node_paths=PackedStringArray("cardface", "area")]
 anchors_preset = 0
 offset_left = 714.258
 offset_top = -239.541
@@ -114,8 +102,15 @@ cardface = NodePath("CharacterTargetCard")
 area = NodePath("..")
 metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
 
-[node name="CharacterTargetCard" parent="Control/AreaTargets/RenderCard" node_paths=PackedStringArray("card") instance=ExtResource("14_2w2we")]
+[node name="CharacterTargetCard" parent="Control/AreaPlayers/RenderCard" node_paths=PackedStringArray("card") instance=ExtResource("14_2w2we")]
 card = NodePath("..")
+
+[node name="AreaFaceSelf" parent="Control/AreaPlayers" instance=ExtResource("11_4k47o")]
+
+[node name="AreaFaceSelf_Properties" parent="Control/AreaPlayers" instance=ExtResource("12_f8lnr")]
+layout_mode = 1
+offset_top = -170.74
+offset_bottom = 30.36
 
 [node name="Console" type="Control" parent="Control"]
 layout_mode = 3

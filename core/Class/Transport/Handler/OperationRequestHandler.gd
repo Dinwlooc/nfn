@@ -1,1 +1,2 @@
-extends Node
+extends RefCounted
+class_name OperationRequestHandler

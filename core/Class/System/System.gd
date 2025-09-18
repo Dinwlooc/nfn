@@ -42,7 +42,6 @@ func change_stage(new_stage: GameStage) -> void:
 func stage_ended():
 	if game_stage == GameStage.START:
 		change_stage(GameStage.DRAW)
-	pass
 #####信号调用函数#####
 func _start_game()-> void:
 	if game_stage != GameStage.NULL:
