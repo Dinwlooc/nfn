@@ -14,13 +14,13 @@ func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: String
 	name = init_name
 	type = GlobalRegistry.get_constant_index(CardType,init_type_name)
 
-# 序列化实现
+## 序列化实现
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, id)
 	SerializationUtil.write(buffer, name)
 	SerializationUtil.write(buffer, type)
 
-# 反序列化实现
+## 反序列化实现
 static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> TransPack:
 	var pack:CardPack = CardPack.new()
 	pack.id = SerializationUtil.read(buffer, TYPE_INT)

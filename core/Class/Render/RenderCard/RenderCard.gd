@@ -1,6 +1,6 @@
+##卡牌
 extends Control
 class_name RenderCard
-#总控卡牌渲染和并处理交互。
 
 @export var cardface:RenderCardFace
 @export var area:RenderArea
