@@ -19,32 +19,19 @@ var hovering:bool = false
 var data:CardPack
 signal select
 signal drag
+signal face_update()
+signal render_requested(render_event:RenderEvent)
+signal data_requested
 
 func _ready()-> void:
 	name = &"RenderCard"
-	area.render_requested.connect(render_update)
-	pass
 
 func data_update(new_card_data:CardPack)-> void:
 	data = new_card_data
-	if !(cardface)||data.type != cardface.type:
-		var type_name = GlobalRegistry.get_constant_name(GlobalConstants.KEY_CARD_TYPE,data.type)
-		_load_scene_by_type(type_name)
-	cardface.data_update()
-	pass
+	data_requested.emit()
 
-func render_update(render_event:RenderEvent = RenderEvent.new())->void:
-	if cardface:
-		cardface.render_update(render_event)
-
-func _load_scene_by_type(card_type: StringName) -> void:
-	if cardface:
-		remove_child(cardface)
-		cardface.queue_free()
-	cardface = load(GlobalConfig.get_resource_path(&"cardface",card_type)).instantiate()
-	if cardface:
-		cardface.card = self
-		add_child(cardface)
+func render_update(render_event:RenderEvent)->void:
+	render_requested.emit(render_event)
 
 func get_face_size()->Vector2:
 	if cardface:

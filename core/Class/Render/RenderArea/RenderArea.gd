@@ -27,7 +27,7 @@ func _ready():
 	else :
 		control = RenderControl.new()
 	init_child_count = get_child_count()
-	cards_add_requested.connect(cards_add)
+	cards_add_requested.connect(control.render_manager.create_cards.bind(self))
 	ready_expand()
 	pass
 
@@ -47,23 +47,6 @@ func process_request(request)->void:
 		cards_add_requested.emit(request.card_data)
 	elif request is RenderRequest.CardRemove:
 		cards_remove_requested.emit(request.uids_data)
-
-func cards_add(cards:Array[CardPack])->void:
-	var new_cards:Array[RenderCard]
-	new_cards.resize(cards.size())
-	var array_position = card_pool.size()
-	for i in range(0,cards.size()):
-			var new_card:RenderCard = RenderCard.new()
-			new_card.area = self
-			new_card.pool_id = array_position + i
-			new_cards.set(i,new_card)
-			add_child(new_card)
-			new_card.data_update(cards[i])
-			card_id_to_pool_id[cards[i].id] = array_position + i
-	cards_added.emit(new_cards)
-	card_pool.append_array(new_cards)
-	render_update()
-	pass
 
 func on_select(pool_id:int)-> void:
 	var card:RenderCard = card_pool[pool_id]

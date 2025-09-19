@@ -5,6 +5,7 @@ class DragState:
 	var area:RenderArea
 	var card:RenderCard
 var card_on_drag:DragState
+var render_manager: RenderManager = RenderManager.new()
 signal dragged_update
 
 func _ready() -> void:
@@ -18,7 +19,7 @@ func set_card_on_drag(area:RenderArea,realcard:RenderCard)->void:
 	card_on_drag.card.dragged = true
 	card_on_drag.area.tween_update()
 	dragged_update.emit()
-	
+
 func remove_card_on_drag():
 	if card_on_drag:
 		card_on_drag.card.dragged = false
@@ -29,7 +30,7 @@ func get_dragged_area()->RenderArea:
 	if !card_on_drag:
 		return null
 	return card_on_drag.area
-	
+
 func get_dragged_card()->RenderCard:
 	if !card_on_drag:
 		return null
