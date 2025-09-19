@@ -8,7 +8,7 @@ var area_attack = AreaAttack.new()
 var area_drawing = AreaDrawing.new()
 var current_player_index:int
 var cardsmanager = CardsManager.new()
-var player_manager = PlayersManager.new() 
+var player_manager = PlayersManager.new()
 var event_processor = EventProcessor.new(self)
 var _process_active := false
 @export var timer:GameTimer
@@ -30,7 +30,7 @@ func _process(_delta: float) -> void:
 func load_cards() -> void:
 	area_drawing.card_pool = cardsmanager.load_all_cards()
 	area_drawing.card_pool.shuffle()
-	
+
 func enable_processing(enable: bool) -> void:
 	_process_active = enable
 	set_process(enable)
@@ -67,7 +67,7 @@ func _draw_cards_test() -> void:
 		)
 	event_processor.queue_behavior(draw_event)
 	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % current_player_index)
-	
+
 func signal_connect_test():
 	GlobalConsole.c_start.connect(_start_game)
 	GlobalConsole.c_draw.connect(_draw_cards_test)

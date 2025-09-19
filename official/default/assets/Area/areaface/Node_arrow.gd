@@ -16,7 +16,7 @@ func _ready() -> void:
 	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.HAND,connect_to_areahand)
 	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.PLAYERS,connect_to_areatargets)
 	GlobalRegistry.connect_singleton(GlobalRegistry.RENDER_CONTROL_TYPE,connect_to_control)
-	
+
 func _physics_process(delta: float) -> void:
 	if draw_cooldown > 0:
 		draw_cooldown -= delta
@@ -24,7 +24,7 @@ func _physics_process(delta: float) -> void:
 			draw_arrow()
 
 func connect_to_areahand(_areahand:RenderAreaHand)->void:
-	areahand = _areahand 
+	areahand = _areahand
 	areahand.selected.connect(draw_arrow)
 	areahand.render_requested.connect(render_event_handler)
 	areahand.tween_requested.connect(render_event_handler)

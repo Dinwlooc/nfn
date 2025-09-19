@@ -38,7 +38,7 @@ func exit():
 	timer.timeout.disconnect(on_timeout)
 	timer.timer_stop()
 	is_exit = true
-	
+
 func request_change_stage()->void:
 		system.stage_ended()
 
@@ -48,10 +48,10 @@ func handle_operation(op_data:OperationRequest):
 func on_timeout()->void:
 	exit()
 	request_change_stage()
-	
+
 func end_stage()->void:
 	pass
-	
+
 func complete_stage() -> void:
 	exit()
 	request_change_stage()

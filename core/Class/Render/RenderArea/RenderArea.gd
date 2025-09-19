@@ -37,7 +37,7 @@ func ready_expand()->void:
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
 	render_requested.emit(render_event)
 	pass
-	
+
 func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 	tween_requested.emit(render_event)
 	pass
@@ -138,7 +138,7 @@ func move_card_to_index(current_pool_id: int, target_index: int , render_event:R
 		# 向左移动：从右向左处理
 		for i in range(current_pool_id - 1, target_index - 1, -1):
 			affected_cards.append(card_pool[i])
-	# 批量更新索引 
+	# 批量更新索引
 	for idx in affected_cards.size():
 		var card := affected_cards[idx] as RenderCard
 		var new_id = card.pool_id - 1 if current_pool_id < target_index else card.pool_id + 1

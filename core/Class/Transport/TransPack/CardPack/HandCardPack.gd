@@ -8,7 +8,7 @@ var suit: int
 var modified_power: int
 var modified_cost: int
 
-func _init(init_id: int = 0, init_name: StringName = &"", init_type:StringName = NULL, 
+func _init(init_id: int = 0, init_name: StringName = &"", init_type:StringName = NULL,
 		init_power: int = 0, init_cost: int = 0, init_suit: int = 0,
 		init_modified_power: int = 0, init_modified_cost: int = 0):
 	super._init(init_id, init_name, init_type)

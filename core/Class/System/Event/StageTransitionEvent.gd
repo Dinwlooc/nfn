@@ -6,7 +6,7 @@ var target_stage: System.GameStage
 func _init(p_target_stage: System.GameStage):
 	super._init(&"stage_transition")
 	target_stage = p_target_stage
-	
+
 func generate_runtime_event(system: System) -> RuntimeEvent:
 	return RuntimeStageTransitionEvent.new(system, target_stage)
 

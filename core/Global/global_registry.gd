@@ -18,7 +18,7 @@ const RENDER_CONTROL_TYPE := &"render_control"
 const NETWORK_MANAGER_TYPE := &"network_manager"
 # 新增常量注册接口
 func register_constant(type: StringName, names: Array[StringName], enum_size: int) -> void:
-	assert(names.size() == enum_size, 
+	assert(names.size() == enum_size,
 		"Constant size mismatch for %s: expected %d got %d" % [type, enum_size, names.size()])
 	# 创建双向映射
 	var array_map := names.duplicate()

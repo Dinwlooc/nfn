@@ -3,12 +3,13 @@ class_name RenderCardFace
 #卡面渲染的基类
 
 @export var card:RenderCard
+
 func data_update()->void:
 	pass
 
 func render_update(_render_event:RenderEvent = RenderEvent.new())->void:
 	pass
-	
+
 func get_suit(suit:HandCard.Suit) ->int:
 	return suit
 

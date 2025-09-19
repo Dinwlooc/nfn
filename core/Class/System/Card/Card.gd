@@ -15,4 +15,3 @@ func get_attribute(attribute:StringName,value:int = get(attribute) ) -> int:
 func get_pack()->CardPack:
 	var pack:CardPack = CardPack.new(id,name,type)
 	return pack
-	

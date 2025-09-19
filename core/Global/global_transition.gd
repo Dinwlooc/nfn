@@ -31,8 +31,8 @@ func play_fade_animation(target_alpha: float, duration: float, is_fade_in: bool)
 	else:
 		fade_out_started.emit()
 	_tween = create_tween()
-	_tween.tween_property(_transition_rect, "color", 
-						  Color(0, 0, 0, target_alpha), 
+	_tween.tween_property(_transition_rect, "color",
+						  Color(0, 0, 0, target_alpha),
 						  duration)
 	_tween.finished.connect(func():
 		if is_fade_in:
@@ -48,8 +48,8 @@ func fade_out(duration: float = 1.5) -> void:
 	play_fade_animation(0.0, duration, false)
 
 # 添加了转场保护的场景切换方法
-func change_scene_with_transition(scene_path: String, 
-								 fade_in_duration: float = 0.4, 
+func change_scene_with_transition(scene_path: String,
+								 fade_in_duration: float = 0.4,
 								 fade_out_duration: float = 2.5) -> void:
 	if _is_transitioning:
 		return

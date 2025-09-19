@@ -3,7 +3,7 @@ class_name GameTimer
 
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.TIMER_TYPE,self)
-	
+
 func timer_create(time:float):
 	paused = false
 	wait_time = time

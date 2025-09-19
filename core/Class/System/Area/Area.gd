@@ -29,4 +29,3 @@ func send_cards_add(new_cardpool:Array[Card])->void:
 func cards_remove()->Array[Card]:
 	#未实现，返回值是移出的卡牌数组。
 	return [null]
-	

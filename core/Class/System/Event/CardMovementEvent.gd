@@ -31,6 +31,6 @@ func execute(_processor: EventProcessor) -> void:
 			current_phase = Phase.MOVE_IN
 		Phase.MOVE_IN:
 			target_area.cards_add(cards)
-			current_phase = Phase.POST_MOVE         
+			current_phase = Phase.POST_MOVE
 		Phase.POST_MOVE:
 			complete()

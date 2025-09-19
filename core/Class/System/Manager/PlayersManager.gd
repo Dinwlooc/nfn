@@ -18,7 +18,7 @@ func add_player(peer_id: int) -> Player:
 	player.draw_cards_count = 2
 	players.append(player)
 	next_player_id += 1
-	
+
 	return player
 
 # 确保至少有min_players个玩家（不够时用AI补齐）

@@ -10,7 +10,7 @@ signal global_dragged
 signal c_start
 signal c_draw
 signal c_connect_to(url:String)
-signal c_close 
+signal c_close
 signal c_help(command:StringName)
 signal c_play_a_card(pool_id:int)
 signal c_reload()
@@ -18,7 +18,7 @@ signal c_reload()
 func _ready() -> void:
 	c_help.connect(print_help)
 	GlobalRegistry.connect_singleton(GlobalRegistry.CONSOLE_TYPE,func(_console):console=_console)
-		
+
 func _print(text:Variant)->void:
 	if console:
 		match typeof(text):
@@ -36,7 +36,7 @@ func _print(text:Variant)->void:
 		push_error()
 	else :
 		print(text)
-		
+
 func command(signal_name:String,args:Array)->void:
 	if !command_name_list.has(signal_name):#玩家输入不可控，故先验证合法性再转化
 		_print(["Console：指令未登记：",signal_name])

@@ -27,4 +27,3 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> TransPack:
 	pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 	pack.type = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 	return pack
-	

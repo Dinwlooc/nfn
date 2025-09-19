@@ -32,7 +32,7 @@ func data_update(new_card_data:CardPack)-> void:
 		_load_scene_by_type(type_name)
 	cardface.data_update()
 	pass
-	
+
 func render_update(render_event:RenderEvent = RenderEvent.new())->void:
 	if cardface:
 		cardface.render_update(render_event)
@@ -55,7 +55,7 @@ func get_face_size()->Vector2:
 func request_select():
 	area.on_select(pool_id)
 	pass
-	
+
 func request_dragging():
 	match dragging:
 		DraggingState.READY:
@@ -69,7 +69,7 @@ func request_dragging():
 			elif dragging == DraggingState.FAILED:
 				dragging = DraggingState.READY
 		DraggingState.CHECKING:
-			dragging = DraggingState.FAILED     
+			dragging = DraggingState.FAILED
 		DraggingState.DRAGGING:
 			area.on_drag(pool_id)
 			dragging = DraggingState.READY

@@ -64,7 +64,7 @@ func _into_area()->void:
 	UIAnimationUtils.tween_animations(self,list,TWEEN_TIME)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
 	pass
-	
+
 func _outto_area()->void:
 	area_target_position = original_position
 	area_target_size = original_size
@@ -98,7 +98,7 @@ func dragging_move(card:RenderCard)->void:
 	current_drag_tween.tween_property(card, ^"rotation", 0.0, RESET_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	swap_cards(card)
-	
+
 func swap_cards(drag_card:RenderCard)->void:
 	if swap_cooldown > 0:
 		if swap_cooldown < SWAP_COOLDOWN_DURATION - SWAP_DELTA:

@@ -59,7 +59,7 @@ func connect_cards_signals(cards:Array[RenderCard]):
 func disconnect_card_signals(card: RenderCard):
 	if hovering_card == card:
 		card.hovering = false
-		hovering_card = null 
+		hovering_card = null
 	if card.is_connected(&"mouse_entered", _on_card_mouse_entered):
 		card.mouse_entered.disconnect(_on_card_mouse_entered)
 	if card.is_connected(&"mouse_exited", _on_card_mouse_exited):
@@ -77,7 +77,7 @@ func _on_card_mouse_exited(card: RenderCard):
 	if hovering_card == card:
 		card.hovering = false
 		hovering_card = null
-		
+
 func hover_detect_when_dragging(dragged_card:RenderCard)->void:
 	var mouse_position = get_global_mouse_position()
 	if !hovering_card && dragged_card.is_hovering(mouse_position):
@@ -99,6 +99,6 @@ func dragging_move(card:RenderCard)->void:
 
 func _into_area()->void:
 	pass
-	
+
 func _outto_area()->void:
 	pass
