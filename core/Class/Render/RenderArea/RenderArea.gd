@@ -27,7 +27,6 @@ func _ready():
 	else :
 		control = RenderControl.new()
 	init_child_count = get_child_count()
-	cards_add_requested.connect(control.render_manager.create_cards.bind(self))
 	ready_expand()
 	pass
 

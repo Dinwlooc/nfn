@@ -28,7 +28,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, modified_cost)
 
 # 反序列化实现
-static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> TransPack:
+static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> CardPack:
 	var pack:HandCardPack = HandCardPack.new()
 	pack.id = SerializationUtil.read(buffer, TYPE_INT)
 	pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)

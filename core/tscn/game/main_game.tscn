@@ -75,17 +75,16 @@ layout_mode = 1
 mouse_filter = 1
 area = NodePath("..")
 
-[node name="AreaPlayers" type="Control" parent="Control" node_paths=PackedStringArray("card_pool")]
+[node name="AreaPlayers" type="Control" parent="Control"]
 anchors_preset = 0
 script = ExtResource("14_a6oxl")
-card_pool = [NodePath("RenderCard")]
 card_id_to_pool_id = Dictionary[int, int]({
 0: 0
 })
 
 [node name="AreaFaceTargets" parent="Control/AreaPlayers" node_paths=PackedStringArray("area_hand", "area") instance=ExtResource("14_8v20q")]
 offset_top = -157.0
-offset_right = 1377.0
+offset_right = 1378.0
 offset_bottom = 165.0
 mouse_filter = 1
 area_hand = NodePath("../../AreaHand")

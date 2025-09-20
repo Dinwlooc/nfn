@@ -4,6 +4,33 @@
 ## 作为核心渲染控制器，协调渲染层节点的交互。
 extends RefCounted
 class_name RenderManager
+
+func render_tree_init(root_node: Node) -> void:
+	for area in root_node.get_children():
+		if area is RenderArea:
+			connect_area_signals(area)
+			for card in area.get_children():
+				if card is RenderCard:
+					_init_preset_card(card, area)
+			area.render_update()
+##：初始化预部署的卡牌节点
+func _init_preset_card(card: RenderCard, area: RenderArea) -> void:
+	card.area = area
+	card.pool_id = area.card_pool.size()
+	area.card_pool.append(card)
+	if card.data != null:
+		area.card_id_to_pool_id[card.data.id] = card.pool_id
+	connect_card_to_area_signals(card, area)
+	for face in card.get_children():
+		if face is RenderCardFace:
+			_init_preset_card_face(card, face)
+	if card.get_child_count() == 0 and card.data != null:
+		card.data_requested.emit()
+##初始化预部署的牌面
+func _init_preset_card_face(card: RenderCard, face: RenderCardFace) -> void:
+	face.card = card
+	connect_card_face_signals(card, face)
+	face.data_update()
 ## 为指定渲染卡牌创建对应的牌面实例
 ## 根据卡牌类型加载对应的[RenderCardFace]资源，建立父子关系并连接信号。[br]
 ## 完成后触发牌面的初始数据更新。
@@ -56,3 +83,8 @@ func connect_card_to_area_signals(card: RenderCard, area: RenderArea) -> void:
 		card.data_requested.disconnect(create_card_face)
 	area.render_requested.connect(card.render_update)
 	card.data_requested.connect(create_card_face.bind(card))
+
+func connect_area_signals(area: RenderArea) -> void:
+	if !area.cards_add_requested.is_connected(create_cards):
+		area.cards_add_requested.connect(create_cards.bind(area))
+	# area.cards_remove_requested.connect(remove_cards.bind(area))

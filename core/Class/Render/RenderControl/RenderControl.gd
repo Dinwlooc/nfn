@@ -10,6 +10,7 @@ signal dragged_update
 
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE,self)
+	render_manager.render_tree_init(self)
 
 func set_card_on_drag(area:RenderArea,realcard:RenderCard)->void:
 	remove_card_on_drag()
