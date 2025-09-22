@@ -41,13 +41,12 @@ func _input(event)->void:
 			if in_area:
 				outto_area.emit()
 			in_area = false
-		pass
 
 func try_dragging_move()->bool:
 	var control:RenderControl = area.control
-	if control && control.get_dragged_area() == area:
-		hover_detect_when_dragging(control.get_dragged_card())
-		dragging_move(control.get_dragged_card())
+	var card:RenderCard = control.get_dragged_card()
+	if control && card && card.area == area:
+		dragging_move(card)
 		return true
 	return false
 
@@ -77,16 +76,6 @@ func _on_card_mouse_exited(card: RenderCard):
 	if hovering_card == card:
 		card.hovering = false
 		hovering_card = null
-
-func hover_detect_when_dragging(dragged_card:RenderCard)->void:
-	var mouse_position = get_global_mouse_position()
-	if !hovering_card && dragged_card.is_hovering(mouse_position):
-		for i in range(dragged_card.pool_id ,-1,-1):
-			if !area.card_pool[i].dragged && area.card_pool[i].is_hovering(mouse_position):
-				hovering_card = area.card_pool[i]
-				hovering_card.hovering = true
-				break
-		return
 
 func card_move()-> void:
 	pass

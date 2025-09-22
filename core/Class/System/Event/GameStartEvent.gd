@@ -2,7 +2,7 @@ extends BehaviorEvent
 class_name GameStartEvent
 
 func _init():
-	super._init("GameStart")
+	super._init(&"GameStart")
 
 func generate_runtime_event(system: System) -> RuntimeEvent:
 	return GameStartRuntime.new(system)
@@ -22,22 +22,17 @@ class GameStartRuntime extends RuntimeEvent:
 			System.GameStage.MAIN: StageMain.new(system, system.timer),
 			System.GameStage.END: StageEnd.new(system, system.timer)
 		}
-
-		# 添加玩家
 		if system.network_manager:
 			for user in system.network_manager.users:
 				system.player_manager.add_player(user.id)
 		else:
 			system.player_manager.add_player(1)
 		system.player_manager.ensure_min_players(2)
-
 		# 随机选择起始玩家
 		#system.current_player_index = randi_range(0, system.player_manager.players.size()-1)
 		system.current_player_index = 0
-		# 阶段转换行为（将最后执行）
 		var stage_event = StageTransitionEvent.new(System.GameStage.START)
 		processor.queue_behavior(stage_event)
-		# 为所有玩家创建初始抽卡行为（将先执行）
 		for i in range(system.player_manager.players.size()):
 			var draw_event = DrawCardsEvent.new(i, 4)
 			processor.queue_behavior(draw_event)

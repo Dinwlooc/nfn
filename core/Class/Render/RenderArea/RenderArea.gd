@@ -4,7 +4,7 @@ class_name RenderArea
 
 var area_name:StringName
 @export var control:RenderControl
-@export var card_pool:Array[RenderCard]
+var card_pool:Array[RenderCard]
 @export var card_id_to_pool_id: Dictionary[int,int] = {}
 var on_select_list:Array[int]
 var select_limit:int = 1

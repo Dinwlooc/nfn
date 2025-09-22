@@ -2,7 +2,6 @@
 extends Control
 class_name RenderCard
 
-@export var cardface:RenderCardFace
 @export var area:RenderArea
 enum DraggingState {
 	READY,          # 0 - 准备就绪
@@ -17,6 +16,7 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var data:CardPack
+var card_size = Vector2(58,88)
 signal select
 signal drag
 signal face_update()
@@ -33,11 +33,11 @@ func data_update(new_card_data:CardPack)-> void:
 func render_update(render_event:RenderEvent)->void:
 	render_requested.emit(render_event)
 
-func get_face_size()->Vector2:
-	if cardface:
-		return cardface.size
-	else:
-		return Vector2.ZERO
+func get_card_size()->Vector2:
+	return card_size
+
+func set_card_size(new_size:Vector2):
+	card_size = new_size
 
 func request_select():
 	area.on_select(pool_id)
@@ -62,10 +62,7 @@ func request_dragging():
 			dragging = DraggingState.READY
 
 func is_hovering(mouse_pos):
-	if cardface&&Rect2(position+cardface.position,cardface.size*cardface.scale).has_point(mouse_pos):
-		return true
-	else:
-		return false
+	return Rect2(position,position+card_size).has_point(mouse_pos)
 
 func get_id()->int:
 	return data.id

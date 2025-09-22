@@ -4,7 +4,7 @@ class_name System
 enum GameStage { NULL, START, DRAW , MAIN , DISCARD , END}
 var game_stages:Dictionary[GameStage, Stage]
 var game_stage: GameStage = GameStage.NULL
-var area_attack = AreaAttack.new()
+var area_attack = AreaCentre.new()
 var area_drawing = AreaDrawing.new()
 var current_player_index:int
 var cardsmanager = CardsManager.new()

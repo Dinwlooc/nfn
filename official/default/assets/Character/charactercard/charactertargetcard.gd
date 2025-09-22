@@ -2,21 +2,21 @@ extends RenderCardFace
 
 @onready var Nicon = $ColorRect
 var Nicon_init_position:Vector2
-const TYPE = "charatertarget"
+const TYPE = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.CHARACTER]
 const SELECT_COLOR:Color = Color(1,0.3,0.3)
 const HOVERING_COLOR:Color = Color(1,0.7,0.6)
 const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
 
 func _ready() -> void:
 	Nicon_init_position = Nicon.position
-	var button = get_node("Button")
+	var button = get_node(^"Button")
 	button.button_down.connect(card.request_select)
 	button.button_down.connect(card.request_dragging)
 	button.button_up.connect(card.request_dragging)
 	call_deferred(&"test_init")
+	card.set_card_size(size)
 
 func test_init() -> void:
-	#测试用初始化
 	card.data = CardPack.new()
 	card.data.id = 0
 

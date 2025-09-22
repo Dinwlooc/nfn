@@ -27,6 +27,7 @@ func _process_behavior():
 			behavior.phase = BehaviorEvent.Phase.GENERATE
 		BehaviorEvent.Phase.GENERATE:
 			current_runtime = behavior.generate_runtime_event(system)
+			_process_runtime()
 			behavior.phase = BehaviorEvent.Phase.END
 		BehaviorEvent.Phase.END:
 			behavior_stack.pop_back()

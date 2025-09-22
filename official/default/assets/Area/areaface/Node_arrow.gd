@@ -74,7 +74,7 @@ func get_start_point_array() -> Array[Vector2]:
 	var array:Array[Vector2] = []
 	var cards:Array[RenderCard] = areahand.get_selected_cards()
 	if cards:
-		var card_size = cards[0].get_face_size() #规范条件，同一区域的卡牌大小一致
+		var card_size = cards[0].get_card_size() #规范条件，同一区域的卡牌大小一致
 		array.append_array(cards.map(
 		func(card:RenderCard) -> Vector2:
 			return card.position + Vector2(0, - card_size.y)
@@ -85,7 +85,7 @@ func get_end_point_array() -> Array[Vector2]:
 	var array:Array[Vector2] = []
 	var cards:Array[RenderCard] = areatargets.get_selected_cards()
 	if cards:
-		var card_size = cards[0].get_face_size() #规范条件，同一区域的卡牌大小一致
+		var card_size = cards[0].get_card_size() #规范条件，同一区域的卡牌大小一致
 		array.append_array(cards.map(
 			func(card:RenderCard) -> Vector2:
 				return card.position + Vector2(card_size.x / 2.0, card_size.y)
