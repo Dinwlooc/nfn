@@ -25,7 +25,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if _process_active:
-		event_processor.process_events()
+		event_processor.process()
 
 func load_cards() -> void:
 	area_drawing.card_pool = cardsmanager.load_all_cards()

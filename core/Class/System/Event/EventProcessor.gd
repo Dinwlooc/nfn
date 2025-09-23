@@ -2,42 +2,34 @@ extends RefCounted
 class_name EventProcessor
 
 var behavior_stack: Array[BehaviorEvent] = []
-var current_runtime: RuntimeEvent = null
-var system:System
-var is_empty:bool = true
+var system: System
+var is_empty: bool = true
 signal all_completed()
 
-func _init(init_system:System) -> void:
+func _init(init_system: System):
 	system = init_system
-# 处理循环
-func process_events():
-	if current_runtime:
-		_process_runtime()
-	elif behavior_stack.size() > 0:
-		_process_behavior()
-	else:
-		is_empty = true
-		system.enable_processing(false)
-		all_completed.emit()
-# 处理行为事件
-func _process_behavior():
-	var behavior = behavior_stack.back()
-	match behavior.phase:
-		BehaviorEvent.Phase.START:
-			behavior.phase = BehaviorEvent.Phase.GENERATE
-		BehaviorEvent.Phase.GENERATE:
-			current_runtime = behavior.generate_runtime_event(system)
-			_process_runtime()
-			behavior.phase = BehaviorEvent.Phase.END
-		BehaviorEvent.Phase.END:
-			behavior_stack.pop_back()
-# 处理运行事件
-func _process_runtime():
-	current_runtime.execute(self)
-	if current_runtime.is_completed:
-		current_runtime = null
-# 添加行为事件
+
+func process():
+	if behavior_stack.is_empty():
+		if !is_empty:
+			is_empty = true
+			system.enable_processing(false)
+			all_completed.emit()
+		return
+	var current_behavior:BehaviorEvent = behavior_stack.back()
+	current_behavior.execute(system)
+	_send_to_modifiers(current_behavior)
+	if current_behavior.is_completed:
+		behavior_stack.pop_back()
+
 func queue_behavior(event: BehaviorEvent):
 	behavior_stack.push_back(event)
-	system.enable_processing(true)
-	is_empty = false
+	if is_empty:
+		is_empty = false
+		system.enable_processing(true)
+
+# 将行为事件分发给修饰器
+func _send_to_modifiers(behavior: BehaviorEvent):
+	# 这里实现修饰器系统的回调
+	# 示例: ModifierSystem.process_behavior(behavior)
+	pass

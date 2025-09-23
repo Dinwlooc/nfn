@@ -26,6 +26,18 @@ func send_cards_add(new_cardpool:Array[Card])->void:
 	trans_cardpool.append_array(new_cardpool.map(func(card)->CardPack:return card.get_pack()))
 	RenderRequest.CardAdd.new(area_name,trans_cardpool).send_to_player(player.peer_id)
 
-func cards_remove()->Array[Card]:
-	#未实现，返回值是移出的卡牌数组。
-	return [null]
+func remove_top_cards(count: int) -> Array[Card]:
+	var start_index = max(0, card_pool.size() - count)
+	var removed = card_pool.slice(start_index, card_pool.size())
+	card_pool.resize(card_pool.size() - count)
+	return removed
+
+func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
+	indices.sort()
+	var removed = []
+	for i in range(indices.size() - 1, -1, -1):
+		var idx = indices[i]
+		if idx < card_pool.size():
+			removed.insert(0, card_pool[idx])
+			card_pool.remove_at(idx)
+	return removed

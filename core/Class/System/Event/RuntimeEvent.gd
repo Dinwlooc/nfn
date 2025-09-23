@@ -1,5 +1,5 @@
 extends BaseEvent
 class_name RuntimeEvent
 
-func execute(processor: EventProcessor) -> void:
+func execute() -> void:
 	pass

@@ -1,20 +1,39 @@
 extends BehaviorEvent
 class_name GameStartEvent
 
+enum Phase {
+	INIT_SETUP,   # 初始化游戏设置
+	START_DRAW,   # 开始初始抽牌
+	DONE          # 完成
+}
 func _init():
 	super._init(&"GameStart")
+	current_phase = Phase.INIT_SETUP
 
-func generate_runtime_event(system: System) -> RuntimeEvent:
-	return GameStartRuntime.new(system)
+func execute(system: System) -> void:
+	match current_phase:
+		Phase.INIT_SETUP:
+			var setup_event = GameSetupRuntime.new(system)
+			setup_event.execute()
+			current_phase = Phase.START_DRAW
+		Phase.START_DRAW:
+			var processor:EventProcessor = system.event_processor
+			var stage_event = StageTransitionEvent.new(System.GameStage.START)
+			processor.queue_behavior(stage_event)
+			for i in range(system.player_manager.players.size()):
+				var draw_event = DrawCardsEvent.new(i, 4)
+				processor.queue_behavior(draw_event)
+			current_phase = Phase.DONE
+		Phase.DONE:
+			complete()
+			GlobalConsole._print("System:游戏初始化完成")
 
-# 游戏开始运行时事件
-class GameStartRuntime extends RuntimeEvent:
+# 游戏设置运行时事件（封装原子操作）
+class GameSetupRuntime extends RuntimeEvent:
 	var system: System
-
 	func _init(init_system: System):
 		system = init_system
-
-	func execute(processor: EventProcessor) -> void:
+	func execute() -> void:
 		# 初始化游戏阶段
 		system.game_stages = {
 			System.GameStage.START: StageStart.new(system, system.timer),
@@ -28,13 +47,4 @@ class GameStartRuntime extends RuntimeEvent:
 		else:
 			system.player_manager.add_player(1)
 		system.player_manager.ensure_min_players(2)
-		# 随机选择起始玩家
-		#system.current_player_index = randi_range(0, system.player_manager.players.size()-1)
-		system.current_player_index = 0
-		var stage_event = StageTransitionEvent.new(System.GameStage.START)
-		processor.queue_behavior(stage_event)
-		for i in range(system.player_manager.players.size()):
-			var draw_event = DrawCardsEvent.new(i, 4)
-			processor.queue_behavior(draw_event)
-		complete()
-		GlobalConsole._print("System:游戏初始化完成")
+		system.current_player_index = 0  # 简化为始终从0号玩家开始
