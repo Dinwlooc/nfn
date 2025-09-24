@@ -12,7 +12,7 @@ func execute(system: System) -> void:
 	runtime_event.execute()
 	complete()
 
-class RuntimeStageTransitionCommand extends RuntimeCommand:
+class RuntimeStageTransitionCommand extends AtomicCommand:
 	var system: System
 	var target_stage: System.GameStage
 	func _init(p_system: System, p_stage: System.GameStage):

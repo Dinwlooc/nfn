@@ -1,5 +1,5 @@
 extends BaseCommand
-class_name RuntimeCommand
+class_name AtomicCommand
 
 func execute() -> void:
 	pass

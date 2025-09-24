@@ -29,7 +29,7 @@ func execute(system: System) -> void:
 			GlobalConsole._print("System:游戏初始化完成")
 
 # 游戏设置运行时事件（封装原子操作）
-class GameSetupRuntime extends RuntimeCommand:
+class GameSetupRuntime extends AtomicCommand:
 	var system: System
 	func _init(init_system: System):
 		system = init_system

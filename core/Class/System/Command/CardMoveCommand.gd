@@ -1,4 +1,4 @@
-extends RuntimeCommand
+extends AtomicCommand
 class_name CardMoveCommand
 
 class Out extends CardMoveCommand:
