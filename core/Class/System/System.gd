@@ -9,7 +9,7 @@ var area_drawing = AreaDrawing.new()
 var current_player_index:int
 var cardsmanager = CardsManager.new()
 var player_manager = PlayersManager.new()
-var event_processor = EventProcessor.new(self)
+var command_processor = CommandProcessor.new(self)
 var _process_active := false
 @export var timer:GameTimer
 @export var network_manager:NetworkManager
@@ -25,7 +25,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if _process_active:
-		event_processor.process()
+		command_processor.process()
 
 func load_cards() -> void:
 	area_drawing.card_pool = cardsmanager.load_all_cards()
@@ -36,8 +36,8 @@ func enable_processing(enable: bool) -> void:
 	set_process(enable)
 
 func change_stage(new_stage: GameStage) -> void:
-	var event = StageTransitionEvent.new(new_stage)
-	event_processor.queue_behavior(event)
+	var event = StageTransitionCommand.new(new_stage)
+	command_processor.queue_behavior(event)
 
 func stage_ended():
 	if game_stage == GameStage.START:
@@ -47,8 +47,8 @@ func _start_game()-> void:
 	if game_stage != GameStage.NULL:
 		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
 		return
-	var start_event = GameStartEvent.new()
-	event_processor.queue_behavior(start_event)
+	var start_event = GameStartCommand.new()
+	command_processor.queue_behavior(start_event)
 	GlobalConsole._print("System:游戏开始事件已创建")
 	#########仅调试时使用的函数########
 func _draw_cards_test() -> void:
@@ -61,11 +61,11 @@ func _draw_cards_test() -> void:
 	if player_manager.players.is_empty():
 		GlobalConsole._print("System:Error:c_draw未生效。无存活玩家。")
 		return
-	var draw_event = DrawCardsEvent.new(
+	var draw_event = DrawCardsCommand.new(
 		current_player_index,
 		2  # 默认抽卡数量
 		)
-	event_processor.queue_behavior(draw_event)
+	command_processor.queue_behavior(draw_event)
 	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % current_player_index)
 
 func signal_connect_test():

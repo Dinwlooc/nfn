@@ -1,7 +1,7 @@
-extends RuntimeEvent
-class_name CardMoveEvent
+extends RuntimeCommand
+class_name CardMoveCommand
 
-class Out extends CardMoveEvent:
+class Out extends CardMoveCommand:
 	enum MODE {
 		TOP,
 		INDICES
@@ -28,7 +28,7 @@ class Out extends CardMoveEvent:
 	func get_cards()->Array[Card]:
 		return _cards
 
-class In extends CardMoveEvent:
+class In extends CardMoveCommand:
 	var _target_area: Area
 	var _cards: Array[Card]
 	func _init(target_area: Area, target_cards: Array[Card], player_id: int)->void:

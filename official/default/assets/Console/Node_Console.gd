@@ -28,11 +28,11 @@ func _ready():
 	suggestion_labels_load()
 	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE,self)  # 注册到全局控制台系统
 	pass
-	
+
 func _process(_delta):
 	panel_animation_control()
 	pass
-	
+
 func panel_animation_control():
 	if panel_display:
 		position = UIAnimationUtils.smooth_move_animation(position,display_position,UIAnimationUtils.GOLDEN_SPEED_3FRAMES)
@@ -44,7 +44,7 @@ func command_load():
 	original_position = Vector2(0,900) - size
 	display_position = Vector2(0,900) - Vector2(0,size.y)
 	pass
-	
+
 func input_load():
 	Ninput.text_submitted.connect( _on_command_submitted)
 	Ninput.focus_entered.connect(_on_focus_entered)
@@ -61,16 +61,16 @@ func suggestion_labels_load():
 		labels[i].connect(&"focus_entered", _on_suggestion_focused.bind(i))
 		labels[i].text_submitted.connect( _suggestion_submitted)
 		labels[i].gui_input.connect(_on_suggestion_clicked.bind(i)) # 新增点击事件连接
-		labels[i].mouse_entered.connect(labels[i].call_deferred.bind(&"grab_focus")) 
+		labels[i].mouse_entered.connect(labels[i].call_deferred.bind(&"grab_focus"))
 
 #####信号触发函数####
 func _on_focus_entered():
 	history_navigation_enabled = true
 	current_history_index = -1  # 重置历史导航位置
- 
+
 func _on_focus_exited():
 	history_navigation_enabled = false
- 
+
 func _on_text_changed(new_text:String):
 	if new_text.to_lower().begins_with("c"):
 		filtered = []
@@ -109,7 +109,7 @@ func _on_suggestion_focused(index: int):
 	if labels[index].text == "..."||!labels[index].visible:
 		Ninput.call_deferred(&"grab_focus")
 		current_page = 0
-		return	
+		return
 	if current_selection == 0 && index== 8 && current_page:
 		current_page += -1
 	if current_selection == 8 && index== 0 :
@@ -117,8 +117,8 @@ func _on_suggestion_focused(index: int):
 	current_selection = index
 		#用焦点判断当前选择项。
 	update_page_display(current_page)
-		
-		
+
+
 func _on_command_submitted(new_text:String):
 	var command_with_args = new_text.strip_edges().to_lower()
 	if not command_with_args.is_empty():
@@ -126,7 +126,7 @@ func _on_command_submitted(new_text:String):
 		if command_history.size() > MAX_HISTORY:
 			command_history.remove_at(0)
 		current_history_index = 0
-		
+
 		var parts = command_with_args.split("(", false, 1)
 		var command = parts[0].to_lower()
 		var args_str = ""
@@ -151,7 +151,7 @@ func update_page_display(page:int):#建议列表翻页
 		else:
 			labels[i].text = ""
 			labels[i].visible = false
-			
+
 func toggle_suggestions(_show: bool):#建议列表显示
 	Nvbox.visible = _show
 	if show:

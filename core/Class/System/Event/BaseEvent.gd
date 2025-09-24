@@ -1,5 +1,5 @@
 extends RefCounted
-class_name BaseEvent
+class_name BaseCommand
 
 signal event_completed
 var is_completed: bool = false

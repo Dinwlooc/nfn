@@ -1,5 +1,5 @@
-extends BehaviorEvent
-class_name GameStartEvent
+extends BehaviorCommand
+class_name GameStartCommand
 
 enum Phase {
 	INIT_SETUP,   # 初始化游戏设置
@@ -17,11 +17,11 @@ func execute(system: System) -> void:
 			setup_event.execute()
 			current_phase = Phase.START_DRAW
 		Phase.START_DRAW:
-			var processor:EventProcessor = system.event_processor
-			var stage_event = StageTransitionEvent.new(System.GameStage.START)
+			var processor:CommandProcessor = system.command_processor
+			var stage_event = StageTransitionCommand.new(System.GameStage.START)
 			processor.queue_behavior(stage_event)
 			for i in range(system.player_manager.players.size()):
-				var draw_event = DrawCardsEvent.new(i, 4)
+				var draw_event = DrawCardsCommand.new(i, 4)
 				processor.queue_behavior(draw_event)
 			current_phase = Phase.DONE
 		Phase.DONE:
@@ -29,7 +29,7 @@ func execute(system: System) -> void:
 			GlobalConsole._print("System:游戏初始化完成")
 
 # 游戏设置运行时事件（封装原子操作）
-class GameSetupRuntime extends RuntimeEvent:
+class GameSetupRuntime extends RuntimeCommand:
 	var system: System
 	func _init(init_system: System):
 		system = init_system

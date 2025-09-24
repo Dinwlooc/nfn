@@ -1,5 +1,5 @@
-extends BaseEvent
-class_name BehaviorEvent
+extends BaseCommand
+class_name BehaviorCommand
 
 var event_name: StringName
 var current_phase: int = 0

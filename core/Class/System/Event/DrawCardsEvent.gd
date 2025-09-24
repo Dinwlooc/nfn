@@ -1,5 +1,5 @@
-extends BehaviorEvent
-class_name DrawCardsEvent
+extends BehaviorCommand
+class_name DrawCardsCommand
 
 enum Phase {
 	INIT,       # 声明即将创建移出事件
@@ -27,14 +27,14 @@ func execute(system: System) -> void:
 			var draw_count = min(_draw_count, card_pool.size())
 			if draw_count <= 0:
 				current_phase = Phase.DONE
-			var move_out:CardMoveEvent.Out = CardMoveEvent.Out.new(
+			var move_out:CardMoveCommand.Out = CardMoveCommand.Out.new(
 				system.area_drawing,_player_id).set_top_mode(draw_count)
 			move_out.execute()
 			_drawn_cards = move_out.get_cards()
 			current_phase = Phase.MOVE_IN
 		Phase.MOVE_IN:
 			var target_area = system.player_manager.get_player_by_seat(_player_index).area_hand
-			var move_in = CardMoveEvent.In.new(
+			var move_in = CardMoveCommand.In.new(
 				target_area,
 				_drawn_cards,
 				_player_id

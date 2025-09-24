@@ -1,5 +1,5 @@
-extends BehaviorEvent
-class_name StageTransitionEvent
+extends BehaviorCommand
+class_name StageTransitionCommand
 
 var target_stage: System.GameStage
 
@@ -8,11 +8,11 @@ func _init(p_target_stage: System.GameStage):
 	target_stage = p_target_stage
 
 func execute(system: System) -> void:
-	var runtime_event = RuntimeStageTransitionEvent.new(system, target_stage)
+	var runtime_event = RuntimeStageTransitionCommand.new(system, target_stage)
 	runtime_event.execute()
 	complete()
 
-class RuntimeStageTransitionEvent extends RuntimeEvent:
+class RuntimeStageTransitionCommand extends RuntimeCommand:
 	var system: System
 	var target_stage: System.GameStage
 	func _init(p_system: System, p_stage: System.GameStage):
