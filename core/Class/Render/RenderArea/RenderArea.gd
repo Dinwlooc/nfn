@@ -20,12 +20,6 @@ class DefaultArea:
 	const PLAYERS:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
 
 func _ready():
-	if !control && get_parent_control() is RenderControl:
-		control = get_parent_control()
-	elif GlobalRegistry.get_render_control():
-		control = GlobalRegistry.get_render_control()
-	else :
-		control = RenderControl.new()
 	init_child_count = get_child_count()
 	ready_expand()
 	pass
@@ -84,52 +78,48 @@ func get_selected_cards()->Array[RenderCard]:
 			selected.append(card_pool[pool_id])
 	return selected
 
-func swap_cards(pool_id_a:int, pool_id_b:int)->void:
-	# 交换卡牌位置
+func update_card_position(card: RenderCard, new_index: int) -> void:
+	card.pool_id = new_index
+	card_id_to_pool_id[card.get_id()] = new_index
+	if card.is_inside_tree():
+		move_child(card, new_index + init_child_count)
+# 优化后的移动卡片功能
+func move_card_to_index(current_pool_id: int, target_index: int, render_event: RenderEvent = RenderEvent.new()) -> void:
+	var pool_size: int = card_pool.size()
+	current_pool_id = clampi(current_pool_id, 0, pool_size - 1)
+	target_index = clampi(target_index, 0, pool_size - 1)
+	if current_pool_id == target_index:
+		return
+	var moved_card: RenderCard = card_pool[current_pool_id]
+	var is_forward: bool = current_pool_id < target_index
+	var start_index: int
+	var end_index: int
+	if is_forward:
+		start_index = current_pool_id + 1
+		end_index = target_index
+		for i in range(start_index, end_index + 1):
+			card_pool[i - 1] = card_pool[i]
+			update_card_position(card_pool[i], i - 1)
+	else:
+		start_index = current_pool_id - 1
+		end_index = target_index
+		for i in range(start_index, end_index - 1, -1):
+			card_pool[i + 1] = card_pool[i]
+			update_card_position(card_pool[i], i + 1)
+	card_pool[target_index] = moved_card
+	update_card_position(moved_card, target_index)
+	tween_update(render_event)
+
+# 优化后的交换卡片功能
+func swap_cards(pool_id_a: int, pool_id_b: int) -> void:
+	var pool_size: int = card_pool.size()
+	pool_id_a = clampi(pool_id_a, 0, pool_size - 1)
+	pool_id_b = clampi(pool_id_b, 0, pool_size - 1)
+	if pool_id_a == pool_id_b:
+		return
 	var temp = card_pool[pool_id_a]
 	card_pool[pool_id_a] = card_pool[pool_id_b]
 	card_pool[pool_id_b] = temp
-	# 更新pool_id引用
-	card_pool[pool_id_a].pool_id = pool_id_a
-	card_pool[pool_id_b].pool_id = pool_id_b
-	# 更新映射
-	card_id_to_pool_id[card_pool[pool_id_a].get_id()] = pool_id_a
-	card_id_to_pool_id[card_pool[pool_id_b].get_id()] = pool_id_b
-	move_child(card_pool[pool_id_a], pool_id_a+init_child_count)
-	move_child(card_pool[pool_id_b], pool_id_b+init_child_count)
+	update_card_position(card_pool[pool_id_a], pool_id_a)
+	update_card_position(card_pool[pool_id_b], pool_id_b)
 	render_update()
-
-func move_card_to_index(current_pool_id: int, target_index: int , render_event:RenderEvent = RenderEvent.new()) -> void:
-	# 边界检查
-	if current_pool_id < 0 || current_pool_id >= card_pool.size():
-		push_error("Invalid current_pool_id: " + str(current_pool_id))
-		return
-	if target_index < 0 || target_index >= card_pool.size():
-		push_error("Invalid target_index: " + str(target_index))
-		return
-	if current_pool_id == target_index:
-		return  # 无需移动
-	var moved_card:RenderCard= card_pool[current_pool_id]
-	# 临时存储移动范围内的卡牌
-	var affected_cards := []
-	if current_pool_id < target_index:
-		# 向右移动：从右向左处理
-		for i in range(target_index, current_pool_id, -1):
-			affected_cards.append(card_pool[i])
-	else:
-		# 向左移动：从右向左处理
-		for i in range(current_pool_id - 1, target_index - 1, -1):
-			affected_cards.append(card_pool[i])
-	# 批量更新索引
-	for idx in affected_cards.size():
-		var card := affected_cards[idx] as RenderCard
-		var new_id = card.pool_id - 1 if current_pool_id < target_index else card.pool_id + 1
-		card_pool[new_id] = card
-		card.pool_id = new_id
-		card_id_to_pool_id[card.get_id()] = new_id
-	card_pool[target_index] = moved_card
-	moved_card.pool_id = target_index
-	card_id_to_pool_id[moved_card.get_id()] = target_index
-	for i in range(min(target_index, current_pool_id), max(target_index, current_pool_id) + 1):
-		move_child(card_pool[i], i + init_child_count)
-	tween_update(render_event)

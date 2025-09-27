@@ -23,8 +23,12 @@ signal face_update()
 signal render_requested(render_event:RenderEvent)
 signal data_requested
 
+func _init(card_data:CardPack = CardPack.new()) -> void:
+	data = card_data
+
 func _ready()-> void:
 	name = &"RenderCard"
+	data_requested.emit()
 
 func data_update(new_card_data:CardPack)-> void:
 	data = new_card_data

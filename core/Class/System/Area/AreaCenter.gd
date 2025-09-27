@@ -1,3 +1,3 @@
 extends Area
-class_name AreaCentre
+class_name AreaCenter
 #中央区。

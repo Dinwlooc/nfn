@@ -9,6 +9,7 @@ var HP: int #玩家当前生命
 var AP: int #玩家当前的行动点
 var init_AP:int = 3
 var draw_cards_count = 2
-var area_hand = AreaHand.new(self)
-var area_ability = AreaAbility.new(self)
+var area_hand:AreaHand = AreaHand.new(self)
+var area_ability:AreaAbility = AreaAbility.new(self)
+var area_defensive:AreaDefensive = AreaDefensive.new(self)
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
