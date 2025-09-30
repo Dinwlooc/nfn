@@ -44,7 +44,7 @@ func set_card_size(new_size:Vector2):
 	card_size = new_size
 
 func request_select():
-	area.on_select(pool_id)
+	area.on_select(self)
 	pass
 
 func request_dragging():

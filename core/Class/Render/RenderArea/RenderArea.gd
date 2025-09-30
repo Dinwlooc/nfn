@@ -5,8 +5,8 @@ class_name RenderArea
 var area_name:StringName
 @export var control:RenderControl
 var card_pool:Array[RenderCard]
-@export var card_id_to_pool_id: Dictionary[int,int] = {}
-var on_select_list:Array[int]
+@export var card_id_to_instance: Dictionary[int,RenderCard] = {}
+var selected_cards: Array[RenderCard] = []
 var select_limit:int = 1
 var init_child_count:int
 signal render_requested(render_event:RenderEvent)
@@ -41,25 +41,18 @@ func process_request(request)->void:
 	elif request is RenderRequest.CardRemove:
 		cards_remove_requested.emit(request.uids_data)
 
-func on_select(pool_id:int)-> void:
-	var card:RenderCard = card_pool[pool_id]
-	var card_id:int = -1
-	card_id = card.get_id()
+func on_select(card: RenderCard) -> void:
 	if card.selected:
-		card.selected = 0
-		on_select_list.erase(card_id)
+		card.selected = false
+		selected_cards.erase(card)  # 精确移除实例
 	else:
-		card.selected = 1
-		on_select_list.append(card_id)
-	if on_select_list.size() > select_limit:
-		var removed_card_id = on_select_list[0]
-		on_select_list.remove_at(0)
-		var removed_pool_id = card_id_to_pool_id.get(removed_card_id)
-		if removed_pool_id != null:
-			card_pool[removed_pool_id].selected = false
+		if selected_cards.size() >= select_limit:
+			selected_cards[0].selected = false
+			selected_cards.remove_at(0)
+		card.selected = true
+		selected_cards.append(card)
 	tween_update()
 	selected.emit()
-	pass
 
 func on_drag(pool_id:int)->void:
 	if !control :
@@ -71,16 +64,17 @@ func on_drag(pool_id:int)->void:
 	pass
 
 func get_selected_cards()->Array[RenderCard]:
-	var selected:Array[RenderCard] = []
-	for card_id in on_select_list:
-		var pool_id = card_id_to_pool_id.get(card_id)
-		if pool_id != null && pool_id < card_pool.size():
-			selected.append(card_pool[pool_id])
-	return selected
+	return selected_cards
+
+func get_selected_ids() -> PackedInt32Array:
+	var ids = PackedInt32Array()
+	ids.resize(selected_cards.size())
+	for i in range(selected_cards.size()):
+		ids[i] = selected_cards[i].get_id()
+	return ids
 
 func update_card_position(card: RenderCard, new_index: int) -> void:
 	card.pool_id = new_index
-	card_id_to_pool_id[card.get_id()] = new_index
 	if card.is_inside_tree():
 		move_child(card, new_index + init_child_count)
 # 优化后的移动卡片功能

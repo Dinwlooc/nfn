@@ -7,13 +7,11 @@ enum Phase {
 	MOVE_IN,    # 执行移入事件
 	DONE        # 完成
 }
-
 # 目标区域类型枚举
 enum TargetAreaType {
 	CENTER,     # 中心区域
 	PLAYER_DEF  # 玩家防御区
 }
-
 var _source_player_index: int
 var _card_indices: PackedInt32Array
 var _target_player_index: int

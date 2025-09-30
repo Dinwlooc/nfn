@@ -6,7 +6,6 @@ extends RefCounted
 class_name RenderManager
 
 var _card_pool: Array[RenderCard] = []  # 存储可复用的卡牌对象
-
 func render_tree_init(root_node: Node) -> void:
 	for area in root_node.get_children():
 		if area is RenderArea:
@@ -72,6 +71,7 @@ func create_single_card(card_data: CardPack, area: RenderArea, pool_id: int) -> 
 	else:
 		new_card = RenderCard.new(card_data)  # 创建新对象
 	new_card.area = area
+	area.card_id_to_instance[new_card.get_id()] = new_card
 	area.update_card_position(new_card,pool_id)
 	connect_card_to_area_signals(new_card, area)
 	area.add_child(new_card)
@@ -95,28 +95,25 @@ func connect_area_signals(area: RenderArea) -> void:
 
 func remove_cards(uids: PackedInt32Array, area: RenderArea) -> void:
 	var cards_to_remove: Array[RenderCard] = []
-	var indices_to_remove := []
 	for uid in uids:
-		var pool_id: int = area.card_id_to_pool_id.get(uid, -1)
-		if pool_id != -1 and pool_id < area.card_pool.size():
-			cards_to_remove.append(area.card_pool[pool_id])
-			indices_to_remove.append(pool_id)
-	if cards_to_remove.is_empty():
-		return
-	indices_to_remove.sort()
-	indices_to_remove.reverse()
-	for index in indices_to_remove:
-		var card:RenderCard = area.card_pool[index]
+		if area.card_id_to_instance.has(uid):
+			var card = area.card_id_to_instance[uid]
+			cards_to_remove.append(card)
+	for card in cards_to_remove:
+		if card in area.selected_cards:
+			area.selected_cards.erase(card)
+	cards_to_remove.sort_custom(func(a, b): return a.pool_id > b.pool_id)
+	for card in cards_to_remove:
+		var pool_id = card.pool_id
 		_disconnect_card_from_area(card, area)
-		area.card_pool.remove_at(index)
+		area.card_pool.remove_at(pool_id)
 		area.remove_child(card)
+		area.card_id_to_instance.erase(card.get_id())  # 移除映射
 		_card_pool.append(card)
-	area.card_id_to_pool_id.clear()
-	for i in area.card_pool.size():
-		var card:RenderCard = area.card_pool[i]
-		card.pool_id = i  # 更新池ID
-		area.card_id_to_pool_id[card.get_id()] = i
-		area.update_card_position(card, i)  # 更新位置
+	for i in range(area.card_pool.size()):
+		var card = area.card_pool[i]
+		card.pool_id = i
+		area.update_card_position(card, i)
 	area.render_update()
 
 # 断开卡牌与区域的信号连接

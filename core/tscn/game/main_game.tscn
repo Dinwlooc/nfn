@@ -80,9 +80,6 @@ area = NodePath("..")
 anchors_preset = 0
 script = ExtResource("14_a6oxl")
 control = NodePath("..")
-card_id_to_pool_id = Dictionary[int, int]({
-0: 0
-})
 
 [node name="AreaFaceTargets" parent="Control/AreaPlayers" node_paths=PackedStringArray("area_hand", "area") instance=ExtResource("14_8v20q")]
 offset_top = -157.0

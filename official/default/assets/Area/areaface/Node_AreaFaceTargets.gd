@@ -47,5 +47,5 @@ func card_move()-> void:
 
 func quickly_select():
 	if area.card_pool.size() > 0 && area.get_selected_cards().size() == 0:
-		area.on_select(0)
+		area.on_select(area.card_pool[0])
 	pass
