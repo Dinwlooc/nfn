@@ -21,7 +21,6 @@ func create_new_card(template_path: String, suit:HandCard.Suit) -> Card:
 	else:
 		push_error("Failed to create card from template: " + template_path)
 		return null
-
 func create_handcards_all_suit(template_path: String) -> Array[HandCard]:
 	var cards: Array[HandCard] = []
 	var card_template:HandCard = load(template_path)
@@ -31,7 +30,6 @@ func create_handcards_all_suit(template_path: String) -> Array[HandCard]:
 		if card:
 			cards.append(card)
 	return cards
-# 加载所有预设卡牌
 func load_all_cards() -> Array[Card]:
 	var card_templates = GlobalConfig.get_cards_list()
 	var all_cards: Array[Card] = []

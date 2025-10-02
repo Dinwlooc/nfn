@@ -4,6 +4,7 @@ class_name Card
 @export var name:StringName
 @export var type:StringName
 var id:int
+var area_name:StringName
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 
 func get_attribute(attribute:StringName,value:int = get(attribute) ) -> int:

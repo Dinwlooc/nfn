@@ -15,6 +15,7 @@ signal selected()
 signal cards_add_requested(cards:Array[CardPack])
 signal cards_added(cards:Array[RenderCard])
 signal cards_remove_requested(uids:PackedInt32Array)
+signal card_move_requested(card: RenderCard, new_index: int)
 class DefaultArea:
 	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
 	const PLAYERS:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
@@ -40,6 +41,46 @@ func process_request(request)->void:
 		cards_add_requested.emit(request.card_data)
 	elif request is RenderRequest.CardRemove:
 		cards_remove_requested.emit(request.uids_data)
+
+func add_card_to_pool(card: RenderCard, index: int) -> void:
+	card.pool_id = index
+	if index >= card_pool.size():
+		card_pool.append(card)
+	else:
+		card_pool[index] = card
+func remove_cards_by_uids(uids: PackedInt32Array) -> Array[RenderCard]:
+	var removed_cards: Array[RenderCard] = []
+	var min_index := -1
+
+	# 收集需要移除的卡牌并更新内部状态
+	for uid in uids:
+		if card_id_to_instance.has(uid):
+			var card = card_id_to_instance[uid]
+			removed_cards.append(card)
+			var pool_id = card.pool_id
+			if min_index == -1 || pool_id < min_index:
+				min_index = pool_id
+			if card in selected_cards:
+				selected_cards.erase(card)
+			card_id_to_instance.erase(uid)
+			card_pool[pool_id] = null
+	if min_index != -1:
+		compact_pool(min_index, uids.size())
+	return removed_cards
+func compact_pool(min_index: int, removed_count: int) -> void:
+	if min_index + removed_count > card_pool.size():
+		card_pool.resize(min_index)
+		return
+	var write_index = min_index
+	for read_index in range(min_index + 1, card_pool.size()):
+		var card = card_pool[read_index]
+		if card == null:
+			continue
+		update_card_position(card, write_index)
+		card_pool[write_index] = card
+		write_index += 1
+	card_pool.resize(write_index)
+	render_update()
 
 func on_select(card: RenderCard) -> void:
 	if card.selected:
@@ -75,8 +116,11 @@ func get_selected_ids() -> PackedInt32Array:
 
 func update_card_position(card: RenderCard, new_index: int) -> void:
 	card.pool_id = new_index
-	if card.is_inside_tree():
-		move_child(card, new_index + init_child_count)
+	if new_index >= card_pool.size():
+		card_pool.append(card)
+	else:
+		card_pool[new_index] = card
+	card_move_requested.emit(card, new_index)
 # 优化后的移动卡片功能
 func move_card_to_index(current_pool_id: int, target_index: int, render_event: RenderEvent = RenderEvent.new()) -> void:
 	var pool_size: int = card_pool.size()
@@ -92,18 +136,15 @@ func move_card_to_index(current_pool_id: int, target_index: int, render_event: R
 		start_index = current_pool_id + 1
 		end_index = target_index
 		for i in range(start_index, end_index + 1):
-			card_pool[i - 1] = card_pool[i]
 			update_card_position(card_pool[i], i - 1)
 	else:
 		start_index = current_pool_id - 1
 		end_index = target_index
 		for i in range(start_index, end_index - 1, -1):
-			card_pool[i + 1] = card_pool[i]
+			# 现在通过update_card_position统一更新位置和card_pool
 			update_card_position(card_pool[i], i + 1)
-	card_pool[target_index] = moved_card
 	update_card_position(moved_card, target_index)
 	tween_update(render_event)
-
 # 优化后的交换卡片功能
 func swap_cards(pool_id_a: int, pool_id_b: int) -> void:
 	var pool_size: int = card_pool.size()
@@ -111,9 +152,8 @@ func swap_cards(pool_id_a: int, pool_id_b: int) -> void:
 	pool_id_b = clampi(pool_id_b, 0, pool_size - 1)
 	if pool_id_a == pool_id_b:
 		return
-	var temp = card_pool[pool_id_a]
-	card_pool[pool_id_a] = card_pool[pool_id_b]
-	card_pool[pool_id_b] = temp
-	update_card_position(card_pool[pool_id_a], pool_id_a)
-	update_card_position(card_pool[pool_id_b], pool_id_b)
+	var card_a = card_pool[pool_id_a]
+	var card_b = card_pool[pool_id_b]
+	update_card_position(card_a, pool_id_b)
+	update_card_position(card_b, pool_id_a)
 	render_update()

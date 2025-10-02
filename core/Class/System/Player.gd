@@ -13,3 +13,4 @@ var area_hand:AreaHand = AreaHand.new(self)
 var area_ability:AreaAbility = AreaAbility.new(self)
 var area_defensive:AreaDefensive = AreaDefensive.new(self)
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
+var allowed_operations: Array[StringName] = []
