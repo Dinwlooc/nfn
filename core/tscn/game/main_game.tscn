@@ -20,6 +20,11 @@
 
 [node name="MainGame" type="Node2D"]
 
+[node name="System" type="Node" parent="." node_paths=PackedStringArray("timer", "network_manager")]
+script = ExtResource("2_gpy5h")
+timer = NodePath("../Timer")
+network_manager = NodePath("../NetworkManager")
+
 [node name="Timer" type="Timer" parent="."]
 one_shot = true
 ignore_time_scale = true
@@ -28,11 +33,6 @@ script = ExtResource("2_4k47o")
 [node name="NetworkManager" type="Node" parent="."]
 script = ExtResource("3_t5eyl")
 metadata/_custom_type_script = "uid://c237fwh31qfh2"
-
-[node name="System" type="Node" parent="." node_paths=PackedStringArray("timer", "network_manager")]
-script = ExtResource("2_gpy5h")
-timer = NodePath("../Timer")
-network_manager = NodePath("../NetworkManager")
 
 [node name="Control" type="Control" parent="."]
 custom_minimum_size = Vector2(1600, 900)

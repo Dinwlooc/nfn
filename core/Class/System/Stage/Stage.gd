@@ -1,57 +1,44 @@
 extends RefCounted
 class_name Stage
 
-var system:System
-var stage_name: StringName = &"Null"
-var time_limit: float = 30.0
-var command_processor: CommandProcessor
-var is_exit:bool = false
-var timer:GameTimer
 signal stage_ended
 
-func _init(p_system:System,p_timer:GameTimer) -> void:
+var stage_name: StringName = &"Null"
+var time_limit: float = 0.0  # 0表示不需要计时
+var is_temporary: bool = false
+var system: System
+var is_ended: bool = false  # 标记阶段是否已结束
+
+func _init(p_system: System) -> void:
 	system = p_system
-	command_processor = system.command_processor
-	timer = p_timer
 	_init_expand()
-
-func  _init_expand()->void:
+func _init_expand() -> void:
 	pass
-
-func enter()->void:
-	timer.timer_create(time_limit)
-	timer.timeout.connect(on_timeout)
+# 进入阶段
+func enter() -> void:
+	is_ended = false
 	enter_expand()
-	command_processor.all_completed.connect(run,CONNECT_ONE_SHOT)
-
-func run()->void:
+	run()
+func run() -> void:
 	pass
-
-func enter_expand()->void:
+func enter_expand() -> void:
 	pass
-
-func exit():
-	if !command_processor.is_empty && !command_processor.all_completed.is_connected(exit):
-		command_processor.all_completed.connect(exit,CONNECT_ONE_SHOT)
+# 暂停阶段（用于临时阶段插入时）
+func pause() -> void:
+	pass
+# 恢复阶段（用于临时阶段结束后）
+func resume() -> void:
+	pass
+# 超时时的默认响应
+func execute_default_action() -> void:
+	pass
+# 阶段结束效果（子类可实现自定义结束逻辑）
+func end_stage_effect() -> void:
+	pass
+# 结束阶段（由阶段自身调用）
+func end_stage() -> void:
+	if is_ended:
 		return
-	end_stage()
-	timer.timeout.disconnect(on_timeout)
-	timer.timer_stop()
-	is_exit = true
-
-func request_change_stage()->void:
-		system.stage_ended()
-
-func handle_operation(op_data:OperationRequest):
-	pass
-
-func on_timeout()->void:
-	exit()
-	request_change_stage()
-
-func end_stage()->void:
-	pass
-
-func complete_stage() -> void:
-	exit()
-	request_change_stage()
+	is_ended = true
+	end_stage_effect()
+	stage_ended.emit()

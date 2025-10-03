@@ -2,6 +2,8 @@ extends Node
 class_name System
 
 enum GameStage { NULL, START, DRAW , MAIN , DISCARD , END}
+@export var timer:GameTimer
+@export var network_manager:NetworkManager
 var game_stages:Dictionary[GameStage, Stage]
 var game_stage: GameStage = GameStage.NULL
 var area_center := AreaCenter.new()
@@ -10,10 +12,9 @@ var current_player_index:int
 var cardsmanager := CardsManager.new()
 var player_manager := PlayersManager.new()
 var command_processor := CommandProcessor.new(self)
+var stage_manager :StageManager
 var op_handled := OperationRequestHandler.new()
 var _process_active := false
-@export var timer:GameTimer
-@export var network_manager:NetworkManager
 signal data_update
 
 func _init() -> void:
@@ -21,6 +22,7 @@ func _init() -> void:
 	op_handled.request_validated.connect(command_processor.queue_behavior)
 
 func _ready() -> void:
+	stage_manager = StageManager.new(self,timer)
 	signal_connect_test()#调试模式
 	load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
@@ -37,13 +39,10 @@ func enable_processing(enable: bool) -> void:
 	_process_active = enable
 	set_process(enable)
 
-func change_stage(new_stage: GameStage) -> void:
-	var event = StageTransitionCommand.new(new_stage)
-	command_processor.queue_behavior(event)
-
-func stage_ended():
-	if game_stage == GameStage.START:
-		change_stage(GameStage.DRAW)
+func _on_stage_changed(old_stage: Stage, new_stage: Stage) -> void:
+	print("阶段变更: ", old_stage.stage_name if old_stage else "NULL",
+		" -> ", new_stage.stage_name)
+	data_update.emit()
 #####信号调用函数#####
 func _start_game()-> void:
 	if game_stage != GameStage.NULL:

@@ -8,10 +8,11 @@ enum AreaMode {
 var player: Player
 var area_name: StringName
 var mode: AreaMode = AreaMode.ORDERED
-signal area_cards_add(new_cardpool)
-var _ordered_pool: Array[Card] = []           # 有序卡池
-var _card_id_to_index: Dictionary = {}        # ID到索引的映射
-var _unordered_pool: Dictionary[int,Card] = {}          # ID到卡牌的映射
+signal area_cards_add(new_cardpool:Array[Card])
+signal area_cards_remove(removed_cards:Array[Card])
+var _ordered_pool: Array[Card] = [] # 有序卡池
+var _card_id_to_index: Dictionary = {} # ID到索引的映射
+var _unordered_pool: Dictionary[int,Card] = {} # ID到卡牌的映射
 
 func _init(_player:Player = null, initial_mode: AreaMode = AreaMode.ORDERED) -> void:
 	player = _player
@@ -23,7 +24,7 @@ func _init_expand() -> void:
 func shuffle_card_pool() -> void:
 	match mode:
 		AreaMode.ORDERED:
-			_ordered_pool.shuffle()  # 洗牌后索引已变，但未更新 _card_id_to_index!
+			_ordered_pool.shuffle()
 			_rebuild_index_map()
 func _rebuild_index_map() -> void:
 	_card_id_to_index.clear()
@@ -55,7 +56,10 @@ func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 				if _unordered_pool.has(id):
 					removed.append(_unordered_pool[id])
 					_unordered_pool.erase(id)
+	if not removed.is_empty():
+		area_cards_remove.emit(removed)
 	return removed
+
 func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 	var removed: Array[Card] = []
 	match mode:
@@ -70,16 +74,11 @@ func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 				removed.append(_ordered_pool[index])
 				_card_id_to_index.erase(_ordered_pool[index].id)
 				_ordered_pool[index] = null
+			if not removed.is_empty():
+				area_cards_remove.emit(removed)
 			if min_index >= _ordered_pool.size():
 				return removed
-			var write_index = min_index
-			for read_index in range(min_index, _ordered_pool.size()):
-				if _ordered_pool[read_index] != null:
-					if write_index != read_index:
-						_ordered_pool[write_index] = _ordered_pool[read_index]
-						_card_id_to_index[_ordered_pool[read_index].id] = write_index
-					write_index += 1
-			_ordered_pool.resize(write_index)
+			_compress_ordered_pool(min_index)
 		AreaMode.UNORDERED:
 			var keys = _unordered_pool.keys()
 			var ids_to_remove = []
@@ -88,6 +87,7 @@ func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 					ids_to_remove.append(keys[idx])
 			removed = remove_cards_by_ids(ids_to_remove)
 	return removed
+
 func remove_top_cards(count: int) -> Array[Card]:
 	var removed: Array[Card] = []
 	count = min(count, card_count())
@@ -98,6 +98,8 @@ func remove_top_cards(count: int) -> Array[Card]:
 			_ordered_pool.resize(_ordered_pool.size() - count)
 			for card in removed:
 				_card_id_to_index.erase(card.id)
+			if not removed.is_empty():
+				area_cards_remove.emit(removed)
 		AreaMode.UNORDERED:
 			var keys = _unordered_pool.keys()
 			var start_index = max(0, keys.size() - count)
@@ -142,3 +144,13 @@ func send_cards_add(new_cardpool: Array[Card]) -> void:
 	var trans_cardpool: Array[CardPack]
 	trans_cardpool.append_array(new_cardpool.map(func(card): return card.get_pack()))
 	RenderRequest.CardAdd.new(area_name, trans_cardpool).send_to_player(player.peer_id)
+# 内部辅助方法：从指定位置开始压缩数组
+func _compress_ordered_pool(start_index: int) -> void:
+	var write_index = start_index
+	for read_index in range(start_index, _ordered_pool.size()):
+		if _ordered_pool[read_index] != null:
+			if write_index != read_index:
+				_ordered_pool[write_index] = _ordered_pool[read_index]
+				_card_id_to_index[_ordered_pool[read_index].id] = write_index
+			write_index += 1
+	_ordered_pool.resize(write_index)

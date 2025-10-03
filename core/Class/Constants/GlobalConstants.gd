@@ -7,6 +7,7 @@ const AREA_TYPES:Array[StringName] = [&"hand",&"players"]
 enum CardType { NULL, CHARACTER, ATTACK } # 官方内置类型枚举
 const CARD_TYPES:Array[StringName] = [&"null", &"character", &"attack"]
 const KEY_CARD_TYPE = &"CardType"
+enum GameStage { NULL, START, DRAW, MAIN, DISCARD, END }
 
 const OP_PLAY_CARD: StringName = &"play_card"
 const OP_END_TURN: StringName = &"end_turn"

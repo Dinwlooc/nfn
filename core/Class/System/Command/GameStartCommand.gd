@@ -18,7 +18,7 @@ func execute(system: System) -> void:
 			current_phase = Phase.START_DRAW
 		Phase.START_DRAW:
 			var processor:CommandProcessor = system.command_processor
-			var stage_event = StageTransitionCommand.new(System.GameStage.START)
+			var stage_event = StageTransitionCommand.new()
 			processor.queue_behavior(stage_event)
 			for i in range(system.player_manager.players.size()):
 				var draw_event = DrawCardsCommand.new(i, 4)
@@ -34,13 +34,6 @@ class GameSetupRuntime extends AtomicCommand:
 	func _init(init_system: System):
 		system = init_system
 	func execute() -> void:
-		# 初始化游戏阶段
-		system.game_stages = {
-			System.GameStage.START: StageStart.new(system, system.timer),
-			System.GameStage.DRAW: StageDraw.new(system, system.timer),
-			System.GameStage.MAIN: StageMain.new(system, system.timer),
-			System.GameStage.END: StageEnd.new(system, system.timer)
-		}
 		if system.network_manager:
 			for user in system.network_manager.users:
 				system.player_manager.add_player(user.id)
