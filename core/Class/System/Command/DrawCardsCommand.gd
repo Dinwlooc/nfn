@@ -23,8 +23,8 @@ func execute(system: System) -> void:
 		Phase.INIT:
 			current_phase = Phase.MOVE_OUT
 		Phase.MOVE_OUT:
-			var card_pool = system.area_drawing.card_pool
-			var draw_count = min(_draw_count, card_pool.size())
+			var card_count:int = system.area_drawing.card_count()
+			var draw_count = min(_draw_count, card_count)
 			if draw_count <= 0:
 				current_phase = Phase.DONE
 			var move_out:CardMoveCommand.Out = CardMoveCommand.Out.new(

@@ -51,8 +51,6 @@ func add_card_to_pool(card: RenderCard, index: int) -> void:
 func remove_cards_by_uids(uids: PackedInt32Array) -> Array[RenderCard]:
 	var removed_cards: Array[RenderCard] = []
 	var min_index := -1
-
-	# 收集需要移除的卡牌并更新内部状态
 	for uid in uids:
 		if card_id_to_instance.has(uid):
 			var card = card_id_to_instance[uid]
@@ -67,6 +65,7 @@ func remove_cards_by_uids(uids: PackedInt32Array) -> Array[RenderCard]:
 	if min_index != -1:
 		compact_pool(min_index, uids.size())
 	return removed_cards
+
 func compact_pool(min_index: int, removed_count: int) -> void:
 	if min_index + removed_count > card_pool.size():
 		card_pool.resize(min_index)

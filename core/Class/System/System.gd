@@ -4,12 +4,13 @@ class_name System
 enum GameStage { NULL, START, DRAW , MAIN , DISCARD , END}
 var game_stages:Dictionary[GameStage, Stage]
 var game_stage: GameStage = GameStage.NULL
-var area_center = AreaCenter.new()
-var area_drawing = AreaDrawing.new()
+var area_center := AreaCenter.new()
+var area_drawing := AreaDrawing.new()
 var current_player_index:int
-var cardsmanager = CardsManager.new()
-var player_manager = PlayersManager.new()
-var command_processor = CommandProcessor.new(self)
+var cardsmanager := CardsManager.new()
+var player_manager := PlayersManager.new()
+var command_processor := CommandProcessor.new(self)
+var op_handled := OperationRequestHandler.new()
 var _process_active := false
 @export var timer:GameTimer
 @export var network_manager:NetworkManager
@@ -17,6 +18,7 @@ signal data_update
 
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
+	op_handled.request_validated.connect(command_processor.queue_behavior)
 
 func _ready() -> void:
 	signal_connect_test()#调试模式
@@ -28,8 +30,8 @@ func _process(_delta: float) -> void:
 		command_processor.process()
 
 func load_cards() -> void:
-	area_drawing.card_pool = cardsmanager.load_all_cards()
-	area_drawing.card_pool.shuffle()
+	area_drawing.cards_add(cardsmanager.load_all_cards())
+	area_drawing.shuffle_card_pool()
 
 func enable_processing(enable: bool) -> void:
 	_process_active = enable
