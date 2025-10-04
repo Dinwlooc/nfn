@@ -13,13 +13,15 @@ var cardsmanager := CardsManager.new()
 var player_manager := PlayersManager.new()
 var command_processor := CommandProcessor.new(self)
 var stage_manager :StageManager
-var op_handled := OperationRequestHandler.new()
+var operation_handler := OperationRequestHandler.new()
 var _process_active := false
 signal data_update
 
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
-	op_handled.request_validated.connect(command_processor.queue_behavior)
+	player_manager.peer_player_added.connect(
+		operation_handler.update_verification_mapping
+	)
 
 func _ready() -> void:
 	stage_manager = StageManager.new(self,timer)

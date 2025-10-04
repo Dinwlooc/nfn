@@ -42,3 +42,5 @@ func end_stage() -> void:
 	is_ended = true
 	end_stage_effect()
 	stage_ended.emit()
+func get_permissions_map() -> Dictionary:
+	return {}

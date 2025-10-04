@@ -3,8 +3,7 @@ class_name StageManager
 
 signal stage_changed(old_stage: Stage, new_stage: Stage)
 signal temp_stage_started(temp_stage: Stage)
-signal round_completed()  # 新增信号：当整个回合循环结束时发出
-
+signal round_completed()
 # 主阶段顺序数组（按游戏流程排列）
 var MAIN_STAGE_ORDER: Array[GlobalConstants.GameStage] = [
 	GlobalConstants.GameStage.START,
@@ -31,23 +30,6 @@ func _init(p_system:System, p_timer: GameTimer) -> void:
 		GlobalConstants.GameStage.DISCARD: StageDiscard.new(system),
 		GlobalConstants.GameStage.END: StageEnd.new(system)
 	}
-# 开始回合（从第一个主阶段开始）
-func start_round() -> void:
-	current_main_stage_index = 0
-	_transition_to(main_stages[MAIN_STAGE_ORDER[current_main_stage_index]])
-
-# 切换到指定主阶段
-func change_stage(new_stage: GlobalConstants.GameStage) -> void:
-	if new_stage not in main_stages:
-		push_error("尝试切换到无效阶段: " + str(new_stage))
-		return
-	current_main_stage_index = MAIN_STAGE_ORDER.find(new_stage)
-	if current_main_stage_index == -1:
-		push_error("尝试切换到未注册的主阶段: " + str(new_stage))
-		return
-	_transition_to(main_stages[new_stage])
-
-# 进入下一个主阶段（核心新增逻辑）
 func _advance_to_next_main_stage() -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= MAIN_STAGE_ORDER.size():
@@ -63,7 +45,6 @@ func start_temp_stage(temp_stage: Stage) -> void:
 	temp_stage_stack.append(current_stage)
 	_transition_to(temp_stage)
 	temp_stage_started.emit(temp_stage)
-
 func end_temp_stage() -> void:
 	if temp_stage_stack.is_empty():
 		push_error("没有活动的临时阶段")
@@ -90,6 +71,12 @@ func _transition_to(new_stage: Stage) -> void:
 			timer.stop()
 		new_stage.enter()
 	stage_changed.emit(old_stage, new_stage)
+func update_permissions(permissions: Dictionary[int,Array]) -> void:
+	system.operation_handler.set_initial_permissions(permissions.duplicate())
+	for player_id in permissions:
+		var blacklist:Array[StringName] = system.player_manager.get_operation_disallowed(player_id)
+		if not blacklist.is_empty():
+			system.operation_handler.apply_player_blacklist(player_id, blacklist)
 func _on_stage_ended(ended_stage: Stage) -> void:
 	if ended_stage != current_stage:
 		return
@@ -102,3 +89,15 @@ func _on_timer_timeout() -> void:
 	if current_stage and not current_stage.is_ended:
 		current_stage.execute_default_action()
 		current_stage.end_stage()
+func start_round() -> void:
+	current_main_stage_index = 0
+	_transition_to(main_stages[MAIN_STAGE_ORDER[current_main_stage_index]])
+func change_stage(new_stage: GlobalConstants.GameStage) -> void:
+	if new_stage not in main_stages:
+		push_error("尝试切换到无效阶段: " + str(new_stage))
+		return
+	current_main_stage_index = MAIN_STAGE_ORDER.find(new_stage)
+	if current_main_stage_index == -1:
+		push_error("尝试切换到未注册的主阶段: " + str(new_stage))
+		return
+	_transition_to(main_stages[new_stage])
