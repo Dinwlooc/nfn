@@ -4,6 +4,7 @@ class_name StageManager
 signal stage_changed(old_stage: Stage, new_stage: Stage)
 signal temp_stage_started(temp_stage: Stage)
 signal round_completed()
+signal permissions_update_requested(player_id: int, permissions: Array[StringName])
 # 主阶段顺序数组（按游戏流程排列）
 var MAIN_STAGE_ORDER: Array[GlobalConstants.GameStage] = [
 	GlobalConstants.GameStage.START,
@@ -19,10 +20,8 @@ var timer: GameTimer
 var system: System
 var current_main_stage_index: int = -1  # 当前主阶段在顺序数组中的索引
 
-func _init(p_system:System, p_timer: GameTimer) -> void:
+func _init(p_system:System) -> void:
 	system = p_system
-	timer = p_timer
-	timer.timeout.connect(_on_timer_timeout)
 	main_stages = {
 		GlobalConstants.GameStage.START: StageStart.new(system),
 		GlobalConstants.GameStage.DRAW: StageDraw.new(system),
@@ -30,6 +29,13 @@ func _init(p_system:System, p_timer: GameTimer) -> void:
 		GlobalConstants.GameStage.DISCARD: StageDiscard.new(system),
 		GlobalConstants.GameStage.END: StageEnd.new(system)
 	}
+
+func set_timer(_timer: GameTimer):
+	if timer:
+		timer.timeout.disconnect(_on_timer_timeout)
+	timer = _timer
+	timer.timeout.connect(_on_timer_timeout)
+
 func _advance_to_next_main_stage() -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= MAIN_STAGE_ORDER.size():
@@ -71,12 +77,10 @@ func _transition_to(new_stage: Stage) -> void:
 			timer.stop()
 		new_stage.enter()
 	stage_changed.emit(old_stage, new_stage)
-func update_permissions(permissions: Dictionary[int,Array]) -> void:
-	system.operation_handler.set_initial_permissions(permissions.duplicate())
-	for player_id in permissions:
-		var blacklist:Array[StringName] = system.player_manager.get_operation_disallowed(player_id)
-		if not blacklist.is_empty():
-			system.operation_handler.apply_player_blacklist(player_id, blacklist)
+
+func update_permissions(player_id:int,permissions: Array[StringName]) -> void:
+	permissions_update_requested.emit(player_id,permissions)
+
 func _on_stage_ended(ended_stage: Stage) -> void:
 	if ended_stage != current_stage:
 		return

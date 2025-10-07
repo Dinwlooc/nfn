@@ -43,7 +43,6 @@ func execute(system: System) -> void:
 				return
 			current_phase = Phase.MOVE_OUT
 		Phase.MOVE_OUT:
-			# 使用ID移除模式创建移出命令
 			var move_out := CardMoveCommand.Out.new(_source_area, _source_player_id).set_id_mode(_card_ids)
 			move_out.execute()
 			_moved_cards = move_out.get_cards()

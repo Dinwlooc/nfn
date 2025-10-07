@@ -11,8 +11,9 @@ var area_drawing := AreaDrawing.new()
 var current_player_index:int
 var cardsmanager := CardsManager.new()
 var player_manager := PlayersManager.new()
+var modifier_manager := ModifierManager.new(self)
 var command_processor := CommandProcessor.new(self)
-var stage_manager :StageManager
+var stage_manager := StageManager.new(self)
 var operation_handler := OperationRequestHandler.new()
 var _process_active := false
 signal data_update
@@ -22,9 +23,11 @@ func _init() -> void:
 	player_manager.peer_player_added.connect(
 		operation_handler.update_verification_mapping
 	)
+	command_processor.command_processing.connect(modifier_manager.process_behavior)
 
 func _ready() -> void:
-	stage_manager = StageManager.new(self,timer)
+	stage_manager.set_timer(timer)
+	stage_manager.permissions_update_requested.connect(_handle_permissions_update)
 	signal_connect_test()#调试模式
 	load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
@@ -41,10 +44,11 @@ func enable_processing(enable: bool) -> void:
 	_process_active = enable
 	set_process(enable)
 
-func _on_stage_changed(old_stage: Stage, new_stage: Stage) -> void:
-	print("阶段变更: ", old_stage.stage_name if old_stage else "NULL",
-		" -> ", new_stage.stage_name)
-	data_update.emit()
+func _handle_permissions_update(player_id: int, permissions: Array[StringName]) -> void:
+	operation_handler.set_player_permissions(player_id, permissions.duplicate())
+	var blacklist: Array[StringName] = player_manager.get_operation_disallowed(player_id)
+	if not blacklist.is_empty():
+		operation_handler.apply_player_blacklist(player_id, blacklist)
 #####信号调用函数#####
 func _start_game()-> void:
 	if game_stage != GameStage.NULL:

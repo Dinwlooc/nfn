@@ -7,15 +7,15 @@ var _peer_player_map :Dictionary[int,int] = {}
 signal request_validated(command: BehaviorCommand)
 signal permissions_updated
 # 重置处理器状态
-func reset_state() -> void:  # 更名：reset -> reset_state
+func reset_state() -> void:
 	player_permissions.clear()
 	responded_players.clear()
 # 设置初始权限（白名单注入）
-func set_initial_permissions(permissions: Dictionary) -> void:  # 更名：set_permissions -> set_initial_permissions
-	player_permissions = permissions  # 直接引用（无拷贝）
+func set_player_permissions(player_id: int, permissions: Array[StringName]) -> void:
+	player_permissions[player_id] = permissions
 	permissions_updated.emit()
 # 应用玩家黑名单修正
-func apply_player_blacklist(player_id: int, blacklist: Array[StringName]) -> void:  # 更名：apply_blacklist -> apply_player_blacklist
+func apply_player_blacklist(player_id: int, blacklist: Array[StringName]) -> void:
 	if not player_permissions.has(player_id):
 		return
 	var ops = player_permissions[player_id]

@@ -4,7 +4,7 @@ class_name Stage
 signal stage_ended
 
 var stage_name: StringName = &"Null"
-var time_limit: float = 0.0  # 0表示不需要计时
+var time_limit: float = 0.0  #0表示不需要计时
 var is_temporary: bool = false
 var system: System
 var is_ended: bool = false  # 标记阶段是否已结束
@@ -42,5 +42,5 @@ func end_stage() -> void:
 	is_ended = true
 	end_stage_effect()
 	stage_ended.emit()
-func get_permissions_map() -> Dictionary:
+func get_permissions_map() -> Dictionary[int,Array]:
 	return {}

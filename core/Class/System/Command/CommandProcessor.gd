@@ -5,6 +5,7 @@ var behavior_stack: Array[BehaviorCommand] = []
 var system: System
 var is_empty: bool = true
 signal all_completed()
+signal command_processing(command:BehaviorCommand)
 
 func _init(init_system: System):
 	system = init_system
@@ -18,7 +19,9 @@ func process():
 		return
 	var current_behavior:BehaviorCommand = behavior_stack.back()
 	current_behavior.execute(system)
-	_send_to_modifiers(current_behavior)
+	command_processing.emit(current_behavior)
+	if current_behavior.is_cancelled:
+		current_behavior.complete()
 	if current_behavior.is_completed:
 		behavior_stack.pop_back()
 
@@ -27,9 +30,3 @@ func queue_behavior(event: BehaviorCommand):
 	if is_empty:
 		is_empty = false
 		system.enable_processing(true)
-
-# 将行为事件分发给修饰器
-func _send_to_modifiers(behavior: BehaviorCommand):
-	# 这里实现修饰器系统的回调
-	# 示例: ModifierSystem.process_behavior(behavior)
-	pass
