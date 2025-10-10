@@ -105,3 +105,6 @@ func change_stage(new_stage: GlobalConstants.GameStage) -> void:
 		push_error("尝试切换到未注册的主阶段: " + str(new_stage))
 		return
 	_transition_to(main_stages[new_stage])
+
+func get_current_stage_enum()->int:
+	return current_main_stage_index

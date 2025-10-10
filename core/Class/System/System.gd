@@ -1,11 +1,9 @@
 extends Node
 class_name System
 
-enum GameStage { NULL, START, DRAW , MAIN , DISCARD , END}
+enum GameStage { START, DRAW , MAIN , DISCARD , END}
 @export var timer:GameTimer
 @export var network_manager:NetworkManager
-var game_stages:Dictionary[GameStage, Stage]
-var game_stage: GameStage = GameStage.NULL
 var area_center := AreaCenter.new()
 var area_drawing := AreaDrawing.new()
 var current_player_index:int
@@ -51,7 +49,7 @@ func _handle_permissions_update(player_id: int, permissions: Array[StringName]) 
 		operation_handler.apply_player_blacklist(player_id, blacklist)
 #####信号调用函数#####
 func _start_game()-> void:
-	if game_stage != GameStage.NULL:
+	if stage_manager.get_current_stage_enum() != -1:
 		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
 		return
 	var start_event = GameStartCommand.new()
@@ -62,7 +60,7 @@ func _draw_cards_test() -> void:
 	if _process_active:
 		GlobalConsole._print("System:Error:c_draw未生效。无法插入事件至处理中的堆栈。")
 		return
-	if game_stage == GameStage.NULL:
+	if stage_manager.get_current_stage_enum() == -1:
 		GlobalConsole._print("System:Error:c_draw未生效。游戏未开始。")
 		return
 	if player_manager.players.is_empty():
