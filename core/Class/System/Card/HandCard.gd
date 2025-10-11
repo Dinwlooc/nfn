@@ -12,6 +12,12 @@ enum Suit{
 	CLUB,
 	VOID,
 }
+func _init() -> void:
+	call_deferred(&"_init_attribute")
+
+func _init_attribute()->void:
+	attributeModifiers.set_base_value(&"power",power)
+	attributeModifiers.set_base_value(&"cost",cost)
 
 func set_suit(newsuit:Suit)->HandCard:
 	suit = newsuit

@@ -4,7 +4,7 @@
 
 [resource]
 script = ExtResource("1_4o0ak")
-power = 3
+power = 4
 cost = 1
 suit = 4
 name = &"nfn:basic_laser"
