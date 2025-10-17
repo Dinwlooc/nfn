@@ -44,3 +44,5 @@ func end_stage() -> void:
 	stage_ended.emit()
 func get_permissions_map() -> Dictionary[int,Array]:
 	return {}
+func get_command_modifiers()->Dictionary[StringName,Modifier]:
+	return {}
