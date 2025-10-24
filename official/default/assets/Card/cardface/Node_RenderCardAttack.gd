@@ -1,6 +1,6 @@
 extends RenderCardFace
 
-@onready var Nicon = $ColorRect
+@onready var Nicon:Panel = $Backgound
 @onready var NverticalName = $VerticalName
 @onready var Ntexture = $CenterContainer/TextureRect
 @onready var Ncost = $Cost
@@ -11,25 +11,30 @@ extends RenderCardFace
 
 const TYPE = GlobalConstants.CardType.ATTACK
 const TYPE_NAME = GlobalConstants.CARD_TYPES[TYPE]
-const SELECT_COLOR:Color = Color(1,0.3,0.3)
-const HOVERING_COLOR:Color = Color(1,0.7,0.6)
-const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
+const SELECT_COLOR:Color = Color(1,0.3,0.3,0.7)
+const HOVERING_COLOR:Color = Color(1,0.7,0.6,0.7)
+const NORMAL_COLOR:Color = Color(0.8,0.8,0.8,0.7)
+
+var _current_color: Color
+var _stylebox: StyleBoxFlat
 
 func _ready() -> void:
 	var button = get_node(^"Button")
 	button.button_down.connect(card.request_select)
 	button.button_down.connect(card.request_dragging)
 	button.button_up.connect(card.request_dragging)
+	_stylebox = Nicon.get_theme_stylebox(&"panel") as StyleBoxFlat
+	_current_color = NORMAL_COLOR
+	_stylebox.bg_color = _current_color
 
 func _input(_event: InputEvent) -> void:
 	if card.selected:
-		Nicon.color = SELECT_COLOR
+		_stylebox.bg_color = SELECT_COLOR
 	elif card.hovering:
-		Nicon.color = HOVERING_COLOR
+		_stylebox.bg_color = HOVERING_COLOR
 	else:
-		Nicon.color = NORMAL_COLOR
-	pass
-
+		_stylebox.bg_color = NORMAL_COLOR
+		
 func data_update()-> void:
 	var data:HandCardPack = card.data
 	var texture = get_card_main_icon(data.name)

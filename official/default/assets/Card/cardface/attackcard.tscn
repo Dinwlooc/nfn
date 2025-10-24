@@ -1,7 +1,15 @@
-[gd_scene load_steps=5 format=3 uid="uid://db51joyx0uc86"]
+[gd_scene load_steps=6 format=3 uid="uid://db51joyx0uc86"]
 
 [ext_resource type="Script" uid="uid://bbo5r3nm8gklu" path="res://official/default/assets/Card/cardface/Node_RenderCardAttack.gd" id="1_e6d5b"]
 [ext_resource type="Texture2D" uid="uid://ljvviksp78nn" path="res://official/default/assets/Card/suit/suit.png" id="2_u6ebe"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ycaky"]
+resource_local_to_scene = true
+bg_color = Color(0, 0, 0, 0.756863)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wshpf"]
 
@@ -22,17 +30,17 @@ focus_mode = 1
 mouse_filter = 2
 script = ExtResource("1_e6d5b")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="Backgound" type="Panel" parent="."]
 layout_mode = 0
 offset_right = 57.0
 offset_bottom = 88.0
 mouse_filter = 2
-color = Color(0.741176, 0.741176, 0.741176, 1)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ycaky")
 
 [node name="ColorRect2" type="ColorRect" parent="."]
 layout_mode = 0
 offset_left = 3.0
-offset_top = 5.0
+offset_top = 3.0
 offset_right = 54.0
 offset_bottom = 49.0
 mouse_filter = 2

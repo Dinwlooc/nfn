@@ -14,19 +14,15 @@
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fu0d1"]
 shader = ExtResource("3_j0cbf")
 shader_parameter/cooldown_speed = 1.0
-shader_parameter/range_max = 0.0
-shader_parameter/glow_luminance_min = 0.3
 shader_parameter/glow_intensity = 0.3
-shader_parameter/time = 0.0
+shader_parameter/glow_luminance_min = 0.3
 shader_parameter/luminance_max = 0.8
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_d576q"]
 shader = ExtResource("3_j0cbf")
 shader_parameter/cooldown_speed = 0.5
-shader_parameter/range_max = 1.0
-shader_parameter/glow_luminance_min = 0.4
 shader_parameter/glow_intensity = 0.2
-shader_parameter/time = 0.0
+shader_parameter/glow_luminance_min = 0.4
 shader_parameter/luminance_max = 0.4
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6du6q"]
