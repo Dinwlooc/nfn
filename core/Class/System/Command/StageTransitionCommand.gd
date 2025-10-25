@@ -13,5 +13,4 @@ class RuntimeStageTransitionCommand extends AtomicCommand:
 	func _init(p_stage_manager:StageManager):
 		_stage_manager = p_stage_manager
 	func execute() -> void:
-		_stage_manager.start_round()
-		complete()
+		_stage_manager.call_deferred(&"start_round")

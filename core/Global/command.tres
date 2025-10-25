@@ -11,7 +11,7 @@ const  command:Dictionary = {
 		&\"c_close\":{&\"min\":0,&\"max\":0,&\"mes\":\"\"}
 	}
 
-const command_name:PackedStringArray = [\"c_start\",\"c_draw\",\"c_help\",\"c_connect_to\",\"c_close\"]
+const command_name:PackedStringArray = [\"c_start\",\"c_draw\",\"c_help\",\"c_play_a_card\",\"c_connect_to\",\"c_close\"]
 "
 
 [resource]

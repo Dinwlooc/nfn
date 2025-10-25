@@ -7,10 +7,22 @@ class DragState:
 var card_on_drag:DragState
 var render_manager: RenderManager = RenderManager.new()
 signal dragged_update
-
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE,self)
 	render_manager.render_tree_init(self)
+	GlobalConsole.c_play_a_card.connect(_on_play_a_card)
+	
+func _on_play_a_card()->void:
+	var hand_area:RenderAreaHand = GlobalRegistry.get_renderarea(RenderArea.DefaultArea.HAND)
+	var target_area:RenderAreaTargets = GlobalRegistry.get_renderarea(RenderArea.DefaultArea.PLAYERS)
+	if hand_area.get_selected_ids() && target_area.get_selected_ids():
+		var play_a_card:OperationRequest.PlayCard = OperationRequest.PlayCard.new(
+			hand_area.get_selected_ids()[0],
+			target_area.get_selected_ids()[0])
+		GlobalConsole._print("Render:出牌请求发送。")
+		play_a_card.send()
+	else:
+		GlobalConsole._print("Render:出牌请求发送失败，未指定卡牌或目标。")
 
 func set_card_on_drag(area:RenderArea,realcard:RenderCard)->void:
 	remove_card_on_drag()

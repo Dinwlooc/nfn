@@ -1,5 +1,4 @@
 extends Node
-
 # 统一信号定义
 signal singleton_registered(type: String, instance: Node)
 signal renderarea_registered(name: StringName, area: RenderArea)

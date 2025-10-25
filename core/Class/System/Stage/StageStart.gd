@@ -1,6 +1,9 @@
 extends Stage
 class_name StageStart
 
-func _init_expand()->void:
-	time_limit = 0.5
-	pass
+func _init(p_system: System) -> void:
+	super._init(p_system)
+	stage_name = &"Start"
+
+func run() -> void:
+	end_stage()

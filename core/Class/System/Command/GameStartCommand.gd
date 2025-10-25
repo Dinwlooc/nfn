@@ -26,7 +26,7 @@ func execute(system: System) -> void:
 			current_phase = Phase.DONE
 		Phase.DONE:
 			complete()
-			GlobalConsole._print("System:游戏初始化完成")
+			GlobalConsole._print("GameStartCommand:游戏初始化完成")
 
 # 游戏设置运行时事件（封装原子操作）
 class GameSetupRuntime extends AtomicCommand:

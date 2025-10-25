@@ -16,12 +16,12 @@ func receive_render_request(serialized_request: PackedByteArray) -> void:
 
 func upload_operation_request(op: OperationRequest) -> void:
 	var target = MultiplayerPeer.TARGET_PEER_SERVER
-	rpc_id(target, &"receive_operation_event", op.serialize())
+	rpc_id(target, &"receive_operation_request", OperationRequestSerializer.serialize(op))
 
 @rpc("any_peer", "call_local", "reliable")
 func receive_operation_request(data: PackedByteArray) -> void:
 	var op:OperationRequest = OperationRequestSerializer.deserialize(data)
-	pass #待实现。
+	GlobalConsole._print("Transport:接收到操作请求。")
 
 @rpc("authority", "call_remote")
 func receive_server_data(data: PackedByteArray) -> void:

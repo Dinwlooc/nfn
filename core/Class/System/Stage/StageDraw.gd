@@ -1,7 +1,8 @@
 extends Stage
 class_name StageDraw
 
-func _init_expand() -> void:
+func _init(p_system: System) -> void:
+	super._init(p_system)
 	stage_name = &"Draw"
 	time_limit = 0.0  # 设置为0表示不需要计时器
 
