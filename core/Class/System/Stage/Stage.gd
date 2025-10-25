@@ -15,7 +15,7 @@ func _init(p_system: System) -> void:
 func enter() -> void:
 	is_ended = false
 	enter_expand()
-	print(stage_name,"已经执行")
+	GlobalConsole._print(["Stage:进入",stage_name,"阶段"])
 	run()
 func run() -> void:
 	pass

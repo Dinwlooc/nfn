@@ -41,5 +41,4 @@ func execute(system: System) -> void:
 			)
 			move_in.execute()
 			current_phase = Phase.DONE
-		Phase.DONE:
 			complete()

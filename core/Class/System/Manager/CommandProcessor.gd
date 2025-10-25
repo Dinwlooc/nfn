@@ -20,10 +20,12 @@ func process() -> void:
 			all_completed.emit()
 		return
 	var current_behavior: BehaviorCommand = behavior_stack.back()
-	current_behavior.execute(system)
-	command_processing.emit(current_behavior)
 	if current_behavior.is_completed:
 		behavior_stack.pop_back()
+		return
+	current_behavior.execute(system)
+	command_processing.emit(current_behavior)
+
 ## 添加新命令到堆栈
 func queue_behavior(event: BehaviorCommand) -> void:
 	# 连接伴生命令信号（一次性连接）

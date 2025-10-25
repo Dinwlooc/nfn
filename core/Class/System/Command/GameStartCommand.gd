@@ -23,8 +23,6 @@ func execute(system: System) -> void:
 			for i in range(system.player_manager.players.size()):
 				var draw_event = DrawCardsCommand.new(i, 4)
 				processor.queue_behavior(draw_event)
-			current_phase = Phase.DONE
-		Phase.DONE:
 			complete()
 			GlobalConsole._print("GameStartCommand:游戏初始化完成")
 

@@ -75,7 +75,7 @@ func _transition_to(new_stage: Stage) -> void:
 			timer.start(new_stage.time_limit)
 		else:
 			timer.stop()
-		new_stage.enter()
+		new_stage.call_deferred(&"enter")
 	stage_changed.emit(old_stage, new_stage)
 
 func update_permissions(player_id:int,permissions: Array[StringName]) -> void:
