@@ -1,4 +1,5 @@
 extends Node
+class_name Transport
 #GlobalTransport.gd。管理全部rpc和数据转发。
 var render_request_handler: RenderRequestHandler
 

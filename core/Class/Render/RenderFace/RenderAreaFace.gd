@@ -43,9 +43,9 @@ func _input(event)->void:
 			in_area = false
 
 func try_dragging_move()->bool:
-	var control:RenderControl = area.control
-	var card:RenderCard = control.get_dragged_card()
-	if control && card && card.area == area:
+	var context:RenderContext = area.render_context
+	var card:RenderCard = context.get_dragged_card()
+	if context && card && card.area == area:
 		dragging_move(card)
 		return true
 	return false

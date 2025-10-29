@@ -3,7 +3,6 @@ class_name RenderArea
 #总控区域渲染与交互。
 
 var area_name:StringName
-@export var control:RenderControl
 var card_pool:Array[RenderCard]
 @export var card_id_to_instance: Dictionary[int,RenderCard] = {}
 var selected_cards: Array[RenderCard] = []
@@ -19,6 +18,8 @@ signal card_move_requested(card: RenderCard, new_index: int)
 class DefaultArea:
 	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
 	const PLAYERS:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
+var render_context: RenderContext
+
 
 func _ready():
 	init_child_count = get_child_count()
@@ -41,6 +42,13 @@ func process_request(request)->void:
 		cards_add_requested.emit(request.card_data)
 	elif request is RenderRequest.CardRemove:
 		cards_remove_requested.emit(request.uids_data)
+
+func set_render_context(context: RenderContext) -> void:
+	render_context = context
+	# 连接信号示例
+	if render_context.dragged_update.is_connected(tween_update):
+		render_context.dragged_update.disconnect(tween_update)
+	render_context.dragged_update.connect(tween_update)
 
 func add_card_to_pool(card: RenderCard, index: int) -> void:
 	card.pool_id = index
@@ -95,12 +103,12 @@ func on_select(card: RenderCard) -> void:
 	selected.emit()
 
 func on_drag(pool_id:int)->void:
-	if !control :
+	if !render_context :
 		return
 	if Input.get_mouse_button_mask()==1:
-		control.set_card_on_drag(self,card_pool[pool_id])
+		render_context.set_card_on_drag(self,card_pool[pool_id])
 	else:
-		control.remove_card_on_drag()
+		render_context.remove_card_on_drag()
 	pass
 
 func get_selected_cards()->Array[RenderCard]:

@@ -34,7 +34,7 @@ func connect_to_areatargets(_areatargets:RenderAreaTargets)->void:
 	areatargets.render_requested.connect(render_event_handler)
 	areatargets.tween_requested.connect(render_event_handler)
 func connect_to_control(control:RenderControl)->void:
-	control.dragged_update.connect(clear_arrow)
+	control.render_context.dragged_update.connect(clear_arrow)
 
 func draw_arrow() -> void:
 	pending_draw = false

@@ -4,8 +4,6 @@ class_name OperationRequest
 var source_peer_id:int
 var source_player_id:int
 
-func send()->void:
-	GlobalTransport.upload_operation_request(self)
 func create_behavior_command()->BehaviorCommand:
 	return null
 

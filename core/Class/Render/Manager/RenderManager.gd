@@ -7,9 +7,11 @@ class_name RenderManager
 
 var _card_pool: Array[RenderCard] = []  # 存储可复用的卡牌对象
 
-func render_tree_init(root_node: Node) -> void:
+func render_tree_init(root_node: Node, context: RenderContext) -> void:
+	var render_context = context  # 接收注入的上下文
 	for area in root_node.get_children():
 		if area is RenderArea:
+			area.set_render_context(render_context)  # 向区域注入上下文
 			connect_area_signals(area)
 			for card in area.get_children():
 				if card is RenderCard:
