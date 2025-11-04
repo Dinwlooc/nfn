@@ -14,12 +14,12 @@ func _ready()->void:
 		connect_to_area(area)
 	into_area.connect(_into_area)
 	outto_area.connect(_outto_area)
-	ready_expand()
 
 func connect_to_area(_area:RenderArea):
 	_area.render_requested.connect(render_update)
 	_area.tween_requested.connect(tween_update)
 	_area.cards_added.connect(connect_cards_signals)
+	_area.context_ready.connect(_on_context_ready)
 
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
 	tween_update(render_event)
@@ -80,9 +80,6 @@ func _on_card_mouse_exited(card: RenderCard):
 func card_move()-> void:
 	pass
 
-func ready_expand()->void:
-	pass
-
 func dragging_move(card:RenderCard)->void:
 	pass
 
@@ -90,4 +87,7 @@ func _into_area()->void:
 	pass
 
 func _outto_area()->void:
+	pass
+	
+func _on_context_ready()->void:
 	pass

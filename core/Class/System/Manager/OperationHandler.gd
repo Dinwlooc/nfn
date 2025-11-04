@@ -1,5 +1,5 @@
 extends RefCounted
-class_name OperationRequestHandler
+class_name OperationHandler
 
 var player_permissions: Dictionary[int,Array] = {}  # 更明确的变量名
 var responded_players: Dictionary[int,bool] = {}

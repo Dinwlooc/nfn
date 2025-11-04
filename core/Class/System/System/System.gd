@@ -12,7 +12,7 @@ var player_manager := PlayersManager.new()
 var modifier_manager := ModifierManager.new(self)
 var command_processor := CommandProcessor.new(self)
 var stage_manager := StageManager.new(self)
-var operation_handler := OperationRequestHandler.new()
+var operation_handler := OperationHandler.new()
 var _process_active := false
 signal data_update
 var stage_container: MapContainer  # 用于阶段修饰的单射容器

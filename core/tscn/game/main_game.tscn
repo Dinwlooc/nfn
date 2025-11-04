@@ -61,7 +61,7 @@ offset_bottom = 42.0
 scale = Vector2(4, 4)
 script = ExtResource("8_ppvbj")
 
-[node name="Arrow" type="Control" parent="Control/AreaStage"]
+[node name="Arrow" type="Control" parent="Control/AreaStage" node_paths=PackedStringArray("control")]
 layout_mode = 1
 anchor_left = 1.025
 anchor_top = -2.175
@@ -71,6 +71,7 @@ offset_left = -40.0
 offset_top = 87.9999
 offset_bottom = 128.0
 script = ExtResource("5_4k47o")
+control = NodePath("../..")
 metadata/_edit_use_anchors_ = true
 
 [node name="AreaHand" type="Control" parent="Control"]
@@ -89,12 +90,11 @@ area = NodePath("..")
 anchors_preset = 0
 script = ExtResource("14_a6oxl")
 
-[node name="AreaFaceTargets" parent="Control/AreaPlayers" node_paths=PackedStringArray("area_hand", "area") instance=ExtResource("14_8v20q")]
+[node name="AreaFaceTargets" parent="Control/AreaPlayers" node_paths=PackedStringArray("area") instance=ExtResource("14_8v20q")]
 offset_top = -157.0
 offset_right = 1378.0
 offset_bottom = 165.0
 mouse_filter = 1
-area_hand = NodePath("../../AreaHand")
 area = NodePath("..")
 
 [node name="RenderCard" type="Control" parent="Control/AreaPlayers" node_paths=PackedStringArray("area")]

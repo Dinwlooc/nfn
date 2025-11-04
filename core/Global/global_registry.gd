@@ -6,7 +6,6 @@ signal constant_registered(type: StringName)  # 新增常量注册信号
 
 # 注册表存储
 var _singletons: Dictionary = {}
-var _renderareas: Dictionary = {}
 var _constants: Dictionary = {}  # 新增常量存储 { type: { array: [], dic: {} } }
 
 # 预定义类型常量
@@ -63,11 +62,6 @@ func check_type(type: StringName, instance: Object) -> void:
 		_:
 			push_warning("Registering unknown singleton type: " + type)
 
-func register_renderarea(_name: StringName, area: RenderArea) -> void:
-	assert(area != null, "Cannot register null RenderArea")
-	_renderareas[_name] = area
-	renderarea_registered.emit(_name, area)
-
 func connect_singleton(type: StringName, callback: Callable) -> void:
 	if _singletons.has(type):
 		callback.call(_singletons[type])
@@ -75,17 +69,6 @@ func connect_singleton(type: StringName, callback: Callable) -> void:
 		if t == type:
 			callback.call(instance))
 
-func connect_renderarea(_name: StringName, callback: Callable) -> void:
-	if _renderareas.has(_name):
-		callback.call(_renderareas[_name])
-	renderarea_registered.connect(func(n: StringName, area: RenderArea):
-		if n == _name:
-			callback.call(area))
-
 func get_singleton(type: StringName) -> Node:
 	assert(_singletons.has(type), "Singleton not registered: " + type)
 	return _singletons[type]
-
-func get_renderarea(_name: StringName) -> RenderArea:
-	assert(_renderareas.has(_name), "RenderArea not registered: " + _name)
-	return _renderareas[_name]

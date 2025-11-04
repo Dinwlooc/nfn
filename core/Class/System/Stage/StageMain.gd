@@ -35,5 +35,5 @@ func _verify_attack(cmd: PlayCardsCommand) -> bool:
 	return false
 ## 阶段结束处理
 func end_stage_effect() -> void:
-	for player: Player in system.player_manager.get_all_players():
+	for player: Player in system.player_manager.players:
 		player.area_defensive.reset()

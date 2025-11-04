@@ -25,7 +25,8 @@ const max_rotation = -PI*0.167
 var _sine_table := PackedFloat64Array() # 类型化数组存储采样点
 var _global_phase_index: int = 0
 
-func ready_expand()->void:
+func _ready() -> void:
+	super._ready()
 	original_position = position
 	original_size = size
 	area_target_position = original_position

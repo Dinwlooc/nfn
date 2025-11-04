@@ -6,6 +6,7 @@ var draw_cooldown: float = 0.0
 var pending_draw = false
 var areahand:RenderAreaHand
 var areatargets:RenderAreaTargets
+@export var control:RenderControl
 const DRAW_COOLDOWN_DURATION: float = 0.35
 
 func _ready() -> void:
@@ -13,8 +14,8 @@ func _ready() -> void:
 		var manager = CurveArrowManager.new()
 		add_child(manager)
 		curve_managers.append(manager)
-	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.HAND,connect_to_areahand)
-	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.PLAYERS,connect_to_areatargets)
+	control.render_context.connect_renderarea(RenderArea.DefaultArea.HAND,connect_to_areahand)
+	control.render_context.connect_renderarea(RenderArea.DefaultArea.PLAYERS,connect_to_areatargets)
 	GlobalRegistry.connect_singleton(GlobalRegistry.RENDER_CONTROL_TYPE,connect_to_control)
 
 func _physics_process(delta: float) -> void:

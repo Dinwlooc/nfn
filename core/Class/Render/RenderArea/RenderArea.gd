@@ -15,6 +15,7 @@ signal cards_add_requested(cards:Array[CardPack])
 signal cards_added(cards:Array[RenderCard])
 signal cards_remove_requested(uids:PackedInt32Array)
 signal card_move_requested(card: RenderCard, new_index: int)
+signal context_ready()
 class DefaultArea:
 	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
 	const PLAYERS:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
@@ -28,6 +29,10 @@ func _ready():
 
 func ready_expand()->void:
 	pass
+
+func _exit_tree():
+	if render_context:
+		render_context.unregister_render_area(area_name)
 
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
 	render_requested.emit(render_event)

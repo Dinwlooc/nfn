@@ -4,23 +4,21 @@ var original_position:Vector2
 var original_size:Vector2
 var area_target_position:Vector2
 var area_target_size:Vector2
-@export var area_hand:RenderAreaHand
 const TWEEN_TIME = 0.35
 
-func ready_expand()->void:
+func _ready()->void:
+	super._ready()
 	original_position = position
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size
+	
+func _on_context_ready()->void:
 	render_update()
-	connect_to_areahand()
-	GlobalRegistry.connect_renderarea(RenderArea.DefaultArea.HAND,func(_area):
-		area_hand.selected.disconnect(quickly_select)
-		area_hand = _area
-		connect_to_areahand())
-
-func connect_to_areahand()->void:
-	area_hand.selected.connect(quickly_select)
+	area.render_context.connect_renderarea(RenderArea.DefaultArea.HAND,_on_render_area_registered)
+	
+func _on_render_area_registered(area:RenderArea)->void:
+	area.selected.connect(quickly_select)
 
 func render_update(_render_event:RenderEvent = RenderEvent.new()):
 	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())

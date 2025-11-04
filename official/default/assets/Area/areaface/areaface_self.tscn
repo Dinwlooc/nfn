@@ -19,17 +19,9 @@ offset_right = 202.0
 offset_bottom = 203.0
 color = Color(0.968627, 0.482353, 0.219608, 0.411765)
 
-[node name="BackgoundAbility" type="ColorRect" parent="."]
-texture_filter = 1
-layout_mode = 0
-offset_left = 14.0
-offset_top = 152.0
-offset_right = 194.0
-offset_bottom = 195.0
-color = Color(1, 0.639216, 0.329412, 0.823529)
-
 [node name="BackgoundCharacter" type="ColorRect" parent="."]
 texture_filter = 1
+clip_contents = true
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.023
@@ -40,18 +32,26 @@ offset_right = 193.08
 offset_bottom = 144.0
 color = Color(0.309804, 0.152941, 0.0509804, 0.486275)
 
-[node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]
+[node name="AspectRatioContainer" type="AspectRatioContainer" parent="BackgoundCharacter"]
 texture_filter = 1
 texture_repeat = 1
 clip_contents = true
 layout_mode = 0
-offset_left = -27.0
-offset_top = -128.0
-offset_right = 228.0
-offset_bottom = 147.0
+offset_top = 1.0
+offset_right = 178.0
+offset_bottom = 316.0
 stretch_mode = 0
 
-[node name="Character" type="TextureRect" parent="AspectRatioContainer"]
+[node name="Character" type="TextureRect" parent="BackgoundCharacter/AspectRatioContainer"]
 layout_mode = 2
 texture = ExtResource("1_4bx5y")
-stretch_mode = 5
+stretch_mode = 6
+
+[node name="BackgoundAbility" type="ColorRect" parent="."]
+texture_filter = 1
+layout_mode = 0
+offset_left = 14.0
+offset_top = 152.0
+offset_right = 194.0
+offset_bottom = 195.0
+color = Color(1, 0.639216, 0.329412, 0.823529)
