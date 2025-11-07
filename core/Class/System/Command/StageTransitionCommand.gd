@@ -1,16 +1,11 @@
 extends BehaviorCommand
-class_name StageTransitionCommand
+class_name NewRoundCommand
 
-func _init():
+var _new_round_player_id:int
+
+func _init(player_id:int):
 	super._init(&"stage_transition")
+	_new_round_player_id = player_id
 func execute(system: System) -> void:
-	var runtime_event = RuntimeStageTransitionCommand.new(system.stage_manager)
-	runtime_event.execute()
+	system.stage_manager.call_deferred(&"start_round",_new_round_player_id)
 	complete()
-
-class RuntimeStageTransitionCommand extends AtomicCommand:
-	var _stage_manager: StageManager
-	func _init(p_stage_manager:StageManager):
-		_stage_manager = p_stage_manager
-	func execute() -> void:
-		_stage_manager.call_deferred(&"start_round")

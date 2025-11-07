@@ -18,7 +18,7 @@ func execute(system: System) -> void:
 			current_phase = Phase.START_DRAW
 		Phase.START_DRAW:
 			var processor:CommandProcessor = system.command_processor
-			var stage_event = StageTransitionCommand.new()
+			var stage_event = NewRoundCommand.new(0)
 			processor.queue_behavior(stage_event)
 			for i in range(system.player_manager.players.size()):
 				var draw_event = DrawCardsCommand.new(i, 4)

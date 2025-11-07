@@ -1,20 +1,22 @@
 extends RefCounted
 class_name OperationHandler
 
-var player_permissions: Dictionary[int,Array] = {}  # 更明确的变量名
+var player_permissions: Dictionary[int,Array] = {}
 var responded_players: Dictionary[int,bool] = {}
 var _peer_player_map :Dictionary[int,int] = {}
-signal request_validated(command: BehaviorCommand)
+signal operation_validated(request: OperationRequest)  # 修改信号：发射操作请求而非行为命令
 signal permissions_updated
-# 重置处理器状态
-func reset_state() -> void:
-	player_permissions.clear()
+
+func reset_response_locks() -> void:
 	responded_players.clear()
-# 设置初始权限（白名单注入）
+
+func update_permissions_map(permissions_map:Dictionary[int,Array]) ->void:
+	player_permissions = permissions_map
+
 func set_player_permissions(player_id: int, permissions: Array[StringName]) -> void:
 	player_permissions[player_id] = permissions
 	permissions_updated.emit()
-# 应用玩家黑名单修正
+
 func apply_player_blacklist(player_id: int, blacklist: Array[StringName]) -> void:
 	if not player_permissions.has(player_id):
 		return
@@ -28,11 +30,14 @@ func apply_player_blacklist(player_id: int, blacklist: Array[StringName]) -> voi
 	if ops.is_empty():
 		player_permissions.erase(player_id)
 	permissions_updated.emit()
+	
 func update_verification_mapping(peer_id: int, player_id: int) -> void:
 	_peer_player_map[peer_id] = player_id
+	
 func verify_operation(request: OperationRequest) -> bool:
 	var source_player_id = _peer_player_map.get(request.source_peer_id, -1)
 	return source_player_id == request.source_player_id
+
 func handle_request(request: OperationRequest) -> void:
 	if !verify_operation(request):
 		return
@@ -42,7 +47,5 @@ func handle_request(request: OperationRequest) -> void:
 	var allowed_ops = player_permissions.get(player_id, [])
 	var request_type = request.get_request_type()
 	if allowed_ops.has(request_type):
-		var command = request.create_behavior_command()
-		if command != null:
-			request_validated.emit(command)
-			responded_players[player_id] = true
+		operation_validated.emit(request)  # 发送验证后的操作请求
+		responded_players[player_id] = true

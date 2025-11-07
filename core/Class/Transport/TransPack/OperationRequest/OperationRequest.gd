@@ -25,9 +25,3 @@ class PlayCard extends OperationRequest:
 		instance._card_id = TransPackSerializer.read(buffer, TYPE_INT)
 		instance._target_id = TransPackSerializer.read(buffer, TYPE_INT)
 		return instance
-	func create_behavior_command()->BehaviorCommand:
-		var card:PackedInt32Array = [_card_id]
-		var mode:PlayCardsCommand.TargetAreaType = PlayCardsCommand.TargetAreaType.PLAYER_DEF
-		if _is_to_center:
-			mode = PlayCardsCommand.TargetAreaType.CENTER
-		return PlayCardsCommand.new(source_player_id,card,_target_id,mode)

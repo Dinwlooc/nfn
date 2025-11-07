@@ -1,8 +1,10 @@
 extends RefCounted
 class_name Stage
 
-signal stage_ended
-
+signal stage_ended()
+signal reset_response_locks()
+signal whitelist_updated(permissions_map: Dictionary[int, Array], is_adapt_for_current_player: bool)
+signal behavior_command_issued(command: BehaviorCommand)
 var stage_name: StringName = &"Null"
 var time_limit: float = 0.0  #0表示不需要计时
 var is_temporary: bool = false
@@ -40,7 +42,6 @@ func end_stage() -> void:
 	is_ended = true
 	end_stage_effect()
 	stage_ended.emit()
-func get_permissions_map() -> Dictionary[int,Array]:
-	return {}
-func get_command_modifiers()->Dictionary[StringName,Modifier]:
-	return {}
+	
+func process_operation_request(request: OperationRequest) -> void:
+	pass

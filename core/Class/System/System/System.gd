@@ -15,34 +15,26 @@ var stage_manager := StageManager.new(self)
 var operation_handler := OperationHandler.new()
 var _process_active := false
 signal data_update
-var stage_container: MapContainer  # 用于阶段修饰的单射容器
-var root_container: MultiLayerContainer  # 根容器（多层）
+var root_container: MultiLayerContainer
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
-	player_manager.peer_player_added.connect(
-		operation_handler.update_verification_mapping
-	)
+	player_manager.peer_player_added.connect(operation_handler.update_verification_mapping)
 	command_processor.command_processing.connect(modifier_manager.process_behavior)
 	_create_container_hierarchy()
 
 func _ready() -> void:
 	stage_manager.set_timer(timer)
-	stage_manager.permissions_update_requested.connect(_handle_permissions_update)
-	stage_manager.stage_changed.connect(_on_stage_changed)
-	signal_connect_test()  # 调试模式
+	stage_manager.reset_response_locks_forwarded.connect(operation_handler.reset_response_locks)
+	stage_manager.whitelist_updated_forwarded.connect(operation_handler.update_permissions_map)
+	operation_handler.operation_validated.connect(stage_manager.handle_validated_request)
+	signal_connect_test()
 	load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
 ## 创建容器层次结构
 func _create_container_hierarchy() -> void:
-	# 创建容器实例
-	stage_container = modifier_manager.create_map_container()
 	root_container = modifier_manager.create_multi_layer_container()
-	root_container.add_child_container(stage_container)
 	modifier_manager.set_root_container(root_container)
 ## 处理阶段切换事件
-func _on_stage_changed(_old_stage:Stage, new_stage: Stage) -> void:
-	var stage_modifiers:Dictionary[StringName,Modifier] = new_stage.get_command_modifiers()
-	stage_container.set_mapping(stage_modifiers)
 func _process(_delta: float) -> void:
 	if _process_active:
 		command_processor.process()
@@ -52,11 +44,6 @@ func load_cards() -> void:
 func enable_processing(enable: bool) -> void:
 	_process_active = enable
 	set_process(enable)
-func _handle_permissions_update(player_id: int, permissions: Array[StringName]) -> void:
-	operation_handler.set_player_permissions(player_id, permissions.duplicate())
-	var blacklist: Array[StringName] = player_manager.get_operation_disallowed(player_id)
-	if not blacklist.is_empty():
-		operation_handler.apply_player_blacklist(player_id, blacklist)
 #####信号调用函数#####
 func _start_game()-> void:
 	if stage_manager.get_current_stage_enum() != -1:
