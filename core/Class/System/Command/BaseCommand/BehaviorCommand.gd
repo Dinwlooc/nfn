@@ -10,7 +10,8 @@ var _can_be_cancelled: bool = true
 var is_cancelled: bool = false
 ## 执行命令逻辑（子类必须重写）
 func execute(system: System) -> void:
-	complete()
+	#使用状态机以提供修饰点。
+	complete() #调用之以结束命令，下个阶段（若有）自动不再执行且不受修饰。该方法不应孤立调用。
 ## 追加伴生命令
 func append_companion_command(command: BehaviorCommand) -> void:
 	companion_command_requested.emit(command)

@@ -19,10 +19,10 @@ func execute(system: System) -> void:
 		Phase.START_DRAW:
 			var processor:CommandProcessor = system.command_processor
 			var stage_event = NewRoundCommand.new(0)
-			processor.queue_behavior(stage_event)
+			append_companion_command(stage_event)
 			for i in range(system.player_manager.players.size()):
 				var draw_event = DrawCardsCommand.new(i, 4)
-				processor.queue_behavior(draw_event)
+				append_companion_command(draw_event)
 			complete()
 			GlobalConsole._print("GameStartCommand:游戏初始化完成")
 

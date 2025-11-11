@@ -6,6 +6,8 @@ var player_id: int = 0     # 玩家ID (唯一标识)
 var seat_index: int = -1
 var HP_max: int#玩家生命上限
 var HP: int #玩家当前生命
+var MP_max:int #玩家精神值上限
+var MP:int #玩家当前精神值
 var AP: int #玩家当前的行动点
 var init_AP:int = 3
 var draw_cards_count = 2
@@ -14,3 +16,19 @@ var area_ability:AreaAbility = AreaAbility.new(self)
 var area_defensive:AreaDefensive = AreaDefensive.new(self)
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 var disallowed_operations: Array[StringName] = []
+
+func apply_health_damage(
+	amount: int, 
+	mechanism: int, 
+	source_id: int, 
+	modifiers: PackedInt32Array
+) -> void:
+	HP = HP - amount
+
+func apply_mental_damage(
+	amount: int, 
+	mechanism: int, 
+	source_id: int, 
+	modifiers: PackedInt32Array
+) -> void:
+	MP = max(0, MP - amount)

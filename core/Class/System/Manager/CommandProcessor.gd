@@ -28,10 +28,8 @@ func process() -> void:
 
 ## 添加新命令到堆栈
 func queue_behavior(event: BehaviorCommand) -> void:
-	# 连接伴生命令信号（一次性连接）
 	var connection = event.companion_command_requested.connect(
-		_on_companion_command_requested, 
-		CONNECT_ONE_SHOT
+		_on_companion_command_requested
 	)
 	behavior_stack.push_back(event)
 	if is_empty:
