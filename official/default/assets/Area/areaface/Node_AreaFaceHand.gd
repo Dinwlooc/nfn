@@ -1,4 +1,4 @@
-extends RenderAreaFace
+extends AreaFace
 
 var original_position:Vector2
 var original_size:Vector2
@@ -48,7 +48,7 @@ func _physics_process(delta: float) -> void:
 			pending_swap = false
 
 func render_update(render_event:RenderEvent = RenderEvent.new())->void:
-	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
+	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.items_pool.size())
 	tween_update(render_event)
 
 func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
@@ -78,13 +78,13 @@ func _outto_area()->void:
 
 func card_move_expand() -> void:
 	_global_phase_index = (_global_phase_index + PHASE_INCREMENT) % TABLE_SIZE
-	var cards = area.card_pool
+	var cards = area.items_pool
 	var card_count = cards.size()
 	for i in card_count:
 		var phase_index = (_global_phase_index + i * CARD_PHASE_OFFSET) & MASK
 		cards[i].position.y += AMPLITUDE * _sine_table[phase_index]
 
-func dragging_move(card:RenderCard)->void:
+func dragging_move(card:RenderItem)->void:
 	var _target_position = get_global_mouse_position()
 	if current_drag_tween:
 		current_drag_tween.kill()
@@ -100,7 +100,7 @@ func dragging_move(card:RenderCard)->void:
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	swap_cards(card)
 
-func swap_cards(drag_card:RenderCard)->void:
+func swap_cards(drag_card:RenderItem)->void:
 	if swap_cooldown > 0:
 		if swap_cooldown < SWAP_COOLDOWN_DURATION - SWAP_DELTA:
 			pending_swap = true
@@ -112,12 +112,12 @@ func swap_cards(drag_card:RenderCard)->void:
 		swap_cooldown = SWAP_COOLDOWN_DURATION
 
 func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
-	if area.card_pool.size() == 0 || target_position.size() == 0:
+	if area.items_pool.size() == 0 || target_position.size() == 0:
 		return
 	var master_tween:Tween = create_tween()
 	master_tween.set_parallel(true)
-	for i in range(area.card_pool.size()):
-		var card:RenderCard = area.card_pool[i]
+	for i in range(area.items_pool.size()):
+		var card:RenderItem = area.items_pool[i]
 		var card_target_pos:Vector2 = target_position[i]
 		if card.selected:
 			card_target_pos.y += -40.0
@@ -130,7 +130,7 @@ func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
 					.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	# === 阶段2: 并行执行所有卡牌的旋转复位 ===
 	master_tween.chain()
-	for card in area.card_pool:
+	for card in area.items_pool:
 		if !card.dragged:
 			master_tween.tween_property(card, ^"rotation", 0.0, RESET_TIME) \
 				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -138,7 +138,7 @@ func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
 		current_card_tween.kill()
 	current_card_tween = master_tween
 # 新增辅助函数：仅计算旋转值不执行动画
-func _compute_rotation(card:RenderCard, _target_position:Vector2) -> float:
+func _compute_rotation(card:RenderItem, _target_position:Vector2) -> float:
 	var dx = card.position.x - _target_position.x
 	var abs_dx = abs(dx)
 	var rotation_ratio = min(abs_dx / max_distance, 1.0)

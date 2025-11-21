@@ -1,6 +1,7 @@
+##传输层节点类
 extends Node
 class_name Transport
-#GlobalTransport.gd。管理全部rpc和数据转发。
+
 signal render_request_received(request: RenderRequest)
 signal operation_request_received(op: OperationRequest)
 
@@ -23,6 +24,7 @@ func upload_operation_request(op: OperationRequest) -> void:
 func receive_operation_request(data: PackedByteArray) -> void:
 	var op:OperationRequest = OperationRequestSerializer.deserialize(data)
 	if op:
+		op.source_peer_id = multiplayer.get_remote_sender_id()
 		operation_request_received.emit(op)
 	else:
 		push_error("Failed to deserialize operation request")

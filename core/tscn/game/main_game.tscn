@@ -12,7 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://official/default/assets/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
 [ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://official/default/assets/Area/areaface/areaface_self.tscn" id="11_4k47o"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://official/default/assets/Area/areaface/areaface_self_properties.tscn" id="12_f8lnr"]
-[ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://core/Class/Render/RenderCard/RenderCard.gd" id="13_4k47o"]
+[ext_resource type="Script" uid="uid://b6ve8dbrxagfl" path="res://core/Class/Render/RenderItem/RenderItem.gd" id="13_4k47o"]
 [ext_resource type="PackedScene" uid="uid://s0d734yjh7uc" path="res://official/default/assets/Character/charactercard/charactertargetcard.tscn" id="14_2w2we"]
 [ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://official/default/assets/Area/areaface/areaface_targets.tscn" id="14_8v20q"]
 [ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://core/Class/Render/RenderArea/RenderAreaPlayers.gd" id="14_a6oxl"]
@@ -107,8 +107,8 @@ script = ExtResource("13_4k47o")
 area = NodePath("..")
 metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
 
-[node name="CharacterTargetCard" parent="Control/AreaPlayers/RenderCard" node_paths=PackedStringArray("card") instance=ExtResource("14_2w2we")]
-card = NodePath("..")
+[node name="CharacterTargetCard" parent="Control/AreaPlayers/RenderCard" node_paths=PackedStringArray("item") instance=ExtResource("14_2w2we")]
+item = NodePath("..")
 
 [node name="AreaFaceSelf" parent="Control/AreaPlayers" instance=ExtResource("11_4k47o")]
 

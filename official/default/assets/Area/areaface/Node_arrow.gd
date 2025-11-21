@@ -6,6 +6,7 @@ var draw_cooldown: float = 0.0
 var pending_draw = false
 var areahand:RenderAreaHand
 var areatargets:RenderAreaTargets
+var is_can_drag:bool = true
 @export var control:RenderControl
 const DRAW_COOLDOWN_DURATION: float = 0.35
 
@@ -16,6 +17,7 @@ func _ready() -> void:
 		curve_managers.append(manager)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.HAND,connect_to_areahand)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.PLAYERS,connect_to_areatargets)
+	control.render_context.dragged_update.connect(_on_dragged_update)
 	GlobalRegistry.connect_singleton(GlobalRegistry.RENDER_CONTROL_TYPE,connect_to_control)
 
 func _physics_process(delta: float) -> void:
@@ -40,6 +42,8 @@ func connect_to_control(control:RenderControl)->void:
 func draw_arrow() -> void:
 	pending_draw = false
 	clear_arrow()
+	if !is_can_drag:
+		return
 	var start_points = get_start_point_array()
 	if start_points.is_empty():
 		return
@@ -59,6 +63,13 @@ func clear_arrow()->void:
 	for manager in curve_managers:
 		manager.clear_arrow()
 
+func _on_dragged_update(is_card:bool):
+	if is_card:
+		is_can_drag = false
+		clear_arrow()
+	else:
+		is_can_drag = true
+
 func render_event_handler(render_event:RenderEvent):
 	if render_event.type == RenderEvent.DefaultType.OUTTO_AREA:
 		clear_arrow()
@@ -73,22 +84,22 @@ func delay_draw_arrow()->void:
 
 func get_start_point_array() -> Array[Vector2]:
 	var array:Array[Vector2] = []
-	var cards:Array[RenderCard] = areahand.get_selected_cards()
+	var cards:Array[RenderItem] = areahand.get_selected_cards()
 	if cards:
-		var card_size = cards[0].get_card_size() #规范条件，同一区域的卡牌大小一致
+		var item_size = cards[0].get_item_size() #规范条件，同一区域的卡牌大小一致
 		array.append_array(cards.map(
-		func(card:RenderCard) -> Vector2:
-			return card.position + Vector2(0, - card_size.y)
+		func(card:RenderItem) -> Vector2:
+			return card.position + Vector2(0, - item_size.y)
 			))
 	return array
 
 func get_end_point_array() -> Array[Vector2]:
 	var array:Array[Vector2] = []
-	var cards:Array[RenderCard] = areatargets.get_selected_cards()
+	var cards:Array[RenderItem] = areatargets.get_selected_cards()
 	if cards:
-		var card_size = cards[0].get_card_size() #规范条件，同一区域的卡牌大小一致
+		var item_size = cards[0].get_item_size() #规范条件，同一区域的卡牌大小一致
 		array.append_array(cards.map(
-			func(card:RenderCard) -> Vector2:
-				return card.position + Vector2(card_size.x / 2.0, card_size.y)
+			func(card:RenderItem) -> Vector2:
+				return card.position + Vector2(item_size.x / 2.0, item_size.y)
 				))
 	return array

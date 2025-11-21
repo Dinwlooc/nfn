@@ -50,6 +50,9 @@ func _generate_damage_phase() -> void:
 			match duel_result:
 				DuelCommand.Result.A_WIN:  # 攻击牌胜
 					mental_dmg = max(0, mental_dmg - duel_diff)
+				DuelCommand.Result.TIE:
+					var defense_power = second_card.get_attribute(&"power")
+					mental_dmg = max(0, mental_dmg - defense_power)
 				DuelCommand.Result.B_WIN:  # 防御牌胜
 					var defense_power = second_card.get_attribute(&"power")
 					mental_dmg = max(0, mental_dmg - (duel_diff + defense_power))
@@ -64,7 +67,7 @@ func _generate_damage_phase() -> void:
 		append_companion_command(damage_cmd)
 	elif top_card.is_defense_card():  # 防御牌结算
 		var mental_dmg = top_card.get_mental_damage()
-		if !is_unilateral && duel_result == DuelCommand.Result.B_WIN:
+		if !is_unilateral && duel_result == DuelCommand.Result.A_WIN:
 			mental_dmg = max(0, mental_dmg - duel_diff)
 		var damage_cmd = DamageCommand.new(
 			_attacker,

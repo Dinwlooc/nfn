@@ -3,12 +3,12 @@ class_name RenderContext
 
 class DragState:
 	var area:RenderArea
-	var card:RenderCard
+	var card:RenderItem
 var _render_areas :Dictionary[StringName, RenderArea]= {}
 signal render_area_registered(area_name: StringName, area: RenderArea)
 signal render_area_unregistered(area_name: StringName)
 var card_on_drag: DragState
-signal dragged_update
+signal dragged_update(is_card:bool)
 var _callback_map: Dictionary[StringName, Array] = {}
 
 func _init() -> void:
@@ -36,25 +36,26 @@ func disconnect_renderarea(area_name: StringName, callback: Callable) -> void:
 		if _callback_map[area_name].is_empty():
 			_callback_map.erase(area_name)
 
-func set_card_on_drag(area: RenderArea, realcard: RenderCard) -> void:
+func set_card_on_drag(area: RenderArea, realcard: RenderItem) -> void:
 	remove_card_on_drag()
 	card_on_drag = DragState.new()
 	card_on_drag.area = area
 	card_on_drag.card = realcard
 	card_on_drag.card.dragged = true
 	card_on_drag.area.tween_update()
-	dragged_update.emit()
+	dragged_update.emit(true)
 	
 func remove_card_on_drag() -> void:
 	if card_on_drag:
 		card_on_drag.card.dragged = false
 		card_on_drag.area.tween_update()
 	card_on_drag = null
+	dragged_update.emit(false)
 
 func get_dragged_area() -> RenderArea:
 	return card_on_drag.area if card_on_drag else null
 
-func get_dragged_card() -> RenderCard:
+func get_dragged_card() -> RenderItem:
 	return card_on_drag.card if card_on_drag else null
 
 func register_render_area(area: RenderArea) -> void:

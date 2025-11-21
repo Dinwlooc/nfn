@@ -22,6 +22,7 @@ var timer: GameTimer
 var system: System
 var current_main_stage_index: int = -1  # 当前主阶段在顺序数组中的索引
 var current_player_id:int = 0
+var modifier_container:ModifierContainer
 
 func _init(p_system:System) -> void:
 	system = p_system
@@ -32,7 +33,8 @@ func _init(p_system:System) -> void:
 		GlobalConstants.GameStage.DISCARD: StageDiscard.new(system),
 		GlobalConstants.GameStage.END: StageEnd.new(system)
 	}
-
+func set_modifier_container(container: ModifierContainer) -> void:
+	modifier_container = container
 ##处理已验证的操作请求
 func handle_validated_request(request: OperationRequest) -> void:
 	current_stage.process_operation_request(request)

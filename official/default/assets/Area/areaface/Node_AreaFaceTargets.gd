@@ -1,4 +1,4 @@
-extends RenderAreaFace
+extends AreaFace
 
 var original_position:Vector2
 var original_size:Vector2
@@ -21,7 +21,7 @@ func _on_render_area_registered(area:RenderArea)->void:
 	area.selected.connect(quickly_select)
 
 func render_update(_render_event:RenderEvent = RenderEvent.new()):
-	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.card_pool.size())
+	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.items_pool.size())
 	tween_update()
 
 func tween_update(_render_event:RenderEvent = RenderEvent.new()):
@@ -35,15 +35,15 @@ func _outto_area()->void:
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
 func card_move()-> void:
-	if area.card_pool.size() == 0||target_position.size()==0:
+	if area.items_pool.size() == 0||target_position.size()==0:
 		return
-	for i in range(0,area.card_pool.size()):
-		var card:RenderCard = area.card_pool[i]
+	for i in range(0,area.items_pool.size()):
+		var card:RenderItem = area.items_pool[i]
 		var _target_position = target_position[i]
 		UIAnimationUtils.tween_animations(card,{^"position":_target_position},TWEEN_TIME)
 	pass
 
 func quickly_select():
-	if area.card_pool.size() > 0 && area.get_selected_cards().size() == 0:
-		area.on_select(area.card_pool[0])
+	if area.items_pool.size() > 0 && area.get_selected_cards().size() == 0:
+		area.on_select(area.items_pool[0])
 	pass

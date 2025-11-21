@@ -1,7 +1,7 @@
 extends Control
-class_name RenderAreaFace
+class_name AreaFace
 
-var hovering_card:RenderCard = null
+var hovering_card:RenderItem = null
 var target_position:PackedVector2Array
 @export var area:RenderArea
 @export var area_name:StringName = &""
@@ -18,7 +18,7 @@ func _ready()->void:
 func connect_to_area(_area:RenderArea):
 	_area.render_requested.connect(render_update)
 	_area.tween_requested.connect(tween_update)
-	_area.cards_added.connect(connect_cards_signals)
+	_area.items_added.connect(connect_cards_signals)
 	_area.context_ready.connect(_on_context_ready)
 
 func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
@@ -44,18 +44,18 @@ func _input(event)->void:
 
 func try_dragging_move()->bool:
 	var context:RenderContext = area.render_context
-	var card:RenderCard = context.get_dragged_card()
+	var card:RenderItem = context.get_dragged_card()
 	if context && card && card.area == area:
 		dragging_move(card)
 		return true
 	return false
 
-func connect_cards_signals(cards:Array[RenderCard]):
+func connect_cards_signals(cards:Array[RenderItem]):
 	for card in cards:
 		card.mouse_entered.connect(_on_card_mouse_entered.bind(card))
 		card.mouse_exited.connect(_on_card_mouse_exited.bind(card))
 
-func disconnect_card_signals(card: RenderCard):
+func disconnect_card_signals(card: RenderItem):
 	if hovering_card == card:
 		card.hovering = false
 		hovering_card = null
@@ -64,7 +64,7 @@ func disconnect_card_signals(card: RenderCard):
 	if card.is_connected(&"mouse_exited", _on_card_mouse_exited):
 		card.mouse_exited.disconnect(_on_card_mouse_exited)
 
-func _on_card_mouse_entered(card: RenderCard):
+func _on_card_mouse_entered(card: RenderItem):
 	if card.dragged:
 		return
 	if hovering_card and hovering_card != card:
@@ -72,7 +72,7 @@ func _on_card_mouse_entered(card: RenderCard):
 	hovering_card = card
 	card.hovering = true
 
-func _on_card_mouse_exited(card: RenderCard):
+func _on_card_mouse_exited(card: RenderItem):
 	if hovering_card == card:
 		card.hovering = false
 		hovering_card = null
@@ -80,7 +80,7 @@ func _on_card_mouse_exited(card: RenderCard):
 func card_move()-> void:
 	pass
 
-func dragging_move(card:RenderCard)->void:
+func dragging_move(card:RenderItem)->void:
 	pass
 
 func _into_area()->void:

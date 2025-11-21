@@ -33,7 +33,10 @@ func _ready() -> void:
 ## 创建容器层次结构
 func _create_container_hierarchy() -> void:
 	root_container = modifier_manager.create_multi_layer_container()
+	var map_container = modifier_manager.create_map_container()
+	root_container.add_child_container(map_container)
 	modifier_manager.set_root_container(root_container)
+	stage_manager.set_modifier_container(map_container)
 ## 处理阶段切换事件
 func _process(_delta: float) -> void:
 	if _process_active:

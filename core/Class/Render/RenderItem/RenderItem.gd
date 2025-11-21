@@ -1,6 +1,6 @@
 ##卡牌
 extends Control
-class_name RenderCard
+class_name RenderItem
 
 @export var area:RenderArea
 enum DraggingState {
@@ -15,33 +15,33 @@ var selected:bool = false
 var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
-var data:CardPack
-var card_size = Vector2(58,88)
+var data:TransPack
+var item_size = Vector2(58,88)
 signal select
 signal drag
 signal face_update()
 signal render_requested(render_event:RenderEvent)
 signal data_requested
 
-func _init(card_data:CardPack = CardPack.new()) -> void:
-	data = card_data
+func _init(new_data:TransPack = TransPack.new()) -> void:
+	data = new_data
 
 func _ready()-> void:
-	name = &"RenderCard"
+	name = &"RenderItem"
 	data_requested.emit()
 
-func data_update(new_card_data:CardPack)-> void:
+func data_update(new_card_data:TransPack)-> void:
 	data = new_card_data
 	data_requested.emit()
 
 func render_update(render_event:RenderEvent)->void:
 	render_requested.emit(render_event)
 
-func get_card_size()->Vector2:
-	return card_size
+func get_item_size()->Vector2:
+	return item_size
 
-func set_card_size(new_size:Vector2):
-	card_size = new_size
+func set_item_size(new_size:Vector2):
+	item_size = new_size
 
 func request_select():
 	area.on_select(self)
@@ -66,7 +66,7 @@ func request_dragging():
 			dragging = DraggingState.READY
 
 func is_hovering(mouse_pos):
-	return Rect2(position,position+card_size).has_point(mouse_pos)
+	return Rect2(position,position+item_size).has_point(mouse_pos)
 
 func get_id()->int:
 	return data.id

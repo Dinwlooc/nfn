@@ -1,4 +1,4 @@
-extends RenderCardFace
+extends ItemFace
 
 @onready var Nicon:Panel = $Backgound
 @onready var NverticalName = $VerticalName
@@ -20,24 +20,24 @@ var _stylebox: StyleBoxFlat
 
 func _ready() -> void:
 	var button = get_node(^"Button")
-	button.button_down.connect(card.request_select)
-	button.button_down.connect(card.request_dragging)
-	button.button_up.connect(card.request_dragging)
+	button.button_down.connect(item.request_select)
+	button.button_down.connect(item.request_dragging)
+	button.button_up.connect(item.request_dragging)
 	_stylebox = Nicon.get_theme_stylebox(&"panel") as StyleBoxFlat
 	_current_color = NORMAL_COLOR
 	_stylebox.bg_color = _current_color
 
 func _input(_event: InputEvent) -> void:
-	if card.selected:
+	if item.selected:
 		_stylebox.bg_color = SELECT_COLOR
-	elif card.hovering:
+	elif item.hovering:
 		_stylebox.bg_color = HOVERING_COLOR
 	else:
 		_stylebox.bg_color = NORMAL_COLOR
 		
 func data_update()-> void:
-	var data:HandCardPack = card.data
-	var texture = get_card_main_icon(data.name)
+	var data:HandCardPack = item.data
+	var texture = get_item_main_icon(data.name)
 	Ntexture.texture = texture
 	Ncost.text = "消耗"+str(data.modified_cost)
 	Ndamage.text = "威力"+str(data.modified_power)
@@ -48,7 +48,7 @@ func data_update()-> void:
 	pass
 
 func render_update(_render_event:RenderEvent = RenderEvent.new())->void:
-	if card.area.card_pool.size()>12 && NverticalName.text.length() <= 4 :
+	if item.area.items_pool.size()>12 && NverticalName.text.length() <= 4 :
 		NverticalName.visible = true
 	else:
 		NverticalName.visible = false

@@ -1,4 +1,4 @@
-extends RenderCardFace
+extends ItemFace
 
 @onready var Nicon = $ColorRect
 var Nicon_init_position:Vector2
@@ -10,15 +10,10 @@ const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
 func _ready() -> void:
 	Nicon_init_position = Nicon.position
 	var button = get_node(^"Button")
-	button.button_down.connect(card.request_select)
-	button.button_down.connect(card.request_dragging)
-	button.button_up.connect(card.request_dragging)
-	call_deferred(&"test_init")
-	card.set_card_size(size)
-
-func test_init() -> void:
-	card.data = CardPack.new()
-	card.data.id = 0
+	button.button_down.connect(item.request_select)
+	button.button_down.connect(item.request_dragging)
+	button.button_up.connect(item.request_dragging)
+	item.set_item_size(size)
 
 func _physics_process(_delta: float) -> void:
 	card_move_expand()
@@ -28,7 +23,7 @@ func card_move_expand()->void:
 		Nicon.position.y += 0.3*sin((Time.get_ticks_msec())*0.004)
 
 func _input(_event: InputEvent) -> void:
-	if card.selected:
+	if item.selected:
 		Nicon.visible = true
 	else:
 		Nicon.visible = false
