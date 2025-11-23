@@ -10,16 +10,16 @@ var init_child_count:int
 signal render_requested(render_event:RenderEvent)
 signal tween_requested(render_event:RenderEvent)
 signal selected()
-signal items_add_requested(cards:Array[TransPack])
-signal items_added(cards:Array[RenderItem])
+signal items_add_requested(items:Array[TransPack])
+signal items_added(items:Array[RenderItem])
 signal items_remove_requested(uids:PackedInt32Array)
-signal item_move_requested(card: RenderItem, new_index: int)
+signal item_move_requested(item: RenderItem, new_index: int)
 signal context_ready()
 class DefaultArea:
 	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
 	const PLAYERS:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
+	const STAGE:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.STAGE]
 var render_context: RenderContext
-
 
 func _ready():
 	init_child_count = get_child_count()
@@ -41,26 +41,22 @@ func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
 	tween_requested.emit(render_event)
 	pass
 
-func process_request(request)->void:
-	if request is RenderRequest.CardAdd:
-		items_add_requested.emit(request.card_data)
-	elif request is RenderRequest.CardRemove:
-		items_remove_requested.emit(request.uids_data)
+func process_request(request:RenderRequest)->void:
+	pass
 
 func set_render_context(context: RenderContext) -> void:
 	render_context = context
-	# 连接信号示例
-	if render_context.dragged_update.is_connected(tween_update):
+	if render_context.dragged_update.is_connected(tween_update.unbind(1)):
 		render_context.dragged_update.disconnect(tween_update)
-	render_context.dragged_update.connect(tween_update)
+	render_context.dragged_update.connect(tween_update.unbind(1))
 
-func add_card_to_pool(card: RenderItem, index: int) -> void:
-	card.pool_id = index
+func add_item_to_pool(item: RenderItem, index: int) -> void:
+	item.pool_id = index
 	if index >= items_pool.size():
-		items_pool.append(card)
+		items_pool.append(item)
 	else:
-		items_pool[index] = card
-func remove_cards_by_uids(uids: PackedInt32Array) -> Array[RenderItem]:
+		items_pool[index] = item
+func remove_items_by_uids(uids: PackedInt32Array) -> Array[RenderItem]:
 	var removed_items: Array[RenderItem] = []
 	var min_index := -1
 	for uid in uids:

@@ -12,7 +12,7 @@ const MASK_INIT_AP: int = 1 << 6
 const MASK_DRAW_CARDS_COUNT: int = 1 << 7
 const MASK_DISALLOWED_OPERATIONS: int = 1 << 8
 var player_id: int = 0  # 总是传输
-var mask: int = 0       # 位掩码标识哪些字段被传输
+var merge_mask: int = 0       # 位掩码标识哪些字段被传输
 ## 以下字段仅在掩码对应位被设置时才传输
 var seat_index: int = -1
 var HP_max: int = 0
@@ -27,71 +27,70 @@ var disallowed_operations: Array[StringName] = []
 ## 序列化实现
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, player_id)
-	SerializationUtil.write(buffer, mask)
-	if mask & MASK_SEAT_INDEX:
+	SerializationUtil.write(buffer, merge_mask)
+	if merge_mask & MASK_SEAT_INDEX:
 		SerializationUtil.write(buffer, seat_index)
-	if mask & MASK_HP_MAX:
+	if merge_mask & MASK_HP_MAX:
 		SerializationUtil.write(buffer, HP_max)
-	if mask & MASK_HP:
+	if merge_mask & MASK_HP:
 		SerializationUtil.write(buffer, HP)
-	if mask & MASK_MP_MAX:
+	if merge_mask & MASK_MP_MAX:
 		SerializationUtil.write(buffer, MP_max)
-	if mask & MASK_MP:
+	if merge_mask & MASK_MP:
 		SerializationUtil.write(buffer, MP)
-	if mask & MASK_AP:
+	if merge_mask & MASK_AP:
 		SerializationUtil.write(buffer, AP)
-	if mask & MASK_INIT_AP:
+	if merge_mask & MASK_INIT_AP:
 		SerializationUtil.write(buffer, init_AP)
-	if mask & MASK_DRAW_CARDS_COUNT:
+	if merge_mask & MASK_DRAW_CARDS_COUNT:
 		SerializationUtil.write(buffer, draw_cards_count)
-	if mask & MASK_DISALLOWED_OPERATIONS:
+	if merge_mask & MASK_DISALLOWED_OPERATIONS:
 		SerializationUtil.write(buffer, disallowed_operations)
 ## 反序列化实现
 static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> PlayerPack:
 	var pack = PlayerPack.new()
 	pack.player_id = SerializationUtil.read(buffer, TYPE_INT)
-	pack.mask = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_SEAT_INDEX:
+	pack.merge_mask = SerializationUtil.read(buffer, TYPE_INT)
+	if pack.merge_mask & MASK_SEAT_INDEX:
 		pack.seat_index = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_HP_MAX:
+	if pack.merge_mask & MASK_HP_MAX:
 		pack.HP_max = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_HP:
+	if pack.merge_mask & MASK_HP:
 		pack.HP = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_MP_MAX:
+	if pack.merge_mask & MASK_MP_MAX:
 		pack.MP_max = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_MP:
+	if pack.merge_mask & MASK_MP:
 		pack.MP = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_AP:
+	if pack.merge_mask & MASK_AP:
 		pack.AP = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_INIT_AP:
+	if pack.merge_mask & MASK_INIT_AP:
 		pack.init_AP = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_DRAW_CARDS_COUNT:
+	if pack.merge_mask & MASK_DRAW_CARDS_COUNT:
 		pack.draw_cards_count = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.mask & MASK_DISALLOWED_OPERATIONS:
+	if pack.merge_mask & MASK_DISALLOWED_OPERATIONS:
 		pack.disallowed_operations = SerializationUtil.read(buffer, TYPE_ARRAY)
 	return pack
 
-## 实用方法：从Player对象创建增量更新包
-static func create_from_player(player: Player, changed_mask: int) -> PlayerPack:
-	var pack = PlayerPack.new()
-	pack.player_id = player.player_id
-	pack.mask = changed_mask
-	if changed_mask & MASK_SEAT_INDEX:
-		pack.seat_index = player.seat_index
-	if changed_mask & MASK_HP_MAX:
-		pack.HP_max = player.HP_max
-	if changed_mask & MASK_HP:
-		pack.HP = player.HP
-	if changed_mask & MASK_MP_MAX:
-		pack.MP_max = player.MP_max
-	if changed_mask & MASK_MP:
-		pack.MP = player.MP
-	if changed_mask & MASK_AP:
-		pack.AP = player.AP
-	if changed_mask & MASK_INIT_AP:
-		pack.init_AP = player.init_AP
-	if changed_mask & MASK_DRAW_CARDS_COUNT:
-		pack.draw_cards_count = player.draw_cards_count
-	if changed_mask & MASK_DISALLOWED_OPERATIONS:
-		pack.disallowed_operations = player.disallowed_operations.duplicate()
-	return pack
+## 合并增量更新的PlayerPack数据
+func merge(update_pack: PlayerPack) -> void:
+	assert(update_pack.player_id == self.player_id, 
+		"Player ID mismatch during merge: %d vs %d" % [self.player_id, update_pack.player_id])
+	if update_pack.merge_mask & MASK_SEAT_INDEX:
+		self.seat_index = update_pack.seat_index
+	if update_pack.merge_mask & MASK_HP_MAX:
+		self.HP_max = update_pack.HP_max
+	if update_pack.merge_mask & MASK_HP:
+		self.HP = update_pack.HP
+	if update_pack.merge_mask & MASK_MP_MAX:
+		self.MP_max = update_pack.MP_max
+	if update_pack.merge_mask & MASK_MP:
+		self.MP = update_pack.MP
+	if update_pack.merge_mask & MASK_AP:
+		self.AP = update_pack.AP
+	if update_pack.merge_mask & MASK_INIT_AP:
+		self.init_AP = update_pack.init_AP
+	if update_pack.merge_mask & MASK_DRAW_CARDS_COUNT:
+		self.draw_cards_count = update_pack.draw_cards_count
+	if update_pack.merge_mask & MASK_DISALLOWED_OPERATIONS:
+		# 数组类型直接替换
+		self.disallowed_operations = update_pack.disallowed_operations.duplicate()

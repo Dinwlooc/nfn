@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://ct8jneqmxsdoa"]
+[gd_scene load_steps=3 format=3 uid="uid://ct8jneqmxsdoa"]
 
 [ext_resource type="Texture2D" uid="uid://c0adcrehmovsy" path="res://official/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami _3.png" id="1_4bx5y"]
+[ext_resource type="Script" uid="uid://6ohup1dhlali" path="res://official/default/assets/Area/areaface/areaface_self.gd" id="1_fqk35"]
 
 [node name="AreaFaceSelf" type="Control"]
 layout_mode = 3
@@ -9,6 +10,8 @@ offset_left = 1396.0
 offset_top = 691.0
 offset_right = 1436.0
 offset_bottom = 731.0
+script = ExtResource("1_fqk35")
+metadata/_custom_type_script = "uid://btwt7f8flx66t"
 
 [node name="Backgound" type="ColorRect" parent="."]
 texture_filter = 1

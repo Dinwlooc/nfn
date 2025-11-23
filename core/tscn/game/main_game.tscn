@@ -80,6 +80,7 @@ offset_right = 1613.0
 offset_bottom = 907.0
 mouse_filter = 2
 script = ExtResource("7_jjejj")
+metadata/_custom_type_script = "uid://b5f71t7ikic0w"
 
 [node name="AreaFaceHand" parent="Control/AreaHand" node_paths=PackedStringArray("area") instance=ExtResource("9_2w2we")]
 layout_mode = 1
@@ -110,7 +111,8 @@ metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
 [node name="CharacterTargetCard" parent="Control/AreaPlayers/RenderCard" node_paths=PackedStringArray("item") instance=ExtResource("14_2w2we")]
 item = NodePath("..")
 
-[node name="AreaFaceSelf" parent="Control/AreaPlayers" instance=ExtResource("11_4k47o")]
+[node name="AreaFaceSelf" parent="Control/AreaPlayers" node_paths=PackedStringArray("area") instance=ExtResource("11_4k47o")]
+area = NodePath("..")
 
 [node name="AreaFaceSelf_Properties" parent="Control/AreaPlayers" instance=ExtResource("12_f8lnr")]
 layout_mode = 1

@@ -18,7 +18,6 @@ func _ready() -> void:
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.HAND,connect_to_areahand)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.PLAYERS,connect_to_areatargets)
 	control.render_context.dragged_update.connect(_on_dragged_update)
-	GlobalRegistry.connect_singleton(GlobalRegistry.RENDER_CONTROL_TYPE,connect_to_control)
 
 func _physics_process(delta: float) -> void:
 	if draw_cooldown > 0:
@@ -36,8 +35,6 @@ func connect_to_areatargets(_areatargets:RenderAreaTargets)->void:
 	areatargets.selected.connect(draw_arrow)
 	areatargets.render_requested.connect(render_event_handler)
 	areatargets.tween_requested.connect(render_event_handler)
-func connect_to_control(control:RenderControl)->void:
-	control.render_context.dragged_update.connect(clear_arrow)
 
 func draw_arrow() -> void:
 	pending_draw = false

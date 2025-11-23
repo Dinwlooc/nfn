@@ -8,6 +8,12 @@ func send_to_player(peer_id: int) -> void:
 	else:
 		return
 
+class ItemAdd extends  RenderRequest:
+	var item_data: Array[TransPack]
+	func _init(area: StringName, data: Array[TransPack]):
+		target_area = area
+		item_data = data
+
 class CardAdd extends RenderRequest:
 	var card_data: Array[CardPack]
 	func _init(area: StringName, data: Array[CardPack]):
@@ -18,9 +24,8 @@ class CardAdd extends RenderRequest:
 		CardPackSerializer.serialize_array(card_data,buffer)
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> RenderRequest:
 		var area:StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-		var cards:Array[CardPack] = CardPackSerializer.deserialize_array(buffer) as Array[CardPack]
-		return CardAdd.new(area, cards)
-
+		var cards:Array[TransPack] = CardPackSerializer.deserialize_array(buffer)
+		return ItemAdd.new(area, cards)
 # 移除卡牌请求
 class CardRemove extends RenderRequest:
 	var uids_data: PackedInt32Array
@@ -34,3 +39,16 @@ class CardRemove extends RenderRequest:
 		var area:StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME) as StringName
 		var uids:PackedInt32Array = SerializationUtil.read(buffer, TYPE_PACKED_INT32_ARRAY)
 		return CardRemove.new(area, uids)
+		
+class PlayerUpdate extends RenderRequest:
+	var player_pack: PlayerPack
+	func _init(area: StringName, pack: PlayerPack):
+		target_area = area
+		player_pack = pack
+	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
+		SerializationUtil.write(buffer, target_area)
+		player_pack.serialize_to_buffer(buffer)
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> RenderRequest:
+		var area: StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME) as StringName
+		var pack: PlayerPack = PlayerPack.deserialize_from_buffer(buffer)
+		return PlayerUpdate.new(area, pack)

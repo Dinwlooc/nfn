@@ -1,26 +1,49 @@
 extends TransPack
 class_name CardPack
+
+enum MainProperty {
+	ID,
+	NAME,
+	TYPE,
+	END  # 关键：子类从此处开始扩展
+}
 # 卡牌基础属性
 var id: int
 var name: StringName
 var type: int
-
+var merge_mask: int = 0
 const CardType = GlobalConstants.KEY_CARD_TYPE
 const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
 
-func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL ):
+func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL):
 	id = init_id
 	name = init_name
-	type = GlobalRegistry.get_constant_index(CardType,init_type_name)
-## 序列化实现
+	type = GlobalRegistry.get_constant_index(CardType, init_type_name)
+	if id != 0: merge_mask |= 1 << MainProperty.ID
+	if name != &"": merge_mask |= 1 << MainProperty.NAME
+	if type != 0: merge_mask |= 1 << MainProperty.TYPE
+# 序列化实现（使用枚举位）
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
-	SerializationUtil.write(buffer, id)
-	SerializationUtil.write(buffer, name)
-	SerializationUtil.write(buffer, type)
-## 反序列化实现
+	SerializationUtil.write(buffer, merge_mask)  # 使用变长编码
+	if merge_mask & (1 << MainProperty.ID): SerializationUtil.write(buffer, id)
+	if merge_mask & (1 << MainProperty.NAME): SerializationUtil.write(buffer, name)
+	if merge_mask & (1 << MainProperty.TYPE): SerializationUtil.write(buffer, type)
+	
 static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> CardPack:
-	var pack:CardPack = CardPack.new()
-	pack.id = SerializationUtil.read(buffer, TYPE_INT)
-	pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-	pack.type = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+	var pack := CardPack.new()
+	return _deserialize_parent_properties(buffer, pack)
+# 反序列化辅助方法
+static func _deserialize_parent_properties(buffer: StreamPeerBuffer, pack: CardPack) -> CardPack:
+	pack.merge_mask = SerializationUtil.read(buffer, TYPE_INT)
+	if pack.merge_mask & (1 << MainProperty.ID): 
+		pack.id = SerializationUtil.read(buffer, TYPE_INT)
+	if pack.merge_mask & (1 << MainProperty.NAME): 
+		pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+	if pack.merge_mask & (1 << MainProperty.TYPE): 
+		pack.type = SerializationUtil.read(buffer, TYPE_INT)
 	return pack
+
+func merge(update_pack: CardPack) -> void:
+	if update_pack.merge_mask & (1 << MainProperty.ID): id = update_pack.id
+	if update_pack.merge_mask & (1 << MainProperty.NAME): name = update_pack.name
+	if update_pack.merge_mask & (1 << MainProperty.TYPE): type = update_pack.type
