@@ -22,7 +22,12 @@ func _init_attribute()->void:
 func set_suit(newsuit:Suit)->HandCard:
 	suit = newsuit
 	return self
-
-func get_pack()->CardPack:
-	var pack:HandCardPack = HandCardPack.new(id,name,type,power,cost,suit,get_attribute(&"power"),get_attribute(&"cost"))
-	return pack
+## 全量获取接口
+## 创建卡牌包的内部方法
+func _create_card_pack() -> HandCardPack:
+	return HandCardPack.new(
+		id, name, type, 
+		power, cost, suit,
+		get_attribute(&"power"), 
+		get_attribute(&"cost")
+	)

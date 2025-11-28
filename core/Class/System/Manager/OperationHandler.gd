@@ -45,7 +45,7 @@ func handle_request(request: OperationRequest) -> void:
 	if responded_players.has(player_id):
 		return
 	var allowed_ops = player_permissions.get(player_id, [])
-	var request_type = request.get_request_type()
+	var request_type = request.get_class_name()
 	if allowed_ops.has(request_type):
 		operation_validated.emit(request)  # 发送验证后的操作请求
 		responded_players[player_id] = true

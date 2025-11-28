@@ -7,7 +7,7 @@ static var operation_classes: Array[Script] = [
 ]
 
 # 构建双向注册表
-static var _registry:  Dictionary[Script,int] = build_registry(operation_classes)
+static var _registry:  Dictionary[StringName,int] = build_registry(operation_classes)
 
 # 序列化OperationRequest
 static func serialize(obj: OperationRequest) -> PackedByteArray:

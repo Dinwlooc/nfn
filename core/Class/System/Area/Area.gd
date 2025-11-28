@@ -140,10 +140,23 @@ func get_all_cards() -> Array[Card]:
 		AreaMode.UNORDERED:
 			return  _unordered_pool.values()
 	return []
+func send_items_add(new_items: Array) -> void:
+	RenderRequest.ItemAdd.new(area_name,new_items).send_to_player(player.peer_id)
+# 移除Item
+func send_items_remove(uids: PackedInt32Array) -> void:
+	RenderRequest.ItemRemove.new(area_name, uids).send_to_player(player.peer_id)
+# 更新Item
+func send_item_update(item: TransPack) -> void:
+	RenderRequest.ItemUpdate.new(area_name, item).send_to_player(player.peer_id)
+# 原来的卡牌添加方法可以保留为兼容接口，但内部调用新的统一方法
 func send_cards_add(new_cardpool: Array[Card]) -> void:
-	var trans_cardpool: Array[CardPack]
-	trans_cardpool.append_array(new_cardpool.map(func(card): return card.get_pack()))
-	RenderRequest.CardAdd.new(area_name, trans_cardpool).send_to_player(player.peer_id)
+	var card_packs:Array[CardPack]
+	card_packs.resize(new_cardpool.size())
+	var i:int = 0
+	for card in new_cardpool:
+		card_packs.set(i,card.get_pack())
+		i += 1
+	send_items_add(card_packs)
 # 内部辅助方法：从指定位置开始压缩数组
 func _compress_ordered_pool(start_index: int) -> void:
 	var write_index = start_index

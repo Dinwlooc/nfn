@@ -1,54 +1,56 @@
 extends TransPack
+
 class_name RenderRequest
 
 var target_area: StringName
+
 func send_to_player(peer_id: int) -> void:
 	if peer_id != -1:
 		GlobalTransport.send_render_request(peer_id, self)
-	else:
-		return
 
-class ItemAdd extends  RenderRequest:
-	var item_data: Array[TransPack]
-	func _init(area: StringName, data: Array[TransPack]):
+# 统一的Item添加请求（替代原来的CardAdd和PlayerAdd）
+class ItemAdd extends RenderRequest:
+	var items: Array  # 可以包含CardPack或PlayerPack
+	func _init(area: StringName, data: Array):
 		target_area = area
-		item_data = data
-
-class CardAdd extends RenderRequest:
-	var card_data: Array[CardPack]
-	func _init(area: StringName, data: Array[CardPack]):
-		target_area = area
-		card_data = data
+		items = data
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, target_area)
-		CardPackSerializer.serialize_array(card_data,buffer)
+		ItemSerializer.serialize_array(items, buffer)
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> RenderRequest:
-		var area:StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-		var cards:Array[TransPack] = CardPackSerializer.deserialize_array(buffer)
-		return ItemAdd.new(area, cards)
-# 移除卡牌请求
-class CardRemove extends RenderRequest:
-	var uids_data: PackedInt32Array
+		var area: StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+		var items: Array[TransPack] = ItemSerializer.deserialize_array(buffer)
+		return ItemAdd.new(area, items)
+static func get_class_name_static() -> StringName:
+	return &"ItemAdd"
+
+# 统一的Item移除请求（替代原来的CardRemove）
+class ItemRemove extends RenderRequest:
+	var uids: PackedInt32Array  # 可以是卡牌UID或玩家UID
 	func _init(area: StringName, data: PackedInt32Array):
 		target_area = area
-		uids_data = data
+		uids = data
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, target_area)
-		SerializationUtil.write(buffer, uids_data)
+		SerializationUtil.write(buffer, uids)
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> RenderRequest:
-		var area:StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME) as StringName
-		var uids:PackedInt32Array = SerializationUtil.read(buffer, TYPE_PACKED_INT32_ARRAY)
-		return CardRemove.new(area, uids)
-		
-class PlayerUpdate extends RenderRequest:
-	var player_pack: PlayerPack
-	func _init(area: StringName, pack: PlayerPack):
+		var area: StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+		var uids: PackedInt32Array = SerializationUtil.read(buffer, TYPE_PACKED_INT32_ARRAY)
+		return ItemRemove.new(area, uids)
+	static func get_class_name_static() -> StringName:
+		return &"ItemRemove"
+# 统一的Item更新请求（替代原来的PlayerUpdate）
+class ItemUpdate extends RenderRequest:
+	var item: TransPack  # 可以是CardPack或PlayerPack
+	func _init(area: StringName, data: TransPack):
 		target_area = area
-		player_pack = pack
+		item = data
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, target_area)
-		player_pack.serialize_to_buffer(buffer)
+		ItemSerializer.serialize(item, buffer)
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> RenderRequest:
-		var area: StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME) as StringName
-		var pack: PlayerPack = PlayerPack.deserialize_from_buffer(buffer)
-		return PlayerUpdate.new(area, pack)
+		var area: StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+		var item: TransPack = ItemSerializer.deserialize(buffer)
+		return ItemUpdate.new(area, item)
+	static func get_class_name_static() -> StringName:
+		return &"ItemUpdate"

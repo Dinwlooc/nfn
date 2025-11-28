@@ -3,7 +3,7 @@ class_name OperationRequest
 
 var source_peer_id:int
 var source_player_id:int
-func get_request_type() -> StringName:
+static func get_class_name_static() -> StringName:
 	return &"base_request"  # 虚方法
 func create_behavior_command()->BehaviorCommand:
 	return null
@@ -15,7 +15,7 @@ class PlayCard extends OperationRequest:
 	func _init(card_id,target_id) -> void:
 		_card_id = card_id
 		_target_id = target_id
-	func get_request_type() -> StringName:
+	static func get_class_name_static() -> StringName:
 		return &"play_card"
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		TransPackSerializer.write(buffer, _card_id)

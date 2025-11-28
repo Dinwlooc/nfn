@@ -6,6 +6,6 @@ func ready_expand()->void:
 
 func process_request(request: RenderRequest) -> void:
 	if request is RenderRequest.ItemAdd:
-		items_add_requested.emit(request.item_data)
-	elif request is RenderRequest.CardRemove:
+		items_add_requested.emit(request.items)
+	elif request is RenderRequest.ItemRemove:
 		items_remove_requested.emit(request.uids_data)
