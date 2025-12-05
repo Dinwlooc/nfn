@@ -5,7 +5,7 @@ class_name HandCard
 @export var cost:int
 @export var suit:Suit
 
-enum Suit{
+enum Suit {
 	HEART,
 	DIAMOND,
 	SPADE,
@@ -26,8 +26,8 @@ func set_suit(newsuit:Suit)->HandCard:
 ## 创建卡牌包的内部方法
 func _create_card_pack() -> HandCardPack:
 	return HandCardPack.new(
-		id, name, type, 
+		id, name, type,
 		power, cost, suit,
-		get_attribute(&"power"), 
+		get_attribute(&"power"),
 		get_attribute(&"cost")
 	)

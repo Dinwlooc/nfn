@@ -14,9 +14,8 @@ var _ordered_pool: Array[Card] = [] # 有序卡池
 var _card_id_to_index: Dictionary = {} # ID到索引的映射
 var _unordered_pool: Dictionary[int,Card] = {} # ID到卡牌的映射
 
-func _init(_player:Player = null, initial_mode: AreaMode = AreaMode.ORDERED) -> void:
+func _init(_player:Player = null) -> void:
 	player = _player
-	mode = initial_mode
 	area_cards_add.connect(send_cards_add)
 	_init_expand()
 func _init_expand() -> void:
@@ -140,14 +139,24 @@ func get_all_cards() -> Array[Card]:
 		AreaMode.UNORDERED:
 			return  _unordered_pool.values()
 	return []
+# 添加Item
 func send_items_add(new_items: Array) -> void:
-	RenderRequest.ItemAdd.new(area_name,new_items).send_to_player(player.peer_id)
+	if player:
+		RenderRequest.ItemAdd.new(area_name, new_items).send_to_player(player.peer_id)
+	else:
+		RenderRequest.ItemAdd.new(area_name, new_items).send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 # 移除Item
 func send_items_remove(uids: PackedInt32Array) -> void:
-	RenderRequest.ItemRemove.new(area_name, uids).send_to_player(player.peer_id)
+	if player:
+		RenderRequest.ItemRemove.new(area_name, uids).send_to_player(player.peer_id)
+	else:
+		RenderRequest.ItemRemove.new(area_name, uids).send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 # 更新Item
 func send_item_update(item: TransPack) -> void:
-	RenderRequest.ItemUpdate.new(area_name, item).send_to_player(player.peer_id)
+	if player:
+		RenderRequest.ItemUpdate.new(area_name, item).send_to_player(player.peer_id)
+	else:
+		RenderRequest.ItemUpdate.new(area_name, item).send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 # 原来的卡牌添加方法可以保留为兼容接口，但内部调用新的统一方法
 func send_cards_add(new_cardpool: Array[Card]) -> void:
 	var card_packs:Array[CardPack]

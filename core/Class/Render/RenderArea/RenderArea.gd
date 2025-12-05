@@ -2,7 +2,7 @@ extends Control
 class_name RenderArea
 #总控区域渲染与交互。
 var area_name:StringName
-var items_pool:Array[RenderItem]
+var items_pool:Array[RenderItem] = []
 @export var item_id_to_instance: Dictionary[int,RenderItem] = {}
 var selected_items: Array[RenderItem] = []
 var select_limit:int = 1
@@ -11,7 +11,7 @@ signal render_requested(render_event:RenderEvent)
 signal tween_requested(render_event:RenderEvent)
 signal selected()
 signal items_add_requested(items:Array[TransPack])
-signal items_added(items:Array[RenderItem])
+signal items_added(item:RenderItem)
 signal items_remove_requested(uids:PackedInt32Array)
 signal item_move_requested(item: RenderItem, new_index: int)
 signal context_ready()
@@ -50,12 +50,18 @@ func set_render_context(context: RenderContext) -> void:
 		render_context.dragged_update.disconnect(tween_update)
 	render_context.dragged_update.connect(tween_update.unbind(1))
 
-func add_item_to_pool(item: RenderItem, index: int) -> void:
+# 数据池操作：仅管理空间参数
+func set_item_to_pool(item: RenderItem, index: int) -> void:
+	item.area_name = area_name
+	item.render_context = render_context
 	item.pool_id = index
+	item_id_to_instance[item.get_id()] = item
 	if index >= items_pool.size():
 		items_pool.append(item)
 	else:
 		items_pool[index] = item
+	items_added.emit(item)
+
 func remove_items_by_uids(uids: PackedInt32Array) -> Array[RenderItem]:
 	var removed_items: Array[RenderItem] = []
 	var min_index := -1
@@ -128,7 +134,7 @@ func update_card_position(item: RenderItem, new_index: int) -> void:
 	else:
 		items_pool[new_index] = item
 	item_move_requested.emit(item, new_index)
-# 优化后的移动卡片功能
+# 移动卡片
 func move_card_to_index(current_pool_id: int, target_index: int, render_event: RenderEvent = RenderEvent.new()) -> void:
 	var pool_size: int = items_pool.size()
 	current_pool_id = clampi(current_pool_id, 0, pool_size - 1)
@@ -152,7 +158,7 @@ func move_card_to_index(current_pool_id: int, target_index: int, render_event: R
 			update_card_position(items_pool[i], i + 1)
 	update_card_position(moved_card, target_index)
 	tween_update(render_event)
-# 优化后的交换卡片功能
+# 交换卡片
 func swap_cards(pool_id_a: int, pool_id_b: int) -> void:
 	var pool_size: int = items_pool.size()
 	pool_id_a = clampi(pool_id_a, 0, pool_size - 1)

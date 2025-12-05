@@ -32,11 +32,11 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> CardPack:
 # 反序列化辅助方法
 static func _deserialize_parent_properties(buffer: StreamPeerBuffer, pack: CardPack) -> CardPack:
 	pack.merge_mask = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.ID): 
+	if pack.merge_mask & (1 << MainProperty.ID):
 		pack.id = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.NAME): 
+	if pack.merge_mask & (1 << MainProperty.NAME):
 		pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-	if pack.merge_mask & (1 << MainProperty.TYPE): 
+	if pack.merge_mask & (1 << MainProperty.TYPE):
 		pack.type = SerializationUtil.read(buffer, TYPE_INT)
 	return pack
 static func get_class_name_static() -> StringName:
@@ -55,7 +55,7 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 		delta_mask |= 1 << MainProperty.TYPE
 	return delta_mask
 func update_merge_mask() -> void:
-	merge_mask = 0 
+	merge_mask = 0
 	if id != 0: merge_mask |= 1 << MainProperty.ID
 	if name != &"": merge_mask |= 1 << MainProperty.NAME
 	if type != 0: merge_mask |= 1 << MainProperty.TYPE

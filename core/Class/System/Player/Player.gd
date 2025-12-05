@@ -18,17 +18,17 @@ var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 var disallowed_operations: Array[StringName] = []
 
 func apply_health_damage(
-	amount: int, 
-	mechanism: int, 
-	source_id: int, 
+	amount: int,
+	mechanism: int,
+	source_id: int,
 	modifiers: PackedInt32Array
 ) -> void:
 	HP = HP - amount
 
 func apply_mental_damage(
-	amount: int, 
-	mechanism: int, 
-	source_id: int, 
+	amount: int,
+	mechanism: int,
+	source_id: int,
 	modifiers: PackedInt32Array
 ) -> void:
 	MP = max(0, MP - amount)

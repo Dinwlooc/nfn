@@ -30,10 +30,10 @@ func apply_player_blacklist(player_id: int, blacklist: Array[StringName]) -> voi
 	if ops.is_empty():
 		player_permissions.erase(player_id)
 	permissions_updated.emit()
-	
+
 func update_verification_mapping(peer_id: int, player_id: int) -> void:
 	_peer_player_map[peer_id] = player_id
-	
+
 func verify_operation(request: OperationRequest) -> bool:
 	var source_player_id = _peer_player_map.get(request.source_peer_id, -1)
 	return source_player_id == request.source_player_id

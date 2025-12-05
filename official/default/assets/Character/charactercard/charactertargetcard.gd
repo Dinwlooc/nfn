@@ -10,7 +10,7 @@ const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
 func _ready() -> void:
 	Nicon_init_position = Nicon.position
 	var button = get_node(^"Button")
-	button.button_down.connect(item.request_select)
+	button.button_down.connect(item.request_selecting)
 	button.button_down.connect(item.request_dragging)
 	button.button_up.connect(item.request_dragging)
 	item.set_item_size(size)

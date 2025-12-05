@@ -71,7 +71,7 @@ func _generate_damage_phase() -> void:
 			mental_dmg = max(0, mental_dmg - duel_diff)
 		var damage_cmd = DamageCommand.new(
 			_attacker,
-			0, 
+			0,
 			mental_dmg,
 			DamageCommand.SourceMechanism.GENERAL,
 			defender.player_id

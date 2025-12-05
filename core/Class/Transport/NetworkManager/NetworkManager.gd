@@ -29,10 +29,10 @@ func _connected_to_server()->void:
 	GlobalConsole._print(["Client: 成功连接服务器，分配客户端ID: ", id])  # 客户端连接成功日志
 	emit_signal(&"peer_update",id)
 	rpc_id(1,&"ask_server_data",id)
-	
+
 func _server_disconnected():
 	GlobalConsole._print("Client: 与服务器的连接已断开")  # 客户端断开日志
-	
+
 func _peer_connected(new_id)-> void:
 	if new_id == id:
 		return
@@ -40,12 +40,12 @@ func _peer_connected(new_id)-> void:
 	var new_user = User.new()
 	new_user.id = new_id
 	users.append(new_user)
-	
+
 	# 记录当前连接的客户端
 	GlobalConsole._print("Server: 当前连接的客户端列表:")
 	for i in range(users.size()):
 		GlobalConsole._print(["Server:  客户端 #", i+1, " - ID: ", users[i].id])
-	
+
 func _peer_disconnected(new_id)-> void:
 	if new_id == id:
 		return
@@ -60,7 +60,7 @@ func random_create()->bool:
 		url = "ws://localhost:"+str(port)
 		GlobalConsole._print(["Server: 服务器成功启动，监听端口: ", port])  # 服务器启动日志
 		GlobalConsole._print(["Server: 服务端URL: ", url])
-		
+
 		var user = User.new()
 		user.id = 1
 		user.get_config()
@@ -76,7 +76,7 @@ func random_create()->bool:
 func url_connect(new_url)->bool:
 	if server.get_connection_status() == MultiplayerPeer.CONNECTION_CONNECTED:
 		server.close()
-	
+
 	GlobalConsole._print(["Client: 尝试连接到服务器: ", new_url])  # 客户端连接尝试日志
 	if server.create_client(new_url) == OK:
 		get_multiplayer().multiplayer_peer = server
@@ -91,7 +91,7 @@ func close()->void:
 	users = []
 	id = 0
 	GlobalConsole._print("NetworkManager: 网络连接已关闭")  # 通用关闭日志
- 
+
 func get_network_data()->NetworkManager:
 	return self
 
@@ -110,7 +110,7 @@ func _close():
 	else:
 		GlobalConsole._print("NetworkManager: 正在断开客户端连接...")  # 客户端断开日志
 	close()
-	
+
 func signal_connect_test():
 	GlobalConsole.c_connect_to.connect(_connect_to)
 	GlobalConsole.c_close.connect(_close)

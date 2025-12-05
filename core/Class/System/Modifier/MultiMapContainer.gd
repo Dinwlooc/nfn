@@ -2,7 +2,7 @@
 extends ModifierContainer
 class_name MultiMapContainer
 
-var mapping: Dictionary[StringName, Array] = {} 
+var mapping: Dictionary[StringName, Array] = {}
 ## 添加命令修饰器
 func add_modifier(command: StringName, modifier: Modifier) -> void:
 	if not mapping.has(command):

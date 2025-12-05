@@ -24,8 +24,9 @@ func render_tree_init(root_node: Node, context: RenderContext) -> void:
 			area.render_update()
 ##：初始化预部署的卡牌节点
 func _init_preset_card(item: RenderItem, area: RenderArea) -> void:
-	item.area = area
-	area.add_item_to_pool(item, area.items_pool.size())
+	item.area_name = area.area_name
+	item.render_context = area.render_context
+	area.set_item_to_pool(item, area.items_pool.size())
 	connect_item_to_area_signals(item, area)
 	for face in item.get_children():
 		if face is ItemFace:
@@ -52,40 +53,53 @@ func connect_item_face_signals(item: RenderItem, itemface: ItemFace) -> void:
 		item.render_requested.disconnect(itemface.render_update)
 	item.render_requested.connect(itemface.render_update)
 
-func create_items(items: Array[TransPack], area: RenderArea) -> void:
-	var new_items: Array[RenderItem] = []
-	new_items.resize(items.size())
-	var array_position = area.items_pool.size()
-	for i in range(items.size()):
-		new_items[i] = create_single_item(items[i], area, array_position + i)
-	area.items_added.emit(new_items)
+# 修正方法：完全接管场景树操作与依赖注入
+func _add_item_to_area(item: RenderItem, area: RenderArea, pool_id: int) -> void:
+	connect_item_to_area_signals(item,area)
+	area.set_item_to_pool(item, pool_id)
+	area.add_child(item)
+# 复用项目添加方法实现移动功能
+func move_items_to_area(items: Array[RenderItem], area: RenderArea) -> void:
+	var o_pos:int = area.items_pool.size()
+	area.items_pool.resize(o_pos+items.size())
+	var i:int = 0
+	for item in items:
+		connect_item_to_area_signals(item,area)
+		area.add_child(item)
+		area.set_item_to_pool(item,o_pos+i)
+		i += 1
+	area.render_update()
+# 批量添加项目
+func add_items_to_area(packs: Array[TransPack], area: RenderArea) -> void:
+	var o_pos:int = area.items_pool.size()
+	area.items_pool.resize(o_pos+packs.size())
+	var i:int = 0
+	for pack in packs:
+		var item = create_single_item(pack)
+		connect_item_to_area_signals(item,area)
+		area.add_child(item)
+		area.set_item_to_pool(item,o_pos+i)
+		i += 1
 	area.render_update()
 
-func create_single_item(item_data: TransPack, area: RenderArea, pool_id: int) -> RenderItem:
+func create_single_item(item_data: TransPack) -> RenderItem:
 	var new_item:RenderItem
 	if not _item_pool.is_empty():
 		new_item = _item_pool.pop_back()
 		new_item._init(item_data)  # 重置卡牌状态
 	else:
 		new_item = RenderItem.new(item_data)  # 创建新对象
-	new_item.area = area
-	area.item_id_to_instance[new_item.get_id()] = new_item
-	area.add_item_to_pool(new_item, pool_id)
-	connect_item_to_area_signals(new_item, area)
-	area.add_child(new_item)
 	return new_item
-	
+
 func connect_item_to_area_signals(item: RenderItem, area: RenderArea) -> void:
-	if area.render_requested.is_connected(item.render_update):
-		area.render_requested.disconnect(item.render_update)
-	if item.data_requested.is_connected(create_item_face):
-		item.data_requested.disconnect(create_item_face)
 	area.render_requested.connect(item.render_update)
 	item.data_requested.connect(create_item_face.bind(item))
+	item.request_drag.connect(area.on_drag)
+	item.request_select.connect(area.on_select.bind(item))
 
 func connect_area_signals(area: RenderArea) -> void:
-	if !area.items_add_requested.is_connected(create_items):
-		area.items_add_requested.connect(create_items.bind(area))
+	if !area.items_add_requested.is_connected(add_items_to_area):
+		area.items_add_requested.connect(add_items_to_area.bind(area))
 	if !area.items_remove_requested.is_connected(remove_items):
 		area.items_remove_requested.connect(remove_items.bind(area))
 	if !area.item_move_requested.is_connected(_on_item_move_requested):
@@ -94,17 +108,19 @@ func connect_area_signals(area: RenderArea) -> void:
 func _on_item_move_requested(card: RenderItem, new_index: int, area: RenderArea) -> void:
 	if card.is_inside_tree():
 		area.move_child(card, new_index + area.init_child_count)
-
-func remove_items(uids: PackedInt32Array, area: RenderArea) -> void:
-	# 调用 RenderArea 内部方法移除卡牌
+## 移除方法支持区域移动
+func remove_items(uids: PackedInt32Array, target_area: StringName, area: RenderArea) -> void:
 	var removed_items = area.remove_items_by_uids(uids)
 	for item in removed_items:
 		area.remove_child(item)
 		_disconnect_item_from_area(item, area)
-		_item_pool.append(item)
+	if target_area != &"" && area.render_context:
+		var target = area.render_context.get_render_area(target_area)
+		if target:
+			move_items_to_area(removed_items, target)
+			return
+	_item_pool.append_array(removed_items)
 # 断开卡牌与区域的信号连接
 func _disconnect_item_from_area(item: RenderItem, area: RenderArea) -> void:
-	if area.render_requested.is_connected(item.render_update):
 		area.render_requested.disconnect(item.render_update)
-	if item.data_requested.is_connected(create_item_face):
 		item.data_requested.disconnect(create_item_face)

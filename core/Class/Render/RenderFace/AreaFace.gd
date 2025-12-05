@@ -4,7 +4,7 @@ class_name AreaFace
 var hovering_card:RenderItem = null
 var target_position:PackedVector2Array
 @export var area:RenderArea
-@export var area_name:StringName = &""
+@export var face_name:StringName = &""
 var in_area:bool = false
 signal into_area
 signal outto_area
@@ -45,15 +45,14 @@ func _input(event)->void:
 func try_dragging_move()->bool:
 	var context:RenderContext = area.render_context
 	var card:RenderItem = context.get_dragged_card()
-	if context && card && card.area == area:
+	if context && card && card.area_name == area.area_name:
 		dragging_move(card)
 		return true
 	return false
 
-func connect_cards_signals(cards:Array[RenderItem]):
-	for card in cards:
-		card.mouse_entered.connect(_on_card_mouse_entered.bind(card))
-		card.mouse_exited.connect(_on_card_mouse_exited.bind(card))
+func connect_cards_signals(card:RenderItem):
+	card.mouse_entered.connect(_on_card_mouse_entered.bind(card))
+	card.mouse_exited.connect(_on_card_mouse_exited.bind(card))
 
 func disconnect_card_signals(card: RenderItem):
 	if hovering_card == card:
@@ -80,7 +79,7 @@ func _on_card_mouse_exited(card: RenderItem):
 func card_move()-> void:
 	pass
 
-func dragging_move(card:RenderItem)->void:
+func dragging_move(_card:RenderItem)->void:
 	pass
 
 func _into_area()->void:
@@ -88,6 +87,6 @@ func _into_area()->void:
 
 func _outto_area()->void:
 	pass
-	
+
 func _on_context_ready()->void:
 	pass

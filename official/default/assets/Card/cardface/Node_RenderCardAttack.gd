@@ -20,7 +20,7 @@ var _stylebox: StyleBoxFlat
 
 func _ready() -> void:
 	var button = get_node(^"Button")
-	button.button_down.connect(item.request_select)
+	button.button_down.connect(item.request_selecting)
 	button.button_down.connect(item.request_dragging)
 	button.button_up.connect(item.request_dragging)
 	_stylebox = Nicon.get_theme_stylebox(&"panel") as StyleBoxFlat
@@ -34,7 +34,7 @@ func _input(_event: InputEvent) -> void:
 		_stylebox.bg_color = HOVERING_COLOR
 	else:
 		_stylebox.bg_color = NORMAL_COLOR
-		
+
 func data_update()-> void:
 	var data:HandCardPack = item.data
 	var texture = get_item_main_icon(data.name)
@@ -48,7 +48,8 @@ func data_update()-> void:
 	pass
 
 func render_update(_render_event:RenderEvent = RenderEvent.new())->void:
-	if item.area.items_pool.size()>12 && NverticalName.text.length() <= 4 :
+	var area:RenderAreaHand = item.render_context.get_render_area(item.area_name)
+	if area.items_pool.size()>12 && NverticalName.text.length() <= 4 :
 		NverticalName.visible = true
 	else:
 		NverticalName.visible = false

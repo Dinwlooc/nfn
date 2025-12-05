@@ -13,7 +13,7 @@ static func smooth_move_animation(
 		return target_position
 	if smooth_move_speed <= 0.0:
 		return current_position
-	var coefficient = smooth_move_speed 
+	var coefficient = smooth_move_speed
 	var new_position = current_position
 	var delta = target_position - current_position
 	if !is_zero_approx(delta.x):
@@ -28,7 +28,7 @@ static func tween_animations(node:Node,list:Dictionary[NodePath,Variant],time:fl
 		for key in list:
 			tween.tween_property(node,key,list[key],time).set_trans(trans_type).set_ease(ease_type)
 	return tween
-	
+
 static func generate_coordinates(card_container_position:Vector2,card_container_size:Vector2,card_count:int = 1) -> PackedVector2Array:
 	if card_count == 0:
 		return []
@@ -46,4 +46,4 @@ static func generate_coordinates(card_container_position:Vector2,card_container_
 		# 使用线性插值计算位置 (0到width的等比位置)
 		var x = ((i as float + 1) / (card_count + 1)) * width
 		coordinates.append(Vector2(x, y_center)+card_container_position)
-	return coordinates 
+	return coordinates

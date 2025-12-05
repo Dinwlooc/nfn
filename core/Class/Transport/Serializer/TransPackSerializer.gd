@@ -17,8 +17,8 @@ static func build_registry(classes: Array[Script]) -> Dictionary[StringName, int
 
 # 使用类名进行序列化
 static func serialize_with_registry(
-	buffer: StreamPeerBuffer, 
-	obj: TransPack, 
+	buffer: StreamPeerBuffer,
+	obj: TransPack,
 	registry: Dictionary[StringName, int]
 ) -> void:
 	var _class_name = obj.get_class_name()

@@ -36,28 +36,6 @@ func disconnect_renderarea(area_name: StringName, callback: Callable) -> void:
 		if _callback_map[area_name].is_empty():
 			_callback_map.erase(area_name)
 
-func set_card_on_drag(area: RenderArea, realcard: RenderItem) -> void:
-	remove_card_on_drag()
-	card_on_drag = DragState.new()
-	card_on_drag.area = area
-	card_on_drag.card = realcard
-	card_on_drag.card.dragged = true
-	card_on_drag.area.tween_update()
-	dragged_update.emit(true)
-	
-func remove_card_on_drag() -> void:
-	if card_on_drag:
-		card_on_drag.card.dragged = false
-		card_on_drag.area.tween_update()
-	card_on_drag = null
-	dragged_update.emit(false)
-
-func get_dragged_area() -> RenderArea:
-	return card_on_drag.area if card_on_drag else null
-
-func get_dragged_card() -> RenderItem:
-	return card_on_drag.card if card_on_drag else null
-
 func register_render_area(area: RenderArea) -> void:
 	assert(area.area_name != &"", "Area must have valid name")
 	if _render_areas.has(area.area_name):
@@ -72,3 +50,25 @@ func unregister_render_area(area_name: StringName) -> void:
 
 func get_render_area(area_name: StringName) -> RenderArea:
 	return _render_areas.get(area_name)
+
+func set_card_on_drag(area: RenderArea, realcard: RenderItem) -> void:
+	remove_card_on_drag()
+	card_on_drag = DragState.new()
+	card_on_drag.area = area
+	card_on_drag.card = realcard
+	card_on_drag.card.dragged = true
+	card_on_drag.area.tween_update()
+	dragged_update.emit(true)
+
+func remove_card_on_drag() -> void:
+	if card_on_drag:
+		card_on_drag.card.dragged = false
+		card_on_drag.area.tween_update()
+	card_on_drag = null
+	dragged_update.emit(false)
+
+func get_dragged_area() -> RenderArea:
+	return card_on_drag.area if card_on_drag else null
+
+func get_dragged_card() -> RenderItem:
+	return card_on_drag.card if card_on_drag else null

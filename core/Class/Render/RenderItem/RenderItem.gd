@@ -2,7 +2,8 @@
 extends Control
 class_name RenderItem
 
-@export var area:RenderArea
+var area_name:StringName
+var render_context:RenderContext
 enum DraggingState {
 	READY,          # 0 - 准备就绪
 	CHECKING,       # 1 - 长按检测中
@@ -22,6 +23,8 @@ signal drag
 signal face_update()
 signal render_requested(render_event:RenderEvent)
 signal data_requested
+signal request_select()
+signal request_drag(pool_id:int)
 
 func _init(new_data:TransPack = TransPack.new()) -> void:
 	data = new_data
@@ -43,8 +46,8 @@ func get_item_size()->Vector2:
 func set_item_size(new_size:Vector2):
 	item_size = new_size
 
-func request_select():
-	area.on_select(self)
+func request_selecting():
+	request_select.emit()
 	pass
 
 func request_dragging():
@@ -53,20 +56,22 @@ func request_dragging():
 			dragging = DraggingState.CHECKING
 			await get_tree().create_timer(0.1).timeout
 			if dragging == DraggingState.CHECKING:
-				area.on_drag(pool_id)
+				request_drag.emit(pool_id)
 				if not selected:
-					request_select()  # 自动选中
+					request_selecting()
 				dragging = DraggingState.DRAGGING
 			elif dragging == DraggingState.FAILED:
 				dragging = DraggingState.READY
 		DraggingState.CHECKING:
 			dragging = DraggingState.FAILED
 		DraggingState.DRAGGING:
-			area.on_drag(pool_id)
+			request_drag.emit(pool_id)
 			dragging = DraggingState.READY
 
 func is_hovering(mouse_pos):
 	return Rect2(position,position+item_size).has_point(mouse_pos)
 
 func get_id()->int:
+	if !data.has_meta(&"id"):
+		return 0
 	return data.id

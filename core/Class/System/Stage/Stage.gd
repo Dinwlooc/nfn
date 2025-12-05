@@ -42,6 +42,6 @@ func end_stage() -> void:
 	is_ended = true
 	end_stage_effect()
 	stage_ended.emit()
-	
+
 func process_operation_request(request: OperationRequest) -> void:
 	pass

@@ -44,21 +44,21 @@ static func get_class_name_static() -> StringName:
 static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> CardPack:
 	var pack := HandCardPack.new()
 	CardPack. _deserialize_parent_properties(buffer, pack)
-	if pack.merge_mask & (1 << Property.POWER): 
+	if pack.merge_mask & (1 << Property.POWER):
 		pack.power = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << Property.COST): 
+	if pack.merge_mask & (1 << Property.COST):
 		pack.cost = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << Property.SUIT): 
+	if pack.merge_mask & (1 << Property.SUIT):
 		pack.suit = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << Property.MODIFIED_POWER): 
+	if pack.merge_mask & (1 << Property.MODIFIED_POWER):
 		pack.modified_power = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << Property.MODIFIED_COST): 
+	if pack.merge_mask & (1 << Property.MODIFIED_COST):
 		pack.modified_cost = SerializationUtil.read(buffer, TYPE_INT)
 	return pack
 # 统一合并方法
 func merge(update_pack: CardPack) -> void:
 	super.merge(update_pack)
-	if not update_pack is HandCardPack: 
+	if not update_pack is HandCardPack:
 		return
 	var hm := update_pack as HandCardPack
 	if hm.merge_mask & (1 << Property.POWER): power = hm.power
@@ -66,7 +66,7 @@ func merge(update_pack: CardPack) -> void:
 	if hm.merge_mask & (1 << Property.SUIT): suit = hm.suit
 	if hm.merge_mask & (1 << Property.MODIFIED_POWER): modified_power = hm.modified_power
 	if hm.merge_mask & (1 << Property.MODIFIED_COST): modified_cost = hm.modified_cost
-	
+
 func calculate_delta_mask(old_pack: CardPack) -> int:
 	if not (old_pack is HandCardPack):
 		return self.merge_mask
@@ -83,7 +83,7 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 	if modified_cost != hand_old.modified_cost:
 		delta_mask |= 1 << Property.MODIFIED_COST
 	return delta_mask
-	
+
 func update_merge_mask() -> void:
 	super.update_merge_mask()  # 先调用父类掩码设置
 	if power != 0: merge_mask |= 1 << Property.POWER

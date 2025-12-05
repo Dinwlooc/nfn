@@ -17,14 +17,14 @@ func _init(area: AreaDefensive, top: Card, pending: Card) -> void:
 
 func execute(system: System) -> void:
 	match _phase:
-		0:  
+		0:
 			_phase = 1
-		1: 
+		1:
 			var duel = DuelCommand.new(top_card, pending_card, &"BattleCommand")
 			duel.duel_completed.connect(_on_duel_completed)
 			append_companion_command(duel)
 			_phase = 2
-		2: 
+		2:
 			match duel_result:
 				DuelCommand.Result.A_WIN:
 					pass

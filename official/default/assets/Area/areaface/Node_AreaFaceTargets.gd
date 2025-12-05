@@ -12,11 +12,11 @@ func _ready()->void:
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size
-	
+
 func _on_context_ready()->void:
 	render_update()
 	area.render_context.connect_renderarea(RenderArea.DefaultArea.HAND,_on_render_area_registered)
-	
+
 func _on_render_area_registered(area:RenderArea)->void:
 	area.selected.connect(quickly_select)
 

@@ -10,7 +10,7 @@ func _init(p_system: System) -> void:
 	stage_name = &"Main"
 	time_limit = 60.0
 	_play_card_modifier = Modifier.new(
-		&"play_card_modifier", 
+		&"play_card_modifier",
 		GlobalConstants.OP_PLAY_CARD,
 		_modify_play_command
 	)
@@ -22,7 +22,7 @@ func _cleanup_defense_areas() -> void:
 	pass
 ## 命令修饰器处理
 func _modify_play_command(command: BehaviorCommand) -> void:
-	if not (command is PlayCardsCommand): 
+	if not (command is PlayCardsCommand):
 		return
 	var play_cmd: PlayCardsCommand = command
 	match play_cmd.current_phase:

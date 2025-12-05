@@ -73,7 +73,7 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> PlayerPack:
 
 ## 合并增量更新的PlayerPack数据
 func merge(update_pack: PlayerPack) -> void:
-	assert(update_pack.player_id == self.player_id, 
+	assert(update_pack.player_id == self.player_id,
 		"Player ID mismatch during merge: %d vs %d" % [self.player_id, update_pack.player_id])
 	if update_pack.merge_mask & MASK_SEAT_INDEX:
 		self.seat_index = update_pack.seat_index

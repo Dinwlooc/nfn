@@ -21,10 +21,10 @@ var _cached_health_damage: int
 var _cached_mental_damage: int
 
 func _init(
-	target_player: Player, 
-	health_dmg: int, 
-	mental_dmg: int, 
-	mechanism: int = SourceMechanism.GENERAL, 
+	target_player: Player,
+	health_dmg: int,
+	mental_dmg: int,
+	mechanism: int = SourceMechanism.GENERAL,
 	source_id: int = -1
 ) -> void:
 	event_name = &"DamageCommand"

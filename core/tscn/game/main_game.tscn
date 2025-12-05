@@ -98,14 +98,13 @@ offset_bottom = 165.0
 mouse_filter = 1
 area = NodePath("..")
 
-[node name="RenderCard" type="Control" parent="Control/AreaPlayers" node_paths=PackedStringArray("area")]
+[node name="RenderCard" type="Control" parent="Control/AreaPlayers"]
 anchors_preset = 0
 offset_left = 714.258
 offset_top = -239.541
 offset_right = 714.258
 offset_bottom = -239.541
 script = ExtResource("13_4k47o")
-area = NodePath("..")
 metadata/_custom_type_script = "uid://b6ve8dbrxagfl"
 
 [node name="CharacterTargetCard" parent="Control/AreaPlayers/RenderCard" node_paths=PackedStringArray("item") instance=ExtResource("14_2w2we")]

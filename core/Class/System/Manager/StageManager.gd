@@ -94,7 +94,7 @@ func _on_reset_locks():
 	reset_response_locks_forwarded.emit()
 func _on_whitelist_updated(permissions_map: Dictionary, is_adapt_for_current_player: bool = false):
 	if is_adapt_for_current_player and permissions_map.has(-1):
-		var modified_map = permissions_map.duplicate() 
+		var modified_map = permissions_map.duplicate()
 		modified_map[current_player_id] = modified_map[-1]
 		modified_map.erase(-1)
 		whitelist_updated_forwarded.emit(modified_map)

@@ -115,7 +115,7 @@ static func _read_packed_byte_array(buffer: StreamPeerBuffer) -> PackedByteArray
 	var size = _read_varint(buffer)
 	if size == 0:
 		return PackedByteArray()
-	return buffer.get_data(size)[1] 
+	return buffer.get_data(size)[1]
 # 辅助功能保持不变
 static func serialize_to_bytes(value) -> PackedByteArray:
 	var buffer = StreamPeerBuffer.new()
