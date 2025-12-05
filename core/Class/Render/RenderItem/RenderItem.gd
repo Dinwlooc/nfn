@@ -22,8 +22,8 @@ signal select
 signal drag
 signal face_update()
 signal render_requested(render_event:RenderEvent)
-signal data_requested
-signal request_select()
+signal data_requested(item:RenderItem)
+signal request_select(item:RenderItem)
 signal request_drag(pool_id:int)
 
 func _init(new_data:TransPack = TransPack.new()) -> void:
@@ -31,11 +31,11 @@ func _init(new_data:TransPack = TransPack.new()) -> void:
 
 func _ready()-> void:
 	name = &"RenderItem"
-	data_requested.emit()
+	data_requested.emit(self)
 
 func data_update(new_card_data:TransPack)-> void:
 	data = new_card_data
-	data_requested.emit()
+	data_requested.emit(self)
 
 func render_update(render_event:RenderEvent)->void:
 	render_requested.emit(render_event)
@@ -47,7 +47,7 @@ func set_item_size(new_size:Vector2):
 	item_size = new_size
 
 func request_selecting():
-	request_select.emit()
+	request_select.emit(self)
 	pass
 
 func request_dragging():

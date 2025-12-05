@@ -10,10 +10,10 @@ var init_child_count:int
 signal render_requested(render_event:RenderEvent)
 signal tween_requested(render_event:RenderEvent)
 signal selected()
-signal items_add_requested(items:Array[TransPack])
+signal items_add_requested(items:Array[TransPack],area:RenderArea)
 signal items_added(item:RenderItem)
-signal items_remove_requested(uids:PackedInt32Array)
-signal item_move_requested(item: RenderItem, new_index: int)
+signal items_remove_requested(uids:PackedInt32Array,area:RenderArea)
+signal item_move_requested(item: RenderItem, new_index: int,area:RenderArea)
 signal context_ready()
 class DefaultArea:
 	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
@@ -133,7 +133,7 @@ func update_card_position(item: RenderItem, new_index: int) -> void:
 		items_pool.append(item)
 	else:
 		items_pool[new_index] = item
-	item_move_requested.emit(item, new_index)
+	item_move_requested.emit(item, new_index,self)
 # 移动卡片
 func move_card_to_index(current_pool_id: int, target_index: int, render_event: RenderEvent = RenderEvent.new()) -> void:
 	var pool_size: int = items_pool.size()

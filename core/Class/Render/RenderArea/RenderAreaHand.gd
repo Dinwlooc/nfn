@@ -6,6 +6,6 @@ func ready_expand()->void:
 
 func process_request(request: RenderRequest) -> void:
 	if request is RenderRequest.ItemAdd:
-		items_add_requested.emit(request.items)
+		items_add_requested.emit(request.items,self)
 	elif request is RenderRequest.ItemRemove:
-		items_remove_requested.emit(request.uids_data)
+		items_remove_requested.emit(request.uids_data,self)

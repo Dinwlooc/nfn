@@ -28,6 +28,7 @@ func _init_preset_card(item: RenderItem, area: RenderArea) -> void:
 	item.render_context = area.render_context
 	area.set_item_to_pool(item, area.items_pool.size())
 	connect_item_to_area_signals(item, area)
+	item.data_requested.connect(create_item_face)
 	for face in item.get_children():
 		if face is ItemFace:
 			_init_preset_card_face(item, face)
@@ -53,33 +54,25 @@ func connect_item_face_signals(item: RenderItem, itemface: ItemFace) -> void:
 		item.render_requested.disconnect(itemface.render_update)
 	item.render_requested.connect(itemface.render_update)
 
-# 修正方法：完全接管场景树操作与依赖注入
-func _add_item_to_area(item: RenderItem, area: RenderArea, pool_id: int) -> void:
-	connect_item_to_area_signals(item,area)
-	area.set_item_to_pool(item, pool_id)
+## 提取公共方法：连接信号、添加子节点、设置池位置
+func _add_single_item_to_pool(item: RenderItem, area: RenderArea, pool_id: int) -> void:
+	connect_item_to_area_signals(item, area)
 	area.add_child(item)
-# 复用项目添加方法实现移动功能
+	area.set_item_to_pool(item, pool_id)
+## 移动项目到区域
 func move_items_to_area(items: Array[RenderItem], area: RenderArea) -> void:
-	var o_pos:int = area.items_pool.size()
-	area.items_pool.resize(o_pos+items.size())
-	var i:int = 0
-	for item in items:
-		connect_item_to_area_signals(item,area)
-		area.add_child(item)
-		area.set_item_to_pool(item,o_pos+i)
-		i += 1
+	var o_pos: int = area.items_pool.size()
+	area.items_pool.resize(o_pos + items.size())
+	for i in items.size():
+		_add_single_item_to_pool(items[i], area, o_pos + i)
 	area.render_update()
-# 批量添加项目
+## 批量添加项目
 func add_items_to_area(packs: Array[TransPack], area: RenderArea) -> void:
-	var o_pos:int = area.items_pool.size()
-	area.items_pool.resize(o_pos+packs.size())
-	var i:int = 0
-	for pack in packs:
-		var item = create_single_item(pack)
-		connect_item_to_area_signals(item,area)
-		area.add_child(item)
-		area.set_item_to_pool(item,o_pos+i)
-		i += 1
+	var o_pos: int = area.items_pool.size()
+	area.items_pool.resize(o_pos + packs.size())
+	for i in packs.size():
+		var item :RenderItem = create_single_item(packs[i])
+		_add_single_item_to_pool(item, area, o_pos + i)
 	area.render_update()
 
 func create_single_item(item_data: TransPack) -> RenderItem:
@@ -88,23 +81,19 @@ func create_single_item(item_data: TransPack) -> RenderItem:
 		new_item = _item_pool.pop_back()
 		new_item._init(item_data)  # 重置卡牌状态
 	else:
-		new_item = RenderItem.new(item_data)  # 创建新对象
+		new_item = RenderItem.new(item_data)
+		new_item.data_requested.connect(create_item_face)
 	return new_item
 
 func connect_item_to_area_signals(item: RenderItem, area: RenderArea) -> void:
 	area.render_requested.connect(item.render_update)
-	item.data_requested.connect(create_item_face.bind(item))
 	item.request_drag.connect(area.on_drag)
-	item.request_select.connect(area.on_select.bind(item))
-
+	item.request_select.connect(area.on_select)
 func connect_area_signals(area: RenderArea) -> void:
-	if !area.items_add_requested.is_connected(add_items_to_area):
-		area.items_add_requested.connect(add_items_to_area.bind(area))
-	if !area.items_remove_requested.is_connected(remove_items):
-		area.items_remove_requested.connect(remove_items.bind(area))
-	if !area.item_move_requested.is_connected(_on_item_move_requested):
-		area.item_move_requested.connect(_on_item_move_requested.bind(area))
-# 新增：处理卡牌移动请求
+		area.items_add_requested.connect(add_items_to_area)
+		area.items_remove_requested.connect(remove_items)
+		area.item_move_requested.connect(_on_item_move_requested)
+##：处理卡牌移动请求
 func _on_item_move_requested(card: RenderItem, new_index: int, area: RenderArea) -> void:
 	if card.is_inside_tree():
 		area.move_child(card, new_index + area.init_child_count)
@@ -113,7 +102,8 @@ func remove_items(uids: PackedInt32Array, target_area: StringName, area: RenderA
 	var removed_items = area.remove_items_by_uids(uids)
 	for item in removed_items:
 		area.remove_child(item)
-		_disconnect_item_from_area(item, area)
+		disconnect_item_from_area_signals(item, area)
+	area.render_update()
 	if target_area != &"" && area.render_context:
 		var target = area.render_context.get_render_area(target_area)
 		if target:
@@ -121,6 +111,7 @@ func remove_items(uids: PackedInt32Array, target_area: StringName, area: RenderA
 			return
 	_item_pool.append_array(removed_items)
 # 断开卡牌与区域的信号连接
-func _disconnect_item_from_area(item: RenderItem, area: RenderArea) -> void:
-		area.render_requested.disconnect(item.render_update)
-		item.data_requested.disconnect(create_item_face)
+func disconnect_item_from_area_signals(item: RenderItem, area: RenderArea) -> void:
+	area.render_requested.disconnect(item.render_update)
+	item.request_drag.disconnect(area.on_drag)
+	item.request_select.disconnect(area.on_select)
