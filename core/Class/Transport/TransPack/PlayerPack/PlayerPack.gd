@@ -94,3 +94,6 @@ func merge(update_pack: PlayerPack) -> void:
 	if update_pack.merge_mask & MASK_DISALLOWED_OPERATIONS:
 		# 数组类型直接替换
 		self.disallowed_operations = update_pack.disallowed_operations.duplicate()
+
+static func get_class_name_static() -> StringName:
+	return &"PlayerPack"

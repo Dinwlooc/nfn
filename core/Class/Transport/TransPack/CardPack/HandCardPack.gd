@@ -16,6 +16,20 @@ var suit: int
 var modified_power: int
 var modified_cost: int
 
+static func init_from_card(card: Card) -> HandCardPack:
+	if card is HandCard:
+		return HandCardPack.new(
+			card.id,
+			card.name,
+			card.type,
+			card.power,
+			card.cost,
+			card.suit,
+			card.get_attribute(&"power"),
+			card.get_attribute(&"cost")
+		)
+	return null
+
 func _init(init_id: int = 0, init_name: StringName = &"", init_type: StringName = NULL,
 		init_power: int = 0, init_cost: int = 0, init_suit: int = 0,
 		init_modified_power: int = 0, init_modified_cost: int = 0):
@@ -86,6 +100,16 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 
 func update_merge_mask() -> void:
 	super.update_merge_mask()  # 先调用父类掩码设置
+	if power != 0: merge_mask |= 1 << Property.POWER
+	if cost != 0: merge_mask |= 1 << Property.COST
+	if suit != 0: merge_mask |= 1 << Property.SUIT
+	if modified_power != 0: merge_mask |= 1 << Property.MODIFIED_POWER
+	if modified_cost != 0: merge_mask |= 1 << Property.MODIFIED_COST
+
+func _update_and_calculate_delta(card: Card) -> void:
+	super._update_and_calculate_delta(card)
+	if card is  not HandCard:
+		return
 	if power != 0: merge_mask |= 1 << Property.POWER
 	if cost != 0: merge_mask |= 1 << Property.COST
 	if suit != 0: merge_mask |= 1 << Property.SUIT

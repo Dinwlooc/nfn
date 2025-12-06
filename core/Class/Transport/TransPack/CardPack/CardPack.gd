@@ -15,6 +15,9 @@ var merge_mask: int = 0
 const CardType = GlobalConstants.KEY_CARD_TYPE
 const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
 
+static func init_from_card(card: Card) -> CardPack:
+	return CardPack.new(card.id, card.name, card.type)
+
 func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL):
 	id = init_id
 	name = init_name
@@ -59,3 +62,13 @@ func update_merge_mask() -> void:
 	if id != 0: merge_mask |= 1 << MainProperty.ID
 	if name != &"": merge_mask |= 1 << MainProperty.NAME
 	if type != 0: merge_mask |= 1 << MainProperty.TYPE
+##：增量更新方法
+func _update_and_calculate_delta(card: Card) -> void:
+	var new_type = GlobalRegistry.get_constant_index(CardType, card.type)
+	merge_mask = 0
+	if id != card.id: merge_mask |= 1 << MainProperty.ID
+	if name != card.name: merge_mask |= 1 << MainProperty.NAME
+	if type != new_type: merge_mask |= 1 << MainProperty.TYPE
+	id = card.id
+	name = card.name
+	type = new_type

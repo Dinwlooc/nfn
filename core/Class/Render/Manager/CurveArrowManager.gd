@@ -2,7 +2,7 @@ extends Control
 class_name CurveArrowManager
 
 # 曲线属性
-const COLOR_1 = Color(Color.AQUA,0) 
+const COLOR_1 = Color(Color.AQUA,0)
 const COLOR_2 = Color.AQUA
 const TWEEN_TIME = 1.0
 const ARROW_WIDTH_FACTOR = 4.0
@@ -28,12 +28,12 @@ func create_smooth_curve(start: Vector2, end: Vector2) -> Curve2D:
 	var offset_multiplier = clamp(200.0 / max(horizontal_dist, 1.0), 1.0, 1.5)
 	var vertical_offset = vertical_dist * 0.5 * offset_multiplier
 	curve.add_point(start, Vector2.ZERO, Vector2(0, -vertical_offset))
-	curve.add_point(end, Vector2(0, vertical_offset), Vector2.ZERO)   
+	curve.add_point(end, Vector2(0, vertical_offset), Vector2.ZERO)
 	return curve
 
 func calculate_arrow_points(end_point: Vector2) -> PackedVector2Array:
-	var arrow_height = curve_width * ARROW_HEIGHT_FACTOR  
-	var arrow_width = curve_width * ARROW_WIDTH_FACTOR   
+	var arrow_height = curve_width * ARROW_HEIGHT_FACTOR
+	var arrow_width = curve_width * ARROW_WIDTH_FACTOR
 	return [
 		end_point + Vector2(-arrow_width/2, 0),  # 左下角
 		end_point + Vector2(arrow_width/2, 0),   # 右下角
@@ -51,14 +51,14 @@ func draw_curve(start: Vector2, end: Vector2) -> void:
 	tween = create_tween().set_loops()
 	tween.tween_method(draw_tween,COLOR_1,COLOR_2,0.5)
 	tween.tween_method(draw_tween,COLOR_2,COLOR_1,0.5)
-	
+
 func _draw() -> void:
 	if has_valid_points:
 		if arrow_points.size() == 3:
 			draw_colored_polygon(arrow_points, curve_color)
 		draw_polyline(points, curve_color, curve_width, true)
 	pass
-	
+
 func clear_arrow()->void:
 	visible = false
 	if tween:
