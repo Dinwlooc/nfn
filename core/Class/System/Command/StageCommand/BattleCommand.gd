@@ -15,7 +15,7 @@ func _init(area: AreaDefensive, top: Card, pending: Card) -> void:
 	top_card = top
 	pending_card = pending
 
-func execute(system: System) -> void:
+func execute(game_state: GameState) -> void:
 	match _phase:
 		0:
 			_phase = 1

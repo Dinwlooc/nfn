@@ -31,10 +31,10 @@ func _init(
 	_target_player_id = target_player_id
 	_target_area_type = target_area_type
 	current_phase = Phase.INIT
-func execute(system: System) -> void:
+func execute(game_state: GameState) -> void:
 	match current_phase:
 		Phase.INIT:
-			_source_area = system.player_manager.get_player_by_id(_source_player_id).area_hand
+			_source_area = game_state.player_manager.get_player_by_id(_source_player_id).area_hand
 			if _card_ids.size() == 0:
 				push_error("无效的卡牌ID数组")
 				current_phase = Phase.DONE
@@ -48,9 +48,9 @@ func execute(system: System) -> void:
 		Phase.MOVE_IN:
 			match _target_area_type:
 				TargetAreaType.CENTER:
-					_target_area = system.area_center
+					_target_area = game_state.area_center
 				TargetAreaType.PLAYER_DEF:
-					var target_player: Player = system.player_manager.get_player_by_id(_target_player_id)
+					var target_player: Player = game_state.player_manager.get_player_by_id(_target_player_id)
 					_target_area = target_player.area_defensive
 				_:
 					push_error("无效的目标区域类型")

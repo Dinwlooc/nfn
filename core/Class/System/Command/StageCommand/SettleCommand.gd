@@ -15,7 +15,7 @@ func _init(area: AreaDefensive,attacker:Player) -> void:
 	defensive_area = area
 	_attacker = attacker
 
-func execute(system: System) -> void:
+func execute(game_state: GameState) -> void:
 	match _phase:
 		0:  # 预备阶段
 			top_card = defensive_area.get_top_card()

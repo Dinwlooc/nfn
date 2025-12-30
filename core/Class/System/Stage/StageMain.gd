@@ -5,8 +5,8 @@ extends Stage
 class_name StageMain
 
 var _play_card_modifier: Modifier  # 出牌命令修饰器
-func _init(p_system: System) -> void:
-	super._init(p_system)
+func _init(p_game_state: GameState) -> void:
+	super._init(p_game_state)
 	stage_name = &"Main"
 	time_limit = 60.0
 	_play_card_modifier = Modifier.new(
@@ -35,5 +35,5 @@ func _verify_attack(cmd: PlayCardsCommand) -> bool:
 	return false
 ## 阶段结束处理
 func end_stage_effect() -> void:
-	for player: Player in system.player_manager.players:
+	for player: Player in game_state.player_manager.players:
 		player.area_defensive.reset()

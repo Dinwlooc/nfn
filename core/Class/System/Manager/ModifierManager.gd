@@ -2,11 +2,11 @@
 class_name ModifierManager
 extends RefCounted
 
-var system: System
+var game_state: GameState
 var root_container: ModifierContainer  # 根容器
 
-func _init(init_system: System):
-	system = init_system
+func _init(init_system: GameState):
+	game_state = init_system
 ## 工厂方法：创建单射容器
 func create_map_container() -> MapContainer:
 	return MapContainer.new()

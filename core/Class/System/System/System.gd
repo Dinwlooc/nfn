@@ -1,26 +1,25 @@
 extends Node
 class_name System
 
-enum GameStage { START, DRAW , MAIN , DISCARD , END}
 @export var timer:GameTimer
 @export var network_manager:NetworkManager
-var area_center := AreaCenter.new()
-var area_drawing := AreaDrawing.new()
 var current_player_index:int
-var cardsmanager := CardsManager.new()
-var player_manager := PlayersManager.new()
-var modifier_manager := ModifierManager.new(self)
-var command_processor := CommandProcessor.new(self)
-var stage_manager := StageManager.new(self)
+var game_state := GameState.new()
+var modifier_manager := ModifierManager.new(game_state)
+var command_processor := CommandProcessor.new(game_state)
+var stage_manager := StageManager.new(game_state)
 var operation_handler := OperationHandler.new()
-var _process_active := false
-signal data_update
-var root_container: MultiLayerContainer
+
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
-	player_manager.peer_player_added.connect(operation_handler.update_verification_mapping)
+	game_state.timer = timer
+	game_state.network_manager = network_manager
+	game_state.player_manager.peer_player_added.connect(operation_handler.update_verification_mapping)
+	game_state.start_round.connect(stage_manager.start_round)
+	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
 	command_processor.command_processing.connect(modifier_manager.process_behavior)
-	_create_container_hierarchy()
+	command_processor.enable_processing.connect(_enable_processing)
+
 
 func _ready() -> void:
 	stage_manager.set_timer(timer)
@@ -28,25 +27,23 @@ func _ready() -> void:
 	stage_manager.whitelist_updated_forwarded.connect(operation_handler.update_permissions_map)
 	operation_handler.operation_validated.connect(stage_manager.handle_validated_request)
 	signal_connect_test()
-	load_cards()
+	game_state.load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
-## 创建容器层次结构
-func _create_container_hierarchy() -> void:
-	root_container = modifier_manager.create_multi_layer_container()
-	var map_container = modifier_manager.create_map_container()
-	root_container.add_child_container(map_container)
-	modifier_manager.set_root_container(root_container)
-	stage_manager.set_modifier_container(map_container)
+
 ## 处理阶段切换事件
 func _process(_delta: float) -> void:
-	if _process_active:
+	if game_state._process_active:
 		command_processor.process()
-func load_cards() -> void:
-	area_drawing.cards_add(cardsmanager.load_all_cards())
-	area_drawing.shuffle_card_pool()
-func enable_processing(enable: bool) -> void:
-	_process_active = enable
+	else:
+		set_process(false)
+
+func _enable_processing(enable: bool) -> void:
+	game_state._process_active = enable
 	set_process(enable)
+
+func _on_new_behavior_with_callback(command:BehaviorCommand,callback:Callable):
+	command_processor.all_completed.connect(callback,CONNECT_ONE_SHOT)
+	command_processor.queue_behavior(command)
 #####信号调用函数#####
 func _start_game()-> void:
 	if stage_manager.get_current_stage_enum() != -1:
@@ -57,13 +54,13 @@ func _start_game()-> void:
 	GlobalConsole._print("System:游戏开始事件已创建")
 	#########仅调试时使用的函数########
 func _draw_cards_test() -> void:
-	if _process_active:
+	if game_state._process_active:
 		GlobalConsole._print("System:Error:c_draw未生效。无法插入事件至处理中的堆栈。")
 		return
 	if stage_manager.get_current_stage_enum() == -1:
 		GlobalConsole._print("System:Error:c_draw未生效。游戏未开始。")
 		return
-	if player_manager.players.is_empty():
+	if game_state.player_manager.players.is_empty():
 		GlobalConsole._print("System:Error:c_draw未生效。无存活玩家。")
 		return
 	var draw_event = DrawCardsCommand.new(

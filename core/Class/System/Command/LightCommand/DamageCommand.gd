@@ -34,7 +34,7 @@ func _init(
 	source_mechanism = mechanism
 	source_player_id = source_id
 
-func execute(system: System) -> void:
+func execute(game_state: GameState) -> void:
 	match _phase:
 		0:  # 准备阶段：缓存初始值
 			_cached_health_damage = health_damage

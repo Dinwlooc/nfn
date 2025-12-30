@@ -66,9 +66,12 @@ func update_merge_mask() -> void:
 func _update_and_calculate_delta(card: Card) -> void:
 	var new_type = GlobalRegistry.get_constant_index(CardType, card.type)
 	merge_mask = 0
-	if id != card.id: merge_mask |= 1 << MainProperty.ID
-	if name != card.name: merge_mask |= 1 << MainProperty.NAME
-	if type != new_type: merge_mask |= 1 << MainProperty.TYPE
-	id = card.id
-	name = card.name
-	type = new_type
+	if id != card.id:
+		merge_mask |= 1 << MainProperty.ID
+		id = card.id
+	if name != card.name:
+		merge_mask |= 1 << MainProperty.NAME
+		name = card.name
+	if type != new_type:
+		merge_mask |= 1 << MainProperty.TYPE
+		type = new_type

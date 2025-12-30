@@ -106,12 +106,22 @@ func update_merge_mask() -> void:
 	if modified_power != 0: merge_mask |= 1 << Property.MODIFIED_POWER
 	if modified_cost != 0: merge_mask |= 1 << Property.MODIFIED_COST
 
-func _update_and_calculate_delta(card: Card) -> void:
+func _update_and_calculate_delta(card:Card) -> void:
 	super._update_and_calculate_delta(card)
-	if card is  not HandCard:
+	if card is not HandCard:
 		return
-	if power != 0: merge_mask |= 1 << Property.POWER
-	if cost != 0: merge_mask |= 1 << Property.COST
-	if suit != 0: merge_mask |= 1 << Property.SUIT
-	if modified_power != 0: merge_mask |= 1 << Property.MODIFIED_POWER
-	if modified_cost != 0: merge_mask |= 1 << Property.MODIFIED_COST
+	if power != card.power:
+		merge_mask |= 1 << Property.POWER
+		power = card.power
+	if cost != card.cost:
+		merge_mask |= 1 << Property.COST
+		cost = card.cost
+	if suit != card.suit:
+		merge_mask |= 1 << Property.SUIT
+		suit = card.suit
+	if modified_power != card.get_attribute(&"power"):
+		merge_mask |= 1 << Property.MODIFIED_POWER
+		modified_power = card.get_attribute(&"power")
+	if modified_cost != card.get_attribute(&"cost"):
+		merge_mask |= 1 << Property.MODIFIED_COST
+		modified_cost = card.get_attribute(&"cost")

@@ -18,22 +18,22 @@ func _init(init_player_index: int, draw_count: int):
 	_draw_count = draw_count
 	current_phase = Phase.INIT
 
-func execute(system: System) -> void:
+func execute(game_state: GameState) -> void:
 	match current_phase:
 		Phase.INIT:
 			current_phase = Phase.MOVE_OUT
 		Phase.MOVE_OUT:
-			var card_count:int = system.area_drawing.card_count()
+			var card_count:int = game_state.area_drawing.card_count()
 			var draw_count = min(_draw_count, card_count)
 			if draw_count <= 0:
 				current_phase = Phase.DONE
 			var move_out:CardMoveCommand.Out = CardMoveCommand.Out.new(
-				system.area_drawing,_player_id).set_top_mode(draw_count)
+				game_state.area_drawing,_player_id).set_top_mode(draw_count)
 			move_out.execute()
 			_drawn_cards = move_out.get_cards()
 			current_phase = Phase.MOVE_IN
 		Phase.MOVE_IN:
-			var target_area = system.player_manager.get_player_by_seat(_player_index).area_hand
+			var target_area = game_state.player_manager.get_player_by_seat(_player_index).area_hand
 			var move_in = CardMoveCommand.In.new(
 				target_area,
 				_drawn_cards,

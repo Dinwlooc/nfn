@@ -30,7 +30,7 @@ func modify_cached_power(card_id: int, new_power: float) -> void:
 		1: _cached_power1 = new_power
 		2: _cached_power2 = new_power
 
-func execute(system: System) -> void:
+func execute(game_state: GameState) -> void:
 	match _phase:
 		0:  # 预备阶段：缓存参数
 			_cached_power1 = card1.get_attribute(&"power")
