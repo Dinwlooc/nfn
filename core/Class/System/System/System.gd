@@ -3,7 +3,6 @@ class_name System
 
 @export var timer:GameTimer
 @export var network_manager:NetworkManager
-var current_player_index:int
 var game_state := GameState.new()
 var modifier_manager := ModifierManager.new(game_state)
 var command_processor := CommandProcessor.new(game_state)
@@ -19,7 +18,6 @@ func _init() -> void:
 	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
 	command_processor.command_processing.connect(modifier_manager.process_behavior)
 	command_processor.enable_processing.connect(_enable_processing)
-
 
 func _ready() -> void:
 	stage_manager.set_timer(timer)
@@ -52,7 +50,7 @@ func _start_game()-> void:
 	var start_event = GameStartCommand.new()
 	command_processor.queue_behavior(start_event)
 	GlobalConsole._print("System:游戏开始事件已创建")
-	#########仅调试时使用的函数########
+#########仅调试时使用的函数########
 func _draw_cards_test() -> void:
 	if game_state._process_active:
 		GlobalConsole._print("System:Error:c_draw未生效。无法插入事件至处理中的堆栈。")
@@ -64,11 +62,11 @@ func _draw_cards_test() -> void:
 		GlobalConsole._print("System:Error:c_draw未生效。无存活玩家。")
 		return
 	var draw_event = DrawCardsCommand.new(
-		current_player_index,
+		game_state.current_player_index,
 		2  # 默认抽卡数量
 		)
 	command_processor.queue_behavior(draw_event)
-	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % current_player_index)
+	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % game_state.current_player_index)
 
 func signal_connect_test():
 	GlobalConsole.c_start.connect(_start_game)

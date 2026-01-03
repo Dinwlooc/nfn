@@ -10,7 +10,6 @@ func _init(name: StringName, init_player_id: int = -1):
 	_event_name = name
 	_player_id = init_player_id
 
-
 func complete() -> void:
 	is_completed = true
 	event_completed.emit()

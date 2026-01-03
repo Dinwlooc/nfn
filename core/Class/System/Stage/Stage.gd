@@ -10,36 +10,37 @@ var time_limit: float = 0.0  #0表示不需要计时
 var is_temporary: bool = false
 var game_state: GameState
 var is_ended: bool = false  # 标记阶段是否已结束
+var is_paused:bool = false
 
 func _init(p_game_state: GameState) -> void:
 	game_state = p_game_state
-# 进入阶段
+## 进入阶段
 func enter() -> void:
 	is_ended = false
-	enter_expand()
 	GlobalConsole._print(["Stage:进入",stage_name,"阶段"])
+	enter_expand()
 	run()
+
 func run() -> void:
 	pass
+
 func enter_expand() -> void:
 	pass
-# 暂停阶段（用于临时阶段插入时）
+## 暂停阶段
 func pause() -> void:
-	pass
-# 恢复阶段（用于临时阶段结束后）
+	is_paused = true
+## 恢复阶段
 func resume() -> void:
 	pass
-# 超时时的默认响应
-func execute_default_action() -> void:
-	pass
-# 阶段结束效果（子类可实现自定义结束逻辑）
+## 阶段结束效果
 func end_stage_effect() -> void:
 	pass
-# 结束阶段（由阶段自身调用）
+## 结束阶段
 func end_stage() -> void:
 	if is_ended:
 		return
 	is_ended = true
+	is_paused = false
 	end_stage_effect()
 	stage_ended.emit(self)
 

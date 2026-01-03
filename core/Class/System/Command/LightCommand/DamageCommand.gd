@@ -36,13 +36,12 @@ func _init(
 
 func execute(game_state: GameState) -> void:
 	match _phase:
-		0:  # 准备阶段：缓存初始值
+		0:
 			_cached_health_damage = health_damage
 			_cached_mental_damage = mental_damage
 			_phase = 1
-		1:  # 执行阶段：直接调用玩家接口
+		1:
 			if _target_player:
-				# 应用生命伤害
 				if _cached_health_damage > 0:
 					_target_player.apply_health_damage(
 						_cached_health_damage,
