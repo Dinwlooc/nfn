@@ -2,8 +2,6 @@ extends RefCounted
 class_name Stage
 
 signal stage_ended(stage:Stage)
-signal reset_response_locks()
-signal whitelist_updated(permissions_map: Dictionary[int, Array], is_adapt_for_current_player: bool)
 signal behavior_command_issued(command: BehaviorCommand)
 var stage_name: StringName = &"Null"
 var time_limit: float = 0.0  #0表示不需要计时

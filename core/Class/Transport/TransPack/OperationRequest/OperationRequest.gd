@@ -3,10 +3,18 @@ class_name OperationRequest
 
 var source_peer_id:int
 var source_player_id:int
+signal cancelled()
+signal completed()
 static func get_class_name_static() -> StringName:
 	return &"base_request"  # 虚方法
-func create_behavior_command()->BehaviorCommand:
-	return null
+func cancel() -> void:
+	cancelled.emit()
+func complete() -> void:
+	completed.emit()
+func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
+	pass
+static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> OperationRequest:
+	return OperationRequest.new()
 
 class PlayCard extends OperationRequest:
 	var _card_id: int

@@ -9,8 +9,6 @@ signal round_ended()  # 回合结束信号
 signal stage_changed(old_stage: Stage, new_stage: Stage)
 signal temp_stage_started(temp_stage: Stage)
 signal round_completed()
-signal reset_response_locks_forwarded()
-signal whitelist_updated_forwarded(permissions_map: Dictionary[int,Array])
 
 # 主阶段顺序数组（按游戏流程排列）
 var main_stages: Array[Stage] = []

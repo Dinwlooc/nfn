@@ -21,8 +21,6 @@ func _init() -> void:
 
 func _ready() -> void:
 	stage_manager.set_timer(timer)
-	stage_manager.reset_response_locks_forwarded.connect(operation_handler.reset_response_locks)
-	stage_manager.whitelist_updated_forwarded.connect(operation_handler.update_permissions_map)
 	operation_handler.operation_validated.connect(stage_manager.handle_validated_request)
 	signal_connect_test()
 	game_state.load_cards()
