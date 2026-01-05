@@ -108,7 +108,6 @@ func _transition_to(new_stage: Stage) -> void:
 		new_stage.call_deferred(&"enter")
 		stage_changed.emit(old_stage, new_stage)
 
-
 ##回退到上个阶段
 func _rollback_to_previous_stage() -> void:
 	if temp_stage_stack.is_empty():

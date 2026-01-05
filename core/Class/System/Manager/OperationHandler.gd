@@ -95,3 +95,11 @@ func get_player_request(player_id: int) -> OperationRequest:
 	if request == _null_request:
 		return null
 	return request
+
+## 批量设置响应玩家
+func set_responsive_players(player_ids: PackedInt32Array) -> void:
+	for player_id in _pending_requests.keys():
+		_disable_player_response(player_id)
+	for player_id in player_ids:
+		_enable_player_response(player_id)
+	permissions_updated.emit()
