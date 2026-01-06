@@ -5,13 +5,13 @@ script/source = "
 const  command:Dictionary = {
 		&\"c_start\":{&\"min\":0,&\"max\":0,&\"mes\":\"start()-服务器指令。开始游戏。\"},
  		&\"c_draw\":{&\"min\":0,&\"max\":0,&\"mes\":\"\"},
-		&\"c_help\":{&\"min\":0,&\"max\":1,&\"mes\":\"help(command)-查看目标指令的描述。\"}, 
-		&\"c_play_a_card\":{&\"min\":0,&\"max\":1,&\"mes\":\"play_a_card(card_pool_id)-客户端指令。打出当前选定的第一张手牌，或指定序列选择并打出卡牌。\"},
+		&\"c_help\":{&\"min\":0,&\"max\":1,&\"mes\":\"help(command)-查看目标指令的描述。\"},
+		&\"c_play_selected_card\":{&\"min\":0,&\"max\":0,&\"mes\":\"c_play_selected_card()-客户端指令。打出当前选定的手牌\"},
 		&\"c_connect_to\":{&\"min\":1,&\"max\":1,&\"mes\":\"\"},
 		&\"c_close\":{&\"min\":0,&\"max\":0,&\"mes\":\"\"}
 	}
 
-const command_name:PackedStringArray = [\"c_start\",\"c_draw\",\"c_help\",\"c_play_a_card\",\"c_connect_to\",\"c_close\"]
+const command_name:PackedStringArray = [\"c_start\",\"c_draw\",\"c_help\",\"c_play_selected_card\",\"c_connect_to\",\"c_close\"]
 "
 
 [resource]

@@ -43,26 +43,6 @@ func get_top_card() -> Card:
 func get_second_card() -> Card:
 	var cards = get_all_cards()
 	return cards[-2] if cards.size() >= 2 else null
-# ================== 原子操作接口 ================== #
-# 判断攻方能否出牌
-func is_attackable(by_player: Player, card: Card) -> bool:
-	if is_settled || by_player == player:
-		return false
-	var top = get_top_card()
-	# 条件：1) 空置状态 2) 或顶层是己方防御牌
-	if not top or (top.is_defense and top.owner == player):
-		return card.is_attack or (card.is_skill and not card.is_mass)
-	return false
-# 判断守方能否出牌
-func is_defendable(by_player: Player, card: Card) -> bool:
-	if is_settled || by_player != player:
-		return false
-	var top = get_top_card()
-	# 条件：顶层是敌方攻击牌
-	return top and top.is_attack and top.owner != player and card.is_attack
-# 判断是否可被攻击
-func can_be_attacked() -> bool:
-	return not is_settled
 # 结算完成标记
 func mark_settled() -> void:
 	is_settled = true
@@ -74,3 +54,5 @@ func clear_defense_area() -> Array[Card]:
 func reset() -> void:
 	is_settled = false
 	pending_card = null
+func is_empty()->bool:
+	return (!pending_card && _ordered_pool.is_empty())

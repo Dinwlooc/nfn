@@ -18,3 +18,5 @@ func get_class_name() -> StringName:
 static func get_class_name_static() -> StringName:
 	push_error("Must override get_class_name_static() in subclass")
 	return &"TransPack"
+func get_id()->int:
+	return -1

@@ -23,8 +23,8 @@ func upload_play_card() -> void:
 	if not players_area:
 		GlobalConsole._print("OperationManager: 无法获取玩家区")
 		return
-	var card_ids = hand_area.get_selected_ids()
-	var target_ids = players_area.get_selected_ids()
+	var card_ids:PackedInt32Array = hand_area.get_selected_ids()
+	var target_ids:PackedInt32Array = players_area.get_selected_ids()
 	if card_ids.is_empty():
 		GlobalConsole._print("OperationManager: 出牌请求失败 - 未选择卡牌")
 		return
@@ -35,5 +35,5 @@ func upload_play_card() -> void:
 		card_ids[0],
 		target_ids[0]
 	)
-	GlobalConsole._print("OperationManager: 出牌请求正在发送...")
+	GlobalConsole._print(["OperationManager: 出牌请求正在发送。卡牌id:",request._card_id])
 	send_operation_request(request)

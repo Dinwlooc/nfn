@@ -25,7 +25,7 @@ func start_new_round(player_id:int):
 func _start_round_emitter(player_id:int):
 	start_round.emit(player_id)
 
-func queue_behavior_with_callback(command:BehaviorCommand,callback:Callable):
+func queue_behavior_with_callback(command:BehaviorCommand,callback:Callable = Callable()):
 	new_behavior_with_callback.emit(command,callback)
 ## 获取当前主阶段名
 func get_main_stage_name() -> StringName:

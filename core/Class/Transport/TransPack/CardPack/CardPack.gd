@@ -75,3 +75,5 @@ func _update_and_calculate_delta(card: Card) -> void:
 	if type != new_type:
 		merge_mask |= 1 << MainProperty.TYPE
 		type = new_type
+func get_id()->int:
+	return id

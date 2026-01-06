@@ -8,6 +8,7 @@ var modifier_manager := ModifierManager.new(game_state)
 var command_processor := CommandProcessor.new(game_state)
 var stage_manager := StageManager.new(game_state)
 var operation_handler := OperationHandler.new()
+var tansport:Transport = GlobalTransport
 
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
@@ -22,6 +23,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	stage_manager.set_timer(timer)
+	tansport.operation_request_received.connect(operation_handler.handle_request)
 	operation_handler.operation_validated.connect(stage_manager.handle_validated_request)
 	signal_connect_test()
 	game_state.load_cards()

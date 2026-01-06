@@ -147,7 +147,6 @@ func _on_stage_ended(ended_stage: Stage) -> void:
 ## 计时器超时处理
 func _on_timer_timeout() -> void:
 	if current_stage and not current_stage.is_ended:
-		current_stage.execute_default_action()
 		complete_current_stage()  # 使用统一的结束接口
 
 func start_round(player_id:int = 0) -> void:

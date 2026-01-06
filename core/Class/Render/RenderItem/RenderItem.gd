@@ -72,6 +72,7 @@ func is_hovering(mouse_pos):
 	return Rect2(position,position+item_size).has_point(mouse_pos)
 
 func get_id()->int:
-	if !data.has_meta(&"id"):
-		return 0
-	return data.id
+	if data:
+		return data.get_id()
+	else :
+		return -1

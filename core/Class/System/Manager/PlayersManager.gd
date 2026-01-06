@@ -3,7 +3,7 @@ class_name PlayersManager
 
 var players: Array[Player] = []              ## 按座位顺序存储玩家实例
 var _players_by_id: Dictionary = {}          ## 内置ID映射字典（玩家ID->实例）
-var _next_player_id: int = 1                 ## 内置缓存：下一个可分配的玩家ID
+var _next_player_id: int = 0                 ## 内置缓存：下一个可分配的玩家ID
 const ai_peer_id: int = -1                   ## AI控制的玩家peer_id固定为-1
 signal peer_player_added(peer_id: int, player_id: int)
 ## 添加玩家并分配ID和座位，返回创建的玩家实例

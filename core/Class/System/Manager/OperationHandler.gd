@@ -18,13 +18,14 @@ func verify_operation(request: OperationRequest) -> bool:
 	return source_player_id == request.source_player_id
 
 func handle_request(request: OperationRequest) -> void:
-	if request == _null_request:
-		return
+	GlobalConsole._print(["OperationHandler:接受到请求：",request.get_class_name()])
 	if !verify_operation(request):
+		GlobalConsole._print(["OperationHandler:取消请求：",request.get_class_name(),"原因：对等体访问了不合法的玩家"])
 		return
 	var player_id = request.source_player_id
 	if !_can_accept_new_request(player_id):
 		return
+
 	_setup_request_tracking(player_id, request)
 	operation_validated.emit(request)
 

@@ -10,7 +10,7 @@ var operation_manager: OperationManager = OperationManager.new(transport,render_
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE, self)
 	render_manager.render_tree_init(self, render_context)  # 注入上下文
-	GlobalConsole.c_play_a_card.connect(_on_play_a_card)
+	GlobalConsole.c_play_selected_card.connect(_on_play_a_card)
 	transport.render_request_received.connect(handle_request)
 
 func _on_play_a_card() -> void:
