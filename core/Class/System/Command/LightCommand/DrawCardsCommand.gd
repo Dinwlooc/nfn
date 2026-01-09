@@ -1,44 +1,34 @@
-extends BehaviorCommand
+extends CardMoveCommand
 class_name DrawCardsCommand
 
-enum Phase {
-	INIT,       # 声明即将创建移出事件
-	MOVE_OUT,   # 执行移出事件
-	MOVE_IN,    # 执行移入事件
-	DONE        # 完成
-}
-
-var _draw_count: int
-var _player_index: int
-var _drawn_cards: Array[Card] = []
-
-func _init(init_player_index: int, draw_count: int):
-	super._init(&"DrawCards", init_player_index)
-	_player_index = init_player_index
-	_draw_count = draw_count
-	current_phase = Phase.INIT
-
-func execute(game_state: GameState) -> void:
-	match current_phase:
-		Phase.INIT:
-			current_phase = Phase.MOVE_OUT
-		Phase.MOVE_OUT:
-			var card_count:int = game_state.area_drawing.card_count()
-			var draw_count = min(_draw_count, card_count)
-			if draw_count <= 0:
-				current_phase = Phase.DONE
-			var move_out:CardMoveCommand.Out = CardMoveCommand.Out.new(
-				game_state.area_drawing,_player_id).set_top_mode(draw_count)
-			move_out.execute()
-			_drawn_cards = move_out.get_cards()
-			current_phase = Phase.MOVE_IN
-		Phase.MOVE_IN:
-			var target_area = game_state.player_manager.get_player_by_seat(_player_index).area_hand
-			var move_in = CardMoveCommand.In.new(
-				target_area,
-				_drawn_cards,
-				_player_id
-			)
-			move_in.execute()
-			current_phase = Phase.DONE
-			complete()
+## 抽牌命令上下文类
+class Context extends CardMoveCommand.Context:
+	var draw_count: int = 0
+	## 设置抽牌数量
+	func set_draw_count(count: int) -> void:
+		draw_count = count
+	## 获取实际的抽牌数量（考虑源区域的卡牌数量限制）
+	func get_actual_draw_count(source_area: Area) -> int:
+		if not source_area:
+			return 0
+		return min(draw_count, source_area.card_count())
+## 抽牌命令
+func _init(init_player_index: int, draw_count: int,context:Context = Context.new()) -> void:
+	super._init(&"DrawCards", init_player_index,context)
+	_context.set_draw_count(draw_count)
+## 覆盖父类的初始化阶段方法
+func _on_init_phase(game_state: GameState, context: CardMoveCommand.Context) -> void:
+	# 将上下文转换为抽牌命令的上下文类型
+	var draw_context := context as Context
+	if not draw_context:
+		push_error("DrawCardsCommand: 上下文类型错误")
+		context.phase = CardMoveCommand.Context.Phase.DONE
+		return
+	context.source_area = game_state.area_drawing
+	context.target_area = game_state.player_manager.get_player_by_seat(context.player_id).area_hand
+	var actual_draw_count = draw_context.get_actual_draw_count(context.source_area)
+	if actual_draw_count <= 0:
+		context.phase = CardMoveCommand.Context.Phase.DONE
+		return
+	draw_context.set_top_mode(actual_draw_count)
+	context.phase = CardMoveCommand.Context.Phase.MOVE_OUT

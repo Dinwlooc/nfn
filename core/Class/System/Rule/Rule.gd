@@ -99,7 +99,7 @@ static func _check_and_create_with_instances(
 		source_player_id,
 		PackedInt32Array([card_id]),
 		target_id,
-		rule_config.get(&"target_area", PlayCardsCommand.TargetAreaType.PLAYER_DEF)
+		rule_config.get(&"target_area", PlayCardsCommand.Context.TargetAreaType.PLAYER_DEF)
 	)
 	var should_respond = rule_config.get(&"response_required", false)
 	var responsive_players = PackedInt32Array()
@@ -188,8 +188,8 @@ static func _execute_validator_with_instances(
 				return RuleResult.new(false, null, "此卡牌只能对他人使用")
 		Validator.DISTANCE_CHECK:
 			if target_player and target_id != source_player.player_id:
-				var card_range: int = card.get_attribute("attack_range")
-				if card_range >= 0:  # 只有攻击牌有range属性
+				var card_range: int = card.get_attribute(&"attack_range")
+				if card_range >= 0:
 					var distance: int = game_state.player_manager.calculate_distance(
 						source_player.seat_index,
 						target_player.seat_index
@@ -238,7 +238,7 @@ static func check_and_create_command_with_instances(
 		source_player.player_id,
 		PackedInt32Array([card.id]),
 		target_player.player_id if target_player else -1,
-		rule_config.get("target_area", PlayCardsCommand.TargetAreaType.PLAYER_DEF)
+		rule_config.get("target_area", PlayCardsCommand.Context.TargetAreaType.PLAYER_DEF)
 	)
 	var should_respond = rule_config.get(&"response_required", false)
 	var responsive_players = PackedInt32Array()

@@ -21,7 +21,7 @@ func process() -> void:
 			all_completed.emit()
 		return
 	var current_behavior: BehaviorCommand = behavior_stack.back()
-	if current_behavior.is_completed:
+	if current_behavior._is_completed:
 		behavior_stack.pop_back()
 		return
 	current_behavior.execute(game_state)
