@@ -7,7 +7,6 @@ class Context extends CardMoveCommand.Context:
 		CENTER,     # 中心区域
 		PLAYER_DEF  # 玩家防御区
 	}
-
 	var source_player_id: int = 0
 	var target_player_id: int = 0
 	var target_area_type: TargetAreaType = TargetAreaType.PLAYER_DEF

@@ -176,3 +176,50 @@ func _compress_ordered_pool(start_index: int) -> void:
 				_card_id_to_index[_ordered_pool[read_index].id] = write_index
 			write_index += 1
 	_ordered_pool.resize(write_index)
+
+func get_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
+	var result: Array[Card] = []
+	match mode:
+		AreaMode.ORDERED:
+			for id in ids:
+				if _card_id_to_index.has(id):
+					var index = _card_id_to_index[id]
+					if index >= 0 and index < _ordered_pool.size():
+						result.append(_ordered_pool[index])
+		AreaMode.UNORDERED:
+			for id in ids:
+				if _unordered_pool.has(id):
+					result.append(_unordered_pool[id])
+	return result
+
+func get_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
+	var result: Array[Card] = []
+	match mode:
+		AreaMode.ORDERED:
+			for index in indices:
+				if index >= 0 and index < _ordered_pool.size() and _ordered_pool[index] != null:
+					result.append(_ordered_pool[index])
+		AreaMode.UNORDERED:
+			var keys = _unordered_pool.keys()
+			for idx in indices:
+				if idx >= 0 and idx < keys.size():
+					var card = _unordered_pool.get(keys[idx])
+					if card:
+						result.append(card)
+	return result
+
+func get_top_cards(count: int) -> Array[Card]:
+	var result: Array[Card] = []
+	count = min(count, card_count())
+	match mode:
+		AreaMode.ORDERED:
+			var start_index = max(0, _ordered_pool.size() - count)
+			for i in range(start_index, _ordered_pool.size()):
+				if _ordered_pool[i] != null:
+					result.append(_ordered_pool[i])
+		AreaMode.UNORDERED:
+			var keys = _unordered_pool.keys()
+			var start_index = max(0, keys.size() - count)
+			for i in range(start_index, keys.size()):
+				result.append(_unordered_pool[keys[i]])
+	return result

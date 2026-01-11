@@ -1,7 +1,6 @@
 extends TransPack
 
 class_name RenderRequest
-
 var target_area: StringName
 
 func send_to_player(peer_id: int) -> void:
