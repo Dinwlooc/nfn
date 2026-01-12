@@ -10,7 +10,7 @@ enum Phase {
 
 func _init() -> void:
 	_context = CommandContext.new()
-	super._init(&"GameStart", -1)
+	super._init(-1,&"GameStart")
 	_context.phase = Phase.INIT_SETUP
 
 func execute(game_state: GameState) -> void:

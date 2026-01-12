@@ -8,9 +8,9 @@ var _context: CommandContext
 signal companion_command_requested(command: BehaviorCommand)
 signal event_completed
 
-func _init(name: StringName, init_player_id: int = -1,context:CommandContext = CommandContext.new()):
-	_context = context
-	_context.event_name = name
+func _init(init_player_id: int = -1,name_overriding:StringName = &"Null" ,context_overriding:CommandContext = CommandContext.new()):
+	_context = context_overriding
+	_context.event_name = name_overriding
 	_context.player_id = init_player_id
 
 func complete() -> void:

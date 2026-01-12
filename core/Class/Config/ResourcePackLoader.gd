@@ -8,7 +8,7 @@ var _registry: Dictionary[StringName,Dictionary] = {}
 
 func load_all(packs: Dictionary) -> void:
 	clear_registry()
-	_load_pack_set(packs.get(&"official", []), "res://official/")
+	_load_pack_set(packs.get(&"official", []), "res://resource/")
 	_load_pack_set(packs.get(&"mods", []), "res://mods/")
 	all_packs_loaded.emit()
 

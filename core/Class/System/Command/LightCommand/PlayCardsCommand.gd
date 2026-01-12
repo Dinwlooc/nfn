@@ -32,9 +32,10 @@ func _init(
 	card_ids: PackedInt32Array,
 	target_player_id: int,
 	target_area_type: Context.TargetAreaType = Context.TargetAreaType.PLAYER_DEF,
-	context = Context.new()
+	name_overriding:StringName = &"PlayCards",
+	context_overriding = Context.new()
 ) -> void:
-	super._init(&"PlayCards", source_player_id,	context)
+	super._init(source_player_id,name_overriding,context_overriding)
 	_context.set_source_player_id(source_player_id)
 	_context.set_target_player_id(target_player_id)
 	_context.set_target_area_type(target_area_type)

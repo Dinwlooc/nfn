@@ -19,7 +19,7 @@ func enter_expand() -> void:
 func process_operation_request(request: OperationRequest) -> void:
 	if is_ended or is_paused:
 		return
-	if request.get_class_name_static() == &"play_card":
+	if request.get_class_name() == &"play_card":
 		_process_play_card_request(request)
 	else:
 		GlobalConsole._print(["主阶段：收到不支持的操作类型", request.get_class_name_static()])

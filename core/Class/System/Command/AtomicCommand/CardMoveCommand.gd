@@ -10,7 +10,6 @@ class Context extends CommandContext:
 		MOVE_IN,        # 执行移入事件
 		DONE            # 完成
 	}
-
 	enum MoveOutMode {
 		TOP,            # 顶部移除
 		INDICES,        # 索引移除
@@ -37,8 +36,8 @@ class Context extends CommandContext:
 		move_out_mode = MoveOutMode.BY_ID
 		move_out_param = ids
 ## 卡牌移动命令
-func _init(command_name: StringName, player_id: int , context:Context = Context.new()) -> void:
-	super._init(command_name, player_id,context)
+func _init( player_id: int ,name_overriding: StringName, context_overriding:Context = Context.new()) -> void:
+	super._init(player_id,name_overriding,context_overriding)
 
 func execute(game_state: GameState) -> void:
 	match _context.phase:

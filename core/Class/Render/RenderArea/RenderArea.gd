@@ -219,19 +219,12 @@ func compact_pool(min_index: int, removed_count: int) -> void:
 		var card = items_pool[read_index]
 		if card == null:
 			continue
-		update_card_position(card, write_index)
+		_update_item_position(card, write_index)
 		items_pool[write_index] = card
 		write_index += 1
 	items_pool.resize(write_index)
 	render_update()
 
-func update_card_position(item: RenderItem, new_index: int) -> void:
-	item.pool_id = new_index
-	if new_index >= items_pool.size():
-		items_pool.append(item)
-	else:
-		items_pool[new_index] = item
-	item_move_requested.emit(item, new_index,self)
 # 移动卡片
 func move_card_to_index(current_pool_id: int, target_index: int, render_event: RenderEvent = RenderEvent.new()) -> void:
 	var pool_size: int = items_pool.size()
@@ -247,13 +240,13 @@ func move_card_to_index(current_pool_id: int, target_index: int, render_event: R
 		start_index = current_pool_id + 1
 		end_index = target_index
 		for i in range(start_index, end_index + 1):
-			update_card_position(items_pool[i], i - 1)
+			_update_item_position(items_pool[i], i - 1)
 	else:
 		start_index = current_pool_id - 1
 		end_index = target_index
 		for i in range(start_index, end_index - 1, -1):
-			update_card_position(items_pool[i], i + 1)
-	update_card_position(moved_card, target_index)
+			_update_item_position(items_pool[i], i + 1)
+	_update_item_position(moved_card, target_index)
 	tween_update(render_event)
 # 交换卡片
 func swap_cards(pool_id_a: int, pool_id_b: int) -> void:
@@ -264,8 +257,8 @@ func swap_cards(pool_id_a: int, pool_id_b: int) -> void:
 		return
 	var card_a = items_pool[pool_id_a]
 	var card_b = items_pool[pool_id_b]
-	update_card_position(card_a, pool_id_b)
-	update_card_position(card_b, pool_id_a)
+	_update_item_position(card_a, pool_id_b)
+	_update_item_position(card_b, pool_id_a)
 	render_update()
 
 func insert_non_render_item(node: Node, tree_index: int) -> bool:

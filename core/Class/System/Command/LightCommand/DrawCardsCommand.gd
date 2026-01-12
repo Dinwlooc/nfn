@@ -13,8 +13,8 @@ class Context extends CardMoveCommand.Context:
 			return 0
 		return min(draw_count, source_area.card_count())
 ## 抽牌命令
-func _init(init_player_index: int, draw_count: int,context:Context = Context.new()) -> void:
-	super._init(&"DrawCards", init_player_index,context)
+func _init(init_player_index: int, draw_count: int, name_overriding:StringName = &"DrawCards",context_overriding:Context = Context.new()) -> void:
+	super._init(init_player_index,name_overriding,context_overriding)
 	_context.set_draw_count(draw_count)
 ## 覆盖父类的初始化阶段方法
 func _on_init_phase(game_state: GameState, context: CardMoveCommand.Context) -> void:
