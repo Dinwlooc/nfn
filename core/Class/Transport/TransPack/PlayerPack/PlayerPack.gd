@@ -1,4 +1,4 @@
-extends TransPack
+extends ItemPack
 class_name PlayerPack
 
 enum MainProperty {
@@ -14,8 +14,7 @@ enum MainProperty {
 	END  # 子类枚举衔接点
 }
 
-# 玩家属性
-var player_id: int
+# 玩家特定属性
 var seat_index: int = -1
 var HP_max: int = 0
 var HP: int = 0
@@ -25,13 +24,10 @@ var AP: int = 0
 var init_AP: int = 3
 var draw_cards_count: int = 2
 var disallowed_operations: Array[StringName] = []
-var merge_mask: int = 0
-const VERSION_MAX: int = 65535
 
-# 从Player对象初始化
+# 工厂方法
 static func init_from_player(player: Player) -> PlayerPack:
-	var pack = PlayerPack.new()
-	pack.player_id = player.player_id
+	var pack = PlayerPack.new(player.player_id)
 	pack.seat_index = player.seat_index
 	pack.HP_max = player.HP_max
 	pack.HP = player.HP
@@ -44,14 +40,13 @@ static func init_from_player(player: Player) -> PlayerPack:
 	pack.update_merge_mask()
 	return pack
 
-func _init(init_player_id: int = 0):
-	player_id = init_player_id
+# 初始化（调用父类初始化）
+func _init(init_player_id: int = 0) -> void:
+	super._init(init_player_id)
 
-# 序列化实现（使用枚举位）
+# 序列化实现（调用父类方法并扩展）
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
-	SerializationUtil.write(buffer, player_id)
-	SerializationUtil.write(buffer, version)
-	SerializationUtil.write(buffer, merge_mask)
+	super.serialize_to_buffer(buffer)
 	if merge_mask & (1 << MainProperty.SEAT_INDEX):
 		SerializationUtil.write(buffer, seat_index)
 	if merge_mask & (1 << MainProperty.HP_MAX):
@@ -71,17 +66,11 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	if merge_mask & (1 << MainProperty.DISALLOWED_OPERATIONS):
 		SerializationUtil.write(buffer, disallowed_operations)
 
-# 反序列化实现
-static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> PlayerPack:
-	var pack := PlayerPack.new()
-	return _deserialize_parent_properties(buffer, pack)
-
-# 反序列化辅助方法
-static func _deserialize_parent_properties(buffer: StreamPeerBuffer, pack: PlayerPack) -> PlayerPack:
-	pack.player_id = SerializationUtil.read(buffer, TYPE_INT)
-	pack.version = SerializationUtil.read(buffer, TYPE_INT)
-	pack.merge_mask = SerializationUtil.read(buffer, TYPE_INT)
-
+# 反序列化静态方法（调用父类方法）
+static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> PlayerPack:
+	if pack == NULL_PACK:
+		pack = PlayerPack.new()
+	super.deserialize_from_buffer(buffer, pack)
 	if pack.merge_mask & (1 << MainProperty.SEAT_INDEX):
 		pack.seat_index = SerializationUtil.read(buffer, TYPE_INT)
 	if pack.merge_mask & (1 << MainProperty.HP_MAX):
@@ -100,41 +89,32 @@ static func _deserialize_parent_properties(buffer: StreamPeerBuffer, pack: Playe
 		pack.draw_cards_count = SerializationUtil.read(buffer, TYPE_INT)
 	if pack.merge_mask & (1 << MainProperty.DISALLOWED_OPERATIONS):
 		pack.disallowed_operations = SerializationUtil.read(buffer, TYPE_ARRAY)
-
 	return pack
 
-static func get_class_name_static() -> StringName:
-	return &"PlayerPack"
+# 合并方法（调用父类方法并扩展）
+func merge(update_pack: ItemPack) -> void:
+	super.merge(update_pack)
+	var player_update_pack := update_pack as PlayerPack
+	if player_update_pack.merge_mask & (1 << MainProperty.SEAT_INDEX):
+		seat_index = player_update_pack.seat_index
+	if player_update_pack.merge_mask & (1 << MainProperty.HP_MAX):
+		HP_max = player_update_pack.HP_max
+	if player_update_pack.merge_mask & (1 << MainProperty.HP):
+		HP = player_update_pack.HP
+	if player_update_pack.merge_mask & (1 << MainProperty.MP_MAX):
+		MP_max = player_update_pack.MP_max
+	if player_update_pack.merge_mask & (1 << MainProperty.MP):
+		MP = player_update_pack.MP
+	if player_update_pack.merge_mask & (1 << MainProperty.AP):
+		AP = player_update_pack.AP
+	if player_update_pack.merge_mask & (1 << MainProperty.INIT_AP):
+		init_AP = player_update_pack.init_AP
+	if player_update_pack.merge_mask & (1 << MainProperty.DRAW_CARDS_COUNT):
+		draw_cards_count = player_update_pack.draw_cards_count
+	if player_update_pack.merge_mask & (1 << MainProperty.DISALLOWED_OPERATIONS):
+		disallowed_operations = player_update_pack.disallowed_operations.duplicate()
 
-# 合并增量更新的PlayerPack数据
-func merge(update_pack: PlayerPack) -> void:
-	assert(update_pack.player_id == self.player_id,
-		"Player ID mismatch during merge: %d vs %d" % [self.player_id, update_pack.player_id])
-
-	player_id = update_pack.player_id
-	version = update_pack.version
-
-	if update_pack.merge_mask & (1 << MainProperty.SEAT_INDEX):
-		self.seat_index = update_pack.seat_index
-	if update_pack.merge_mask & (1 << MainProperty.HP_MAX):
-		self.HP_max = update_pack.HP_max
-	if update_pack.merge_mask & (1 << MainProperty.HP):
-		self.HP = update_pack.HP
-	if update_pack.merge_mask & (1 << MainProperty.MP_MAX):
-		self.MP_max = update_pack.MP_max
-	if update_pack.merge_mask & (1 << MainProperty.MP):
-		self.MP = update_pack.MP
-	if update_pack.merge_mask & (1 << MainProperty.AP):
-		self.AP = update_pack.AP
-	if update_pack.merge_mask & (1 << MainProperty.INIT_AP):
-		self.init_AP = update_pack.init_AP
-	if update_pack.merge_mask & (1 << MainProperty.DRAW_CARDS_COUNT):
-		self.draw_cards_count = update_pack.draw_cards_count
-	if update_pack.merge_mask & (1 << MainProperty.DISALLOWED_OPERATIONS):
-		# 数组类型直接替换
-		self.disallowed_operations = update_pack.disallowed_operations.duplicate()
-
-# 计算与旧包的差异掩码
+# 计算差异掩码
 func calculate_delta_mask(old_pack: PlayerPack) -> int:
 	var delta_mask := 0
 	if seat_index != old_pack.seat_index:
@@ -157,9 +137,9 @@ func calculate_delta_mask(old_pack: PlayerPack) -> int:
 		delta_mask |= 1 << MainProperty.DISALLOWED_OPERATIONS
 	return delta_mask
 
-# 更新合并掩码（基于非默认值）
+# 更新合并掩码（调用父类方法并扩展）
 func update_merge_mask() -> void:
-	merge_mask = 0
+	super.update_merge_mask()
 	if seat_index != -1: merge_mask |= 1 << MainProperty.SEAT_INDEX
 	if HP_max != 0: merge_mask |= 1 << MainProperty.HP_MAX
 	if HP != 0: merge_mask |= 1 << MainProperty.HP
@@ -170,12 +150,13 @@ func update_merge_mask() -> void:
 	if draw_cards_count != 2: merge_mask |= 1 << MainProperty.DRAW_CARDS_COUNT
 	if not disallowed_operations.is_empty(): merge_mask |= 1 << MainProperty.DISALLOWED_OPERATIONS
 
-# 增量更新方法（从Player对象更新）
+# 增量更新方法
 func _update_and_calculate_delta(player: Player) -> int:
 	merge_mask = 0
 	var delta_mask := 0
 
-	player_id = player.player_id
+	id = player.player_id
+	super.update_merge_mask()  # 更新ID部分
 
 	if seat_index != player.seat_index:
 		merge_mask |= 1 << MainProperty.SEAT_INDEX
@@ -225,14 +206,10 @@ func _update_and_calculate_delta(player: Player) -> int:
 	version = (version + 1) % VERSION_MAX
 	return delta_mask
 
-# 获取玩家ID
+# 获取玩家ID（保持兼容性）
 func get_player_id() -> int:
-	return player_id
+	return id
 
-# 获取当前版本号
-func get_version() -> int:
-	return version
-
-# 设置版本号（带回绕检查）
-func set_version(new_version: int) -> void:
-	version = new_version % VERSION_MAX
+# 获取类名（静态）
+static func get_class_name_static() -> StringName:
+	return &"PlayerPack"

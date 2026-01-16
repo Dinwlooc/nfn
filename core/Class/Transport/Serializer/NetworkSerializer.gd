@@ -14,6 +14,6 @@ static func deserialize(bytes: PackedByteArray) -> Dictionary:
 	var buffer = StreamPeerBuffer.new()
 	buffer.put_data(bytes)
 	buffer.seek(0)
-	var result = {}    
+	var result = {}
 	result[&"url"] = read(buffer, TYPE_INT)
 	return result

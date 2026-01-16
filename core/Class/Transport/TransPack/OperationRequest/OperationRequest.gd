@@ -13,7 +13,7 @@ func complete() -> void:
 	completed.emit()
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	pass
-static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> OperationRequest:
+static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> OperationRequest:
 	return OperationRequest.new()
 
 class PlayCard extends OperationRequest:
@@ -28,7 +28,7 @@ class PlayCard extends OperationRequest:
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		TransPackSerializer.write(buffer, _card_id)
 		TransPackSerializer.write(buffer, _target_id)
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> OperationRequest:
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> OperationRequest:
 		var instance = PlayCard.new(0,0)
 		instance._card_id = TransPackSerializer.read(buffer, TYPE_INT)
 		instance._target_id = TransPackSerializer.read(buffer, TYPE_INT)

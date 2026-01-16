@@ -16,7 +16,7 @@ class ItemAdd extends RenderRequest:
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, target_area)
 		ItemSerializer.serialize_array(items, buffer)
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> RenderRequest:
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> RenderRequest:
 		var area: StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 		var items: Array[TransPack] = ItemSerializer.deserialize_array(buffer)
 		return ItemAdd.new(area, items)
@@ -32,7 +32,7 @@ class ItemRemove extends RenderRequest:
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, target_area)
 		SerializationUtil.write(buffer, uids)
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> RenderRequest:
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> RenderRequest:
 		var area: StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 		var uids: PackedInt32Array = SerializationUtil.read(buffer, TYPE_PACKED_INT32_ARRAY)
 		return ItemRemove.new(area, uids)
@@ -47,7 +47,7 @@ class ItemUpdate extends RenderRequest:
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, target_area)
 		ItemSerializer.serialize(item, buffer)
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> RenderRequest:
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> RenderRequest:
 		var area: StringName = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 		var item: TransPack = ItemSerializer.deserialize(buffer)
 		return ItemUpdate.new(area, item)

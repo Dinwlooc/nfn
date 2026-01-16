@@ -1,60 +1,53 @@
-extends TransPack
+extends ItemPack
 class_name CardPack
 
+# 从 ItemPack.MainProperty.END 继续枚举
 enum MainProperty {
-	NAME,
+	NAME ,
 	TYPE,
 	END  # 子类枚举衔接点
 }
 
-# 卡牌基础属性
-var id: int
+# 卡牌特定属性
 var name: StringName
 var type: int
-var merge_mask: int = 0
 const CardType = GlobalConstants.KEY_CARD_TYPE
 const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
-const VERSION_MAX: int = 65535
 
+# 工厂方法
 static func init_from_card(card: Card) -> CardPack:
 	return CardPack.new(card.id, card.name, card.type)
 
-func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL):
-	id = init_id
+# 初始化（调用父类初始化）
+func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL) -> void:
+	super._init(init_id)
 	name = init_name
 	type = GlobalRegistry.get_constant_index(CardType, init_type_name)
 
-# 序列化实现（使用枚举位）
+# 序列化实现（调用父类方法并扩展）
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
-	SerializationUtil.write(buffer, id)
-	SerializationUtil.write(buffer, version)
-	SerializationUtil.write(buffer, merge_mask)
+	super.serialize_to_buffer(buffer)
 	if merge_mask & (1 << MainProperty.NAME): SerializationUtil.write(buffer, name)
 	if merge_mask & (1 << MainProperty.TYPE): SerializationUtil.write(buffer, type)
 
-static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> CardPack:
-	var pack := CardPack.new()
-	return _deserialize_parent_properties(buffer, pack)
-# 反序列化辅助方法
-static func _deserialize_parent_properties(buffer: StreamPeerBuffer, pack: CardPack) -> CardPack:
-	pack.id = SerializationUtil.read(buffer, TYPE_INT)
-	pack.version = SerializationUtil.read(buffer, TYPE_INT)
-	pack.merge_mask = SerializationUtil.read(buffer, TYPE_INT)
+# 反序列化静态方法（调用父类方法）
+static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> CardPack:
+	if pack == NULL_PACK:
+		pack = CardPack.new()
+	super.deserialize_from_buffer(buffer,pack)
 	if pack.merge_mask & (1 << MainProperty.NAME):
 		pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 	if pack.merge_mask & (1 << MainProperty.TYPE):
 		pack.type = SerializationUtil.read(buffer, TYPE_INT)
 	return pack
 
-static func get_class_name_static() -> StringName:
-	return &"CardPack"
-
-func merge(update_pack: CardPack) -> void:
-	id = update_pack.id
-	version = update_pack.version
+# 合并方法（调用父类方法并扩展）
+func merge(update_pack:ItemPack) -> void:
+	super.merge(update_pack)
 	if update_pack.merge_mask & (1 << MainProperty.NAME): name = update_pack.name
 	if update_pack.merge_mask & (1 << MainProperty.TYPE): type = update_pack.type
 
+# 计算差异掩码
 func calculate_delta_mask(old_pack: CardPack) -> int:
 	var delta_mask := 0
 	if name != old_pack.name:
@@ -63,15 +56,19 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 		delta_mask |= 1 << MainProperty.TYPE
 	return delta_mask
 
+# 更新合并掩码（调用父类方法并扩展）
 func update_merge_mask() -> void:
-	merge_mask = 0
+	super.update_merge_mask()
 	if name != &"": merge_mask |= 1 << MainProperty.NAME
 	if type != 0: merge_mask |= 1 << MainProperty.TYPE
+
 # 增量更新方法
 func _update_and_calculate_delta(card: Card) -> void:
 	var new_type = GlobalRegistry.get_constant_index(CardType, card.type)
 	id = card.id
 	merge_mask = 0
+	super.update_merge_mask()  # 更新ID部分
+
 	if name != card.name:
 		merge_mask |= 1 << MainProperty.NAME
 		name = card.name
@@ -80,13 +77,6 @@ func _update_and_calculate_delta(card: Card) -> void:
 		type = new_type
 	version = (version + 1) % VERSION_MAX
 
-func get_id() -> int:
-	return id
-
-# 获取当前版本号
-func get_version() -> int:
-	return version
-
-# 设置版本号（带回绕检查）
-func set_version(new_version: int) -> void:
-	version = new_version % VERSION_MAX
+# 获取类名（静态）
+static func get_class_name_static() -> StringName:
+	return &"CardPack"

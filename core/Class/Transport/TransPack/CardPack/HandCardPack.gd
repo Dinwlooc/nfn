@@ -55,9 +55,10 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 static func get_class_name_static() -> StringName:
 	return &"HandCardPack"
 # 统一反序列化
-static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> CardPack:
-	var pack := HandCardPack.new()
-	CardPack. _deserialize_parent_properties(buffer, pack)
+static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> CardPack:
+	if pack == NULL_PACK:
+		pack = HandCardPack.new()
+	super.deserialize_from_buffer(buffer,pack)
 	if pack.merge_mask & (1 << Property.POWER):
 		pack.power = SerializationUtil.read(buffer, TYPE_INT)
 	if pack.merge_mask & (1 << Property.COST):
@@ -70,7 +71,7 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer) -> CardPack:
 		pack.modified_cost = SerializationUtil.read(buffer, TYPE_INT)
 	return pack
 # 统一合并方法
-func merge(update_pack: CardPack) -> void:
+func merge(update_pack:ItemPack) -> void:
 	super.merge(update_pack)
 	if not update_pack is HandCardPack:
 		return

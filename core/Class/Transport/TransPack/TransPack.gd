@@ -2,6 +2,7 @@ extends RefCounted
 class_name TransPack
 
 var version:int = 0
+static var NULL_PACK = TransPack.new()
 
 ## 必须被子类实现的序列化接口
 func serialize_to_buffer(_buffer: StreamPeerBuffer) -> void:
@@ -9,7 +10,7 @@ func serialize_to_buffer(_buffer: StreamPeerBuffer) -> void:
 	assert(false)
 
 ## 必须被子类实现的反序列化接口
-static func deserialize_from_buffer(_buffer: StreamPeerBuffer) -> TransPack:
+static func deserialize_from_buffer(_buffer: StreamPeerBuffer , pack_override:TransPack = NULL_PACK) -> TransPack:
 	push_error("TransPack.deserialize_from_buffer() must be overridden in subclass")
 	assert(false)
 	return TransPack.new()
