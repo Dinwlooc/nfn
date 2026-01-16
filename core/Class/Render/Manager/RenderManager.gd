@@ -34,7 +34,7 @@ func _init_preset_item(item:RenderItem, area:RenderArea, pool_index:int) -> void
 	item.area_name = area.area_name
 	item.render_context = area.render_context
 	_connect_item_to_area(item, area)
-	area.add_render_item_child(item, pool_index)
+	area.add_item(item, pool_index)
 	item.data_requested.connect(_create_item_face)
 	for face in item.get_children():
 		if face is ItemFace:
@@ -87,7 +87,7 @@ func add_items_to_area(packs:Array[TransPack], area:RenderArea) -> void:
 		var item:RenderItem = _create_single_item(packs[i])
 		var pool_index:int = start_index + i
 		_connect_item_to_area(item, area)
-		area.add_render_item_child(item, pool_index)
+		area.add_item(item, pool_index)
 	area.render_update()
 
 func _create_single_item(item_data:TransPack) -> RenderItem:
@@ -129,5 +129,5 @@ func move_items_to_area(items:Array[RenderItem], target_area:RenderArea) -> void
 			if source_area:
 				_disconnect_item_from_area(item, source_area)
 		_connect_item_to_area(item, target_area)
-		target_area.add_render_item_child(item, pool_index)
+		target_area.add_item(item, pool_index)
 	target_area.render_update()

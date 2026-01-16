@@ -107,7 +107,7 @@ func swap_cards(drag_card:RenderItem)->void:
 		return
 	if hovering_card:
 		hovering_card.hovering = false
-		area.move_card_to_index(drag_card.pool_id, hovering_card.pool_id,RenderEvent.new().set_config({&"rotate":true}))
+		area.move_item_to_index(drag_card.pool_id, hovering_card.pool_id,RenderEvent.new().set_config({&"rotate":true}))
 		hovering_card = null
 		swap_cooldown = SWAP_COOLDOWN_DURATION
 

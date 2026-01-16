@@ -60,7 +60,6 @@ func send_cards_add(new_cardpool: Array[Card]) -> void:
 
 # 可选方法（有些区域可能不支持）
 func shuffle_card_pool() -> void:
-	# 默认实现什么也不做，无序区域可以重写
 	pass
 
 func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:

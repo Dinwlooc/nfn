@@ -1,4 +1,4 @@
-extends RenderArea
+extends ItemRenderArea
 class_name RenderAreaTargets
 
 func ready_expand()->void:

@@ -24,7 +24,7 @@ signal face_update()
 signal render_requested(render_event:RenderEvent)
 signal data_requested(item:RenderItem)
 signal request_select(item:RenderItem)
-signal request_drag(pool_id:int)
+signal request_drag(item:RenderItem)
 
 func _init(new_data:TransPack = TransPack.new()) -> void:
 	data = new_data
@@ -56,7 +56,7 @@ func request_dragging():
 			dragging = DraggingState.CHECKING
 			await get_tree().create_timer(0.1).timeout
 			if dragging == DraggingState.CHECKING:
-				request_drag.emit(pool_id)
+				request_drag.emit(self)
 				if not selected:
 					request_selecting()
 				dragging = DraggingState.DRAGGING
@@ -65,7 +65,7 @@ func request_dragging():
 		DraggingState.CHECKING:
 			dragging = DraggingState.FAILED
 		DraggingState.DRAGGING:
-			request_drag.emit(pool_id)
+			request_drag.emit(self)
 			dragging = DraggingState.READY
 
 func is_hovering(mouse_pos):
