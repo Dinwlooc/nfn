@@ -1,9 +1,8 @@
-extends Area
+extends UnorderedArea
 class_name AreaHand
 
 func _init_expand()->void:
 	area_name = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
-	mode = AreaMode.UNORDERED
 
 func play()->void:
 	pass

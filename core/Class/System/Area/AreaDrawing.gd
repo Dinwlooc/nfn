@@ -1,8 +1,8 @@
-extends Area
+extends OrderedArea
 class_name AreaDrawing
 
-func _init():
-	area_name = "areadrawing"
+func _init_expand()->void:
+	area_name = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.DRAWING]
 
 func drawing()->void:
 	pass

@@ -1,4 +1,4 @@
-extends Area
+extends OrderedArea
 class_name AreaDefensive
 
 signal battle_formed(top_card: Card, pending_card: Card)  # 斗牌形成时触发

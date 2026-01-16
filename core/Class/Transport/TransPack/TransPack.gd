@@ -1,6 +1,8 @@
 extends RefCounted
 class_name TransPack
 
+var version:int = 0
+
 ## 必须被子类实现的序列化接口
 func serialize_to_buffer(_buffer: StreamPeerBuffer) -> void:
 	push_error("TransPack.serialize_to_buffer() must be overridden in subclass")

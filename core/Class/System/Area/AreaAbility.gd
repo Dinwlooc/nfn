@@ -1,4 +1,4 @@
-extends Area
+extends OrderedArea
 class_name AreaAbility
 
 var ability_registry:Dictionary

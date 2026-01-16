@@ -18,7 +18,7 @@ var current_page: int = 0
 var current_selection: int = -1
 var filtered:Array
 var command_suggestions: Array = GlobalConsole.command_list.keys()
-
+var panel_tween: Tween
 const MAX_HISTORY: int = 100
 const page_size: int = 9
 
@@ -27,18 +27,32 @@ func _ready():
 	input_load()
 	suggestion_labels_load()
 	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE,self)  # 注册到全局控制台系统
-	pass
+	position = original_position # 确保初始位置是隐藏的
 
-func _process(_delta):
-	panel_animation_control()
-	pass
+func animate_panel_position(target_position: Vector2, duration: float = 0.3):
+	if panel_tween and panel_tween.is_running():
+		panel_tween.stop()
+	panel_tween = create_tween()
+	panel_tween.set_trans(Tween.TRANS_QUINT)
+	panel_tween.set_ease(Tween.EASE_OUT)
+	panel_tween.tween_property(self, ^"position", target_position, duration)
 
-func panel_animation_control():
+# 显示/隐藏面板的触发函数
+func toggle_panel_display():
+	panel_display = !panel_display
 	if panel_display:
-		position = UIAnimationUtils.smooth_move_animation(position,display_position,UIAnimationUtils.GOLDEN_SPEED_3FRAMES)
+		show_panel()
 	else:
-		position = UIAnimationUtils.smooth_move_animation(position,original_position,UIAnimationUtils.GOLDEN_SPEED_3FRAMES)
-	pass
+		hide_panel()
+
+func show_panel():
+	# 显示面板并获取焦点
+	animate_panel_position(display_position)
+	Ninput.call_deferred(&"grab_focus")
+
+func hide_panel():
+	animate_panel_position(original_position)
+	get_parent().call_deferred(&"grab_focus")
 
 func command_load():
 	original_position = Vector2(0,900) - size
@@ -174,11 +188,7 @@ func navigate_history(is_up: bool):
 
 func _input(event):
 	if Input.is_action_just_pressed(&"ui_get_panel"):
-		panel_display = (panel_display==false)
-		if panel_display:
-			Ninput.call_deferred(&"grab_focus")
-		else:
-			get_parent().call_deferred(&"grab_focus")
+		toggle_panel_display()
 	if event is InputEventKey && event.pressed:
 		if Ninput.has_focus():#处理输入框的动作事件
 			match event.keycode:

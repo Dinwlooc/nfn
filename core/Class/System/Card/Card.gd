@@ -24,3 +24,6 @@ func get_full_pack() -> CardPack:
 
 func _create_card_pack() -> CardPack:
 	return CardPack.init_from_card(self)
+## 当卡牌移动到牌堆里时使用它，以释放增量更新缓存的巨大占用
+func clear_pack_cache() -> void:
+	last_pack = null

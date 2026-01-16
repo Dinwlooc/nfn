@@ -1,2 +1,2 @@
-extends Area
+extends UnorderedArea
 class_name AreaDiscard
