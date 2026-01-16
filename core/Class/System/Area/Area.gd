@@ -8,7 +8,6 @@ signal area_cards_remove(removed_cards: Array[Card])
 
 func _init(_player: Player = null) -> void:
 	player = _player
-	area_cards_add.connect(send_cards_add)
 	_init_expand()
 
 func _init_expand() -> void:
@@ -32,7 +31,7 @@ func get_card_ids() -> Array[int]:
 	assert(false, "子类必须实现 get_card_ids 方法")
 	return []
 # 公共方法（都有默认实现）
-func send_items_add(new_items: Array) -> void:
+func send_items_add(new_items: Array[CardPack]) -> void:
 	if player:
 		RenderRequest.ItemAdd.new(area_name, new_items).send_to_player(player.peer_id)
 	else:

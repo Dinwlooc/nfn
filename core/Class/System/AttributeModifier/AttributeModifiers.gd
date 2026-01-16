@@ -92,12 +92,14 @@ func _revert_modifier(attribute: StringName, type: int, value: float) -> void:
 			_recalculate_final(attribute)
 # 获取最终值
 func get_final_value(attribute: StringName) -> int:
+	_ensure_attribute_exists(attribute)
 	return int(round(combined_values.get(attribute, PackedFloat32Array())[FINAL_VALUE_INDEX]))
 # 确保属性存在
 func _ensure_attribute_exists(attribute: StringName) -> void:
-	if not modifiers_dict.has(attribute):
-		modifiers_dict[attribute] = {0: {}, 1: {}, 2: {}, 3: {}}
-		combined_values[attribute] = PackedFloat32Array([0.0, 0.0, 0.0, 1.0, 0.0])
+	if modifiers_dict.has(attribute):
+		return
+	modifiers_dict[attribute] = {0: {}, 1: {}, 2: {}, 3: {}}
+	combined_values[attribute] = PackedFloat32Array([0.0, 0.0, 0.0, 1.0, 0.0])
 # 重新计算合并值
 func _recalculate_combined_type(attribute: StringName, type: int) -> void:
 	var combined = 0.0

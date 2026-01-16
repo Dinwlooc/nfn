@@ -100,6 +100,7 @@ func _on_move_in_phase(game_state: GameState, _context: Context) -> void:
 		return
 	if not _context.is_virtual:
 		_context.target_area.cards_add(_context.moved_cards)
+		_context.target_area.send_cards_add(_context.moved_cards)
 	_context.phase = Context.Phase.DONE
 	complete()
 
