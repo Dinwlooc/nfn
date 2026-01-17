@@ -23,6 +23,28 @@ func _validate_divide_index() -> void:
 		if child is RenderItem:
 			push_warning("ItemRenderArea '%s' has RenderItem before divide index at position %d. This may cause rendering issues." % [name, i])
 
+func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
+	if not render_context:
+		push_error("RenderContext not set in RenderArea")
+		return
+	if pack_type == &"":
+		push_error("RenderArea.pack_type not set")
+		return
+	if item_set.item_type != pack_type:
+		push_error("ItemSet.item_type (%s) does not match area.pack_type (%s)" % [item_set.item_type, pack_type])
+		return
+	for item_pack in item_set.items:
+		var render_item:RenderItem = render_context.get_render_item_by_id(item_pack.get_class_name(), item_pack.get_id())
+		if not render_item:
+			item_add_requested.emit(item_pack, self)
+			continue
+		var current_area:RenderArea = render_context.get_render_area(render_item.area_name)
+		if current_area == self:
+			_update_item_data(render_item, item_pack)
+			continue
+		current_area.remove_item(render_item)
+		add_item(render_item)
+
 func get_render_item_child_index() -> int:
 	return _divide_index
 
@@ -50,19 +72,6 @@ func remove_item(item:RenderItem) -> void:
 		var item_id = item.data.get_id()
 		render_context.unregister_render_item(item_type, item_id)
 
-# 注意：remove_items_by_uids可能不再需要，但保留以兼容
-func remove_items_by_uids(uids:PackedInt32Array) -> Array[RenderItem]:
-	push_warning("remove_items_by_uids is deprecated. Use remove_item instead.")
-	var removed_items:Array[RenderItem] = []
-	for uid in uids:
-		# 通过RenderContext获取RenderItem
-		if render_context and pack_type != &"":
-			var item = render_context.get_render_item_by_id(pack_type, uid)
-			if item and item.get_parent() == self:
-				remove_item(item)
-				removed_items.append(item)
-	return removed_items
-
 func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:
 	var current_tree_index = item.get_index()
 	var target_tree_index = _divide_index + new_pool_index
@@ -75,9 +84,6 @@ func _set_item_to_pool(item:RenderItem, index:int) -> void:
 	if render_context:
 		item.render_context = render_context
 	item.pool_id = index
-
-	# 不再维护item_id_to_instance字典
-
 	if index >= items_pool.size():
 		items_pool.append(item)
 	else:

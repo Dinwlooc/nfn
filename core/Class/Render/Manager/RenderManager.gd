@@ -39,14 +39,11 @@ func _init_preset_item(item:RenderItem, area:RenderArea, pool_index:int) -> void
 	_connect_item_to_area(item, area)
 	area.add_item(item, pool_index)
 	item.data_requested.connect(_create_item_face)
-
-	# 新增：将预置的RenderItem注册到RenderContext映射
 	if item.data:
 		var item_type = item.data.get_class_name()
 		var item_id = item.data.get_id()
 		if render_context:
 			render_context.register_render_item(item_type, item_id, item)
-
 	for face in item.get_children():
 		if face is ItemFace:
 			_init_preset_item_face(item, face)
@@ -114,13 +111,12 @@ func _on_item_add_requested(item:ItemPack, area:RenderArea) -> void:
 func add_item_to_area(pack:ItemPack, area:RenderArea) -> void:
 	var start_index = area.get_item_count()
 	var item:RenderItem = _create_single_item(pack)
-	var pool_index:int = start_index + 1
 	_connect_item_to_area(item, area)
 	if render_context:
 		var item_type:StringName = pack.get_class_name()
 		var item_id:int = pack.get_id()
 		render_context.register_render_item(item_type, item_id, item)
-	area.add_item(item, pool_index)
+	area.add_item(item)
 	area.render_update()
 
 func _create_single_item(item_data:TransPack) -> RenderItem:
