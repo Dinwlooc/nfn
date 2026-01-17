@@ -3,7 +3,6 @@ extends RenderArea
 class_name ItemRenderArea
 
 var items_pool:Array[RenderItem] = []
-var item_id_to_instance:Dictionary[int, RenderItem] = {}
 var _divide_index:int = 0
 
 func _ready() -> void:
@@ -36,28 +35,32 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 	add_child(item)
 	move_child(item, tree_position)
 	_set_item_to_pool(item, index)
-
+# 修改：实现remove_item方法
 func remove_item(item:RenderItem) -> void:
 	if item.get_parent() == self:
 		remove_child(item)
+	var pool_id = item.pool_id
+	if pool_id >= 0 and pool_id < items_pool.size() and items_pool[pool_id] == item:
+		items_pool[pool_id] = null
+		if item in selected_items:
+			selected_items.erase(item)
+		_compact_pool(pool_id, 1)
+	if render_context and item.data:
+		var item_type = item.data.get_class_name()
+		var item_id = item.data.get_id()
+		render_context.unregister_render_item(item_type, item_id)
 
+# 注意：remove_items_by_uids可能不再需要，但保留以兼容
 func remove_items_by_uids(uids:PackedInt32Array) -> Array[RenderItem]:
+	push_warning("remove_items_by_uids is deprecated. Use remove_item instead.")
 	var removed_items:Array[RenderItem] = []
-	var min_index := -1
 	for uid in uids:
-		if item_id_to_instance.has(uid):
-			var item = item_id_to_instance[uid]
-			removed_items.append(item)
-			var pool_id = item.pool_id
-			if min_index == -1 or pool_id < min_index:
-				min_index = pool_id
-			if item in selected_items:
-				selected_items.erase(item)
-			item_id_to_instance.erase(uid)
-			items_pool[pool_id] = null
-			remove_item(item)
-	if min_index != -1:
-		_compact_pool(min_index, uids.size())
+		# 通过RenderContext获取RenderItem
+		if render_context and pack_type != &"":
+			var item = render_context.get_render_item_by_id(pack_type, uid)
+			if item and item.get_parent() == self:
+				remove_item(item)
+				removed_items.append(item)
 	return removed_items
 
 func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:
@@ -72,7 +75,9 @@ func _set_item_to_pool(item:RenderItem, index:int) -> void:
 	if render_context:
 		item.render_context = render_context
 	item.pool_id = index
-	item_id_to_instance[item.get_id()] = item
+
+	# 不再维护item_id_to_instance字典
+
 	if index >= items_pool.size():
 		items_pool.append(item)
 	else:
@@ -136,8 +141,11 @@ func swap_items(pool_id_a:int, pool_id_b:int) -> void:
 func get_item_count() -> int:
 	return items_pool.size()
 
+# 修改：通过RenderContext获取RenderItem
 func get_item_by_uid(uid:int) -> RenderItem:
-	return item_id_to_instance.get(uid)
+	if render_context and pack_type != &"":
+		return render_context.get_render_item_by_id(pack_type, uid)
+	return null
 
 func get_item_by_index(index:int) -> RenderItem:
 	if index >= 0 and index < items_pool.size():

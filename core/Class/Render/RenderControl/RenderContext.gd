@@ -4,7 +4,10 @@ class_name RenderContext
 class DragState:
 	var area:RenderArea
 	var card:RenderItem
+
 var _render_areas :Dictionary[StringName, RenderArea]= {}
+var _item_mappings: Dictionary[StringName, Dictionary] = {}
+
 signal render_area_registered(area_name: StringName, area: RenderArea)
 signal render_area_unregistered(area_name: StringName)
 var card_on_drag: DragState
@@ -12,7 +15,6 @@ signal dragged_update(is_card:bool)
 var _callback_map: Dictionary[StringName, Array] = {}
 
 func _init() -> void:
-	# 连接信号到分发函数
 	render_area_registered.connect(_on_render_area_registered)
 
 # 区域注册时回调分发
@@ -29,6 +31,7 @@ func connect_renderarea(area_name: StringName, callback: Callable) -> void:
 		_callback_map[area_name] = []
 	if not _callback_map[area_name].has(callback):
 		_callback_map[area_name].append(callback)
+
 # 移除回调
 func disconnect_renderarea(area_name: StringName, callback: Callable) -> void:
 	if _callback_map.has(area_name):
@@ -50,6 +53,21 @@ func unregister_render_area(area_name: StringName) -> void:
 
 func get_render_area(area_name: StringName) -> RenderArea:
 	return _render_areas.get(area_name)
+
+# 新增：管理RenderItem映射的方法
+func register_render_item(item_type: StringName, item_id: int, render_item: RenderItem) -> void:
+	if not _item_mappings.has(item_type):
+		_item_mappings[item_type] = {}
+	_item_mappings[item_type][item_id] = render_item
+
+func unregister_render_item(item_type: StringName, item_id: int) -> void:
+	if _item_mappings.has(item_type) and _item_mappings[item_type].has(item_id):
+		_item_mappings[item_type].erase(item_id)
+
+func get_render_item_by_id(item_type: StringName, item_id: int) -> RenderItem:
+	if _item_mappings.has(item_type):
+		return _item_mappings[item_type].get(item_id)
+	return null
 
 func set_card_on_drag(area: RenderArea, realcard: RenderItem) -> void:
 	remove_card_on_drag()

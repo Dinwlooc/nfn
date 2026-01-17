@@ -6,8 +6,11 @@ extends RefCounted
 class_name RenderManager
 
 var _item_pool:Array[RenderItem] = []  # 复用池
+var render_context: RenderContext  # 新增：RenderContext依赖
 
+# 修改：添加render_context参数
 func render_tree_init(root_node:Node, context:RenderContext) -> void:
+	render_context = context
 	for area in root_node.get_children():
 		if area is RenderArea:
 			_initialize_render_area(area, context)
@@ -36,6 +39,14 @@ func _init_preset_item(item:RenderItem, area:RenderArea, pool_index:int) -> void
 	_connect_item_to_area(item, area)
 	area.add_item(item, pool_index)
 	item.data_requested.connect(_create_item_face)
+
+	# 新增：将预置的RenderItem注册到RenderContext映射
+	if item.data:
+		var item_type = item.data.get_class_name()
+		var item_id = item.data.get_id()
+		if render_context:
+			render_context.register_render_item(item_type, item_id, item)
+
 	for face in item.get_children():
 		if face is ItemFace:
 			_init_preset_item_face(item, face)
@@ -68,66 +79,64 @@ func _connect_item_to_area(item:RenderItem, area:RenderArea) -> void:
 	item.request_drag.connect(area.on_drag)
 	item.request_select.connect(area.on_select)
 
+# 修改：添加对ItemCounterArea的信号监听
 func _connect_area_signals(area:RenderArea) -> void:
-	if not area.items_add_requested.is_connected(_on_items_add_requested):
-		area.items_add_requested.connect(_on_items_add_requested)
-	if not area.items_remove_requested.is_connected(_on_items_remove_requested):
-		area.items_remove_requested.connect(_on_items_remove_requested)
+	if area is ItemRenderArea:
+		if not area.item_add_requested.is_connected(_on_item_add_requested):
+			area.item_add_requested.connect(_on_item_add_requested)
+	if area is ItemCounterArea:
+		if not area.items_added.is_connected(_on_item_counter_item_added):
+			area.items_added.connect(_on_item_counter_item_added)
 
-func _on_items_add_requested(items:Array[TransPack], area:RenderArea) -> void:
-	add_items_to_area(items, area)
+# 新增：ItemCounterArea的item添加信号处理
+func _on_item_counter_item_added(item: RenderItem) -> void:
+	call_deferred("_recycle_render_item", item)
 
-func _on_items_remove_requested(uids:PackedInt32Array, target_area:StringName, area:RenderArea) -> void:
-	remove_items(uids, target_area, area)
+# 新增：回收RenderItem
+func _recycle_render_item(item: RenderItem) -> void:
+	if render_context and item.data:
+		var item_type = item.data.get_class_name()
+		var item_id = item.data.get_id()
+		render_context.unregister_render_item(item_type, item_id)
+	if item.area_name:
+		var current_area = render_context.get_render_area(item.area_name)
+		if current_area:
+			_disconnect_item_from_area(item, current_area)
+	item.area_name = &""
+	item.render_context = null
+	item.pool_id = -1
+	_item_pool.append(item)
+
+func _on_item_add_requested(item:ItemPack, area:RenderArea) -> void:
+	add_item_to_area(item, area)
 
 # 添加项目到区域
-func add_items_to_area(packs:Array[TransPack], area:RenderArea) -> void:
-	var start_index = area.items_pool.size()
-	for i in range(packs.size()):
-		var item:RenderItem = _create_single_item(packs[i])
-		var pool_index:int = start_index + i
-		_connect_item_to_area(item, area)
-		area.add_item(item, pool_index)
+func add_item_to_area(pack:ItemPack, area:RenderArea) -> void:
+	var start_index = area.get_item_count()
+	var item:RenderItem = _create_single_item(pack)
+	var pool_index:int = start_index + 1
+	_connect_item_to_area(item, area)
+	if render_context:
+		var item_type:StringName = pack.get_class_name()
+		var item_id:int = pack.get_id()
+		render_context.register_render_item(item_type, item_id, item)
+	area.add_item(item, pool_index)
 	area.render_update()
 
 func _create_single_item(item_data:TransPack) -> RenderItem:
 	if not _item_pool.is_empty():
 		var item:RenderItem = _item_pool.pop_back()
 		item._init(item_data)  # 重置状态
+		if not item.data_requested.is_connected(_create_item_face):
+			item.data_requested.connect(_create_item_face)
 		return item
 	else:
 		var item:RenderItem = RenderItem.new(item_data)
 		item.data_requested.connect(_create_item_face)
 		return item
 
-# 移除项目
-func remove_items(uids:PackedInt32Array, target_area:StringName, area:RenderArea) -> void:
-	var removed_items = area.remove_items_by_uids(uids)
-	for item in removed_items:
-		_disconnect_item_from_area(item, area)
-	if target_area != &"" and area.render_context:
-		var target = area.render_context.get_render_area(target_area)
-		if target:
-			move_items_to_area(removed_items, target)
-			return
-	_item_pool.append_array(removed_items)
-
 func _disconnect_item_from_area(item:RenderItem, area:RenderArea) -> void:
 	if area.render_requested.is_connected(item.render_update):
 		area.render_requested.disconnect(item.render_update)
 	item.request_drag.disconnect(area.on_drag)
 	item.request_select.disconnect(area.on_select)
-
-# 移动项目到另一个区域
-func move_items_to_area(items:Array[RenderItem], target_area:RenderArea) -> void:
-	var start_index = target_area.items_pool.size()
-	for i in range(items.size()):
-		var item = items[i]
-		var pool_index = start_index + i
-		if item.area_name and target_area.render_context:
-			var source_area = target_area.render_context.get_render_area(item.area_name)
-			if source_area:
-				_disconnect_item_from_area(item, source_area)
-		_connect_item_to_area(item, target_area)
-		target_area.add_item(item, pool_index)
-	target_area.render_update()

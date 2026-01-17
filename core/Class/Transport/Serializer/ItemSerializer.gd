@@ -23,8 +23,8 @@ static func serialize_array(items: Array, buffer: StreamPeerBuffer = StreamPeerB
 		serialize_with_registry(buffer, item, _registry)
 	return buffer.data_array
 # 反序列化Item数组
-static func deserialize_array(buffer: StreamPeerBuffer) -> Array[TransPack]:
-	var result: Array[TransPack] = []
+static func deserialize_array(buffer: StreamPeerBuffer) -> Array[ItemPack]:
+	var result: Array[ItemPack] = []
 	var array_size: int = read(buffer, TYPE_INT)
 	result.resize(array_size)
 	for i in range(array_size):

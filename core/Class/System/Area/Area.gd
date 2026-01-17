@@ -31,32 +31,20 @@ func get_card_ids() -> Array[int]:
 	assert(false, "子类必须实现 get_card_ids 方法")
 	return []
 # 公共方法（都有默认实现）
-func send_items_add(new_items: Array[CardPack]) -> void:
+func send_items(new_items: Array[ItemPack]) -> void:
 	if player:
-		RenderRequest.ItemAdd.new(area_name, new_items).send_to_player(player.peer_id)
+		RenderRequest.ItemSet.new(area_name,CardPack.get_class_name_static(), new_items).send_to_player(player.peer_id)
 	else:
-		RenderRequest.ItemAdd.new(area_name, new_items).send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
+		RenderRequest.ItemSet.new(area_name,CardPack.get_class_name_static(), new_items).send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 
-func send_items_remove(uids: PackedInt32Array) -> void:
-	if player:
-		RenderRequest.ItemRemove.new(area_name, uids).send_to_player(player.peer_id)
-	else:
-		RenderRequest.ItemRemove.new(area_name, uids).send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
-
-func send_item_update(item: TransPack) -> void:
-	if player:
-		RenderRequest.ItemUpdate.new(area_name, item).send_to_player(player.peer_id)
-	else:
-		RenderRequest.ItemUpdate.new(area_name, item).send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
-
-func send_cards_add(new_cardpool: Array[Card]) -> void:
-	var card_packs: Array[CardPack] = []
+func send_cards(new_cardpool: Array[Card]) -> void:
+	var card_packs: Array[ItemPack] = []
 	card_packs.resize(new_cardpool.size())
 	var i: int = 0
 	for card in new_cardpool:
 		card_packs.set(i, card.get_pack())
 		i += 1
-	send_items_add(card_packs)
+	send_items(card_packs)
 
 # 可选方法（有些区域可能不支持）
 func shuffle_card_pool() -> void:
