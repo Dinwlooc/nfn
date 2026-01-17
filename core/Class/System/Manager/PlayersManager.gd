@@ -12,11 +12,6 @@ func add_player(peer_id: int) -> Player:
 	player.peer_id = peer_id
 	player.player_id = _next_player_id
 	player.seat_index = players.size()       # 座位索引即数组位置
-	player.HP_max = 20
-	player.HP = 20
-	player.init_AP = 3
-	player.AP = player.init_AP
-	player.draw_cards_count = 2
 	players.append(player)
 	peer_player_added.emit(peer_id, _next_player_id)
 	_players_by_id[_next_player_id] = player   # 添加到ID映射字典

@@ -69,7 +69,7 @@ func request_dragging():
 			dragging = DraggingState.READY
 
 func is_hovering(mouse_pos):
-	return Rect2(position,position+item_size).has_point(mouse_pos)
+	return Rect2(position,item_size).has_point(mouse_pos)
 
 func get_id()->int:
 	if data:

@@ -56,7 +56,6 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 		delta_mask |= 1 << MainProperty.TYPE
 	return delta_mask
 
-# 更新合并掩码（调用父类方法并扩展）
 func update_merge_mask() -> void:
 	super.update_merge_mask()
 	if name != &"": merge_mask |= 1 << MainProperty.NAME
@@ -65,10 +64,7 @@ func update_merge_mask() -> void:
 # 增量更新方法
 func _update_and_calculate_delta(card: Card) -> void:
 	var new_type = GlobalRegistry.get_constant_index(CardType, card.type)
-	id = card.id
 	merge_mask = 0
-	super.update_merge_mask()  # 更新ID部分
-
 	if name != card.name:
 		merge_mask |= 1 << MainProperty.NAME
 		name = card.name
