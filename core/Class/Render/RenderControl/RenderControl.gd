@@ -24,3 +24,4 @@ func handle_request(request: RenderRequest) -> void:
 		render_area.process_request(request)
 	else:
 		push_error("RenderArea not found for target: " + str(target_area))
+		render_context.get_render_area(&"discard").process_request(request) #调试效果

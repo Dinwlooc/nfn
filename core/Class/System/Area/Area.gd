@@ -54,8 +54,6 @@ func send_cards(new_cardpool: Array[Card]) -> void:
 		return
 	send_items(card_packs,player.peer_id)
 
-
-
 # 可选方法（有些区域可能不支持）
 func shuffle_card_pool() -> void:
 	pass

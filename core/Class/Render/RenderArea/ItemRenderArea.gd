@@ -71,6 +71,7 @@ func remove_item(item:RenderItem) -> void:
 		var item_type = item.data.get_class_name()
 		var item_id = item.data.get_id()
 		render_context.unregister_render_item(item_type, item_id)
+	render_update()
 
 func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:
 	var current_tree_index = item.get_index()

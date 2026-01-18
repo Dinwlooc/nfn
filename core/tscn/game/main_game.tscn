@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=17 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System/System.gd" id="2_gpy5h"]
@@ -13,6 +13,7 @@
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://resource/default/assets/Area/areaface/areaface_self_properties.tscn" id="12_f8lnr"]
 [ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://resource/default/assets/Area/areaface/areaface_targets.tscn" id="14_8v20q"]
 [ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://core/Class/Render/RenderArea/RenderAreaPlayers.gd" id="14_a6oxl"]
+[ext_resource type="Script" uid="uid://b2kx1en87wqae" path="res://core/Class/Render/RenderArea/RenderAreaDiscard.gd" id="14_eqfmo"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="16_2w2we"]
 [ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://resource/default/assets/Console/Node_Console.gd" id="17_qle8x"]
 
@@ -97,6 +98,13 @@ area = NodePath("..")
 layout_mode = 1
 offset_top = -170.74
 offset_bottom = 30.36
+
+[node name="RenderAreaDiscard" type="Control" parent="Control"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("14_eqfmo")
+metadata/_custom_type_script = "uid://b2kx1en87wqae"
 
 [node name="Console" type="Control" parent="Control"]
 layout_mode = 3
