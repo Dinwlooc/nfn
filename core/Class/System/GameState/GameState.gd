@@ -13,19 +13,20 @@ var _process_active := false
 var current_stage_stack: Array[StringName] = []
 signal start_round(player_id:int)
 signal new_behavior_with_callback(command:BehaviorCommand,callback:Callable)
+signal new_behavior(command:BehaviorCommand)
 signal set_responsive_players(player_ids: PackedInt32Array)
 
 func load_cards() -> void:
 	area_drawing.cards_add(cardsmanager.load_all_cards())
 	area_drawing.shuffle_card_pool()
 
-func start_new_round(player_id:int):
+func start_new_round(player_id:int)-> void:
 	call_deferred(&"_start_round_emitter",player_id)
 
-func _start_round_emitter(player_id:int):
+func _start_round_emitter(player_id:int)-> void:
 	start_round.emit(player_id)
 
-func queue_behavior_with_callback(command:BehaviorCommand,callback:Callable = Callable()):
+func queue_behavior_with_callback(command:BehaviorCommand,callback:Callable = Callable())-> void:
 	new_behavior_with_callback.emit(command,callback)
 ## 获取当前主阶段名
 func get_main_stage_name() -> StringName:
@@ -45,3 +46,6 @@ func get_current_active_stage_name() -> StringName:
 ## 请求设置可响应玩家
 func request_set_responsive_players(player_ids: PackedInt32Array) -> void:
 	set_responsive_players.emit(player_ids)
+
+func queue_behavior(command:BehaviorCommand)-> void:
+	new_behavior.emit(command)

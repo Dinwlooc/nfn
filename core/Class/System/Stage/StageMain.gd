@@ -43,7 +43,7 @@ func _process_play_card_request(request: OperationRequest.PlayCard) -> void:
 	if not _check_defensive_restrictions(request._card_id, request._target_id, request._is_to_center):
 		request.cancel()
 		return
-	game_state.queue_behavior_with_callback(rule_result.command)
+	game_state.queue_behavior(rule_result.command)
 	if rule_result.should_respond:
 		game_state.request_set_responsive_players(rule_result.responsive_players)
 		GlobalConsole._print(["主阶段：技能牌使用成功，其他玩家获得响应机会"])

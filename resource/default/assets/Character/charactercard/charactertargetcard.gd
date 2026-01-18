@@ -8,6 +8,9 @@ const HOVERING_COLOR:Color = Color(1,0.7,0.6)
 const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
 
 func _ready() -> void:
+	if item.data.peer_id == multiplayer.get_unique_id():
+		visible = false
+		return
 	Nicon_init_position = Nicon.position
 	var button = get_node(^"Button")
 	button.button_down.connect(item.request_selecting)

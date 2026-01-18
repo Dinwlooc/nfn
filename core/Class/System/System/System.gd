@@ -16,6 +16,7 @@ func _init() -> void:
 	game_state.player_manager.peer_player_added.connect(operation_handler.update_verification_mapping)
 	game_state.start_round.connect(stage_manager.start_round)
 	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
+	game_state.new_behavior.connect(command_processor.queue_behavior)
 	game_state.set_responsive_players.connect(operation_handler.set_responsive_players)
 	command_processor.command_processing.connect(modifier_manager.process_behavior)
 	command_processor.enable_processing.connect(_enable_processing)

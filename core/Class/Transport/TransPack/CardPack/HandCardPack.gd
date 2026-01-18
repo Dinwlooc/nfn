@@ -10,7 +10,6 @@ enum Property {
 	MODIFIED_COST
 	# 扩展时直接添加新属性
 }
-
 # 标准态常量（游戏中重复率最高的值）
 const STANDARD_POWER: int = 3
 const STANDARD_MODIFIED_POWER: int = 3
@@ -127,26 +126,20 @@ func _update_and_calculate_delta(card: Card) -> void:
 	super._update_and_calculate_delta(card)
 	if card is not HandCard:
 		return
-
 	if power != card.power:
 		merge_mask |= 1 << Property.POWER
 		power = card.power
-
 	if cost != card.cost:
 		merge_mask |= 1 << Property.COST
 		cost = card.cost
-
 	if suit != card.suit:
 		merge_mask |= 1 << Property.SUIT
 		suit = card.suit
-
 	var new_modified_power: int = card.get_attribute(&"power")
 	var new_modified_cost: int = card.get_attribute(&"cost")
-
 	if modified_power != new_modified_power:
 		merge_mask |= 1 << Property.MODIFIED_POWER
 		modified_power = new_modified_power
-
 	if modified_cost != new_modified_cost:
 		merge_mask |= 1 << Property.MODIFIED_COST
 		modified_cost = new_modified_cost

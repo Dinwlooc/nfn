@@ -102,6 +102,7 @@ func _on_move_in_phase(game_state: GameState, _context: Context) -> void:
 		_context.target_area.cards_add(_context.moved_cards)
 		_context.target_area.send_cards(_context.moved_cards)
 	_context.phase = Context.Phase.DONE
+	GlobalConsole._print(["CardMoveCommand:卡牌移动完成"])
 	complete()
 
 func _on_done_phase(game_state: GameState, _context: Context) -> void:

@@ -6,7 +6,6 @@ var _players_by_id: Dictionary = {}          ## 内置ID映射字典（玩家ID-
 var _next_player_id: int = 0                 ## 内置缓存：下一个可分配的玩家ID
 const ai_peer_id: int = -1                   ## AI控制的玩家peer_id固定为-1
 signal peer_player_added(peer_id: int, player_id: int)
-const TARGET_PEER_BROADCAST: int = 0
 const PLAYER_AREA: StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
 
 ## 添加玩家并分配ID和座位，返回创建的玩家实例
@@ -72,7 +71,7 @@ func send_players_delta_updates(target_players: Array[Player] = []) -> void:
 	if delta_packs.is_empty():
 		return
 	var item_set = RenderRequest.ItemSet.new(PLAYER_AREA, PlayerPack.get_class_name_static(), delta_packs)
-	GlobalTransport.send_render_request(TARGET_PEER_BROADCAST, item_set)
+	GlobalTransport.send_render_request(MultiplayerPeer.TARGET_PEER_BROADCAST, item_set)
 ## 发送单个玩家的增量更新到所有对等体（便捷方法）
 func send_single_player_delta_update(player: Player) -> void:
 	var pack:PlayerPack = _get_player_delta_pack(player)
@@ -80,7 +79,7 @@ func send_single_player_delta_update(player: Player) -> void:
 		return
 	var delta_packs: Array[ItemPack] = [pack]
 	var item_set = RenderRequest.ItemSet.new(PLAYER_AREA, PlayerPack.get_class_name_static(), delta_packs)
-	GlobalTransport.send_render_request(TARGET_PEER_BROADCAST, item_set)
+	GlobalTransport.send_render_request(MultiplayerPeer.TARGET_PEER_BROADCAST, item_set)
 ## 发送所有玩家的全量信息到指定对等体
 ## 外部调用此方法，通常用于新玩家加入或重连
 func send_all_players_full_updates(peer_id: int) -> void:
