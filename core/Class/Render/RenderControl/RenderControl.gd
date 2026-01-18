@@ -9,7 +9,7 @@ var operation_manager: OperationManager = OperationManager.new(transport,render_
 
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE, self)
-	render_manager.render_tree_init(self, render_context)  # 注入上下文
+	render_manager.render_tree_init(self, render_context)
 	GlobalConsole.c_play_selected_card.connect(_on_play_a_card)
 	transport.render_request_received.connect(handle_request)
 
@@ -19,6 +19,7 @@ func _on_play_a_card() -> void:
 func handle_request(request: RenderRequest) -> void:
 	var target_area:StringName = request.target_area
 	var render_area: RenderArea = render_context.get_render_area(target_area)
+	GlobalConsole._print(["接收到RenderRequest：",request.get_class_name(),",目标：",request.target_area])
 	if render_area:
 		render_area.process_request(request)
 	else:

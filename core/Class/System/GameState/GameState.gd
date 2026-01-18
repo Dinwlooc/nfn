@@ -8,7 +8,7 @@ var current_player_index := 0
 var cardsmanager := CardsManager.new()
 var player_manager := PlayersManager.new()
 var timer: GameTimer
-var network_manager:NetworkManager
+var users:Dictionary[int,User]
 var _process_active := false
 var current_stage_stack: Array[StringName] = []
 signal start_round(player_id:int)

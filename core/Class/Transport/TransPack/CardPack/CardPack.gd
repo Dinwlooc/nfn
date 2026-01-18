@@ -11,7 +11,7 @@ enum MainProperty {
 # 卡牌特定属性
 var name: StringName
 var type: int
-const CardType = GlobalConstants.KEY_CARD_TYPE
+const ItemType = GlobalConstants.KEY_ITEM_TYPE
 const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
 
 # 工厂方法
@@ -22,7 +22,7 @@ static func init_from_card(card: Card) -> CardPack:
 func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL) -> void:
 	super._init(init_id)
 	name = init_name
-	type = GlobalRegistry.get_constant_index(CardType, init_type_name)
+	type = GlobalRegistry.get_constant_index(ItemType, init_type_name)
 
 # 序列化实现（调用父类方法并扩展）
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
@@ -63,7 +63,7 @@ func update_merge_mask() -> void:
 
 # 增量更新方法
 func _update_and_calculate_delta(card: Card) -> void:
-	var new_type = GlobalRegistry.get_constant_index(CardType, card.type)
+	var new_type = GlobalRegistry.get_constant_index(ItemType, card.type)
 	merge_mask = 0
 	if name != card.name:
 		merge_mask |= 1 << MainProperty.NAME

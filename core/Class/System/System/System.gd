@@ -2,7 +2,6 @@ extends Node
 class_name System
 
 @export var timer:GameTimer
-@export var network_manager:NetworkManager
 var game_state := GameState.new()
 var modifier_manager := ModifierManager.new(game_state)
 var command_processor := CommandProcessor.new(game_state)
@@ -13,7 +12,7 @@ var tansport:Transport = GlobalTransport
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
 	game_state.timer = timer
-	game_state.network_manager = network_manager
+	game_state.users = tansport.network_manager.users
 	game_state.player_manager.peer_player_added.connect(operation_handler.update_verification_mapping)
 	game_state.start_round.connect(stage_manager.start_round)
 	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)

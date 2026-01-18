@@ -11,6 +11,7 @@ enum MainProperty {
 	MODIFIED_MP_MAX,
 	MODIFIED_INIT_AP,
 	MODIFIED_DRAW_CARDS_COUNT,
+	PEER_ID,  # 新增的对等体ID属性
 	END  # 子类枚举衔接点
 }
 
@@ -23,6 +24,7 @@ const STANDARD_MODIFIED_HP_MAX: int = 20
 const STANDARD_MODIFIED_MP_MAX: int = 20
 const STANDARD_MODIFIED_INIT_AP: int = 3
 const STANDARD_MODIFIED_DRAW_CARDS_COUNT: int = 2
+const STANDARD_PEER_ID: int = 0  # 新增的标准对等体ID
 
 # 玩家特定属性
 var seat_index: int
@@ -34,6 +36,7 @@ var modified_HP_max: int
 var modified_MP_max: int
 var modified_init_AP: int
 var modified_draw_cards_count: int
+var peer_id: int  # 新增：对等体ID
 
 # 工厂方法
 static func init_from_player(player: Player) -> PlayerPack:
@@ -47,7 +50,8 @@ static func init_from_player(player: Player) -> PlayerPack:
 		player.get_attribute(&"HP_max"),
 		player.get_attribute(&"MP_max"),
 		player.get_attribute(&"init_AP"),
-		player.get_attribute(&"draw_cards_count")
+		player.get_attribute(&"draw_cards_count"),
+		player.peer_id  # 新增参数
 	)
 
 # 初始化（调用父类初始化，使用标准态常量）
@@ -61,7 +65,8 @@ func _init(
 	init_modified_HP_max: int = STANDARD_MODIFIED_HP_MAX,
 	init_modified_MP_max: int = STANDARD_MODIFIED_MP_MAX,
 	init_modified_init_AP: int = STANDARD_MODIFIED_INIT_AP,
-	init_modified_draw_cards_count: int = STANDARD_MODIFIED_DRAW_CARDS_COUNT
+	init_modified_draw_cards_count: int = STANDARD_MODIFIED_DRAW_CARDS_COUNT,
+	init_peer_id: int = STANDARD_PEER_ID  # 新增参数
 ) -> void:
 	super._init(init_id)
 	seat_index = init_seat_index
@@ -73,6 +78,7 @@ func _init(
 	modified_MP_max = init_modified_MP_max
 	modified_init_AP = init_modified_init_AP
 	modified_draw_cards_count = init_modified_draw_cards_count
+	peer_id = init_peer_id  # 初始化对等体ID
 
 # 序列化实现（调用父类方法并扩展）
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
@@ -86,6 +92,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	if merge_mask & (1 << MainProperty.MODIFIED_MP_MAX): SerializationUtil.write(buffer, modified_MP_max)
 	if merge_mask & (1 << MainProperty.MODIFIED_INIT_AP): SerializationUtil.write(buffer, modified_init_AP)
 	if merge_mask & (1 << MainProperty.MODIFIED_DRAW_CARDS_COUNT): SerializationUtil.write(buffer, modified_draw_cards_count)
+	if merge_mask & (1 << MainProperty.PEER_ID): SerializationUtil.write(buffer, peer_id)  # 新增序列化
 
 # 反序列化静态方法（调用父类方法）
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> PlayerPack:
@@ -110,6 +117,8 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = 
 		pack.modified_init_AP = SerializationUtil.read(buffer, TYPE_INT)
 	if pack.merge_mask & (1 << MainProperty.MODIFIED_DRAW_CARDS_COUNT):
 		pack.modified_draw_cards_count = SerializationUtil.read(buffer, TYPE_INT)
+	if pack.merge_mask & (1 << MainProperty.PEER_ID):  # 新增反序列化
+		pack.peer_id = SerializationUtil.read(buffer, TYPE_INT)
 	return pack
 
 # 合并方法（调用父类方法并扩展）
@@ -124,6 +133,7 @@ func merge(update_pack: ItemPack) -> void:
 	if update_pack.merge_mask & (1 << MainProperty.MODIFIED_MP_MAX): modified_MP_max = update_pack.modified_MP_max
 	if update_pack.merge_mask & (1 << MainProperty.MODIFIED_INIT_AP): modified_init_AP = update_pack.modified_init_AP
 	if update_pack.merge_mask & (1 << MainProperty.MODIFIED_DRAW_CARDS_COUNT): modified_draw_cards_count = update_pack.modified_draw_cards_count
+	if update_pack.merge_mask & (1 << MainProperty.PEER_ID): peer_id = update_pack.peer_id  # 新增合并
 
 # 计算差异掩码
 func calculate_delta_mask(old_pack: PlayerPack) -> int:
@@ -137,6 +147,7 @@ func calculate_delta_mask(old_pack: PlayerPack) -> int:
 	if modified_MP_max != old_pack.modified_MP_max: delta_mask |= 1 << MainProperty.MODIFIED_MP_MAX
 	if modified_init_AP != old_pack.modified_init_AP: delta_mask |= 1 << MainProperty.MODIFIED_INIT_AP
 	if modified_draw_cards_count != old_pack.modified_draw_cards_count: delta_mask |= 1 << MainProperty.MODIFIED_DRAW_CARDS_COUNT
+	if peer_id != old_pack.peer_id: delta_mask |= 1 << MainProperty.PEER_ID  # 新增差异检测
 	return delta_mask
 
 func update_merge_mask() -> void:
@@ -150,6 +161,7 @@ func update_merge_mask() -> void:
 	if modified_MP_max != STANDARD_MODIFIED_MP_MAX: merge_mask |= 1 << MainProperty.MODIFIED_MP_MAX
 	if modified_init_AP != STANDARD_MODIFIED_INIT_AP: merge_mask |= 1 << MainProperty.MODIFIED_INIT_AP
 	if modified_draw_cards_count != STANDARD_MODIFIED_DRAW_CARDS_COUNT: merge_mask |= 1 << MainProperty.MODIFIED_DRAW_CARDS_COUNT
+	if peer_id != STANDARD_PEER_ID: merge_mask |= 1 << MainProperty.PEER_ID  # 新增掩码计算
 
 # 增量更新方法
 func _update_and_calculate_delta(player: Player) -> void:
@@ -185,7 +197,9 @@ func _update_and_calculate_delta(player: Player) -> void:
 	if modified_draw_cards_count != new_modified_draw_cards_count:
 		merge_mask |= 1 << MainProperty.MODIFIED_DRAW_CARDS_COUNT
 		modified_draw_cards_count = new_modified_draw_cards_count
-
+	if peer_id != player.peer_id:  # 新增对等体ID更新
+		merge_mask |= 1 << MainProperty.PEER_ID
+		peer_id = player.peer_id
 	version = (version + 1) % VERSION_MAX
 
 # 获取类名（静态）

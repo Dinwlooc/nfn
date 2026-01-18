@@ -6,12 +6,16 @@ var _players_by_id: Dictionary = {}          ## 内置ID映射字典（玩家ID-
 var _next_player_id: int = 0                 ## 内置缓存：下一个可分配的玩家ID
 const ai_peer_id: int = -1                   ## AI控制的玩家peer_id固定为-1
 signal peer_player_added(peer_id: int, player_id: int)
+const TARGET_PEER_BROADCAST: int = 0
+const PLAYER_AREA: StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
+
 ## 添加玩家并分配ID和座位，返回创建的玩家实例
 func add_player(peer_id: int) -> Player:
 	var player = Player.new()
 	player.peer_id = peer_id
 	player.player_id = _next_player_id
-	player.seat_index = players.size()       # 座位索引即数组位置
+	player.seat_index = players.size()
+	player.recover_to_full()
 	players.append(player)
 	peer_player_added.emit(peer_id, _next_player_id)
 	_players_by_id[_next_player_id] = player   # 添加到ID映射字典
@@ -51,3 +55,55 @@ func calculate_distance(seat_index1: int, seat_index2: int) -> int:
 func get_operation_disallowed(player_id: int) -> Array[StringName]:
 	var player:Player = _players_by_id.get(player_id)
 	return player.disallowed_operations
+## 从单个玩家实例获取增量包（如果无变化则返回null）
+func _get_player_delta_pack(player: Player) -> PlayerPack:
+	var pack: PlayerPack = player.get_pack()
+	return pack if pack.merge_mask != 0 else null
+## 发送单个或多个玩家的增量更新到所有对等体
+## 外部调用此方法来发送玩家数据更新
+func send_players_delta_updates(target_players: Array[Player] = []) -> void:
+	var delta_packs: Array[ItemPack] = []
+	if target_players.is_empty():
+		target_players = players
+	for player in target_players:
+		var pack:PlayerPack = _get_player_delta_pack(player)
+		if pack:
+			delta_packs.append(pack)
+	if delta_packs.is_empty():
+		return
+	var item_set = RenderRequest.ItemSet.new(PLAYER_AREA, PlayerPack.get_class_name_static(), delta_packs)
+	GlobalTransport.send_render_request(TARGET_PEER_BROADCAST, item_set)
+## 发送单个玩家的增量更新到所有对等体（便捷方法）
+func send_single_player_delta_update(player: Player) -> void:
+	var pack:PlayerPack = _get_player_delta_pack(player)
+	if !pack:
+		return
+	var delta_packs: Array[ItemPack] = [pack]
+	var item_set = RenderRequest.ItemSet.new(PLAYER_AREA, PlayerPack.get_class_name_static(), delta_packs)
+	GlobalTransport.send_render_request(TARGET_PEER_BROADCAST, item_set)
+## 发送所有玩家的全量信息到指定对等体
+## 外部调用此方法，通常用于新玩家加入或重连
+func send_all_players_full_updates(peer_id: int) -> void:
+	var full_packs: Array[ItemPack] = []
+	for player in players:
+		full_packs.append(player.get_full_pack())
+	if full_packs.size() > 0:
+		var item_set = RenderRequest.ItemSet.new(PLAYER_AREA, PlayerPack.get_class_name_static(), full_packs)
+		GlobalTransport.send_render_request(peer_id, item_set)
+## 清除所有玩家的增量包缓存
+## 可用于游戏阶段切换或需要强制全量更新时
+func clear_all_players_cache() -> void:
+	for player in players:
+		player.clear_pack_cache()
+## 获取指定玩家的当前增量包（用于调试或验证）
+func get_player_delta_pack(player_id: int) -> PlayerPack:
+	var player: Player = _players_by_id.get(player_id)
+	if player:
+		return player.get_pack()
+	return null
+## 获取指定玩家的全量包（用于调试或验证）
+func get_player_full_pack(player_id: int) -> PlayerPack:
+	var player: Player = _players_by_id.get(player_id)
+	if player:
+		return player.get_full_pack()
+	return null

@@ -5,7 +5,7 @@ var curve_managers: Array[CurveArrowManager] = []
 var draw_cooldown: float = 0.0
 var pending_draw = false
 var areahand:RenderAreaHand
-var areatargets:RenderAreaTargets
+var areatargets:RenderAreaPlayers
 var is_can_drag:bool = true
 @export var control:RenderControl
 const DRAW_COOLDOWN_DURATION: float = 0.35
@@ -30,7 +30,7 @@ func connect_to_areahand(_areahand:RenderAreaHand)->void:
 	areahand.selected.connect(draw_arrow)
 	areahand.render_requested.connect(render_event_handler)
 	areahand.tween_requested.connect(render_event_handler)
-func connect_to_areatargets(_areatargets:RenderAreaTargets)->void:
+func connect_to_areatargets(_areatargets:RenderAreaPlayers)->void:
 	areatargets = _areatargets
 	areatargets.selected.connect(draw_arrow)
 	areatargets.render_requested.connect(render_event_handler)

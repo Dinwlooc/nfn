@@ -90,8 +90,8 @@ func _on_move_out_phase(game_state: GameState, _context: Context) -> void:
 				push_error("无效的移出模式")
 	if _context.moved_cards.is_empty():
 		_context.phase = Context.Phase.DONE
-	else:
-		_context.phase = Context.Phase.MOVE_IN
+		return
+	_context.phase = Context.Phase.MOVE_IN
 
 func _on_move_in_phase(game_state: GameState, _context: Context) -> void:
 	if not _context.target_area:

@@ -56,7 +56,7 @@ func _init_preset_item_face(item:RenderItem, face:ItemFace) -> void:
 	face.data_update()
 
 func _create_item_face(item: RenderItem) -> void:
-	var type_name = GlobalRegistry.get_constant_name(GlobalConstants.KEY_CARD_TYPE, item.data.type)
+	var type_name =item.data.get_class_name()
 	var itemface: ItemFace = load(GlobalConfig.get_resource_path(&"cardface", type_name)).instantiate()
 	if itemface:
 		itemface.item = item

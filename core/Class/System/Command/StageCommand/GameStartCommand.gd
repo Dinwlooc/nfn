@@ -30,13 +30,14 @@ func execute(game_state: GameState) -> void:
 			on_done_phase(game_state)
 
 func on_init_setup_phase(game_state: GameState) -> void:
-	if game_state.network_manager:
-		for user in game_state.network_manager.users:
+	if game_state.users:
+		for user in game_state.users.values():
 			game_state.player_manager.add_player(user.id)
 	else:
 		game_state.player_manager.add_player(1)
 	game_state.player_manager.ensure_min_players(2)
-	game_state.current_player_index = 0  # 简化为始终从0号玩家开始
+	game_state.current_player_index = 0
+	game_state.player_manager.send_players_delta_updates()
 	_context.phase = Phase.START_DRAW
 
 func on_start_draw_phase(game_state: GameState) -> void:
