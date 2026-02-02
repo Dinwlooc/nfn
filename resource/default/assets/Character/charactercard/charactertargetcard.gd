@@ -7,7 +7,9 @@ const SELECT_COLOR:Color = Color(1,0.3,0.3)
 const HOVERING_COLOR:Color = Color(1,0.7,0.6)
 const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
 
-func _ready() -> void:
+func data_update(new_item:RenderItem)-> void:
+	if not item && new_item:
+		item = new_item
 	if item.data.peer_id == multiplayer.get_unique_id():
 		visible = false
 		return

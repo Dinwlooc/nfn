@@ -14,15 +14,10 @@ const TYPE_NAME = GlobalConstants.CARD_TYPES[TYPE]
 const SELECT_COLOR:Color = Color(1,0.3,0.3,0.7)
 const HOVERING_COLOR:Color = Color(1,0.7,0.6,0.7)
 const NORMAL_COLOR:Color = Color(0.8,0.8,0.8,0.7)
-
 var _current_color: Color
 var _stylebox: StyleBoxFlat
 
 func _ready() -> void:
-	var button = get_node(^"Button")
-	button.button_down.connect(item.request_selecting)
-	button.button_down.connect(item.request_dragging)
-	button.button_up.connect(item.request_dragging)
 	_stylebox = Nicon.get_theme_stylebox(&"panel") as StyleBoxFlat
 	_current_color = NORMAL_COLOR
 	_stylebox.bg_color = _current_color
@@ -35,7 +30,13 @@ func _input(_event: InputEvent) -> void:
 	else:
 		_stylebox.bg_color = NORMAL_COLOR
 
-func data_update()-> void:
+func data_update(new_item:RenderItem)-> void:
+	if not item && new_item:
+		item = new_item
+		var button = get_node(^"Button")
+		button.button_down.connect(item.request_selecting)
+		button.button_down.connect(item.request_dragging)
+		button.button_up.connect(item.request_dragging)
 	var data:HandCardPack = item.data
 	var texture = get_item_main_icon(data.name)
 	Ntexture.texture = texture
@@ -49,7 +50,7 @@ func data_update()-> void:
 
 func render_update(_render_event:RenderEvent = RenderEvent.new())->void:
 	var area:RenderAreaHand = item.render_context.get_render_area(item.area_name)
-	if area.items_pool.size()>12 && NverticalName.text.length() <= 4 :
+	if area && area.items_pool.size()>12 && NverticalName.text.length() <= 4 :
 		NverticalName.visible = true
 	else:
 		NverticalName.visible = false

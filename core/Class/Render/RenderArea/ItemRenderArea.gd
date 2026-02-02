@@ -29,16 +29,25 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 		push_error("RenderContext not set in RenderArea")
 		return
 	for item_pack in item_set.items:
-		var render_item:RenderItem = render_context.get_render_item_by_id(item_pack.get_class_name(), item_pack.get_id())
-		if not render_item:
-			item_add_requested.emit(item_pack, self)
-			continue
-		var current_area:RenderArea = render_context.get_render_area(render_item.area_name)
-		if current_area == self:
+		var render_item: RenderItem = render_context.get_or_create_item(item_pack)
+		if render_item.area_name == area_name:
 			_update_item_data(render_item, item_pack)
-			continue
-		current_area.remove_item(render_item)
-		add_item(render_item)
+		else:
+			var current_area = render_context.get_render_area(render_item.area_name)
+			if current_area:
+				current_area.remove_item(render_item)
+			add_item(render_item)
+
+func _connect_item_to_area(item:RenderItem) -> void:
+	super._connect_item_to_area(item)
+	item.request_drag.connect(on_drag)
+	item.request_select.connect(on_select)
+
+# 新增：内部断开连接方法
+func _disconnect_item_from_area(item:RenderItem) -> void:
+	super._disconnect_item_from_area(item)
+	item.request_drag.disconnect(on_drag)
+	item.request_select.disconnect(on_select)
 
 func get_render_item_child_index() -> int:
 	return _divide_index
@@ -76,6 +85,7 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 		item.get_parent().remove_child(item)
 	add_child(item)
 	move_child(item, tree_position)
+	_connect_item_to_area(item)
 	_set_item_to_pool(item, index)
 # 修改：实现remove_item方法
 func remove_item(item:RenderItem) -> void:
@@ -91,6 +101,7 @@ func remove_item(item:RenderItem) -> void:
 		var item_type = item.data.get_class_name()
 		var item_id = item.data.get_id()
 		render_context.unregister_render_item(item_type, item_id)
+	_disconnect_item_from_area(item)
 	render_update()
 
 func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:
@@ -110,6 +121,7 @@ func _set_item_to_pool(item:RenderItem, index:int) -> void:
 	else:
 		items_pool[index] = item
 	items_added.emit(item)
+	render_update()
 
 func _compact_pool(min_index:int, removed_count:int) -> void:
 	if min_index + removed_count > items_pool.size():

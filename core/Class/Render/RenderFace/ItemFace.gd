@@ -4,7 +4,7 @@ class_name ItemFace
 
 @export var item:RenderItem
 
-func data_update()->void:
+func data_update(item:RenderItem)->void:
 	pass
 
 func render_update(_render_event:RenderEvent = RenderEvent.new())->void:

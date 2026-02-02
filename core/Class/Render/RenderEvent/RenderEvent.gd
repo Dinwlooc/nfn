@@ -3,6 +3,7 @@ class_name RenderEvent
 
 var type:String = DefaultType.NULL
 var config:Dictionary
+static var NULL_EVENT = RenderEvent.new()
 class DefaultType:
 	const NULL = &"null"
 	const INTO_AREA = &"into_area"

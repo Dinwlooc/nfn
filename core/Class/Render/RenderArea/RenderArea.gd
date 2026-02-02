@@ -4,7 +4,6 @@ class_name RenderArea
 signal render_requested(render_event:RenderEvent)
 signal tween_requested(render_event:RenderEvent)
 signal selected()
-signal item_add_requested(items:ItemPack, area:RenderArea)
 signal items_added(item:RenderItem)
 signal context_ready()
 
@@ -26,16 +25,24 @@ func ready_expand() -> void:
 func process_request(request: RenderRequest) -> void:
 	if request is RenderRequest.ItemSet:
 		_process_item_set(request as RenderRequest.ItemSet)
-
 # 新增：处理ItemSet请求
 func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 	pass
-
 # 新增：更新ItemPack数据
 func _update_item_data(render_item: RenderItem, item_pack: ItemPack) -> void:
-	# 暂时留空，指示要求"暂不实现"
-	# 这里需要调用ItemPack的合并接口
+	# "暂不实现"
 	pass
+# 新增：内部连接方法
+func _connect_item_to_area(item:RenderItem) -> void:
+	if render_requested.is_connected(item.render_update):
+		render_requested.disconnect(item.render_update)
+	render_requested.connect(item.render_update)
+
+# 新增：内部断开连接方法
+func _disconnect_item_from_area(item:RenderItem) -> void:
+	if render_requested.is_connected(item.render_update):
+		render_requested.disconnect(item.render_update)
+
 func _exit_tree() -> void:
 	if render_context:
 		render_context.unregister_render_area(area_name)

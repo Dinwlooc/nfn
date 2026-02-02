@@ -20,25 +20,45 @@ var data:TransPack
 var item_size = Vector2(58,88)
 signal select
 signal drag
-signal face_update()
 signal render_requested(render_event:RenderEvent)
+signal reset_requested(item:RenderItem)
 signal data_requested(item:RenderItem)
 signal request_select(item:RenderItem)
 signal request_drag(item:RenderItem)
+signal request_face(item:RenderItem)
 
-func _init(new_data:TransPack = TransPack.new()) -> void:
+func _init(new_data:TransPack = TransPack.NULL_PACK) -> void:
+	name = &"RenderItem"
 	data = new_data
 
-func _ready()-> void:
-	name = &"RenderItem"
+func _ready() -> void:
+	request_face.emit(self)
 	data_requested.emit(self)
 
 func data_update(new_card_data:TransPack)-> void:
 	data = new_card_data
-	data_requested.emit(self)
+	if is_inside_tree():
+		data_requested.emit(self)
+	else :
+		request_ready()
 
-func render_update(render_event:RenderEvent)->void:
+func render_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	render_requested.emit(render_event)
+
+func reset() -> void:
+	move_state = false
+	selected = false
+	dragged = false
+	dragging = DraggingState.READY
+	hovering = false
+	data = TransPack.NULL_PACK
+	area_name = &""
+	render_context = null
+	pool_id = -1
+	position = Vector2.ZERO
+	rotation = 0
+	scale = Vector2.ONE
+	reset_requested.emit(self)
 
 func get_item_size()->Vector2:
 	return item_size
