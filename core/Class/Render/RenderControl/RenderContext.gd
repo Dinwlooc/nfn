@@ -5,6 +5,7 @@ class DragState:
 	var area:RenderArea
 	var card:RenderItem
 
+var loacal_player_id:int = 0
 var _render_areas :Dictionary[StringName, RenderArea]= {}
 var _item_mappings: Dictionary[StringName, Dictionary] = {}
 

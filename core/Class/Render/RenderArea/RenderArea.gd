@@ -6,14 +6,11 @@ signal tween_requested(render_event:RenderEvent)
 signal selected()
 signal item_add_requested(items:ItemPack, area:RenderArea)
 signal items_added(item:RenderItem)
-signal item_move_requested(item:RenderItem, new_index:int, area:RenderArea)
 signal context_ready()
 
 var area_name:StringName
-var selected_items:Array[RenderItem] = []
 var select_limit:int = 1
 var render_context:RenderContext
-var pack_type: StringName = &""
 
 class DefaultArea:
 	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
@@ -43,20 +40,6 @@ func _exit_tree() -> void:
 	if render_context:
 		render_context.unregister_render_area(area_name)
 
-# 选择操作
-func on_select(item:RenderItem) -> void:
-	if item.selected:
-		item.selected = false
-		selected_items.erase(item)
-	else:
-		if selected_items.size() >= select_limit:
-			selected_items[0].selected = false
-			selected_items.remove_at(0)
-		item.selected = true
-		selected_items.append(item)
-	tween_update()
-	selected.emit()
-
 func on_drag(item:RenderItem) -> void:
 	if not render_context:
 		return
@@ -64,17 +47,6 @@ func on_drag(item:RenderItem) -> void:
 		render_context.set_card_on_drag(self, item)
 	else:
 		render_context.remove_card_on_drag()
-
-# 获取方法
-func get_selected_items() -> Array[RenderItem]:
-	return selected_items.duplicate()
-
-func get_selected_ids() -> PackedInt32Array:
-	var ids = PackedInt32Array()
-	ids.resize(selected_items.size())
-	for i in range(selected_items.size()):
-		ids[i] = selected_items[i].get_id()
-	return ids
 
 # 渲染方法
 func render_update(render_event:RenderEvent = RenderEvent.new()) -> void:
@@ -97,24 +69,6 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 func remove_item(item:RenderItem) -> void:
 	push_error("remove_item must be implemented in subclass")
 
-func remove_items_by_uids(uids:PackedInt32Array) -> Array[RenderItem]:
-	push_error("remove_items_by_uids must be implemented in subclass")
-	return []
-
-func move_item_to_index(current_pool_id:int, target_index:int, render_event:RenderEvent = RenderEvent.new()) -> void:
-	push_error("move_item_to_index must be implemented in subclass")
-
-func swap_items(pool_id_a:int, pool_id_b:int) -> void:
-	push_error("swap_items must be implemented in subclass")
-
 func get_item_count() -> int:
 	push_error("get_item_count must be implemented in subclass")
 	return 0
-
-func get_item_by_uid(uid:int) -> RenderItem:
-	push_error("get_item_by_uid must be implemented in subclass")
-	return null
-
-func get_item_by_index(index:int) -> RenderItem:
-	push_error("get_item_by_index must be implemented in subclass")
-	return null

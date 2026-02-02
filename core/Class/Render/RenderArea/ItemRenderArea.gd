@@ -2,6 +2,7 @@
 extends RenderArea
 class_name ItemRenderArea
 
+var selected_items:Array[RenderItem] = []
 var items_pool:Array[RenderItem] = []
 var _divide_index:int = 0
 
@@ -27,12 +28,6 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 	if not render_context:
 		push_error("RenderContext not set in RenderArea")
 		return
-	if pack_type == &"":
-		push_error("RenderArea.pack_type not set")
-		return
-	if item_set.item_type != pack_type:
-		push_error("ItemSet.item_type (%s) does not match area.pack_type (%s)" % [item_set.item_type, pack_type])
-		return
 	for item_pack in item_set.items:
 		var render_item:RenderItem = render_context.get_render_item_by_id(item_pack.get_class_name(), item_pack.get_id())
 		if not render_item:
@@ -47,6 +42,31 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 
 func get_render_item_child_index() -> int:
 	return _divide_index
+
+# 选择操作
+func on_select(item:RenderItem) -> void:
+	if item.selected:
+		item.selected = false
+		selected_items.erase(item)
+	else:
+		if selected_items.size() >= select_limit:
+			selected_items[0].selected = false
+			selected_items.remove_at(0)
+		item.selected = true
+		selected_items.append(item)
+	tween_update()
+	selected.emit()
+
+# 获取方法
+func get_selected_items() -> Array[RenderItem]:
+	return selected_items.duplicate()
+
+func get_selected_ids() -> PackedInt32Array:
+	var ids = PackedInt32Array()
+	ids.resize(selected_items.size())
+	for i in range(selected_items.size()):
+		ids[i] = selected_items[i].get_id()
+	return ids
 
 func add_item(item:RenderItem, index:int = -1) -> void:
 	if index < 0:
@@ -113,7 +133,6 @@ func _update_item_position(item:RenderItem, new_index:int) -> void:
 		items_pool.append(item)
 	else:
 		items_pool[new_index] = item
-	item_move_requested.emit(item, new_index, self)
 
 # 移动操作
 func move_item_to_index(current_pool_id:int, target_index:int, render_event:RenderEvent = RenderEvent.new()) -> void:
@@ -147,12 +166,6 @@ func swap_items(pool_id_a:int, pool_id_b:int) -> void:
 
 func get_item_count() -> int:
 	return items_pool.size()
-
-# 修改：通过RenderContext获取RenderItem
-func get_item_by_uid(uid:int) -> RenderItem:
-	if render_context and pack_type != &"":
-		return render_context.get_render_item_by_id(pack_type, uid)
-	return null
 
 func get_item_by_index(index:int) -> RenderItem:
 	if index >= 0 and index < items_pool.size():

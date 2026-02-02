@@ -50,7 +50,7 @@ func quickly_select()->void:
 	if area.items_pool.size() <= 0 || area.get_selected_items().size() > 0:
 		return
 	for player in area.items_pool:
-		if player.data.peer_id:
+		if player.data.peer_id == multiplayer.get_unique_id():
 			continue
 		area.on_select(player)
 		break
