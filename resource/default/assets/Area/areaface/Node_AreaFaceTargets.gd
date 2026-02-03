@@ -20,11 +20,11 @@ func _on_context_ready()->void:
 func _on_render_area_registered(area:RenderArea)->void:
 	area.selected.connect(quickly_select)
 
-func render_update(_render_event:RenderEvent = RenderEvent.new()):
+func render_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT):
 	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.items_pool.size() - 1)
 	tween_update()
 
-func tween_update(_render_event:RenderEvent = RenderEvent.new()):
+func tween_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT):
 	card_move()
 
 func _into_area()->void:

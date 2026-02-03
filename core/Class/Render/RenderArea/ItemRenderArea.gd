@@ -63,6 +63,7 @@ func on_select(item:RenderItem) -> void:
 			selected_items.remove_at(0)
 		item.selected = true
 		selected_items.append(item)
+	item.render_update()
 	tween_update()
 	selected.emit()
 
@@ -147,7 +148,7 @@ func _update_item_position(item:RenderItem, new_index:int) -> void:
 		items_pool[new_index] = item
 
 # 移动操作
-func move_item_to_index(current_pool_id:int, target_index:int, render_event:RenderEvent = RenderEvent.new()) -> void:
+func move_item_to_index(current_pool_id:int, target_index:int, render_event:RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var pool_size:int = items_pool.size()
 	current_pool_id = clampi(current_pool_id, 0, pool_size - 1)
 	target_index = clampi(target_index, 0, pool_size - 1)

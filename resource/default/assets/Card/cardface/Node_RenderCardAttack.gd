@@ -22,13 +22,6 @@ func _ready() -> void:
 	_current_color = NORMAL_COLOR
 	_stylebox.bg_color = _current_color
 
-func _input(_event: InputEvent) -> void:
-	if item.selected:
-		_stylebox.bg_color = SELECT_COLOR
-	elif item.hovering:
-		_stylebox.bg_color = HOVERING_COLOR
-	else:
-		_stylebox.bg_color = NORMAL_COLOR
 
 func data_update(new_item:RenderItem)-> void:
 	if not item && new_item:
@@ -48,10 +41,15 @@ func data_update(new_item:RenderItem)-> void:
 	Nsuit.frame = get_suit(data.suit)
 	pass
 
-func render_update(_render_event:RenderEvent = RenderEvent.new())->void:
+func render_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	var area:RenderAreaHand = item.render_context.get_render_area(item.area_name)
 	if area && area.items_pool.size()>12 && NverticalName.text.length() <= 4 :
 		NverticalName.visible = true
 	else:
 		NverticalName.visible = false
-	pass
+	if item.selected:
+		_stylebox.bg_color = SELECT_COLOR
+	elif item.hovering:
+		_stylebox.bg_color = HOVERING_COLOR
+	else:
+		_stylebox.bg_color = NORMAL_COLOR

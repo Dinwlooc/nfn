@@ -47,11 +47,11 @@ func _physics_process(delta: float) -> void:
 			try_dragging_move()
 			pending_swap = false
 
-func render_update(render_event:RenderEvent = RenderEvent.new())->void:
+func render_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.items_pool.size())
 	tween_update(render_event)
 
-func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
+func tween_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	card_move(render_event)
 
 func _into_area()->void:
@@ -85,12 +85,12 @@ func card_move_expand() -> void:
 		cards[i].position.y += AMPLITUDE * _sine_table[phase_index]
 
 func dragging_move(card:RenderItem)->void:
-	var _target_position = get_global_mouse_position()
+	var _target_position:Vector2 = get_global_mouse_position()
 	if current_drag_tween:
 		current_drag_tween.kill()
 	current_drag_tween = create_tween()
 	current_drag_tween.set_parallel(true)
-	var target_rot = _compute_rotation(card, _target_position)
+	var target_rot:float = _compute_rotation(card, _target_position)
 	current_drag_tween.tween_property(card, ^"position", _target_position, DRAG_TWEEN_TIME) \
 		.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT_IN)
 	current_drag_tween.tween_property(card, ^"rotation", target_rot, DRAG_TWEEN_TIME) \
@@ -107,11 +107,12 @@ func swap_cards(drag_card:RenderItem)->void:
 		return
 	if hovering_card:
 		hovering_card.hovering = false
+		hovering_card.render_update()
 		area.move_item_to_index(drag_card.pool_id, hovering_card.pool_id,RenderEvent.new().set_config({&"rotate":true}))
 		hovering_card = null
 		swap_cooldown = SWAP_COOLDOWN_DURATION
 
-func card_move(render_event:RenderEvent = RenderEvent.new())-> void:
+func card_move(render_event:RenderEvent = RenderEvent.NULL_EVENT)-> void:
 	if area.items_pool.size() == 0 || target_position.size() == 0:
 		return
 	var master_tween:Tween = create_tween()

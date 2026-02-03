@@ -21,11 +21,11 @@ func connect_to_area(_area:RenderArea):
 	_area.items_added.connect(connect_cards_signals)
 	_area.context_ready.connect(_on_context_ready)
 
-func render_update(render_event:RenderEvent = RenderEvent.new())-> void:
+func render_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)-> void:
 	tween_update(render_event)
 	pass
 
-func tween_update(render_event:RenderEvent = RenderEvent.new())->void:
+func tween_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	#只更新动画。
 	pass
 
@@ -57,6 +57,7 @@ func connect_cards_signals(card:RenderItem):
 func disconnect_card_signals(card: RenderItem):
 	if hovering_card == card:
 		card.hovering = false
+		card.render_update()
 		hovering_card = null
 	if card.is_connected(&"mouse_entered", _on_card_mouse_entered):
 		card.mouse_entered.disconnect(_on_card_mouse_entered)
@@ -68,12 +69,15 @@ func _on_card_mouse_entered(card: RenderItem):
 		return
 	if hovering_card and hovering_card != card:
 		hovering_card.hovering = false
+		hovering_card.render_update()
 	hovering_card = card
 	card.hovering = true
+	card.render_update()
 
 func _on_card_mouse_exited(card: RenderItem):
 	if hovering_card == card:
 		card.hovering = false
+		card.render_update()
 		hovering_card = null
 
 func card_move()-> void:

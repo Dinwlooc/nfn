@@ -7,7 +7,7 @@ class_name ItemFace
 func data_update(item:RenderItem)->void:
 	pass
 
-func render_update(_render_event:RenderEvent = RenderEvent.new())->void:
+func render_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	pass
 
 func get_suit(suit:HandCard.Suit) ->int:

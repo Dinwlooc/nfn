@@ -56,10 +56,10 @@ func on_drag(item:RenderItem) -> void:
 		render_context.remove_card_on_drag()
 
 # 渲染方法
-func render_update(render_event:RenderEvent = RenderEvent.new()) -> void:
+func render_update(render_event:RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	render_requested.emit(render_event)
 
-func tween_update(render_event:RenderEvent = RenderEvent.new()) -> void:
+func tween_update(render_event:RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	tween_requested.emit(render_event)
 
 # 上下文管理
