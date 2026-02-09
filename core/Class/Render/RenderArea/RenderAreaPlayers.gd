@@ -4,10 +4,12 @@ class_name RenderAreaPlayers
 var local_player:RenderItem
 
 func ready_expand()->void:
-	area_name = DefaultArea.PLAYERS
 	items_added.connect(_on_player_added)
 
 func _on_player_added(new_player:RenderItem):
 	if new_player.data.peer_id == multiplayer.get_unique_id():
 		local_player = new_player
 		render_context.loacal_player_id = local_player.data.get_id()
+
+static func get_area_name_static()->StringName:
+	return DefaultArea.PLAYERS

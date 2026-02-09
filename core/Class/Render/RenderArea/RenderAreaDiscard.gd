@@ -1,5 +1,5 @@
 extends ItemCounterArea
 class_name RenderAreaDiscard
 
-func  _init() -> void:
-	area_name = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.DISCARD]
+static func get_area_name_static()->StringName:
+	return GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.DISCARD]

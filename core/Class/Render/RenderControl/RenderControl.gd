@@ -17,9 +17,6 @@ func _ready() -> void:
 	render_context._item_pool.item_created.connect(face_manager.connect_to_item)
 
 func _initialize_render_area(area: RenderArea) -> void:
-	if not area.area_name:
-		push_error("RenderArea missing area_name: ", area.name)
-		return
 	render_context.register_render_area(area)
 	area.set_render_context(render_context)
 	_initialize_preset_items(area)
@@ -34,7 +31,7 @@ func _initialize_preset_items(area: RenderArea) -> void:
 			item_index += 1
 
 func _init_preset_item(item: RenderItem, area: RenderArea, pool_index: int) -> void:
-	item.area_name = area.area_name
+	item.area_name = area.get_area_name()
 	item.render_context = render_context
 	area._connect_item_to_area(item)
 	area.add_item(item, pool_index)

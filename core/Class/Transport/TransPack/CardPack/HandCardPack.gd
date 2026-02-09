@@ -10,7 +10,7 @@ enum Property {
 	MODIFIED_COST
 	# 扩展时直接添加新属性
 }
-# 标准态常量（游戏中重复率最高的值）
+# 标准态常量
 const STANDARD_POWER: int = 3
 const STANDARD_MODIFIED_POWER: int = 3
 const STANDARD_SUIT: int = 0

@@ -16,63 +16,94 @@ class RenderItemPool:
 	func recycle_item(item: RenderItem) -> void:
 		item.reset()
 		_pool.append(item)
-
 class DragState:
 	var area:RenderArea
 	var card:RenderItem
-
+##公共区域的玩家ID
+const PUBLIC_PLAYER_ID: int = -1
 var loacal_player_id:int = 0
-var _render_areas :Dictionary[StringName, RenderArea]= {}
-var _callback_map: Dictionary[StringName, Array] = {}
+##第一层为玩家ID，第二层为区域名到RenderArea的映射
+var _render_areas :Dictionary[int, Dictionary] = {}
+##第一层为玩家ID，第二层为区域名到回调数组的映射
+var _callback_map: Dictionary[int, Dictionary] = {}
 var _item_mappings: Dictionary[StringName, Dictionary] = {}
 var _item_pool: RenderItemPool = RenderItemPool.new()
 var card_on_drag: DragState
 
-signal render_area_registered(area_name: StringName, area: RenderArea)
-signal render_area_unregistered(area_name: StringName)
+signal render_area_registered(area_name: StringName, area: RenderArea, player_id: int)
+signal render_area_unregistered(area_name: StringName, player_id: int)
 signal dragged_update(is_card:bool)
-
-
 
 func _init() -> void:
 	render_area_registered.connect(_on_render_area_registered)
 
-func _on_render_area_registered(area_name: StringName, area: RenderArea) -> void:
-	if _callback_map.has(area_name):
-		for callback in _callback_map[area_name]:
+func _on_render_area_registered(area_name: StringName, area: RenderArea, player_id: int) -> void:
+	if _callback_map.has(player_id) and _callback_map[player_id].has(area_name):
+		for callback in _callback_map[player_id][area_name]:
 			callback.call(area)
 
-func connect_renderarea(area_name: StringName, callback: Callable) -> void:
-	if _render_areas.has(area_name):
-		callback.call(_render_areas[area_name])
-	if not _callback_map.has(area_name):
-		_callback_map[area_name] = []
-	if not _callback_map[area_name].has(callback):
-		_callback_map[area_name].append(callback)
+# 获取实际的玩家ID用于字典访问
+func _get_actual_player_id(player_id: int) -> int:
+	# 如果指定的玩家ID与当前玩家ID一致，则使用公共ID
+	if player_id == loacal_player_id:
+		return PUBLIC_PLAYER_ID
+	return player_id
+
+func connect_renderarea(area_name: StringName, callback: Callable, player_id: int = PUBLIC_PLAYER_ID) -> void:
+	var actual_player_id: int = _get_actual_player_id(player_id)
+	if _render_areas.has(actual_player_id) and _render_areas[actual_player_id].has(area_name):
+		callback.call(_render_areas[actual_player_id][area_name])
+	if not _callback_map.has(actual_player_id):
+		_callback_map[actual_player_id] = {}
+	if not _callback_map[actual_player_id].has(area_name):
+		_callback_map[actual_player_id][area_name] = []
+	if not _callback_map[actual_player_id][area_name].has(callback):
+		_callback_map[actual_player_id][area_name].append(callback)
 
 # 移除回调
-func disconnect_renderarea(area_name: StringName, callback: Callable) -> void:
-	if _callback_map.has(area_name):
-		_callback_map[area_name].erase(callback)
-		if _callback_map[area_name].is_empty():
-			_callback_map.erase(area_name)
+func disconnect_renderarea(area_name: StringName, callback: Callable, player_id: int = PUBLIC_PLAYER_ID) -> void:
+	var actual_player_id: int = _get_actual_player_id(player_id)
 
-func register_render_area(area: RenderArea) -> void:
-	assert(area.area_name != &"", "Area must have valid name")
-	if _render_areas.has(area.area_name):
-		push_error("Duplicate area registration: " + area.area_name)
+	if _callback_map.has(actual_player_id) and _callback_map[actual_player_id].has(area_name):
+		_callback_map[actual_player_id][area_name].erase(callback)
+		if _callback_map[actual_player_id][area_name].is_empty():
+			_callback_map[actual_player_id].erase(area_name)
+			if _callback_map[actual_player_id].is_empty():
+				_callback_map.erase(actual_player_id)
+
+func register_render_area(area: RenderArea, player_id: int = PUBLIC_PLAYER_ID) -> void:
+	var actual_player_id: int = _get_actual_player_id(player_id)
+	if not _render_areas.has(actual_player_id):
+		_render_areas[actual_player_id] = {}
+	if _render_areas[actual_player_id].has(area.get_area_name()):
+		push_error("Duplicate area registration: " + area.get_area_name() + " for player " + str(player_id))
 		return
-	_render_areas[area.area_name] = area
-	render_area_registered.emit(area.area_name, area)
+	_render_areas[actual_player_id][area.get_area_name()] = area
+	render_area_registered.emit(area.get_area_name(), area, player_id)
 
-func unregister_render_area(area_name: StringName) -> void:
-	if _render_areas.erase(area_name):
-		render_area_unregistered.emit(area_name)
+func unregister_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> void:
+	var actual_player_id: int = _get_actual_player_id(player_id)
+	if _render_areas.has(actual_player_id) and _render_areas[actual_player_id].erase(area_name):
+		render_area_unregistered.emit(area_name, player_id)
+		if _render_areas[actual_player_id].is_empty():
+			_render_areas.erase(actual_player_id)
 
-func get_render_area(area_name: StringName) -> RenderArea:
-	return _render_areas.get(area_name)
+func get_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> RenderArea:
+	var actual_player_id: int = _get_actual_player_id(player_id)
+	if _render_areas.has(actual_player_id):
+		return _render_areas[actual_player_id].get(area_name)
+	return null
 
-# 新增：管理RenderItem映射的方法
+# 获取所有玩家ID（包括公共ID）
+func get_all_player_ids() -> Array[int]:
+	return _render_areas.keys()
+
+# 获取指定玩家的所有区域
+func get_player_areas(player_id: int = PUBLIC_PLAYER_ID) -> Dictionary[StringName, RenderArea]:
+	var actual_player_id: int = _get_actual_player_id(player_id)
+	return _render_areas.get(actual_player_id, {})
+
+# 管理RenderItem映射
 func register_render_item(item_type: StringName, item_id: int, render_item: RenderItem) -> void:
 	if not _item_mappings.has(item_type):
 		_item_mappings[item_type] = {}
@@ -119,7 +150,7 @@ func get_or_create_item(item_pack: ItemPack) -> RenderItem:
 
 # 延迟回收请求
 func request_recycle_item(item: RenderItem) -> void:
-	call_deferred("_recycle_item_deferred", item)
+	call_deferred(&"_recycle_item_deferred", item)
 
 func _recycle_item_deferred(item: RenderItem) -> void:
 	if item.data:
@@ -127,7 +158,11 @@ func _recycle_item_deferred(item: RenderItem) -> void:
 		var item_id = item.data.get_id()
 		unregister_render_item(item_type, item_id)
 	if item.area_name:
-		var current_area = get_render_area(item.area_name)
-		if current_area:
-			current_area._disconnect_item_from_area(item)
+		for player_id in _render_areas:
+			var areas = _render_areas[player_id]
+			if areas.has(item.area_name):
+				var current_area = areas[item.area_name]
+				if current_area:
+					current_area._disconnect_item_from_area(item)
+				break
 	_item_pool.recycle_item(item)

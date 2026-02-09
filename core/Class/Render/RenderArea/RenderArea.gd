@@ -7,7 +7,6 @@ signal selected()
 signal items_added(item:RenderItem)
 signal context_ready()
 
-var area_name:StringName
 var select_limit:int = 1
 var render_context:RenderContext
 
@@ -45,7 +44,7 @@ func _disconnect_item_from_area(item:RenderItem) -> void:
 
 func _exit_tree() -> void:
 	if render_context:
-		render_context.unregister_render_area(area_name)
+		render_context.unregister_render_area(get_area_name())
 
 func on_drag(item:RenderItem) -> void:
 	if not render_context:
@@ -79,3 +78,9 @@ func remove_item(item:RenderItem) -> void:
 func get_item_count() -> int:
 	push_error("get_item_count must be implemented in subclass")
 	return 0
+
+func get_area_name()->StringName:
+	return self.get_area_name_static()
+
+static func get_area_name_static()->StringName:
+	return &""

@@ -21,12 +21,19 @@ func _ready() -> void:
 	_stylebox = Nicon.get_theme_stylebox(&"panel") as StyleBoxFlat
 	_current_color = NORMAL_COLOR
 	_stylebox.bg_color = _current_color
+	var button = get_node(^"Button")
+	button.button_down.connect(item.request_selecting)
+	button.button_down.connect(item.request_dragging)
+	button.button_up.connect(item.request_dragging)
 
 
 func data_update(new_item:RenderItem)-> void:
-	if not item && new_item:
-		item = new_item
+	if item != new_item:
 		var button = get_node(^"Button")
+		button.button_down.disconnect(item.request_selecting)
+		button.button_down.disconnect(item.request_dragging)
+		button.button_up.disconnect(item.request_dragging)
+		item = new_item
 		button.button_down.connect(item.request_selecting)
 		button.button_down.connect(item.request_dragging)
 		button.button_up.connect(item.request_dragging)

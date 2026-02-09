@@ -30,7 +30,7 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 		return
 	for item_pack in item_set.items:
 		var render_item: RenderItem = render_context.get_or_create_item(item_pack)
-		if render_item.area_name == area_name:
+		if render_item.area_name == get_area_name():
 			_update_item_data(render_item, item_pack)
 		else:
 			var current_area = render_context.get_render_area(render_item.area_name)
@@ -60,6 +60,7 @@ func on_select(item:RenderItem) -> void:
 	else:
 		if selected_items.size() >= select_limit:
 			selected_items[0].selected = false
+			selected_items[0].render_update()
 			selected_items.remove_at(0)
 		item.selected = true
 		selected_items.append(item)
@@ -69,7 +70,7 @@ func on_select(item:RenderItem) -> void:
 
 # 获取方法
 func get_selected_items() -> Array[RenderItem]:
-	return selected_items.duplicate()
+	return selected_items
 
 func get_selected_ids() -> PackedInt32Array:
 	var ids = PackedInt32Array()
@@ -113,7 +114,7 @@ func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:
 
 # 数据池操作
 func _set_item_to_pool(item:RenderItem, index:int) -> void:
-	item.area_name = area_name
+	item.area_name = get_area_name()
 	if render_context:
 		item.render_context = render_context
 	item.pool_id = index

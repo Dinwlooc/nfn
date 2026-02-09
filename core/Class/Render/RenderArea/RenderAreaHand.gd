@@ -1,5 +1,5 @@
 extends ItemRenderArea
 class_name RenderAreaHand
 
-func ready_expand()->void:
-	area_name = DefaultArea.HAND
+static func get_area_name_static()->StringName:
+	return DefaultArea.HAND

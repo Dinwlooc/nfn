@@ -3,6 +3,7 @@ class_name ItemFace
 #卡面渲染的基类
 
 @export var item:RenderItem
+var item_type:StringName
 
 func data_update(item:RenderItem)->void:
 	pass

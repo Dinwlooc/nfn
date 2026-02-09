@@ -2,7 +2,7 @@ extends RefCounted
 class_name RenderEvent
 
 var type:String = DefaultType.NULL
-var config:Dictionary
+var config:Dictionary[StringName,Variant]
 static var NULL_EVENT = RenderEvent.new()
 class DefaultType:
 	const NULL = &"null"
