@@ -5,7 +5,7 @@ class_name FaceManager
 ## ItemFace回收池，按类型存储
 var _face_pool: Dictionary[StringName,Array] = {}
 ## 最大缓存数量
-const MAX_POOL_SIZE: int = 20
+const MAX_POOL_SIZE: int = 6
 
 # 初始化
 func _init() -> void:
@@ -39,7 +39,7 @@ func create_item_face(item: RenderItem) -> void:
 func _get_from_pool(type_name: StringName) -> ItemFace:
 	if not _face_pool.has(type_name):
 		return null
-	var pool_array: Array[ItemFace] = _face_pool[type_name]
+	var pool_array: Array = _face_pool[type_name]
 	if pool_array.is_empty():
 		return null
 	return pool_array.pop_back() as ItemFace
@@ -51,7 +51,7 @@ func _add_to_pool(itemface: ItemFace) -> void:
 	_cleanup_item_face(itemface)
 	if not _face_pool.has(type_name):
 		_face_pool[type_name] = []
-	var pool_array: Array[ItemFace] = _face_pool[type_name]
+	var pool_array: Array = _face_pool[type_name]
 	if pool_array.size() < MAX_POOL_SIZE:
 		pool_array.append(itemface)
 	else:

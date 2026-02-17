@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="HandCard" load_steps=2 format=3 uid="uid://eugf8ukhmudx"]
+
+[ext_resource type="Script" uid="uid://dd70gbxq1gppb" path="res://core/Class/System/Card/HandCard.gd" id="1_p7ck0"]
+
+[resource]
+script = ExtResource("1_p7ck0")
+power = 3
+cost = 1
+suit = 4
+attack_range = 1
+settlement_damage_bonus = 0
+name = &"nfn:basic_shield"
+type = &"defence"
+metadata/_custom_type_script = "uid://dd70gbxq1gppb"

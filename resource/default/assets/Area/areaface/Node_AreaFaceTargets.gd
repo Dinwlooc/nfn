@@ -46,11 +46,18 @@ func card_move()-> void:
 		var _target_position = target_position[i - skipped_local_players_count]
 		UIAnimationUtils.tween_animations(player,{^"position":_target_position},TWEEN_TIME)
 
-func quickly_select()->void:
+func quickly_select(item:RenderItem)->void:
+	if area is not RenderAreaPlayers:
+		return
 	if area.items_pool.size() <= 0 || area.get_selected_items().size() > 0:
 		return
-	for player in area.items_pool:
-		if player.data.peer_id == multiplayer.get_unique_id():
-			continue
-		area.on_select(player)
-		break
+	if item.data.get_card_type() == &"attack":
+		for player in area.items_pool:
+			if player.data.peer_id == multiplayer.get_unique_id():
+				continue
+			area.on_select(player)
+			break
+	if item.data.get_card_type() == &"defence":
+		if not area.local_player:
+			return
+		area.on_select(area.local_player)

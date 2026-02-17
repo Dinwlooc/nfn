@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://db51joyx0uc86"]
+[gd_scene load_steps=7 format=3 uid="uid://db51joyx0uc86"]
 
 [ext_resource type="Script" uid="uid://bbo5r3nm8gklu" path="res://resource/default/assets/Card/cardface/Node_RenderCardAttack.gd" id="1_e6d5b"]
 [ext_resource type="Texture2D" uid="uid://ljvviksp78nn" path="res://resource/default/assets/Card/suit/suit.png" id="2_u6ebe"]
@@ -10,6 +10,8 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+
+[sub_resource type="Theme" id="Theme_2fw0d"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_wshpf"]
 
@@ -37,15 +39,21 @@ offset_bottom = 88.0
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ycaky")
 
-[node name="ColorRect2" type="ColorRect" parent="."]
+[node name="ColorRectParent" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ColorRect2" type="ColorRect" parent="ColorRectParent"]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 3.0
 offset_right = 54.0
 offset_bottom = 49.0
 mouse_filter = 2
+theme = SubResource("Theme_2fw0d")
 
-[node name="ColorRect3" type="ColorRect" parent="."]
+[node name="ColorRect3" type="ColorRect" parent="ColorRectParent"]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 56.4
@@ -53,7 +61,7 @@ offset_right = 54.0
 offset_bottom = 85.4
 mouse_filter = 2
 
-[node name="ColorRect5" type="ColorRect" parent="."]
+[node name="ColorRect5" type="ColorRect" parent="ColorRectParent"]
 layout_mode = 0
 offset_left = 30.0
 offset_top = 50.0
@@ -61,7 +69,7 @@ offset_right = 54.0
 offset_bottom = 55.0
 mouse_filter = 2
 
-[node name="ColorRect6" type="ColorRect" parent="."]
+[node name="ColorRect6" type="ColorRect" parent="ColorRectParent"]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 50.0

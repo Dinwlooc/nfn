@@ -3,11 +3,12 @@ class_name RenderContext
 
 class RenderItemPool:
 	var _pool: Array[RenderItem] = []
+	const MAX_CACHE_SIZE = 20
 	signal item_created(item:RenderItem)
 	func create_item(item_data: TransPack) -> RenderItem:
 		if not _pool.is_empty():
 			var item: RenderItem = _pool.pop_back()
-			item.data_update(item_data)  # 重置状态
+			item.data_update(item_data)
 			return item
 		else:
 			var new_item:RenderItem = RenderItem.new(item_data)
@@ -15,13 +16,17 @@ class RenderItemPool:
 			return new_item
 	func recycle_item(item: RenderItem) -> void:
 		item.reset()
+		if _pool.size() >= MAX_CACHE_SIZE:
+			item.queue_free()
+			return
 		_pool.append(item)
+
 class DragState:
 	var area:RenderArea
 	var card:RenderItem
 ##公共区域的玩家ID
 const PUBLIC_PLAYER_ID: int = -1
-var loacal_player_id:int = 0
+var loacal_player_id:int = -1
 ##第一层为玩家ID，第二层为区域名到RenderArea的映射
 var _render_areas :Dictionary[int, Dictionary] = {}
 ##第一层为玩家ID，第二层为区域名到回调数组的映射
@@ -166,3 +171,44 @@ func _recycle_item_deferred(item: RenderItem) -> void:
 					current_area._disconnect_item_from_area(item)
 				break
 	_item_pool.recycle_item(item)
+
+## 自动回收RenderItem。不会撤销注册。
+func delete_render_area(area: RenderArea) -> void:
+	if card_on_drag:
+		if card_on_drag.area == area:
+			remove_card_on_drag()
+		else:
+			var dragged_card = card_on_drag.card
+			if dragged_card and dragged_card.get_parent() == area:
+				remove_card_on_drag()
+	for child in area.get_children():
+		if child is not RenderItem:
+			continue
+		var item: RenderItem = child
+		area.remove_child(item)
+		if item.data:
+			var item_type = item.data.get_class_name()
+			var item_id = item.data.get_id()
+			unregister_render_item(item_type, item_id)
+		area._disconnect_item_from_area(item)
+		_item_pool.recycle_item(item)
+	area.queue_free()
+
+func remove_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> void:
+	var area:RenderArea = get_render_area(area_name, player_id)
+	if not area:
+		push_warning("Attempted to remove non-existent render area: ", area_name, " for player ", player_id)
+		return
+	unregister_render_area(area_name, player_id)
+	delete_render_area(area)
+# 添加到 RenderContext 类中
+signal area_created(area: RenderArea, player_id: int)
+
+## 创建并注册渲染区域
+func create_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> RenderArea:
+	var area = RenderAreaFactory.create_area(area_name)
+	if not area:
+		return null
+	register_render_area(area, player_id)
+	area_created.emit(area, player_id)
+	return area

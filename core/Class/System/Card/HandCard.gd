@@ -1,10 +1,10 @@
 extends Card
 class_name HandCard
 
-@export var power:int
-@export var cost:int
-@export var suit:Suit
-@export var attack_range:int = 1  # 攻击距离，默认1
+@export var power:int = 3
+@export var cost:int = 1
+@export var suit:Suit = Suit.VOID
+@export var attack_range:int = 1
 @export var settlement_damage_bonus:int = 0  # 结算伤害加成，默认0
 
 enum Suit {

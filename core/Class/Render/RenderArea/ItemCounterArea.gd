@@ -9,7 +9,14 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 		push_error("RenderContext not set in RenderArea")
 		return
 	for item_pack in item_set.items:
-		render_context.move_item_to_area(render_context.get_or_create_item(item_pack),self)
+		var render_item: RenderItem = render_context.get_or_create_item(item_pack)
+		if render_item.area_name == get_area_name():
+			_update_item_data(render_item, item_pack)
+		else:
+			var current_area = render_context.get_render_area(render_item.area_name)
+			if current_area:
+				current_area.remove_item(render_item)
+			add_item(render_item)
 
 func add_item(item:RenderItem, index:int = -1) -> void:
 	item_count += 1

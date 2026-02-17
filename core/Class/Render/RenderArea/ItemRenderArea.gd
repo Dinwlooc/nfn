@@ -66,7 +66,7 @@ func on_select(item:RenderItem) -> void:
 		selected_items.append(item)
 	item.render_update()
 	tween_update()
-	selected.emit()
+	selected.emit(item)
 
 # 获取方法
 func get_selected_items() -> Array[RenderItem]:

@@ -3,7 +3,7 @@ class_name RenderArea
 
 signal render_requested(render_event:RenderEvent)
 signal tween_requested(render_event:RenderEvent)
-signal selected()
+signal selected(item:RenderItem)
 signal items_added(item:RenderItem)
 signal context_ready()
 

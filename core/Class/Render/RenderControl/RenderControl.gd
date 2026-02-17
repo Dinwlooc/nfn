@@ -11,13 +11,14 @@ func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE, self)
 	for child in get_children():
 		if child is RenderArea:
+			render_context.register_render_area(child)
 			_initialize_render_area(child)
 	GlobalConsole.c_play_selected_card.connect(_on_play_a_card)
 	transport.render_request_received.connect(handle_request)
 	render_context._item_pool.item_created.connect(face_manager.connect_to_item)
+	render_context.area_created.connect(_on_render_context_area_created)
 
 func _initialize_render_area(area: RenderArea) -> void:
-	render_context.register_render_area(area)
 	area.set_render_context(render_context)
 	_initialize_preset_items(area)
 	area.context_ready.emit()
@@ -60,3 +61,7 @@ func handle_request(request: RenderRequest) -> void:
 		push_error("RenderArea not found for target: " + str(target_area))
 		# 调试效果，尝试使用discard区域
 		render_context.get_render_area(&"discard").process_request(request)
+
+func _on_render_context_area_created(area: RenderArea, player_id: int) -> void:
+	add_child(area)
+	_initialize_render_area(area)

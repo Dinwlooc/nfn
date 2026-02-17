@@ -76,3 +76,6 @@ func _update_and_calculate_delta(card: Card) -> void:
 # 获取类名（静态）
 static func get_class_name_static() -> StringName:
 	return &"CardPack"
+
+func get_card_type()->StringName:
+	return GlobalRegistry.get_constant_name(ItemType,type)
