@@ -15,6 +15,7 @@ class Context extends CommandContext:
 	var health_damage: int
 	var mental_damage: int
 	var source_mechanism: int
+	var source_player_id:int
 	## 伤害修饰类型
 	var damage_modifiers: PackedInt32Array = PackedInt32Array()
 	## 缓存值
@@ -52,6 +53,7 @@ func _init(
 	_context.health_damage = max(0, health_dmg)
 	_context.mental_damage = max(0, mental_dmg)
 	_context.source_mechanism = mechanism
+	_context.source_player_id = source_id
 
 func execute(game_state: GameState) -> void:
 	match _context.phase:
@@ -75,4 +77,5 @@ func execute(game_state: GameState) -> void:
 						_context.source_player_id,
 						_context.damage_modifiers
 					)
+				_context.target_player.send_pack()
 			complete()

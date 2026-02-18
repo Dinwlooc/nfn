@@ -47,7 +47,6 @@ func get_attribute(attribute: StringName) -> int:
 func recover_to_full() -> void:
 	HP = get_attribute(&"HP_max")
 	MP = get_attribute(&"MP_max")
-
 # 将玩家AP设置为其初始值
 func reset_ap() -> void:
 	AP = get_attribute(&"init_AP")
@@ -60,15 +59,24 @@ func get_pack() -> PlayerPack:
 	else:
 		last_pack._update_and_calculate_delta(self)  # 传入 Player 实例
 	return last_pack
-
 # 获取完整玩家包（不进行增量更新）
 func get_full_pack() -> PlayerPack:
 	return _create_player_pack()
-
 # 创建玩家包
 func _create_player_pack() -> PlayerPack:
 	return PlayerPack.init_from_player(self)
-
 # 当玩家信息不再需要缓存时使用，以释放增量更新缓存的占用
 func clear_pack_cache() -> void:
 	last_pack = null
+
+func send_pack(peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST) -> void:
+	var pack = get_pack()  # 获取增量包（自动处理缓存）
+	# 从常量类中获取玩家区域签名（例如 "players"）
+	var area_signature = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
+	# 构造 ItemSet 请求并发送，类型签名为 PlayerPack 的静态类名
+	RenderRequest.ItemSet.new(
+		area_signature,
+		PlayerPack.get_class_name_static(),
+		[pack],
+		player_id
+	).send_to_player(peer_id)

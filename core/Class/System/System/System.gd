@@ -69,9 +69,13 @@ func _draw_cards_test() -> void:
 	command_processor.queue_behavior(draw_event)
 	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % game_state.current_player_index)
 
+func _damage(hp_damage:int = 1,mp_damage:int = 1,player_id:int = 0)->void:
+	command_processor.queue_behavior(DamageCommand.new(game_state.player_manager.get_player_by_id(player_id),hp_damage,mp_damage))
+
 func signal_connect_test():
 	GlobalConsole.c_start.connect(_start_game)
 	GlobalConsole.c_draw.connect(_draw_cards_test)
+	GlobalConsole.c_damage.connect(_damage)
 	GlobalConsole._print("System:调试模式已接入系统")
 
 func signal_disconnect_test():

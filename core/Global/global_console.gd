@@ -7,6 +7,7 @@ var command_name_list:PackedStringArray = command_resource.command_name as Packe
 var console:Node
 
 signal global_dragged
+signal c_damage(hp_damage:int,mp_damage:int,player_id:int)
 signal c_start
 signal c_draw
 signal c_connect_to(url:String)
@@ -37,23 +38,25 @@ func _print(text:Variant)->void:
 	else :
 		print(text)
 
-func command(signal_name:String,args:Array)->void:
-	if !command_name_list.has(signal_name):#玩家输入不可控，故先验证合法性再转化
-		_print(["Console：指令未登记：",signal_name])
+func command(signal_name: String, args: Array) -> void:
+	if not command_name_list.has(signal_name):  # 验证命令是否已登记
+		_print(["Console：指令未登记：", signal_name])
 		return
 	var signal_stringname = StringName(signal_name)
-	var min_arg_num = command_list[signal_stringname][&"min"]
-	var max_arg_num = command_list[signal_stringname][&"max"]
-	if args.size()<min_arg_num:
-		_print(["Console：Error:参数不足，",signal_name,"未发送。目标：",min_arg_num])
+	var min_arg_num = command_list[signal_stringname]["min"]
+	var max_arg_num = command_list[signal_stringname]["max"]
+	if args.size() < min_arg_num:
+		_print(["Console：Error:参数不足，", signal_name, "未发送。目标：", min_arg_num])
 		return
-	if args.size()>max_arg_num:
-		_print(["Console：Error:参数过多，",signal_name,"未发送。限制：",max_arg_num])
+	if args.size() > max_arg_num:
+		_print(["Console：Error:参数过多，", signal_name, "未发送。限制：", max_arg_num])
 		return
-	else:
-		_print(["Console：发送指令：",signal_name])
-		emit_signal.bindv(args).call(signal_stringname)
-		return
+	_print(["Console：发送指令：", signal_name])
+	for i in range(args.size()):
+		var arg = args[i]
+		if arg is String and arg.is_valid_int():
+			args[i] = int(arg)   # 替换为整数
+	emit_signal.bindv(args).call(signal_stringname)
 
 func print_help(command_name:String = "c_help"):
 	if !command_name_list.has(command_name):

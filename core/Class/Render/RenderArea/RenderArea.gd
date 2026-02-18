@@ -30,8 +30,7 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 	pass
 # 新增：更新ItemPack数据
 func _update_item_data(render_item: RenderItem, item_pack: ItemPack) -> void:
-	# "暂不实现"
-	pass
+	render_item.apply_pack(item_pack)
 # 新增：内部连接方法
 func _connect_item_to_area(item:RenderItem) -> void:
 	if render_requested.is_connected(item.render_update):

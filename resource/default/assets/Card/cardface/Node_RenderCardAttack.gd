@@ -35,17 +35,14 @@ var _current_type: StringName
 func _ready() -> void:
 	_stylebox = background_panel.get_theme_stylebox(&"panel") as StyleBoxFlat
 	_stylebox.bg_color = DEFAULT_COLOR
-	var button = get_node(^"Button")
-	button.button_down.connect(item.request_selecting)
-	button.button_down.connect(item.request_dragging)
-	button.button_up.connect(item.request_dragging)
 
 func data_update(new_item: RenderItem) -> void:
 	if item != new_item:
 		var button = get_node(^"Button")
-		button.button_down.disconnect(item.request_selecting)
-		button.button_down.disconnect(item.request_dragging)
-		button.button_up.disconnect(item.request_dragging)
+		if item:
+			button.button_down.disconnect(item.request_selecting)
+			button.button_down.disconnect(item.request_dragging)
+			button.button_up.disconnect(item.request_dragging)
 		item = new_item
 		button.button_down.connect(item.request_selecting)
 		button.button_down.connect(item.request_dragging)

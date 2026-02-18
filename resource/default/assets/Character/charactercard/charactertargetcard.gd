@@ -8,17 +8,22 @@ const HOVERING_COLOR:Color = Color(1,0.7,0.6)
 const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)
 
 func data_update(new_item:RenderItem)-> void:
-	if not item && new_item:
-		item = new_item
+	if new_item:
+		var button = get_node(^"Button")
+		if item != new_item:
+			if item:
+				button.button_down.disconnect(item.request_selecting)
+				button.button_down.disconnect(item.request_dragging)
+				button.button_up.disconnect(item.request_dragging)
+			item = new_item
+			button.button_down.connect(item.request_selecting)
+			button.button_down.connect(item.request_dragging)
+			button.button_up.connect(item.request_dragging)
+	item.set_item_size(size)
 	if item.data.peer_id == multiplayer.get_unique_id():
 		visible = false
 		return
 	Nicon_init_position = Nicon.position
-	var button = get_node(^"Button")
-	button.button_down.connect(item.request_selecting)
-	button.button_down.connect(item.request_dragging)
-	button.button_up.connect(item.request_dragging)
-	item.set_item_size(size)
 
 func _physics_process(_delta: float) -> void:
 	card_move_expand()

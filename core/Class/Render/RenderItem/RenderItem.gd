@@ -45,6 +45,13 @@ func data_update(new_card_data:TransPack)-> void:
 func render_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	render_requested.emit(render_event)
 
+func apply_pack(pack: ItemPack) -> void:
+	if data and data is ItemPack:
+		data.merge(pack)
+		data_requested.emit(self)
+	else:
+		data_update(pack)
+
 func reset() -> void:
 	move_state = false
 	selected = false

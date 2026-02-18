@@ -75,7 +75,7 @@ func _on_item_selected(item: RenderItem):
 	draw_arrow()
 
 func render_event_handler(render_event: RenderEvent):
-	if render_event.type == RenderEvent.DefaultType.OUTTO_AREA:
+	if render_event.get_type() == RenderEvent.DefaultType.OUTTO_AREA:
 		clear_arrow()
 		pending_draw = false
 	else:

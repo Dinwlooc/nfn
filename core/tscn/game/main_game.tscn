@@ -67,18 +67,6 @@ script = ExtResource("5_4k47o")
 control = NodePath("../..")
 metadata/_edit_use_anchors_ = true
 
-[node name="AreaHand" type="Control" parent="Control"]
-anchors_preset = 0
-offset_right = 1613.0
-offset_bottom = 907.0
-mouse_filter = 2
-script = ExtResource("7_jjejj")
-metadata/_custom_type_script = "uid://b5f71t7ikic0w"
-
-[node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_2w2we")]
-layout_mode = 1
-mouse_filter = 1
-
 [node name="AreaPlayers" type="Control" parent="Control"]
 anchors_preset = 0
 script = ExtResource("14_a6oxl")
@@ -93,8 +81,23 @@ mouse_filter = 1
 
 [node name="AreaFaceSelf_Properties" parent="Control/AreaPlayers" instance=ExtResource("12_f8lnr")]
 layout_mode = 1
-offset_top = -170.74
-offset_bottom = 30.36
+offset_left = -2.0
+offset_top = 582.0
+offset_right = 218.0
+offset_bottom = 709.0
+scale = Vector2(2, 2)
+
+[node name="AreaHand" type="Control" parent="Control"]
+anchors_preset = 0
+offset_right = 1613.0
+offset_bottom = 907.0
+mouse_filter = 2
+script = ExtResource("7_jjejj")
+metadata/_custom_type_script = "uid://b5f71t7ikic0w"
+
+[node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_2w2we")]
+layout_mode = 1
+mouse_filter = 1
 
 [node name="AreaDiscard" type="Control" parent="Control"]
 anchors_preset = 0

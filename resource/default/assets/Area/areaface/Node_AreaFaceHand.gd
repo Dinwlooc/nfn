@@ -109,7 +109,7 @@ func swap_cards(drag_card:RenderItem)->void:
 	if hovering_card:
 		hovering_card.hovering = false
 		hovering_card.render_update()
-		area.move_item_to_index(drag_card.pool_id, hovering_card.pool_id,RenderEvent.new().set_config({&"rotate":true}))
+		area.move_item_to_index(drag_card.pool_id, hovering_card.pool_id,RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
 		hovering_card = null
 		swap_cooldown = SWAP_COOLDOWN_DURATION
 
@@ -126,7 +126,7 @@ func card_move(render_event:RenderEvent = RenderEvent.NULL_EVENT)-> void:
 		if !card.dragged:
 			master_tween.tween_property(card, ^"position", card_target_pos, TWEEN_TIME) \
 				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
-			if render_event.config.get(&"rotate"):
+			if render_event.get_type() == RenderEvent.DefaultType.SWAP_CARD:
 				var target_rot = _compute_rotation(card, card_target_pos)
 				master_tween.tween_property(card, ^"rotation", target_rot, TWEEN_TIME) \
 					.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)

@@ -1,17 +1,17 @@
 [gd_resource type="Resource" load_steps=2 format=3 uid="uid://dpxcwv07hadg7"]
 
 [sub_resource type="GDScript" id="GDScript_4ovph"]
-script/source = "
-const  command:Dictionary = {
+script/source = "const command:Dictionary = {
 		&\"c_start\":{&\"min\":0,&\"max\":0,&\"mes\":\"start()-服务器指令。开始游戏。\"},
  		&\"c_draw\":{&\"min\":0,&\"max\":0,&\"mes\":\"\"},
 		&\"c_help\":{&\"min\":0,&\"max\":1,&\"mes\":\"help(command)-查看目标指令的描述。\"},
 		&\"c_play_selected_card\":{&\"min\":0,&\"max\":0,&\"mes\":\"c_play_selected_card()-客户端指令。打出当前选定的手牌\"},
 		&\"c_connect_to\":{&\"min\":1,&\"max\":1,&\"mes\":\"\"},
+		&\"c_damage\":{&\"min\":0,&\"max\":3,&\"mes\":\"c_damage()-服务器指令。强制生成对目标的伤害命令。\"},
 		&\"c_close\":{&\"min\":0,&\"max\":0,&\"mes\":\"\"}
 	}
 
-const command_name:PackedStringArray = [\"c_start\",\"c_draw\",\"c_help\",\"c_play_selected_card\",\"c_connect_to\",\"c_close\"]
+const command_name:PackedStringArray = [\"c_start\",\"c_draw\",\"c_help\",\"c_play_selected_card\",\"c_connect_to\",\"c_damage\",\"c_close\"]
 "
 
 [resource]

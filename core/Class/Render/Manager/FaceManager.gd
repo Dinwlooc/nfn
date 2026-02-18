@@ -1,21 +1,17 @@
 ## FaceManager - 负责ItemFace的创建和管理
 extends RefCounted
 class_name FaceManager
-
 ## ItemFace回收池，按类型存储
 var _face_pool: Dictionary[StringName,Array] = {}
 ## 最大缓存数量
 const MAX_POOL_SIZE: int = 6
-
 # 初始化
 func _init() -> void:
 	_face_pool = {}
-
 # 连接到RenderItem
 func connect_to_item(item:RenderItem) -> void:
 	item.request_face.connect(create_item_face)
 	item.reset_requested.connect(_on_item_reset_requested)
-
 # 创建ItemFace（使用回收池）
 func create_item_face(item: RenderItem) -> void:
 	if not item or not item.data:
@@ -33,8 +29,6 @@ func create_item_face(item: RenderItem) -> void:
 	if itemface:
 		_init_item_face(item, itemface)
 		item.add_child(itemface)
-
-
 # 从回收池获取ItemFace
 func _get_from_pool(type_name: StringName) -> ItemFace:
 	if not _face_pool.has(type_name):
@@ -68,7 +62,6 @@ func _cleanup_item_face(itemface: ItemFace) -> void:
 		itemface.get_parent().remove_child(itemface)
 # 初始化ItemFace
 func _init_item_face(item: RenderItem, itemface: ItemFace) -> void:
-	itemface.item = item
 	itemface.item_type = item.data.get_class_name()
 	_connect_item_face_signals(item, itemface)
 
