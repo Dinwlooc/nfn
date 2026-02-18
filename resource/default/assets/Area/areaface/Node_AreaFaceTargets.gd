@@ -7,7 +7,7 @@ var area_target_size:Vector2
 const TWEEN_TIME = 0.35
 
 func _ready()->void:
-	super._ready()
+	request_area(RenderArea.DefaultArea.PLAYERS)
 	original_position = position
 	original_size = size
 	area_target_position = original_position
@@ -28,10 +28,11 @@ func tween_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT):
 	card_move()
 
 func _into_area()->void:
+	super._into_area()
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
-	pass
 
 func _outto_area()->void:
+	super._outto_area()
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
 func card_move()-> void:
@@ -46,18 +47,35 @@ func card_move()-> void:
 		var _target_position = target_position[i - skipped_local_players_count]
 		UIAnimationUtils.tween_animations(player,{^"position":_target_position},TWEEN_TIME)
 
-func quickly_select(item:RenderItem)->void:
+func quickly_select(item: RenderItem) -> void:
 	if area is not RenderAreaPlayers:
 		return
-	if area.items_pool.size() <= 0 || area.get_selected_items().size() > 0:
+	if area.items_pool.is_empty():
 		return
-	if item.data.get_card_type() == &"attack":
+	var card_type: StringName = item.data.get_card_type()
+	var selected: Array[RenderItem] = area.get_selected_items()
+	var local_id: int = multiplayer.get_unique_id()
+	if card_type == &"attack" and not selected.is_empty():
+		if selected[0].data.peer_id == local_id:
+			area.on_select(selected[0])           # 取消自己
+			for player in area.items_pool:
+				if player.data.peer_id != local_id:
+					area.on_select(player)         # 选中第一个敌人
+					break
+		return   # 无论是否调整，有选中时均不再执行后续逻辑
+	if card_type == &"defence":
+		var has_self := false
+		for s in selected:
+			if s.data.peer_id == local_id:
+				has_self = true
+				continue
+			area.on_select(s)
+		if not has_self && area.local_player:
+			area.on_select(area.local_player)
+		return
+	if card_type == &"attack":
 		for player in area.items_pool:
-			if player.data.peer_id == multiplayer.get_unique_id():
+			if player.data.peer_id == local_id:
 				continue
 			area.on_select(player)
 			break
-	if item.data.get_card_type() == &"defence":
-		if not area.local_player:
-			return
-		area.on_select(area.local_player)

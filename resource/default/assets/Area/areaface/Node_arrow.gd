@@ -15,7 +15,6 @@ func _ready() -> void:
 		var manager = CurveArrowManager.new()
 		add_child(manager)
 		curve_managers.append(manager)
-
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.HAND, connect_to_areahand)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.PLAYERS, connect_to_areatargets)
 	control.render_context.dragged_update.connect(_on_dragged_update)
@@ -43,17 +42,13 @@ func draw_arrow() -> void:
 	clear_arrow()
 	if !is_can_drag:
 		return
-
 	var start_points = get_start_point_array()
 	if start_points.is_empty():
 		return
-
 	var end_items = areatargets.get_selected_items()
 	if end_items.is_empty():
 		return
-
 	var end_points = get_end_point_array()  # 返回目标位置（顶部或底部中心，无偏移）
-
 	if start_points.size() == 1 && end_items.size() >= 1:
 		for i in min(end_items.size(), curve_managers.size()):
 			var is_local = (end_items[i] == areatargets.local_player)

@@ -42,7 +42,7 @@ static var _card_rules: Dictionary = {
 		],
 		&"description": "技能牌：可使用自己或他人，不检查距离"
 	},
-	&"defense": {
+	&"defence": {
 		&"validators": [
 			Validator.TARGET_CENTER,
 			Validator.TARGET_SELF,

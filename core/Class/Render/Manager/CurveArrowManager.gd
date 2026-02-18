@@ -25,18 +25,36 @@ func create_smooth_curve(start: Vector2, end: Vector2, start_is_top: bool, end_i
 	var base_offset:float = vertical_dist * 0.5 * offset_multiplier
 	var min_offset:float = 400.0
 	var is_same_direction: bool = (start_is_top == end_is_top)
-	var vertical_offset:float = max(base_offset, min_offset) if is_same_direction else base_offset
 	var start_out: Vector2
-	if start_is_top:
-		start_out = Vector2(0, -vertical_offset)  # 顶部 -> 切线向上
-	else:
-		start_out = Vector2(0, vertical_offset)   # 底部 -> 切线向下
 	var end_in: Vector2
-	if end_is_top:
-		end_in = Vector2(0, -vertical_offset)     # 顶部 -> 从下往上进入，切线向上
+	if is_same_direction:
+		var sign: float = -1.0 if start_is_top else 1.0  # 起点出切线方向（向上为负，向下为正）
+		var dy: float = end.y - start.y
+		var abs_dy: float = abs(dy)
+		var min_dist: float
+		if abs_dy == 0:
+			min_dist = max(base_offset, min_offset)
+		else:
+			var factor: float = 50.0  # 比例常数，可调整
+			min_dist = factor * (horizontal_dist / abs_dy)
+			min_dist = clamp(min_dist, 0, 400.0)  # 限制范围避免极端
+		var d_s: float
+		var d_e: float
+		if sign * dy > 0:
+			d_e = min_dist
+			d_s = d_e + abs_dy
+		else:
+			d_s = min_dist
+			d_e = d_s + abs_dy
+		start_out = Vector2(0, sign * d_s)
+		end_in = Vector2(0, sign * d_e)
 	else:
-		end_in = Vector2(0, vertical_offset)      # 底部 -> 从上往下进入，切线向下
-
+		var vertical_offset: float = base_offset
+		start_out = Vector2(0, -vertical_offset) if start_is_top else Vector2(0, vertical_offset)
+		end_in = Vector2(0, -vertical_offset) if end_is_top else Vector2(0, vertical_offset)
+	curve.add_point(start, Vector2.ZERO, start_out)
+	curve.add_point(end, end_in, Vector2.ZERO)
+	return curve
 	curve.add_point(start, Vector2.ZERO, start_out)
 	curve.add_point(end, end_in, Vector2.ZERO)
 	return curve

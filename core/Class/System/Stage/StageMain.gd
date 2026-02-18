@@ -64,7 +64,7 @@ func _check_defensive_restrictions(card_id: int, target_id: int, is_to_center: b
 				GlobalConsole._print(["主阶段：目标守区非空，不能攻击"])
 				return false
 			return true
-		&"defense":
+		&"defence":
 			if not _current_attacker.area_defensive.is_empty():
 				GlobalConsole._print(["主阶段：自身守区非空，不能使用防御牌"])
 				return false
@@ -72,7 +72,8 @@ func _check_defensive_restrictions(card_id: int, target_id: int, is_to_center: b
 		&"skill":
 			return true
 		_:
-			return false
+			GlobalConsole._print(["主阶段：不明类型卡牌，尝试打出"])
+			return true
 
 func run() -> void:
 	pass

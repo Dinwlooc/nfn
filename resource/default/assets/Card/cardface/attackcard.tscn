@@ -175,6 +175,5 @@ offset_bottom = 88.0
 mouse_filter = 1
 theme_override_styles/hover = SubResource("StyleBoxTexture_wshpf")
 theme_override_styles/normal = SubResource("StyleBoxEmpty_tg7if")
-toggle_mode = true
 action_mode = 0
 flat = true

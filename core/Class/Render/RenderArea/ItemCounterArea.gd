@@ -22,9 +22,11 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 	item_count += 1
 	if render_context:
 		render_context.request_recycle_item(item)
+	items_added.emit(item)
 
 func remove_item_count(remove_count:int) -> void:
 	item_count = max(0, item_count - remove_count)
+	items_removed.emit(null)
 
 func add_item_count(add_count:int) -> void:
 	item_count += add_count

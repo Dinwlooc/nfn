@@ -53,8 +53,15 @@ func data_update(new_item: RenderItem) -> void:
 	var data: HandCardPack = item.data
 	_current_type = data.get_card_type()
 	texture_rect.texture = get_item_main_icon(data.name)
-	cost_label.text = "消耗" + str(data.modified_cost)
-	damage_label.text = "威力" + str(data.modified_power)
+	if _current_type == &"defence":
+		cost_label.text = "/"
+		damage_label.text = "威力" + str(data.modified_power)
+	elif _current_type == &"skill":
+		cost_label.text = "消耗" + str(data.modified_cost)
+		damage_label.text = "/"
+	else:
+		cost_label.text = "消耗" + str(data.modified_cost)
+		damage_label.text = "威力" + str(data.modified_power)
 	description_label.text = get_description(data.name)
 	name_label.text = get_real_name(data.name)
 	vertical_name_label.text = get_real_name(data.name)
@@ -65,7 +72,6 @@ func render_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var area: RenderAreaHand
 	if item.render_context:
 		area = item.render_context.get_render_area(item.area_name)
-
 	if area && area.items_pool.size() > 12 && vertical_name_label.text.length() <= 4:
 		vertical_name_label.visible = true
 	else:

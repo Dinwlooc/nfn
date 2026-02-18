@@ -2,8 +2,19 @@ extends AreaFace
 
 var character_position:Vector2
 
+func _ready() -> void:
+	request_area(RenderArea.DefaultArea.PLAYERS)
+
+func _connect_to_area(target_area: RenderArea) -> void:
+	super._connect_to_area(target_area)
+	if target_area is RenderAreaPlayers:
+		target_area.local_player_received.connect(_on_local_player_received)
+
+func _on_local_player_received(local_player:RenderItem)->void:
+	local_player.set_item_size($Backgound.size)
+
 func render_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT):
-	character_position = position + $BackgoundCharacter.position
+	character_position = position + $Backgound.position
 	tween_update()
 
 func tween_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT):

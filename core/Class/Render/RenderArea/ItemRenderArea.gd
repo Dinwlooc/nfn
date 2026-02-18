@@ -104,6 +104,7 @@ func remove_item(item:RenderItem) -> void:
 		var item_id = item.data.get_id()
 		render_context.unregister_render_item(item_type, item_id)
 	_disconnect_item_from_area(item)
+	items_removed.emit(item)
 	render_update()
 
 func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:

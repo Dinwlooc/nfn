@@ -30,6 +30,8 @@ func _initialize_preset_items(area: RenderArea) -> void:
 		if child is RenderItem:
 			_init_preset_item(child, area, item_index)
 			item_index += 1
+		if child is AreaFace:
+			child.set_render_context(render_context)
 
 func _init_preset_item(item: RenderItem, area: RenderArea, pool_index: int) -> void:
 	item.area_name = area.get_area_name()

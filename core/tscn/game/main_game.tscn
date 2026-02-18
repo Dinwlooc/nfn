@@ -75,24 +75,21 @@ mouse_filter = 2
 script = ExtResource("7_jjejj")
 metadata/_custom_type_script = "uid://b5f71t7ikic0w"
 
-[node name="AreaFaceHand" parent="Control/AreaHand" node_paths=PackedStringArray("area") instance=ExtResource("9_2w2we")]
+[node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_2w2we")]
 layout_mode = 1
 mouse_filter = 1
-area = NodePath("..")
 
 [node name="AreaPlayers" type="Control" parent="Control"]
 anchors_preset = 0
 script = ExtResource("14_a6oxl")
 
-[node name="AreaFaceTargets" parent="Control/AreaPlayers" node_paths=PackedStringArray("area") instance=ExtResource("14_8v20q")]
+[node name="AreaFaceTargets" parent="Control/AreaPlayers" instance=ExtResource("14_8v20q")]
 offset_top = -157.0
 offset_right = 1378.0
 offset_bottom = 165.0
 mouse_filter = 1
-area = NodePath("..")
 
-[node name="AreaFaceSelf" parent="Control/AreaPlayers" node_paths=PackedStringArray("area") instance=ExtResource("11_4k47o")]
-area = NodePath("..")
+[node name="AreaFaceSelf" parent="Control/AreaPlayers" instance=ExtResource("11_4k47o")]
 
 [node name="AreaFaceSelf_Properties" parent="Control/AreaPlayers" instance=ExtResource("12_f8lnr")]
 layout_mode = 1

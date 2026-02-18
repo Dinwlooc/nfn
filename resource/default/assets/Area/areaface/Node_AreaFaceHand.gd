@@ -26,7 +26,7 @@ var _sine_table := PackedFloat64Array() # 类型化数组存储采样点
 var _global_phase_index: int = 0
 
 func _ready() -> void:
-	super._ready()
+	request_area(RenderArea.DefaultArea.HAND)
 	original_position = position
 	original_size = size
 	area_target_position = original_position
@@ -55,6 +55,7 @@ func tween_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	card_move(render_event)
 
 func _into_area()->void:
+	super._into_area()
 	const MOVE_LENGTH:float= 100
 	area_target_position = original_position - Vector2(0, MOVE_LENGTH)
 	area_target_size = original_size + Vector2(0, MOVE_LENGTH)
@@ -64,9 +65,9 @@ func _into_area()->void:
 		}
 	UIAnimationUtils.tween_animations(self,list,TWEEN_TIME)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
-	pass
 
 func _outto_area()->void:
+	super._outto_area()
 	area_target_position = original_position
 	area_target_size = original_size
 	var list:Dictionary[NodePath,Variant] = {
