@@ -15,14 +15,16 @@ func data_update(new_item:RenderItem)-> void:
 				button.button_down.disconnect(item.request_selecting)
 				button.button_down.disconnect(item.request_dragging)
 				button.button_up.disconnect(item.request_dragging)
+			if new_item.data.peer_id == multiplayer.get_unique_id():
+				queue_free()
+				return
 			item = new_item
 			button.button_down.connect(item.request_selecting)
 			button.button_down.connect(item.request_dragging)
 			button.button_up.connect(item.request_dragging)
+			$AreaFaceSelf_Properties.set_player(item)
+			$AreaFaceSelf_Properties.set_render_context(item.render_context)
 	item.set_item_size(size)
-	if item.data.peer_id == multiplayer.get_unique_id():
-		visible = false
-		return
 	Nicon_init_position = Nicon.position
 
 func _physics_process(_delta: float) -> void:

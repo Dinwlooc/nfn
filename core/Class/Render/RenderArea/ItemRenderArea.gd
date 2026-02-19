@@ -116,8 +116,6 @@ func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:
 # 数据池操作
 func _set_item_to_pool(item:RenderItem, index:int) -> void:
 	item.area_name = get_area_name()
-	if render_context:
-		item.render_context = render_context
 	item.pool_id = index
 	if index >= items_pool.size():
 		items_pool.append(item)

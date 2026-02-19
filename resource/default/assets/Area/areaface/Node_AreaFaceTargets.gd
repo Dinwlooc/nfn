@@ -57,12 +57,12 @@ func quickly_select(item: RenderItem) -> void:
 	var local_id: int = multiplayer.get_unique_id()
 	if card_type == &"attack" and not selected.is_empty():
 		if selected[0].data.peer_id == local_id:
-			area.on_select(selected[0])           # 取消自己
+			area.on_select(selected[0])
 			for player in area.items_pool:
 				if player.data.peer_id != local_id:
-					area.on_select(player)         # 选中第一个敌人
+					area.on_select(player)
 					break
-		return   # 无论是否调整，有选中时均不再执行后续逻辑
+		return
 	if card_type == &"defence":
 		var has_self := false
 		for s in selected:

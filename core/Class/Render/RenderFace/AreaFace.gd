@@ -12,15 +12,12 @@ var _area_requested: bool = false
 signal into_area
 signal outto_area
 
-func _ready() -> void:
-	pass
 func set_render_context(p_render_context: RenderContext) -> void:
 	if render_context and _area_requested:
 		render_context.disconnect_renderarea(_requested_area_name, self._connect_to_area, _requested_player_id)
 	render_context = p_render_context
 	if _area_requested and render_context:
 		_register_area_callback()
-
 # 请求区域：子类调用此方法以自动连接指定区域
 func request_area(area_name: StringName, player_id: int = RenderContext.PUBLIC_PLAYER_ID) -> void:
 	if _area_requested:

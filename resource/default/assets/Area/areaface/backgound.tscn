@@ -1,16 +1,18 @@
 [gd_scene load_steps=6 format=3 uid="uid://di6xhhto3hhci"]
 
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://resource/default/assets/Area/areaface/Node_Backgound.gd" id="1_f1hya"]
-[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/shader_lights.gdshader" id="2_cj81x"]
+[ext_resource type="Shader" uid="uid://doci3osgosgmd" path="res://resource/default/shader/bloom.gdshader" id="2_ghmfw"]
 [ext_resource type="Texture2D" uid="uid://j8pov4gwka81" path="res://mods/user_mod/test2.png" id="3_pxvu5"]
 [ext_resource type="Script" uid="uid://062bg815jifb" path="res://resource/default/shader/shaderScript/shader_lights.gd" id="4_m3pmx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_riwjx"]
-shader = ExtResource("2_cj81x")
-shader_parameter/cooldown_speed = 0.5
-shader_parameter/glow_intensity = 0.7
-shader_parameter/glow_luminance_min = 0.4
-shader_parameter/luminance_max = 0.35
+shader = ExtResource("2_ghmfw")
+shader_parameter/threshold_min = 0.1
+shader_parameter/threshold_max = 1.0
+shader_parameter/intensity = 1.0
+shader_parameter/radius = 1.0
+shader_parameter/enable_pulse = true
+shader_parameter/pulse_speed = 0.1
 
 [node name="Backgound" type="Control"]
 layout_mode = 3

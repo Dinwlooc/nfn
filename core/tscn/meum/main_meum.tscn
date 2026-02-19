@@ -1,7 +1,8 @@
-[gd_scene load_steps=14 format=3 uid="uid://c624f44o3dyxc"]
+[gd_scene load_steps=15 format=3 uid="uid://c624f44o3dyxc"]
 
 [ext_resource type="Script" uid="uid://bsycek868a820" path="res://core/tscn/meum/Node_MeumControl.gd" id="1_x1yqv"]
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://resource/default/assets/Area/areaface/Node_Backgound.gd" id="2_0deb0"]
+[ext_resource type="Shader" uid="uid://doci3osgosgmd" path="res://resource/default/shader/bloom.gdshader" id="3_3ffcx"]
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/shader_lights.gdshader" id="3_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://resource/default/assets/Backgound/backgound6.png" id="4_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://v20ylpnaw8mc" path="res://resource/default/assets/Backgound/backgound2.png" id="6_m1fcx"]
@@ -12,11 +13,13 @@
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="10_i1bfy"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fu0d1"]
-shader = ExtResource("3_j0cbf")
-shader_parameter/cooldown_speed = 1.0
-shader_parameter/glow_intensity = 0.3
-shader_parameter/glow_luminance_min = 0.3
-shader_parameter/luminance_max = 0.8
+shader = ExtResource("3_3ffcx")
+shader_parameter/threshold_min = 0.12
+shader_parameter/threshold_max = 1.0
+shader_parameter/intensity = 0.5
+shader_parameter/radius = 1.0
+shader_parameter/enable_pulse = true
+shader_parameter/pulse_speed = 2.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_d576q"]
 shader = ExtResource("3_j0cbf")
@@ -53,7 +56,6 @@ offset_bottom = 900.0
 texture = ExtResource("4_j0cbf")
 expand_mode = 1
 stretch_mode = 6
-script = ExtResource("7_71pag")
 
 [node name="ColorRect_icon" type="TextureRect" parent="MeumControl"]
 material = SubResource("ShaderMaterial_d576q")

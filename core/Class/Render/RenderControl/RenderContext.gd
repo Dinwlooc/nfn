@@ -1,7 +1,7 @@
 extends RefCounted
 class_name RenderContext
 
-class RenderItemPool:
+class RenderItemPool extends RefCounted:
 	var _pool: Array[RenderItem] = []
 	const MAX_CACHE_SIZE = 20
 	signal item_created(item:RenderItem)
@@ -46,10 +46,8 @@ func _on_render_area_registered(area_name: StringName, area: RenderArea, player_
 	if _callback_map.has(player_id) and _callback_map[player_id].has(area_name):
 		for callback in _callback_map[player_id][area_name]:
 			callback.call(area)
-
 # 获取实际的玩家ID用于字典访问
 func _get_actual_player_id(player_id: int) -> int:
-	# 如果指定的玩家ID与当前玩家ID一致，则使用公共ID
 	if player_id == loacal_player_id:
 		return PUBLIC_PLAYER_ID
 	return player_id
@@ -150,6 +148,7 @@ func get_or_create_item(item_pack: ItemPack) -> RenderItem:
 	var item = get_render_item_by_id(item_pack.get_class_name(), item_pack.get_id())
 	if not item:
 		item = _item_pool.create_item(item_pack)
+		item.render_context = self
 		register_render_item(item_pack.get_class_name(), item_pack.get_id(), item)
 	return item
 
