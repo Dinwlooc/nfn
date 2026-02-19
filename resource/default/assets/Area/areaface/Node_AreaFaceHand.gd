@@ -56,7 +56,7 @@ func tween_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 
 func _into_area()->void:
 	super._into_area()
-	const MOVE_LENGTH:float= 100
+	const MOVE_LENGTH:float= 150
 	area_target_position = original_position - Vector2(0, MOVE_LENGTH)
 	area_target_size = original_size + Vector2(0, MOVE_LENGTH)
 	var list:Dictionary[NodePath,Variant] = {
