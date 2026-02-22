@@ -23,7 +23,7 @@ bool in_range(float lum) {
 }
 
 void fragment() {
-	vec4 original = texture(TEXTURE, UV) * COLOR;
+	vec4 original = texture(TEXTURE, UV);
 	float lum = dot(original.rgb, vec3(0.2126, 0.7152, 0.0722));
 	
 	// 提取范围内的像素（否则置零）

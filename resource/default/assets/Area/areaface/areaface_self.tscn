@@ -1,13 +1,22 @@
 [gd_scene load_steps=5 format=3 uid="uid://ct8jneqmxsdoa"]
 
-[ext_resource type="Texture2D" uid="uid://c0adcrehmovsy" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami _3.png" id="1_4bx5y"]
 [ext_resource type="Script" uid="uid://6ohup1dhlali" path="res://resource/default/assets/Area/areaface/areaface_self.gd" id="1_fqk35"]
 [ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/flash_color.gdshader" id="2_waad1"]
+[ext_resource type="Texture2D" uid="uid://bqorna25qfuyo" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami_Sprite.png" id="3_waad1"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_waad1"]
 shader = ExtResource("2_waad1")
 shader_parameter/flash_color = Color(0, 0, 0, 1)
 shader_parameter/flash_intensity = 0.0
+shader_parameter/alpha = 1.0
+shader_parameter/enable_crossfade = false
+shader_parameter/crossfade_amount = 1.0
+shader_parameter/enable_sprite_crossfade = false
+shader_parameter/early_frame = 0
+shader_parameter/current_frame = 0
+shader_parameter/hframes = 1
+shader_parameter/vframes = 1
+shader_parameter/sprite_crossfade_amount = 1.0
 
 [node name="AreaFaceSelf" type="Control"]
 layout_mode = 3
@@ -39,7 +48,7 @@ offset_left = 14.08
 offset_top = -134.0
 offset_right = 193.08
 offset_bottom = 144.0
-color = Color(0.309804, 0.152941, 0.0509804, 0.486275)
+color = Color(0.977015, 0.823146, 0.738518, 0.486275)
 
 [node name="CharacterContainer" type="AspectRatioContainer" parent="BackgoundCharacter"]
 texture_filter = 1
@@ -52,12 +61,13 @@ offset_bottom = 316.0
 pivot_offset = Vector2(88, 315)
 stretch_mode = 0
 
-[node name="Character" type="TextureRect" parent="BackgoundCharacter/CharacterContainer"]
+[node name="Character" type="Sprite2D" parent="BackgoundCharacter/CharacterContainer"]
+light_mask = 2
 texture_filter = 1
 material = SubResource("ShaderMaterial_waad1")
-layout_mode = 2
-texture = ExtResource("1_4bx5y")
-stretch_mode = 6
+position = Vector2(89, 189)
+texture = ExtResource("3_waad1")
+hframes = 2
 
 [node name="BackgoundAbility" type="ColorRect" parent="."]
 texture_filter = 1
