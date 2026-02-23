@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bsycek868a820" path="res://core/tscn/meum/Node_MeumControl.gd" id="1_x1yqv"]
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://resource/default/assets/Area/areaface/Node_Backgound.gd" id="2_0deb0"]
 [ext_resource type="Shader" uid="uid://doci3osgosgmd" path="res://resource/default/shader/bloom.gdshader" id="3_3ffcx"]
-[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/shader_lights.gdshader" id="3_j0cbf"]
+[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/rgb_shift_distortion.gdshader" id="3_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://resource/default/assets/Backgound/backgound6.png" id="4_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://v20ylpnaw8mc" path="res://resource/default/assets/Backgound/backgound2.png" id="6_m1fcx"]
 [ext_resource type="Script" uid="uid://062bg815jifb" path="res://resource/default/shader/shaderScript/shader_lights.gd" id="7_71pag"]
@@ -23,10 +23,7 @@ shader_parameter/pulse_speed = 2.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_d576q"]
 shader = ExtResource("3_j0cbf")
-shader_parameter/cooldown_speed = 0.5
-shader_parameter/glow_intensity = 0.2
-shader_parameter/glow_luminance_min = 0.4
-shader_parameter/luminance_max = 0.4
+shader_parameter/distortion_intensity = 0.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6du6q"]
 

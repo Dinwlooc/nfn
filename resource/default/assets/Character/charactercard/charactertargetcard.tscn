@@ -9,8 +9,8 @@
 [node name="CharacterTargetCard" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 204.0
-offset_bottom = 203.0
+offset_right = 236.0
+offset_bottom = 230.0
 mouse_filter = 2
 script = ExtResource("1_1lsym")
 metadata/_custom_type_script = "uid://onljydwdxj4o"
@@ -19,17 +19,17 @@ metadata/_custom_type_script = "uid://onljydwdxj4o"
 texture_filter = 1
 layout_mode = 2
 offset_left = 6.0
-offset_right = 202.0
-offset_bottom = 203.0
+offset_right = 237.0
+offset_bottom = 231.0
 color = Color(0.968627, 0.482353, 0.219608, 0.411765)
 
 [node name="BackgoundAbility" type="ColorRect" parent="."]
 texture_filter = 1
 layout_mode = 2
 offset_left = 14.0
-offset_top = 147.0
-offset_right = 194.0
-offset_bottom = 195.0
+offset_top = 156.0
+offset_right = 230.0
+offset_bottom = 223.0
 color = Color(1, 0.639216, 0.329412, 0.823529)
 
 [node name="BackgoundCharacter" type="ColorRect" parent="."]
@@ -45,10 +45,10 @@ color = Color(0.309804, 0.152941, 0.0509804, 0.486275)
 
 [node name="AreaFaceSelf_Properties" parent="." instance=ExtResource("2_f0c7v")]
 layout_mode = 1
-offset_left = 7.0
-offset_top = -10.077
-offset_right = 191.812
-offset_bottom = 36.0
+offset_left = 118.0
+offset_top = -167.57
+offset_right = 301.508
+offset_bottom = -91.0
 scale = Vector2(0.6, 0.6)
 mode = 1
 
@@ -74,16 +74,16 @@ flip_h = true
 visible = false
 layout_mode = 0
 offset_left = 6.0
-offset_right = 201.0
-offset_bottom = 202.0
+offset_right = 231.0
+offset_bottom = 223.0
 texture = ExtResource("3_4qsti")
 
 [node name="Button" type="Button" parent="."]
 layout_mode = 0
 offset_left = 8.0
 offset_top = -4.0
-offset_right = 207.0
-offset_bottom = 198.0
+offset_right = 237.0
+offset_bottom = 228.0
 focus_mode = 0
 theme = ExtResource("4_gn4qo")
 toggle_mode = true

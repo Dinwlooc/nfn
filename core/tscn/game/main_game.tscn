@@ -81,9 +81,10 @@ mouse_filter = 1
 
 [node name="AreaFaceSelf_Properties" parent="Control/AreaPlayers" instance=ExtResource("12_f8lnr")]
 layout_mode = 1
-offset_top = 553.0
-offset_right = 219.0
-offset_bottom = 695.0
+offset_left = 1.0
+offset_top = 437.0
+offset_right = 220.0
+offset_bottom = 637.0
 scale = Vector2(2, 2)
 
 [node name="AreaHand" type="Control" parent="Control"]
@@ -99,9 +100,9 @@ layout_mode = 1
 anchor_left = 0.177
 anchor_top = 0.782
 offset_left = 0.498993
-offset_top = -0.274048
+offset_top = 5.72595
 offset_right = -0.400024
-offset_bottom = -2.026
+offset_bottom = 3.974
 mouse_filter = 1
 
 [node name="AreaDiscard" type="Control" parent="Control"]

@@ -132,3 +132,9 @@ static func crossfade_sprite_frame(sprite: Sprite2D, target_frame: int, duration
 		sprite.frame = target_frame
 		material.set_shader_parameter(&"enable_sprite_crossfade", false)
 	)
+## 设置三色偏移失真强度，兼容 rgb_shift_distortion.gdshader
+static func set_rgb_shift_intensity(node: CanvasItem, intensity: float) -> void:
+	var material := node.material as ShaderMaterial
+	if not material:
+		return
+	material.set_shader_parameter(&"distortion_intensity", intensity)

@@ -12,6 +12,7 @@ enum Mode { AUTO, MANUAL }
 @onready var ap_container: Control = $APContainer
 @onready var ap_icon: Control = $APContainer/APIcon
 @onready var ap_label: Label = $APContainer/APLabel
+@onready var mp_label:Label = $MPLabel
 
 var _cached_hp_max: int = 0
 var _cached_hp_current: int = 0
@@ -90,16 +91,14 @@ func _update_cached_stats(player_data: PlayerPack) -> void:
 	_cached_mp_current = player_data.MP
 	_cached_ap_current = player_data.AP
 	_cached_modified_init_ap = player_data.modified_init_AP
-
-	# 传入原始值（可能为负），但在动画内部会进行钳位处理
 	if _cached_hp_max != old_hp_max or _cached_hp_current != old_hp:
 		_apply_hp_animation(old_hp_max, old_hp, _cached_hp_max, _cached_hp_current)
 		hp_label.text = "%d / %d" % [_cached_hp_current, _cached_hp_max]
 	if _cached_mp_max != old_mp_max or _cached_mp_current != old_mp:
 		_apply_mp_animation(old_mp_max, old_mp, _cached_mp_max, _cached_mp_current)
+		mp_label.text = "%d / %d" % [max(0, _cached_mp_current), max(0, _cached_mp_max)]
 	if _cached_ap_current != old_ap or _cached_modified_init_ap != old_init_ap:
 		_update_ap_display()
-
 	var hp_damage: int = max(0, old_hp - _cached_hp_current)
 	var mp_damage: int = max(0, old_mp - _cached_mp_current)
 	if hp_damage > 0 or mp_damage > 0:
@@ -107,6 +106,7 @@ func _update_cached_stats(player_data: PlayerPack) -> void:
 
 func _clear_display() -> void:
 	hp_label.text = "0 / 0"
+	mp_label.text = "0 / 0"
 	for block in _hp_blocks:
 		block.queue_free()
 	_hp_blocks.clear()
@@ -114,47 +114,38 @@ func _clear_display() -> void:
 		unit.queue_free()
 	_mp_units.clear()
 	ap_label.text = "X 0"
-
 # ==================== HP 动画（修复负数索引问题）====================
 func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	# 钳位当前值用于渲染（避免负数索引）
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
-
 	_adjust_hp_bar_capacity(new_max, clamped_new_cur)  # 传入钳位后的当前值
-
 	if new_max > old_max:
 		for i in range(old_max, new_max):
 			var block: Panel = _hp_blocks[i]
 			var target: Color = COLOR_HP_CURRENT if i < clamped_new_cur else COLOR_HP_LOST
 			var transparent: Color = Color(target.r, target.g, target.b, 0.0)
 			_start_hp_block_blink(block, transparent, target)
-
 		if old_cur != new_cur:
-			# 动画范围需要钳位起始和结束
 			var start: int = max(0, min(clamped_old_cur, clamped_new_cur))
 			var end: int = max(0, max(clamped_old_cur, clamped_new_cur) - 1)
 			_animate_hp_range(start, end, new_cur < old_cur, old_max)
-
 	elif new_max < old_max:
 		for i in range(new_max):
 			var block: Panel = _hp_blocks[i]
 			var target: Color = COLOR_HP_CURRENT if i < clamped_new_cur else COLOR_HP_LOST
 			_start_hp_block_special_blink(block, target)
-
 		if old_cur != new_cur:
 			var start: int = max(0, min(clamped_old_cur, clamped_new_cur))
 			var end: int = max(0, max(clamped_old_cur, clamped_new_cur) - 1)
 			_animate_hp_range(start, end, new_cur < old_cur, new_max)
-
-	else:  # max 相等
+	else:
 		if old_cur != new_cur:
 			var start: int = max(0, min(clamped_old_cur, clamped_new_cur))
 			var end: int = max(0, max(clamped_old_cur, clamped_new_cur) - 1)
 			_animate_hp_range(start, end, new_cur < old_cur, new_max)
 
 func _animate_hp_range(start: int, end: int, is_decrease: bool, limit: int) -> void:
-	# 确保 start 不小于 0（已由调用方保证），但额外保护
 	start = max(0, start)
 	if start > end:
 		return
@@ -167,7 +158,6 @@ func _animate_hp_range(start: int, end: int, is_decrease: bool, limit: int) -> v
 		_start_hp_block_blink(block, from_color, to_color)
 
 func _adjust_hp_bar_capacity(target_max: int, new_cur: int) -> void:
-	# new_cur 已经钳位为非负数
 	var current: int = _hp_blocks.size()
 	if target_max > current:
 		for i in range(current, target_max):
@@ -213,32 +203,26 @@ func _start_hp_block_special_blink(block: Panel, target_color: Color) -> void:
 func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
-
 	_ensure_mp_capacity(new_max)
 	var dots: Array = _get_all_mp_dots()
-
 	if new_max > old_max:
 		for i in range(old_max, new_max):
 			var dot: ColorRect = dots[i] as ColorRect
 			var target: Color = COLOR_MP_CURRENT if i < clamped_new_cur else COLOR_MP_LOST
 			var transparent: Color = Color(target.r, target.g, target.b, 0.0)
 			_start_mp_dot_blink(dot, transparent, target)
-
 		if old_cur != new_cur:
 			var start: int = max(0, min(clamped_old_cur, clamped_new_cur))
 			var end: int = max(0, max(clamped_old_cur, clamped_new_cur) - 1)
 			_animate_mp_range(start, end, new_cur < old_cur, old_max)
-
 	elif new_max < old_max:
 		for i in range(new_max, old_max):
 			var dot: ColorRect = dots[i] as ColorRect
 			_start_mp_dot_fade_out(dot, i, new_max)
-
 		if old_cur != new_cur:
 			var start: int = max(0, min(clamped_old_cur, clamped_new_cur))
 			var end: int = max(0, max(clamped_old_cur, clamped_new_cur) - 1)
 			_animate_mp_range(start, end, new_cur < old_cur, new_max)
-
 	else:
 		if old_cur != new_cur:
 			var start: int = max(0, min(clamped_old_cur, clamped_new_cur))
