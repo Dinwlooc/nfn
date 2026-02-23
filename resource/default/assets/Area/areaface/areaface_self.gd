@@ -3,10 +3,10 @@ extends AreaFace
 var character_position: Vector2
 var _current_hp_damage: int = 0          # 当前正在播放的物理受击伤害值
 var _current_tween: Tween = null         # 当前物理受击的 Tween 实例
-@onready var backgound = $Backgound
-@onready var backgound_character = $BackgoundCharacter
-@onready var character_container = $BackgoundCharacter/CharacterContainer
-@onready var character = $BackgoundCharacter/CharacterContainer/Character
+@onready var backgound:ColorRect = $Backgound
+@onready var backgound_character:ColorRect = $BackgoundCharacter
+@onready var character_container:AspectRatioContainer = $BackgoundCharacter/CharacterContainer
+@onready var character:Sprite2D  = $BackgoundCharacter/CharacterContainer/Character
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
 	_setup_character_pivot.call_deferred()
@@ -97,8 +97,7 @@ func _handle_damage_event(event: RenderEvent) -> void:
 		).set_delay(flash_duration)
 
 func _on_physical_anim_finished() -> void:
-	if character is Sprite2D:
-		ShaderEffectsUtils.crossfade_sprite_frame(character, 0, 0.2)
+	ShaderEffectsUtils.crossfade_sprite_frame(character, 0, 0.2)
 	_current_hp_damage = 0
 	_current_tween = null
 
@@ -112,7 +111,6 @@ func _outto_area() -> void:
 func card_move() -> void:
 	if area.items_pool.size() == 0:
 		return
-	for i in range(0, area.items_pool.size()):
-		var player: RenderItem = area.items_pool[i]
-		if player.data.peer_id == multiplayer.get_unique_id():
-			UIAnimationUtils.tween_animations(player, { ^"position": character_position }, 0.1)
+	if not area.local_player:
+		return
+	UIAnimationUtils.tween_animations(area.local_player, { ^"position": character_position }, 0.1)
