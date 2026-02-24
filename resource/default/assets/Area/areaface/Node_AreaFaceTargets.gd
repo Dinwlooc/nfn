@@ -45,6 +45,8 @@ func card_move()-> void:
 			skipped_local_players_count += 1
 			continue
 		var _target_position = target_position[i - skipped_local_players_count]
+		if player.position == _target_position:
+			continue
 		UIAnimationUtils.tween_animations(player,{^"position":_target_position},TWEEN_TIME)
 
 func quickly_select(item: RenderItem) -> void:
@@ -54,28 +56,26 @@ func quickly_select(item: RenderItem) -> void:
 		return
 	var card_type: StringName = item.data.get_card_type()
 	var selected: Array[RenderItem] = area.get_selected_items()
-	var local_id: int = multiplayer.get_unique_id()
-	if card_type == &"attack" and not selected.is_empty():
-		if selected[0].data.peer_id == local_id:
-			area.on_select(selected[0])
-			for player in area.items_pool:
-				if player.data.peer_id != local_id:
-					area.on_select(player)
-					break
-		return
-	if card_type == &"defence":
-		var has_self := false
-		for s in selected:
-			if s.data.peer_id == local_id:
-				has_self = true
-				continue
-			area.on_select(s)
-		if not has_self && area.local_player:
-			area.on_select(area.local_player)
-		return
-	if card_type == &"attack":
-		for player in area.items_pool:
-			if player.data.peer_id == local_id:
-				continue
-			area.on_select(player)
-			break
+	var local_player:RenderItem = area.local_player
+	match card_type:
+		&"attack":
+			if selected.is_empty():
+				for player in area.items_pool:
+					if player != local_player:
+						area.on_select(player)
+						break
+			elif selected[0] == local_player:
+				area.on_select(selected[0])
+				for player in area.items_pool:
+					if player != local_player:
+						area.on_select(player)
+						break
+		&"defence":
+			var has_self :bool= false
+			for s in selected:
+				if s == local_player:
+					has_self = true
+					continue
+				area.on_select(s)
+			if not has_self:
+				area.on_select(area.local_player)

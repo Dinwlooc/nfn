@@ -91,6 +91,7 @@ offset_bottom = 223.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ggemd")
 
 [node name="MPLabel" type="Label" parent="."]
+layout_mode = 0
 offset_left = 53.0
 offset_top = 178.0
 offset_right = 513.0
@@ -103,6 +104,7 @@ horizontal_alignment = 1
 
 [node name="HPBar" type="Control" parent="."]
 layout_mode = 1
+anchors_preset = 0
 offset_left = 16.0
 offset_top = 203.0
 offset_right = 16.0

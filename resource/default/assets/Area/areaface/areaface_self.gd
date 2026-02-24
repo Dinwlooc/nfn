@@ -113,4 +113,6 @@ func card_move() -> void:
 		return
 	if not area.local_player:
 		return
+	if area.local_player.position == character_position:
+		return
 	UIAnimationUtils.tween_animations(area.local_player, { ^"position": character_position }, 0.1)

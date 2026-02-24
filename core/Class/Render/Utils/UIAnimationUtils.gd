@@ -50,15 +50,15 @@ static func generate_coordinates(card_container_position:Vector2,card_container_
 
 # 让 Panel 的 StyleBoxFlat 背景颜色闪烁
 static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: Color, times: int = 2, half_duration: float = 0.1) -> Tween:
-	var stylebox = block.get_theme_stylebox("panel") as StyleBoxFlat
+	var stylebox = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	if not stylebox:
 		return null
 	var tween = block.create_tween()
 	tween.set_parallel(false)
 	for i in range(times):
-		tween.tween_property(stylebox, "bg_color", to_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
-		tween.tween_property(stylebox, "bg_color", from_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
-	tween.tween_property(stylebox, "bg_color", to_color, half_duration)
+		tween.tween_property(stylebox, ^"bg_color", to_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
+		tween.tween_property(stylebox, ^"bg_color", from_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
+	tween.tween_property(stylebox, ^"bg_color", to_color, half_duration)
 	return tween
 
 # 让 ColorRect 的颜色闪烁
@@ -66,7 +66,7 @@ static func blink_color(rect: ColorRect, from_color: Color, to_color: Color, tim
 	var tween = rect.create_tween()
 	tween.set_parallel(false)
 	for i in range(times):
-		tween.tween_property(rect, "color", to_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
-		tween.tween_property(rect, "color", from_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
-	tween.tween_property(rect, "color", to_color, half_duration)
+		tween.tween_property(rect, ^"color", to_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
+		tween.tween_property(rect, ^"color", from_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
+	tween.tween_property(rect, ^"color", to_color, half_duration)
 	return tween

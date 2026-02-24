@@ -51,23 +51,22 @@ func _disconnect_item_from_area(item:RenderItem) -> void:
 
 func get_render_item_child_index() -> int:
 	return _divide_index
-
 # 选择操作
 func on_select(item:RenderItem) -> void:
 	if item.selected:
 		item.selected = false
+		if item.dragged:
+			render_context.remove_card_on_drag()
 		selected_items.erase(item)
 	else:
 		if selected_items.size() >= select_limit:
 			selected_items[0].selected = false
-			selected_items[0].render_update()
 			selected_items.remove_at(0)
 		item.selected = true
 		selected_items.append(item)
 	item.render_update()
 	tween_update()
 	selected.emit(item)
-
 # 获取方法
 func get_selected_items() -> Array[RenderItem]:
 	return selected_items
