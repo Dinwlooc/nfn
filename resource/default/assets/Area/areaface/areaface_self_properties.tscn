@@ -99,7 +99,7 @@ offset_bottom = 438.0
 scale = Vector2(0.1, 0.1)
 theme_override_colors/font_color = Color(0, 1, 1, 1)
 theme_override_font_sizes/font_size = 120
-text = "20 / 20"
+text = "-"
 horizontal_alignment = 1
 
 [node name="HPBar" type="Control" parent="."]
@@ -131,22 +131,22 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_dvwbm")
 [node name="HPLabel" type="Label" parent="HPBar"]
 layout_mode = 0
 offset_left = 25.0
-offset_top = -12.0
+offset_top = -13.0
 offset_right = 485.0
-offset_bottom = 248.0
+offset_bottom = 247.0
 rotation = 1.5708
 scale = Vector2(0.1, 0.1)
 theme_override_colors/font_color = Color(0.613625, 1.19124e-06, 4.81307e-07, 1)
 theme_override_font_sizes/font_size = 120
-text = "20 / 20"
+text = "-"
 horizontal_alignment = 1
 
 [node name="MPContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 61.0
-offset_top = 167.0
-offset_right = 258.0
-offset_bottom = 187.0
+offset_left = 63.0
+offset_top = 168.0
+offset_right = 260.0
+offset_bottom = 188.0
 rotation = -1.5708
 
 [node name="MPUnit" type="Control" parent="MPContainer"]
@@ -207,17 +207,17 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_kwfkx")
 [node name="APIcon" type="Panel" parent="APContainer"]
 use_parent_material = true
 layout_mode = 0
-offset_left = 16.0
+offset_left = 13.0
 offset_top = 63.0
-offset_right = 31.0
+offset_right = 28.0
 offset_bottom = 78.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_j7r54")
 
 [node name="APLabel" type="Label" parent="APContainer"]
 layout_mode = 0
-offset_left = 39.0
+offset_left = 47.0
 offset_top = 53.0
-offset_right = 286.0
+offset_right = 294.0
 offset_bottom = 218.0
 scale = Vector2(0.2, 0.2)
 theme_override_colors/font_color = Color(1, 0.992157, 0.666667, 1)

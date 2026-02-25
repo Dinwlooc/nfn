@@ -747,7 +747,7 @@ content_margin_left = 5.0
 content_margin_top = 5.0
 content_margin_right = 5.0
 content_margin_bottom = 5.0
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
+bg_color = Color(0.101961, 0.101961, 0.101961, 1)
 border_width_bottom = 2
 border_color = Color(0, 0, 0, 0.6)
 corner_radius_top_left = 4
@@ -761,7 +761,7 @@ content_margin_left = 5.0
 content_margin_top = 5.0
 content_margin_right = 5.0
 content_margin_bottom = 5.0
-bg_color = Color(0.1, 0.1, 0.1, 0.3)
+bg_color = Color(0.360573, 0.360573, 0.360573, 1)
 border_width_bottom = 2
 border_color = Color(0, 0, 0, 0.3)
 corner_radius_top_left = 4
@@ -771,7 +771,7 @@ corner_radius_bottom_left = 4
 corner_detail = 6
 
 [resource]
-LineEdit/colors/caret_color = Color(0.94902, 0.94902, 0.94902, 0)
+LineEdit/colors/caret_color = Color(0.431373, 0.431373, 0.431373, 0)
 LineEdit/colors/clear_button_color = Color(0.875, 0.875, 0.875, 1)
 LineEdit/colors/clear_button_color_pressed = Color(1, 1, 1, 1)
 LineEdit/colors/font_color = Color(0.875, 0.875, 0.875, 1)
