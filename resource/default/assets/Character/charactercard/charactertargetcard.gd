@@ -2,7 +2,6 @@ extends ItemFace
 
 @onready var Nicon = $ColorRect
 var Nicon_init_position:Vector2
-const TYPE = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.CHARACTER]
 const SELECT_COLOR:Color = Color(1,0.3,0.3)
 const HOVERING_COLOR:Color = Color(1,0.7,0.6)
 const NORMAL_COLOR:Color = Color(0.8,0.8,0.8)

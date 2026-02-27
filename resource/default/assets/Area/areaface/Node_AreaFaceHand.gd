@@ -58,16 +58,18 @@ const BASE_SCALE_FACTOR: float = 1.0
 const SIGN_POSITIVE: float = 1.0
 ## 负方向符号
 const SIGN_NEGATIVE: float = -1.0
-# -------------------------------
+
+@onready var quick_sort_ui = $QuickSortUI
+@onready var quick_sort_button = $QuickSortUI/QuickSortButton
 
 ## 预计算的正弦表
 var _sine_table: PackedFloat64Array = PackedFloat64Array()
 ## 全局相位索引
 var _global_phase_index: int = 0
-
+var is_sorting: bool = false
 ## 当前卡牌总数决定的缩放因子（16张以下为1.0，32张时为0.75）
 var total_scale_factor: float = 1.0
-
+var _order_dirty: bool = true
 
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.HAND)
@@ -75,6 +77,8 @@ func _ready() -> void:
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size
+	quick_sort_button.pressed.connect(_on_quick_sort_button_pressed)
+	quick_sort_ui.hide()  # 初始隐藏
 	_generate_sine_table()
 	_update_total_scale_factor()  # 初始化缩放因子
 
@@ -110,11 +114,14 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
 		_update_total_scale_factor()
+		_order_dirty = true
 	target_position = UIAnimationUtils.generate_coordinates(area_target_position, area_target_size, area.items_pool.size())
 	tween_update(render_event)
 
 ## 触发卡牌移动动画
 func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
+	if render_event.get_type() == RenderEvent.DefaultType.SWAP_CARD:
+		_order_dirty = true
 	card_move(render_event)
 
 ## 进入区域时的展开动画
@@ -127,6 +134,7 @@ func _into_area() -> void:
 		^"size": area_target_size,
 	}
 	UIAnimationUtils.tween_animations(self, list, TWEEN_TIME)
+	quick_sort_ui.show()
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
 
 
@@ -140,6 +148,7 @@ func _outto_area() -> void:
 		^"size": area_target_size,
 	}
 	UIAnimationUtils.tween_animations(self, list, TWEEN_TIME)
+	quick_sort_ui.hide()
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
 
@@ -261,3 +270,52 @@ func _compute_scale_from_dx(dx: float) -> float:
 	var abs_dx: float = abs(dx)
 	var rotation_ratio: float = min(abs_dx / max_distance, MAX_ROTATION_RATIO)
 	return BASE_SCALE_FACTOR - rotation_ratio * MAX_SHRINK_FACTOR
+
+# 按钮按下时的处理（设置冷却）
+func _on_quick_sort_button_pressed() -> void:
+	if not _order_dirty:          # <--- 新增：牌序未变，直接返回
+		return
+	if is_sorting:
+		return
+	is_sorting = true
+	quick_sort_button.disabled = true
+	await _quick_sort_cards()
+	is_sorting = false
+	quick_sort_button.disabled = false
+
+func _quick_sort_cards() -> void:
+	var pool: Array[RenderItem] = area.items_pool
+	var attack_end: int = 0  # 下一个攻击牌插入位置
+	var defence_end: int = 0 # 下一个防御牌插入位置
+	for i in pool.size():
+		if pool[i].data.get_card_type() == &"attack":
+			if i == attack_end:
+				attack_end += 1
+				continue
+			area.swap_items_no_event(i, attack_end)
+			attack_end += 1
+		if pool[i].data.get_card_type() == &"defence":
+			if defence_end == 0:
+				defence_end = attack_end #校准起点
+			if i == defence_end:
+				defence_end += 1
+				continue
+			area.swap_items_no_event(i, defence_end)
+			defence_end += 1
+		if pool[i].data.get_card_type() == &"spell":
+			continue
+	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
+	await get_tree().create_timer(TWEEN_TIME).timeout
+	sort_region(0, attack_end - 1)                # 攻击区
+	sort_region(attack_end, defence_end - 1)      # 防御区
+	sort_region(defence_end, pool.size() - 1)            # 技能区
+	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
+	_order_dirty = false
+
+func sort_region(start: int, end: int) -> void:
+	var pool = area.items_pool
+	for i in range(start + 1, end + 1):
+		var j = i
+		while j > start and pool[j].data.id < pool[j-1].data.id:
+			area.swap_items_no_event(j, j-1)
+			j -= 1

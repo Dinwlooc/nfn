@@ -35,7 +35,7 @@ static var _card_rules: Dictionary = {
 		],
 		&"description": "攻击牌：对他人使用，需检查距离"
 	},
-	&"skill": {
+	&"spell": {
 		&"response_required": true,
 		&"validators": [
 			Validator.TARGET_CENTER,

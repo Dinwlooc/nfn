@@ -13,19 +13,19 @@ extends ItemFace
 # 背景颜色定义（带透明度）
 const TYPE_COLORS = {
 	&"attack": {
-		&"normal": Color(1.0, 0.5, 0.5, 0.3),
+		&"normal": Color(1.0, 0.5, 0.5, 0.5),
 		&"hover":  Color(1.0, 0.5, 0.5, 0.7),
 		&"select": Color(1.0, 0.5, 0.5, 1.0)
 	},
 	&"defence": {
-		&"normal": Color(0.5, 0.8, 1.0, 0.3),
+		&"normal": Color(0.5, 0.8, 1.0, 0.5),
 		&"hover":  Color(0.5, 0.8, 1.0, 0.7),
 		&"select": Color(0.5, 0.8, 1.0, 1.0)
 	},
-	&"skill": {
-		&"normal": Color(0.8, 1.0, 0.5, 0.3),
-		&"hover":  Color(0.8, 1.0, 0.5, 0.7),
-		&"select": Color(0.8, 1.0, 0.5, 1.0)
+	&"spell": {
+		&"normal": Color(0.3, 0.8, 0.3, 0.5),
+		&"hover":  Color(0.3, 0.8, 0.3, 0.7),
+		&"select": Color(0.3, 0.8, 0.3, 1.0)
 	}
 }
 const DEFAULT_COLOR = Color(0.8, 0.8, 0.8, 0.3)
@@ -53,7 +53,7 @@ func data_update(new_item: RenderItem) -> void:
 	if _current_type == &"defence":
 		cost_label.text = "/"
 		damage_label.text = "威力" + str(data.modified_power)
-	elif _current_type == &"skill":
+	elif _current_type == &"spell":
 		cost_label.text = "消耗" + str(data.modified_cost)
 		damage_label.text = "/"
 	else:

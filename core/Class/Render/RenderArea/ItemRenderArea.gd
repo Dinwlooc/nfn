@@ -55,12 +55,14 @@ func get_render_item_child_index() -> int:
 func on_select(item:RenderItem) -> void:
 	if item.selected:
 		item.selected = false
+		item.render_update()
 		if item.dragged:
 			render_context.remove_card_on_drag()
 		selected_items.erase(item)
 	else:
 		if selected_items.size() >= select_limit:
 			selected_items[0].selected = false
+			selected_items[0].render_update()
 			selected_items.remove_at(0)
 		item.selected = true
 		selected_items.append(item)
@@ -88,6 +90,8 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 	move_child(item, tree_position)
 	_connect_item_to_area(item)
 	_set_item_to_pool(item, index)
+	items_added.emit(item)
+	render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_ADD))
 # 修改：实现remove_item方法
 func remove_item(item:RenderItem) -> void:
 	if item.get_parent() == self:
@@ -120,8 +124,6 @@ func _set_item_to_pool(item:RenderItem, index:int) -> void:
 		items_pool.append(item)
 	else:
 		items_pool[index] = item
-	items_added.emit(item)
-	render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_ADD))
 
 func _compact_pool(min_index:int, removed_count:int) -> void:
 	if min_index + removed_count > items_pool.size():
@@ -147,32 +149,11 @@ func _update_item_position(item:RenderItem, new_index:int) -> void:
 
 # 移动操作
 func move_item_to_index(current_pool_id:int, target_index:int, render_event:RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	var pool_size:int = items_pool.size()
-	current_pool_id = clampi(current_pool_id, 0, pool_size - 1)
-	target_index = clampi(target_index, 0, pool_size - 1)
-	if current_pool_id == target_index:
-		return
-	var moved_item:RenderItem = items_pool[current_pool_id]
-	var is_forward:bool = current_pool_id < target_index
-	if is_forward:
-		for i in range(current_pool_id + 1, target_index + 1):
-			_update_item_position(items_pool[i], i - 1)
-	else:
-		for i in range(current_pool_id - 1, target_index - 1, -1):
-			_update_item_position(items_pool[i], i + 1)
-	_update_item_position(moved_item, target_index)
+	move_item_to_index_no_event(current_pool_id,target_index)
 	tween_update(render_event)
 
 func swap_items(pool_id_a:int, pool_id_b:int) -> void:
-	var pool_size:int = items_pool.size()
-	pool_id_a = clampi(pool_id_a, 0, pool_size - 1)
-	pool_id_b = clampi(pool_id_b, 0, pool_size - 1)
-	if pool_id_a == pool_id_b:
-		return
-	var item_a = items_pool[pool_id_a]
-	var item_b = items_pool[pool_id_b]
-	_update_item_position(item_a, pool_id_b)
-	_update_item_position(item_b, pool_id_a)
+	swap_items_no_event(pool_id_a,pool_id_b)
 	tween_update()
 
 func get_item_count() -> int:
@@ -224,3 +205,30 @@ func remove_non_render_item(node: Node) -> bool:
 	if node_index < _divide_index:
 		_divide_index -= 1
 	return true
+
+func move_item_to_index_no_event(current_pool_id: int, target_index: int) -> void:
+	var pool_size: int = items_pool.size()
+	current_pool_id = clampi(current_pool_id, 0, pool_size - 1)
+	target_index = clampi(target_index, 0, pool_size - 1)
+	if current_pool_id == target_index:
+		return
+	var moved_item: RenderItem = items_pool[current_pool_id]
+	var is_forward: bool = current_pool_id < target_index
+	if is_forward:
+		for i in range(current_pool_id + 1, target_index + 1):
+			_update_item_position(items_pool[i], i - 1)
+	else:
+		for i in range(current_pool_id - 1, target_index - 1, -1):
+			_update_item_position(items_pool[i], i + 1)
+	_update_item_position(moved_item, target_index)
+
+func swap_items_no_event(pool_id_a: int, pool_id_b: int) -> void:
+	var pool_size: int = items_pool.size()
+	pool_id_a = clampi(pool_id_a, 0, pool_size - 1)
+	pool_id_b = clampi(pool_id_b, 0, pool_size - 1)
+	if pool_id_a == pool_id_b:
+		return
+	var item_a = items_pool[pool_id_a]
+	var item_b = items_pool[pool_id_b]
+	_update_item_position(item_a, pool_id_b)
+	_update_item_position(item_b, pool_id_a)
