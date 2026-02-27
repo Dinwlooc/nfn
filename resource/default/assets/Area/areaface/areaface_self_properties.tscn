@@ -44,7 +44,6 @@ bg_color = Color(1, 0.419608, 0.34902, 1)
 border_color = Color(0.992157, 0.113725, 0, 1)
 corner_detail = 1
 shadow_color = Color(0, 0, 0, 0.482)
-shadow_size = 4
 anti_aliasing = false
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_j7r54"]

@@ -127,13 +127,13 @@ func set_card_on_drag(area: RenderArea, realcard: RenderItem) -> void:
 	card_on_drag.area = area
 	card_on_drag.card = realcard
 	card_on_drag.card.dragged = true
-	card_on_drag.area.tween_update()
+	card_on_drag.area.tween_update(RenderEvent.new(RenderEvent.DefaultType.CARD_START_DRAGGING))
 	dragged_update.emit(true)
 
 func remove_card_on_drag() -> void:
 	if card_on_drag:
 		card_on_drag.card.dragged = false
-		card_on_drag.area.tween_update()
+		card_on_drag.area.tween_update(RenderEvent.new(RenderEvent.DefaultType.CARD_CANCEL_DRAGGING))
 	card_on_drag = null
 	dragged_update.emit(false)
 

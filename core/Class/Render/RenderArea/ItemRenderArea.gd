@@ -104,7 +104,7 @@ func remove_item(item:RenderItem) -> void:
 		render_context.unregister_render_item(item_type, item_id)
 	_disconnect_item_from_area(item)
 	items_removed.emit(item)
-	render_update()
+	render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_REMOVE))
 
 func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:
 	var current_tree_index = item.get_index()
@@ -121,7 +121,7 @@ func _set_item_to_pool(item:RenderItem, index:int) -> void:
 	else:
 		items_pool[index] = item
 	items_added.emit(item)
-	render_update()
+	render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_ADD))
 
 func _compact_pool(min_index:int, removed_count:int) -> void:
 	if min_index + removed_count > items_pool.size():
@@ -136,7 +136,6 @@ func _compact_pool(min_index:int, removed_count:int) -> void:
 		items_pool[write_index] = item
 		write_index += 1
 	items_pool.resize(write_index)
-	render_update()
 
 func _update_item_position(item:RenderItem, new_index:int) -> void:
 	item.pool_id = new_index

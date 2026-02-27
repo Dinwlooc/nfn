@@ -1,4 +1,3 @@
-## 卡牌区域管理类，负责卡牌布局、动画及交换逻辑。
 extends AreaFace
 
 ## 原始位置（未展开时的锚点）
@@ -43,10 +42,32 @@ const max_distance: float = 400.0
 const max_rotation: float = -PI * 0.167
 ## 最大水平收缩系数
 const MAX_SHRINK_FACTOR: float = 0.6
+## 选中卡牌的 Y 轴偏移量（向上抬起）
+const SELECTED_Y_OFFSET: float = -40.0
+## 中性缩放值（无缩放时的基准）
+const SCALE_NEUTRAL: float = 1.0
+## 中性旋转值（无旋转）
+const ROTATION_NEUTRAL: float = 0.0
+## 展开动画中区域移动的位移长度
+const EXPAND_MOVE_LENGTH: float = 150.0
+## 旋转比例上限（最大 100%）
+const MAX_ROTATION_RATIO: float = 1.0
+## 缩放计算中的基础系数
+const BASE_SCALE_FACTOR: float = 1.0
+## 正方向符号
+const SIGN_POSITIVE: float = 1.0
+## 负方向符号
+const SIGN_NEGATIVE: float = -1.0
+# -------------------------------
+
 ## 预计算的正弦表
 var _sine_table: PackedFloat64Array = PackedFloat64Array()
 ## 全局相位索引
 var _global_phase_index: int = 0
+
+## 当前卡牌总数决定的缩放因子（16张以下为1.0，32张时为0.75）
+var total_scale_factor: float = 1.0
+
 
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.HAND)
@@ -55,6 +76,20 @@ func _ready() -> void:
 	area_target_position = original_position
 	area_target_size = original_size
 	_generate_sine_table()
+	_update_total_scale_factor()  # 初始化缩放因子
+
+## 根据卡牌数量更新 total_scale_factor（16张以下1.0，32张以上0.75，中间线性插值）
+func _update_total_scale_factor() -> void:
+	if not area:
+		return
+	var count: int = area.items_pool.size()
+	if count <= 16:
+		total_scale_factor = SCALE_NEUTRAL
+	elif count >= 32:
+		total_scale_factor = 0.75
+	else:
+		total_scale_factor = SCALE_NEUTRAL - (count - 16) / 16.0 * 0.25
+
 ## 生成正弦波采样表（函数式，无副作用）
 func _generate_sine_table() -> void:
 	_sine_table = MathUtils.generate_sine_table(TABLE_SIZE)
@@ -69,25 +104,32 @@ func _physics_process(delta: float) -> void:
 		if pending_swap && swap_cooldown <= 0:
 			try_dragging_move()
 			pending_swap = false
+
 ## 更新渲染目标位置
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
+	var event_type = render_event.get_type()
+	if event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
+		_update_total_scale_factor()
 	target_position = UIAnimationUtils.generate_coordinates(area_target_position, area_target_size, area.items_pool.size())
 	tween_update(render_event)
+
 ## 触发卡牌移动动画
 func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	card_move(render_event)
+
 ## 进入区域时的展开动画
 func _into_area() -> void:
 	super._into_area()
-	const MOVE_LENGTH: float = 150
-	area_target_position = original_position - Vector2(0, MOVE_LENGTH)
-	area_target_size = original_size + Vector2(0, MOVE_LENGTH)
+	area_target_position = original_position - Vector2(0, EXPAND_MOVE_LENGTH)
+	area_target_size = original_size + Vector2(0, EXPAND_MOVE_LENGTH)
 	var list: Dictionary[NodePath, Variant] = {
 		^"position": area_target_position,
 		^"size": area_target_size,
 	}
 	UIAnimationUtils.tween_animations(self, list, TWEEN_TIME)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
+
+
 ## 离开区域时的收起动画
 func _outto_area() -> void:
 	super._outto_area()
@@ -99,6 +141,8 @@ func _outto_area() -> void:
 	}
 	UIAnimationUtils.tween_animations(self, list, TWEEN_TIME)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
+
+
 ## 卡牌浮动扩展效果（基于正弦表）
 func card_move_expand() -> void:
 	_global_phase_index = (_global_phase_index + PHASE_INCREMENT) % TABLE_SIZE
@@ -107,12 +151,14 @@ func card_move_expand() -> void:
 	for i in card_count:
 		var phase_index: int = (_global_phase_index + i * CARD_PHASE_OFFSET) & MASK
 		cards[i].position.y += AMPLITUDE * _sine_table[phase_index]
+
 ## 拖拽卡牌的动画处理
 func dragging_move(card: RenderItem) -> void:
 	var _target_position: Vector2 = get_global_mouse_position()
 	var dx: float = card.position.x - _target_position.x
 	var target_rot: float = _compute_rotation_from_dx(dx)
-	var target_scale_x: float = _compute_scale_from_dx(dx)
+	var target_scale_x: float = _compute_scale_from_dx(dx)  # 动态收缩，不乘总数因子
+	var target_scale_y: float = SCALE_NEUTRAL               # 恢复原始比例
 	if current_drag_tween:
 		current_drag_tween.kill()
 	current_drag_tween = create_tween()
@@ -123,10 +169,13 @@ func dragging_move(card: RenderItem) -> void:
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	current_drag_tween.tween_property(card, ^"scale:x", target_scale_x, DRAG_TWEEN_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	current_drag_tween.chain()
-	current_drag_tween.tween_property(card, ^"rotation", 0.0, RESET_TIME) \
+	current_drag_tween.tween_property(card, ^"scale:y", target_scale_y, DRAG_TWEEN_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	current_drag_tween.tween_property(card, ^"scale:x", 1.0, RESET_TIME) \
+
+	current_drag_tween.chain()
+	current_drag_tween.tween_property(card, ^"rotation", ROTATION_NEUTRAL, RESET_TIME) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	current_drag_tween.tween_property(card, ^"scale:x", SCALE_NEUTRAL, RESET_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	swap_cards(card)
 
@@ -137,8 +186,7 @@ func swap_cards(drag_card: RenderItem) -> void:
 		return
 	if not hovering_card:
 		return
-	hovering_card.hovering = false
-	hovering_card.render_update()
+	hovering_card.set_hovering(false)
 	area.move_item_to_index(drag_card.pool_id, hovering_card.pool_id, RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
 	hovering_card = null
 	swap_cooldown = SWAP_COOLDOWN_DURATION
@@ -158,7 +206,7 @@ func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 		current_card_tween.kill()
 	current_card_tween = master_tween
 
-## 为所有非拖拽卡牌添加基础位置移动动画
+## 为所有非拖拽卡牌添加基础位置移动动画（含总数缩放动画）
 func _add_base_movement_tweens(master_tween: Tween) -> void:
 	for i in area.items_pool.size():
 		var card: RenderItem = area.items_pool[i]
@@ -166,13 +214,16 @@ func _add_base_movement_tweens(master_tween: Tween) -> void:
 			continue
 		var card_target_pos: Vector2 = target_position[i]
 		if card.selected:
-			card_target_pos.y += -40.0
-		if card.position == card_target_pos:
-			continue
-		master_tween.tween_property(card, ^"position", card_target_pos, TWEEN_TIME) \
-			.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
+			card_target_pos.y += SELECTED_Y_OFFSET
+		if card.position != card_target_pos:
+			master_tween.tween_property(card, ^"position", card_target_pos, TWEEN_TIME) \
+				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
+		var target_scale: Vector2 = Vector2(total_scale_factor, total_scale_factor)
+		if card.scale != target_scale:
+			master_tween.tween_property(card, ^"scale", target_scale, TWEEN_TIME) \
+				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
 
-## 为交换事件添加旋转和缩放特效动画
+## 为交换事件添加旋转和缩放特效动画（scale.x 叠加总数因子）
 func _add_swap_effect_tweens(master_tween: Tween) -> void:
 	for i in area.items_pool.size():
 		var card: RenderItem = area.items_pool[i]
@@ -181,31 +232,32 @@ func _add_swap_effect_tweens(master_tween: Tween) -> void:
 		var card_target_pos: Vector2 = target_position[i]
 		var dx: float = card.position.x - card_target_pos.x
 		var target_rot: float = _compute_rotation_from_dx(dx)
-		var target_scale_x: float = _compute_scale_from_dx(dx)
+		var target_scale_x: float = total_scale_factor * _compute_scale_from_dx(dx)
 		master_tween.tween_property(card, ^"rotation", target_rot, TWEEN_TIME) \
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 		master_tween.tween_property(card, ^"scale:x", target_scale_x, TWEEN_TIME) \
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 
-## 最后恢复所有卡牌的默认旋转和缩放
+## 恢复所有卡牌的默认旋转和缩放（恢复到总数因子）
 func _add_reset_tweens(master_tween: Tween) -> void:
 	for card in area.items_pool:
 		if card.dragged:
 			continue
-		master_tween.tween_property(card, ^"rotation", 0.0, RESET_TIME) \
+		master_tween.tween_property(card, ^"rotation", ROTATION_NEUTRAL, RESET_TIME) \
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		master_tween.tween_property(card, ^"scale:x", 1.0, RESET_TIME) \
+		var target_scale: Vector2 = Vector2(total_scale_factor, total_scale_factor)
+		master_tween.tween_property(card, ^"scale", target_scale, RESET_TIME) \
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 ## 根据水平位移差计算卡牌旋转角度（纯函数）
 func _compute_rotation_from_dx(dx: float) -> float:
 	var abs_dx: float = abs(dx)
-	var rotation_ratio: float = min(abs_dx / max_distance, 1.0)
-	var rotation_sign: float = 1.0 if dx < 0 else -1.0
+	var rotation_ratio: float = min(abs_dx / max_distance, MAX_ROTATION_RATIO)
+	var rotation_sign: float = SIGN_POSITIVE if dx < 0 else SIGN_NEGATIVE
 	return rotation_sign * rotation_ratio * max_rotation
 
 ## 根据水平位移差计算卡牌水平缩放系数（纯函数）
 func _compute_scale_from_dx(dx: float) -> float:
 	var abs_dx: float = abs(dx)
-	var rotation_ratio: float = min(abs_dx / max_distance, 1.0)
-	return 1.0 - rotation_ratio * MAX_SHRINK_FACTOR
+	var rotation_ratio: float = min(abs_dx / max_distance, MAX_ROTATION_RATIO)
+	return BASE_SCALE_FACTOR - rotation_ratio * MAX_SHRINK_FACTOR

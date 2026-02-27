@@ -10,6 +10,10 @@ class DefaultType:
 	const SELECT = &"select"
 	const DAMAGED = &"damaged"
 	const SWAP_CARD = &"swap_card"
+	const CARD_ADD = &"card_add"
+	const CARD_REMOVE = &"card_remove"
+	const CARD_START_DRAGGING = &"card_start_dragging"
+	const CARD_CANCEL_DRAGGING = &"card_cancel_dragging"
 
 func _init(initial_data: Variant = null) -> void:
 	config = {}

@@ -90,7 +90,6 @@ func _on_text_changed(new_text: String):
 		toggle_suggestions(false)
 		current_history_index = 0
 		return
-
 	filtered = []
 	if new_text.length() > 2:
 		filtered = command_suggestions.filter(func(s):
@@ -178,13 +177,11 @@ func toggle_suggestions(_show: bool):
 func navigate_history(is_up: bool):
 	if command_history.size() == 0:
 		return
-
 	match is_up:
 		true:
 			current_history_index = clamp(current_history_index - 1, -command_history.size(), 0)
 		false:
 			current_history_index = clamp(current_history_index + 1, -command_history.size(), 0)
-
 	input_line_edit.text = "" if current_history_index == 0 else command_history[current_history_index]
 
 func _input(event):

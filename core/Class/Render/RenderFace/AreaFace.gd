@@ -110,8 +110,7 @@ func connect_cards_signals(card: RenderItem) -> void:
 # 断开卡片信号（可多次调用，内部会做检查）
 func disconnect_card_signals(card: RenderItem) -> void:
 	if hovering_card == card:
-		card.hovering = false
-		card.render_update()
+		card.set_hovering(false)
 		hovering_card = null
 
 	if card.mouse_entered.is_connected(_on_card_mouse_entered):
@@ -123,16 +122,13 @@ func _on_card_mouse_entered(card: RenderItem) -> void:
 	if card.dragged:
 		return
 	if hovering_card and hovering_card != card:
-		hovering_card.hovering = false
-		hovering_card.render_update()
+		card.set_hovering(false)
 	hovering_card = card
-	card.hovering = true
-	card.render_update()
+	card.set_hovering(true)
 
 func _on_card_mouse_exited(card: RenderItem) -> void:
 	if hovering_card == card:
-		card.hovering = false
-		card.render_update()
+		card.set_hovering(false)
 		hovering_card = null
 
 func card_move() -> void:

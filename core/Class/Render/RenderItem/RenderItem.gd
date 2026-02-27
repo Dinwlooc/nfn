@@ -73,6 +73,12 @@ func get_item_size()->Vector2:
 func set_item_size(new_size:Vector2):
 	item_size = new_size
 
+func set_hovering(new_hovering: bool) -> void:
+	if hovering == new_hovering:
+		return
+	hovering = new_hovering
+	render_update()
+
 func request_selecting():
 	request_select.emit(self)
 	pass
