@@ -34,10 +34,10 @@ var _callback_map: Dictionary[int, Dictionary] = {}
 var _item_mappings: Dictionary[StringName, Dictionary] = {}
 var _item_pool: RenderItemPool = RenderItemPool.new()
 var card_on_drag: DragState
-
+var operation_manager: OperationManager
 signal render_area_registered(area_name: StringName, area: RenderArea, player_id: int)
 signal render_area_unregistered(area_name: StringName, player_id: int)
-signal dragged_update(is_card:bool)
+signal dragged_update(is_dragged:bool)
 
 func _init() -> void:
 	render_area_registered.connect(_on_render_area_registered)
@@ -134,8 +134,8 @@ func remove_card_on_drag() -> void:
 	if card_on_drag:
 		card_on_drag.card.dragged = false
 		card_on_drag.area.tween_update(RenderEvent.new(RenderEvent.DefaultType.CARD_CANCEL_DRAGGING))
-	card_on_drag = null
-	dragged_update.emit(false)
+		card_on_drag = null
+		dragged_update.emit(false)
 
 func get_dragged_area() -> RenderArea:
 	return card_on_drag.area if card_on_drag else null
@@ -211,3 +211,9 @@ func create_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID
 	register_render_area(area, player_id)
 	area_created.emit(area, player_id)
 	return area
+
+func set_operation_manager(manager: OperationManager) -> void:
+	operation_manager = manager
+
+func get_operation_manager() -> OperationManager:
+	return operation_manager

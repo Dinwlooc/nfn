@@ -2,7 +2,7 @@ extends Control
 class_name CurveArrowManager
 
 # 曲线属性
-const COLOR_1 = Color(Color.AQUA, 0)
+const COLOR_1 = Color(Color.AQUA, 0.0)
 const COLOR_2 = Color.AQUA
 const TWEEN_TIME = 1.0
 const ARROW_WIDTH_FACTOR = 4.0
@@ -15,6 +15,13 @@ var points: PackedVector2Array
 var has_valid_points: bool
 var tween: Tween
 var arrow_points: PackedVector2Array
+
+func _ready():
+	# 监听可见性变化，隐藏时停止循环
+	visibility_changed.connect(_on_visibility_changed)
+
+func _exit_tree():
+	_stop_color_cycle()
 
 # 创建平滑曲线（根据起点和终点是否为顶部确定切线方向）
 func create_smooth_curve(start: Vector2, end: Vector2, start_is_top: bool, end_is_top: bool) -> Curve2D:
@@ -55,9 +62,6 @@ func create_smooth_curve(start: Vector2, end: Vector2, start_is_top: bool, end_i
 	curve.add_point(start, Vector2.ZERO, start_out)
 	curve.add_point(end, end_in, Vector2.ZERO)
 	return curve
-	curve.add_point(start, Vector2.ZERO, start_out)
-	curve.add_point(end, end_in, Vector2.ZERO)
-	return curve
 
 # 计算箭头三角形点（arrow_up = true 表示箭头尖端向上）
 func calculate_arrow_points(end_point: Vector2, arrow_up: bool) -> PackedVector2Array:
@@ -78,7 +82,6 @@ func calculate_arrow_points(end_point: Vector2, arrow_up: bool) -> PackedVector2
 
 # 绘制曲线（end_is_top = true 表示终点在顶部，false 表示在底部）
 func draw_curve(start: Vector2, target: Vector2, end_is_top: bool) -> void:
-	# 计算曲线终点偏移：顶部目标向上偏移（负y），底部目标向下偏移（正y）
 	var direction: int = -1 if end_is_top else 1
 	var offset: float = direction * curve_width * ARROW_HEIGHT_FACTOR
 	var curve_end: Vector2 = target + Vector2(0, offset)
@@ -90,9 +93,8 @@ func draw_curve(start: Vector2, target: Vector2, end_is_top: bool) -> void:
 		arrow_points = calculate_arrow_points(points[-1], arrow_up)
 	else:
 		arrow_points = PackedVector2Array()
-	tween = create_tween().set_loops()
-	tween.tween_method(draw_tween, COLOR_1, COLOR_2, 0.5)
-	tween.tween_method(draw_tween, COLOR_2, COLOR_1, 0.5)
+	_start_color_cycle_if_needed()
+	queue_redraw()
 
 func _draw() -> void:
 	if has_valid_points:
@@ -102,9 +104,27 @@ func _draw() -> void:
 
 func clear_arrow() -> void:
 	visible = false
+	_stop_color_cycle()
+
+func _start_color_cycle_if_needed():
+	if tween and tween.is_running():
+		return
+	_stop_color_cycle()
+	tween = create_tween().set_loops()
+	tween.tween_method(draw_tween, COLOR_1, COLOR_2, TWEEN_TIME)
+	tween.tween_method(draw_tween, COLOR_2, COLOR_1, TWEEN_TIME)
+
+# 停止并清理颜色循环
+func _stop_color_cycle():
 	if tween:
 		tween.kill()
+		tween = null
 
 func draw_tween(color):
 	curve_color = color
 	queue_redraw()
+
+# 可见性变化处理：隐藏时停止循环
+func _on_visibility_changed():
+	if not visible:
+		_stop_color_cycle()

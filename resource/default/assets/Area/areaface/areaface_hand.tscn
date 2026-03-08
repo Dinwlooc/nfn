@@ -15,22 +15,52 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_08dya")
 
-[node name="QuickSortUI" type="Panel" parent="."]
-layout_mode = 0
-offset_left = 121.0
-offset_top = 66.0
-offset_right = 201.0
-offset_bottom = 97.0
+[node name="UIContainer" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 57.0
+offset_top = 36.0
+offset_right = 573.0
+offset_bottom = 75.0
 
-[node name="QuickSortLabel" type="Label" parent="QuickSortUI"]
+[node name="QuickSortUI" type="Panel" parent="UIContainer"]
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+offset_right = 100.0
+offset_bottom = 39.0
+
+[node name="QuickSortLabel" type="Label" parent="UIContainer/QuickSortUI"]
 layout_mode = 0
-offset_right = 80.0
-offset_bottom = 30.0
+offset_right = 101.0
+offset_bottom = 39.0
 text = "快速理牌"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="QuickSortButton" type="Button" parent="QuickSortUI"]
+[node name="QuickSortButton" type="Button" parent="UIContainer/QuickSortUI"]
 layout_mode = 0
-offset_right = 79.0
-offset_bottom = 29.0
+offset_right = 101.0
+offset_bottom = 39.0
+action_mode = 0
+flat = true
+
+[node name="PlayCardUI" type="Panel" parent="UIContainer"]
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 2
+offset_left = 392.0
+offset_right = 492.0
+offset_bottom = 39.0
+
+[node name="PlayCardLabel" type="Label" parent="UIContainer/PlayCardUI"]
+layout_mode = 0
+offset_right = 101.0
+offset_bottom = 39.0
+text = "打出"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayCardButton" type="Button" parent="UIContainer/PlayCardUI"]
+layout_mode = 0
+offset_right = 101.0
+offset_bottom = 39.0
 action_mode = 0
 flat = true

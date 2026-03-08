@@ -49,7 +49,7 @@ static func generate_coordinates(card_container_position:Vector2,card_container_
 	return coordinates
 
 # 让 Panel 的 StyleBoxFlat 背景颜色闪烁
-static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: Color, times: int = 2, half_duration: float = 0.1) -> Tween:
+static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: Color,  half_duration: float = 0.1 , times: int = 2) -> Tween:
 	var stylebox = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	if not stylebox:
 		return null
@@ -62,7 +62,7 @@ static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: C
 	return tween
 
 # 让 ColorRect 的颜色闪烁
-static func blink_color(rect: ColorRect, from_color: Color, to_color: Color, times: int = 2, half_duration: float = 0.1) -> Tween:
+static func blink_color(rect: ColorRect, from_color: Color, to_color: Color, half_duration: float = 0.1, times: int = 2) -> Tween:
 	var tween = rect.create_tween()
 	tween.set_parallel(false)
 	for i in range(times):

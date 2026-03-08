@@ -8,18 +8,18 @@ var original_size: Vector2
 var area_target_position: Vector2
 ## 目标尺寸
 var area_target_size: Vector2
-## 交换冷却计时器
-var swap_cooldown: float = 0.0
+## 上次成功交换的毫秒时间戳（用于冷却判断）
+var last_swap_time_ms: int = 0
 ## 是否有等待中的交换请求
 var pending_swap: bool = false
 ## 当前卡牌群组动画的 Tween 实例
 var current_card_tween: Tween = null
 ## 当前拖拽动画的 Tween 实例
 var current_drag_tween: Tween = null
-## 交换冷却持续时间（秒）
-const SWAP_COOLDOWN_DURATION: float = 0.3
-## 交换允许延迟触发的时间窗口
-const SWAP_DELTA: float = 0.07
+## 交换冷却持续时间（毫秒）
+const SWAP_COOLDOWN_DURATION_MS: int = 300
+## 交换允许延迟触发的时间窗口（毫秒），距离上次交换间隔此时间后，允许缓存请求
+const SWAP_DELTA_MS: int = 70
 ## 常规补间动画时长
 const TWEEN_TIME: float = 0.2
 ## 拖拽补间动画时长
@@ -59,8 +59,11 @@ const SIGN_POSITIVE: float = 1.0
 ## 负方向符号
 const SIGN_NEGATIVE: float = -1.0
 
-@onready var quick_sort_ui = $QuickSortUI
-@onready var quick_sort_button = $QuickSortUI/QuickSortButton
+@onready var ui_container = $UIContainer
+@onready var quick_sort_ui = $UIContainer/QuickSortUI
+@onready var quick_sort_button = $UIContainer/QuickSortUI/QuickSortButton
+@onready var play_card_ui = $UIContainer/PlayCardUI
+@onready var play_card_button = $UIContainer/PlayCardUI/PlayCardButton
 
 ## 预计算的正弦表
 var _sine_table: PackedFloat64Array = PackedFloat64Array()
@@ -78,21 +81,24 @@ func _ready() -> void:
 	area_target_position = original_position
 	area_target_size = original_size
 	quick_sort_button.pressed.connect(_on_quick_sort_button_pressed)
-	quick_sort_ui.hide()  # 初始隐藏
+	ui_container.hide()  # 初始隐藏
 	_generate_sine_table()
 	_update_total_scale_factor()  # 初始化缩放因子
+	last_swap_time_ms = -SWAP_COOLDOWN_DURATION_MS
+	play_card_button.pressed.connect(_on_play_card_button_pressed)
+	play_card_ui.visible = false  # 初始隐藏
 
-## 根据卡牌数量更新 total_scale_factor（16张以下1.0，32张以上0.75，中间线性插值）
+## 根据卡牌数量更新缩放
 func _update_total_scale_factor() -> void:
 	if not area:
 		return
 	var count: int = area.items_pool.size()
-	if count <= 16:
+	if count <= 8:
 		total_scale_factor = SCALE_NEUTRAL
-	elif count >= 32:
+	elif count >= 24:
 		total_scale_factor = 0.75
 	else:
-		total_scale_factor = SCALE_NEUTRAL - (count - 16) / 16.0 * 0.25
+		total_scale_factor = SCALE_NEUTRAL - (count - 8) / 16.0 * 0.25
 
 ## 生成正弦波采样表（函数式，无副作用）
 func _generate_sine_table() -> void:
@@ -103,15 +109,13 @@ func _physics_process(delta: float) -> void:
 		card_move_expand()
 	elif Engine.get_process_frames() % 2 == 0:
 		card_move_expand()
-	if swap_cooldown > 0:
-		swap_cooldown -= delta
-		if pending_swap && swap_cooldown <= 0:
-			try_dragging_move()
-			pending_swap = false
+	if pending_swap && can_swap_immediately(Time.get_ticks_msec()):
+		try_dragging_move()      # 基类方法，重新判断拖拽卡牌方位和悬停
+		pending_swap = false
 
 ## 更新渲染目标位置
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	var event_type = render_event.get_type()
+	var event_type:StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
 		_update_total_scale_factor()
 		_order_dirty = true
@@ -120,8 +124,11 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 
 ## 触发卡牌移动动画
 func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	if render_event.get_type() == RenderEvent.DefaultType.SWAP_CARD:
+	var event_type:StringName = render_event.get_type()
+	if event_type == RenderEvent.DefaultType.SWAP_CARD:
 		_order_dirty = true
+	if event_type == RenderEvent.DefaultType.CARD_SELECTION_CHANGED:
+		play_card_ui.visible = not area.get_selected_items().is_empty()
 	card_move(render_event)
 
 ## 进入区域时的展开动画
@@ -134,9 +141,8 @@ func _into_area() -> void:
 		^"size": area_target_size,
 	}
 	UIAnimationUtils.tween_animations(self, list, TWEEN_TIME)
-	quick_sort_ui.show()
+	ui_container.show()
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
-
 
 ## 离开区域时的收起动画
 func _outto_area() -> void:
@@ -148,9 +154,8 @@ func _outto_area() -> void:
 		^"size": area_target_size,
 	}
 	UIAnimationUtils.tween_animations(self, list, TWEEN_TIME)
-	quick_sort_ui.hide()
+	ui_container.hide()
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
-
 
 ## 卡牌浮动扩展效果（基于正弦表）
 func card_move_expand() -> void:
@@ -180,7 +185,6 @@ func dragging_move(card: RenderItem) -> void:
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	current_drag_tween.tween_property(card, ^"scale:y", target_scale_y, DRAG_TWEEN_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-
 	current_drag_tween.chain()
 	current_drag_tween.tween_property(card, ^"rotation", ROTATION_NEUTRAL, RESET_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
@@ -188,17 +192,29 @@ func dragging_move(card: RenderItem) -> void:
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	swap_cards(card)
 
-## 尝试交换拖拽卡牌与悬停卡牌（使用卫语句简化）
+## 判断是否可以立即执行交换（纯函数）
+func can_swap_immediately(current_time_ms: int) -> bool:
+	return current_time_ms - last_swap_time_ms >= SWAP_COOLDOWN_DURATION_MS
+
+## 判断是否应该缓存交换请求（纯函数）
+func should_cache_request(current_time_ms: int) -> bool:
+	var time_since_last_ms:int = current_time_ms - last_swap_time_ms
+	return time_since_last_ms > SWAP_DELTA_MS and time_since_last_ms < SWAP_COOLDOWN_DURATION_MS
+
+## 尝试交换拖拽卡牌与悬停卡牌
 func swap_cards(drag_card: RenderItem) -> void:
-	if swap_cooldown > 0 && swap_cooldown < SWAP_COOLDOWN_DURATION - SWAP_DELTA:
-		pending_swap = true
+	var current_time_ms:int = Time.get_ticks_msec()
+	if !can_swap_immediately(current_time_ms):
+		if should_cache_request(current_time_ms):
+			pending_swap = true
 		return
 	if not hovering_card:
 		return
 	hovering_card.set_hovering(false)
 	area.move_item_to_index(drag_card.pool_id, hovering_card.pool_id, RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
 	hovering_card = null
-	swap_cooldown = SWAP_COOLDOWN_DURATION
+	last_swap_time_ms = current_time_ms
+
 
 ## 核心动画调度函数（已拆分辅助函数）
 func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
@@ -273,7 +289,7 @@ func _compute_scale_from_dx(dx: float) -> float:
 
 # 按钮按下时的处理（设置冷却）
 func _on_quick_sort_button_pressed() -> void:
-	if not _order_dirty:          # <--- 新增：牌序未变，直接返回
+	if not _order_dirty:
 		return
 	if is_sorting:
 		return
@@ -319,3 +335,7 @@ func sort_region(start: int, end: int) -> void:
 		while j > start and pool[j].data.id < pool[j-1].data.id:
 			area.swap_items_no_event(j, j-1)
 			j -= 1
+
+func _on_play_card_button_pressed() -> void:
+	var op_manager:OperationManager= render_context.get_operation_manager()
+	var event:RenderEvent = op_manager.upload_play_card()

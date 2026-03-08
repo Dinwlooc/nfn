@@ -82,12 +82,13 @@ func _input(event) -> void:
 		var mouse_position = get_local_mouse_position()
 		if Rect2(Vector2.ZERO, size).has_point(mouse_position):
 			if !in_area:
+				in_area = true
 				_into_area()
-			in_area = true
 		else:
 			if in_area:
+				in_area = false
 				_outto_area()
-			in_area = false
+
 
 # 拖拽移动时需确保 area 有效
 func try_dragging_move() -> bool:
@@ -112,7 +113,6 @@ func disconnect_card_signals(card: RenderItem) -> void:
 	if hovering_card == card:
 		card.set_hovering(false)
 		hovering_card = null
-
 	if card.mouse_entered.is_connected(_on_card_mouse_entered):
 		card.mouse_entered.disconnect(_on_card_mouse_entered)
 	if card.mouse_exited.is_connected(_on_card_mouse_exited):

@@ -12,8 +12,11 @@ class DefaultType:
 	const SWAP_CARD = &"swap_card"
 	const CARD_ADD = &"card_add"
 	const CARD_REMOVE = &"card_remove"
+	const CARD_SELECTION_CHANGED = &"card_selection_changed"
 	const CARD_START_DRAGGING = &"card_start_dragging"
 	const CARD_CANCEL_DRAGGING = &"card_cancel_dragging"
+	const OPERATION_PLAY_CARD = &"operation_play_card"
+
 
 func _init(initial_data: Variant = null) -> void:
 	config = {}
@@ -29,6 +32,6 @@ func set_type(new_type: StringName) -> RenderEvent:
 	config[&"type"] = new_type
 	return self
 
-func set_config(new_config:Dictionary[StringName,Variant])->RenderEvent:
-	config = new_config
+func merge_config(new_config:Dictionary[StringName,Variant])->RenderEvent:
+	config.merge(new_config,true)
 	return self

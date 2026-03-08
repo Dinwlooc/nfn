@@ -1,39 +1,64 @@
-## 操作请求管理器，负责创建和上传操作请求
 class_name OperationManager
 extends RefCounted
+
 ## 区域名称常量引用
 const HAND_AREA_NAME = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
 const PLAYERS_AREA_NAME = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
-var _transport_layer:Transport
-var _context:RenderContext
-## 配置必要区域（由RenderControl注入）
-func _init(transport_layer:Transport, context:RenderContext) -> void:
+
+## 操作请求状态枚举
+enum RequestStatus {
+	SUCCESS = 0,                # 成功
+	FAIL_HAND_AREA_MISSING = 1,  # 手牌区不存在
+	FAIL_PLAYERS_AREA_MISSING = 2, # 玩家区不存在
+	FAIL_NO_CARD_SELECTED = 3,   # 未选择卡牌
+	FAIL_NO_TARGET_SELECTED = 4, # 未选择目标
+	FAIL_COOLDOWN = 5,           # 操作冷却中
+	# 后续可扩展其他失败原因
+}
+
+var _transport_layer: Transport
+var _context: RenderContext
+var _last_request_time: int = 0  # 上次请求的时间戳（毫秒）
+const COOLDOWN_MS: int = 200      # 冷却时间 0.2 秒
+
+func _init(transport_layer: Transport, context: RenderContext) -> void:
 	_transport_layer = transport_layer
 	_context = context
-## 发送操作请求的公共方法
-func send_operation_request(request: OperationRequest) -> void:
+
+## 发送操作请求的公共方法（仅内部调用）
+func _send_operation_request(request: OperationRequest) -> void:
 	_transport_layer.upload_operation_request(request)
-## 上传出牌操作请求
-func upload_play_card() -> void:
+
+## 上传出牌操作请求，返回对应的渲染事件
+func upload_play_card() -> RenderEvent:
+	var now: int = Time.get_ticks_msec()
+	if now - _last_request_time < COOLDOWN_MS:
+		return _build_play_card_event(0, 0, RequestStatus.FAIL_COOLDOWN)
 	var hand_area: RenderArea = _context.get_render_area(HAND_AREA_NAME)
 	if not hand_area:
-		GlobalConsole._print("OperationManager: 无法获取手牌区")
-		return
+		return _build_play_card_event(0, 0, RequestStatus.FAIL_HAND_AREA_MISSING)
 	var players_area: RenderArea = _context.get_render_area(PLAYERS_AREA_NAME)
 	if not players_area:
-		GlobalConsole._print("OperationManager: 无法获取玩家区")
-		return
-	var card_ids:PackedInt32Array = hand_area.get_selected_ids()
-	var target_ids:PackedInt32Array = players_area.get_selected_ids()
+		return _build_play_card_event(0, 0, RequestStatus.FAIL_PLAYERS_AREA_MISSING)
+	var card_ids: PackedInt32Array = hand_area.get_selected_ids()
+	var target_ids: PackedInt32Array = players_area.get_selected_ids()
 	if card_ids.is_empty():
-		GlobalConsole._print("OperationManager: 出牌请求失败 - 未选择卡牌")
-		return
+		return _build_play_card_event(0, 0, RequestStatus.FAIL_NO_CARD_SELECTED)
 	if target_ids.is_empty():
-		GlobalConsole._print("OperationManager: 出牌请求失败 - 未选择目标玩家")
-		return
-	var request := OperationRequest.PlayCard.new(
-		card_ids[0],
-		target_ids[0]
-	)
-	GlobalConsole._print(["OperationManager: 出牌请求正在发送。卡牌id:",request._card_id])
-	send_operation_request(request)
+		return _build_play_card_event(card_ids[0], 0, RequestStatus.FAIL_NO_TARGET_SELECTED)
+	var card_id: int = card_ids[0]
+	var target_id: int = target_ids[0]
+	var request := OperationRequest.PlayCard.new(card_id, target_id)
+	_send_operation_request(request)
+	_last_request_time = now
+	return _build_play_card_event(card_id, target_id, RequestStatus.SUCCESS)
+
+## 构建“打出请求”渲染事件的辅助方法
+func _build_play_card_event(card_id: int, target_id: int, status: RequestStatus) -> RenderEvent:
+	var event := RenderEvent.new(RenderEvent.DefaultType.OPERATION_PLAY_CARD)
+	event.merge_config({
+		&"card_id": card_id,
+		&"target_id": target_id,
+		&"status": status
+	})
+	return event

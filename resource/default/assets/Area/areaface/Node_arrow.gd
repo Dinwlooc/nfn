@@ -3,16 +3,17 @@ extends Control
 # 管理多个曲线箭头
 var curve_managers: Array[CurveArrowManager] = []
 var draw_cooldown: float = 0.0
-var pending_draw = false
+var pending_draw: bool = false
 var areahand: RenderAreaHand
 var areatargets: RenderAreaPlayers
-var is_can_drag: bool = true
+var is_dragging: bool = false
+var in_area:bool = false
 @export var control: RenderControl
 const DRAW_COOLDOWN_DURATION: float = 0.35
 
 func _ready() -> void:
 	for i in range(1):  # 根据最大可能数量调整
-		var manager = CurveArrowManager.new()
+		var manager: CurveArrowManager = CurveArrowManager.new()
 		add_child(manager)
 		curve_managers.append(manager)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.HAND, connect_to_areahand)
@@ -22,37 +23,39 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if draw_cooldown > 0:
 		draw_cooldown -= delta
-		if pending_draw && draw_cooldown <= 0:
-			draw_arrow()
+	if pending_draw && draw_cooldown <= 0:
+		draw_arrow()
+		return
+	if is_dragging && not in_area:
+		draw_arrow()
 
 func connect_to_areahand(_areahand: RenderAreaHand) -> void:
 	areahand = _areahand
-	areahand.selected.connect(_on_item_selected)
 	areahand.render_requested.connect(render_event_handler)
 	areahand.tween_requested.connect(render_event_handler)
 
 func connect_to_areatargets(_areatargets: RenderAreaPlayers) -> void:
 	areatargets = _areatargets
-	areatargets.selected.connect(_on_item_selected)
 	areatargets.render_requested.connect(render_event_handler)
 	areatargets.tween_requested.connect(render_event_handler)
 
 func draw_arrow() -> void:
 	pending_draw = false
-	clear_arrow()
-	if !is_can_drag:
+	var start_points: Array[Vector2] = get_start_point_array()
+	if not in_area && not is_dragging:
+		clear_arrow()
 		return
-	var start_points = get_start_point_array()
 	if start_points.is_empty():
+		clear_arrow()
 		return
-	var end_items = areatargets.get_selected_items()
+	var end_items: Array[RenderItem] = areatargets.get_selected_items()
 	if end_items.is_empty():
+		clear_arrow()
 		return
-	var end_points = get_end_point_array()  # 返回目标位置（顶部或底部中心，无偏移）
+	var end_points: Array[Vector2] = get_end_point_array()
 	if start_points.size() == 1 && end_items.size() >= 1:
 		for i in min(end_items.size(), curve_managers.size()):
-			var is_local = (end_items[i] == areatargets.local_player)
-			# 传递 end_is_top = is_local（本地玩家为顶部，其他玩家为底部）
+			var is_local: bool = (end_items[i] == areatargets.local_player)
 			curve_managers[i].visible = true
 			curve_managers[i].draw_curve(start_points[0], end_points[i], is_local)
 	elif end_points.size() == 1 && start_points.size() >= 1:
@@ -64,22 +67,29 @@ func clear_arrow() -> void:
 	for manager in curve_managers:
 		manager.clear_arrow()
 
-func _on_dragged_update(is_card: bool):
-	if is_card:
-		is_can_drag = false
-		clear_arrow()
-	else:
-		is_can_drag = true
+func _on_dragged_update(dragged: bool) -> void:
+	clear_arrow()
+	pending_draw = false
+	is_dragging = dragged
+	if not is_dragging && in_area:
+		delay_draw_arrow()
 
-func _on_item_selected(item: RenderItem):
-	draw_arrow()
-
-func render_event_handler(render_event: RenderEvent):
-	if render_event.get_type() == RenderEvent.DefaultType.OUTTO_AREA:
+func render_event_handler(render_event: RenderEvent) -> void:
+	var event_type = render_event.get_type()
+	if event_type == RenderEvent.DefaultType.OUTTO_AREA:
+		in_area = false
+		if is_dragging:
+			return
 		clear_arrow()
 		pending_draw = false
-	else:
-		delay_draw_arrow()
+	if event_type == RenderEvent.DefaultType.INTO_AREA:
+		in_area = true
+		if is_dragging:
+			clear_arrow()
+			return
+		draw_arrow()
+	if event_type == RenderEvent.DefaultType.CARD_SELECTION_CHANGED:
+		draw_arrow()
 
 func delay_draw_arrow() -> void:
 	draw_cooldown = DRAW_COOLDOWN_DURATION
@@ -87,9 +97,11 @@ func delay_draw_arrow() -> void:
 
 func get_start_point_array() -> Array[Vector2]:
 	var array: Array[Vector2] = []
+	if not areahand:
+		return array
 	var cards: Array[RenderItem] = areahand.get_selected_items()
 	if cards:
-		var item_size = cards[0].get_item_size()  # 同一区域卡牌大小一致
+		var item_size: Vector2 = cards[0].get_item_size()  # 同一区域卡牌大小一致
 		array.append_array(cards.map(
 			func(card: RenderItem) -> Vector2:
 				return card.position + Vector2(0, -item_size.y)  # 手牌顶部中心
@@ -100,7 +112,7 @@ func get_end_point_array() -> Array[Vector2]:
 	var array: Array[Vector2] = []
 	var cards: Array[RenderItem] = areatargets.get_selected_items()
 	if cards:
-		var item_size = cards[0].get_item_size()
+		var item_size: Vector2 = cards[0].get_item_size()
 		for card in cards:
 			var pos: Vector2
 			if card == areatargets.local_player:

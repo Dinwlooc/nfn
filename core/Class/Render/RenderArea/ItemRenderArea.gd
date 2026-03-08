@@ -46,8 +46,10 @@ func _connect_item_to_area(item:RenderItem) -> void:
 # 新增：内部断开连接方法
 func _disconnect_item_from_area(item:RenderItem) -> void:
 	super._disconnect_item_from_area(item)
-	item.request_drag.disconnect(on_drag)
-	item.request_select.disconnect(on_select)
+	if item.request_drag.is_connected(on_drag):
+		item.request_drag.disconnect(on_drag)
+	if item.request_select.is_connected(on_select):
+		item.request_select.disconnect(on_select)
 
 func get_render_item_child_index() -> int:
 	return _divide_index
@@ -67,7 +69,7 @@ func on_select(item:RenderItem) -> void:
 		item.selected = true
 		selected_items.append(item)
 	item.render_update()
-	tween_update()
+	tween_update(RenderEvent.new().set_type(RenderEvent.DefaultType.CARD_SELECTION_CHANGED))
 	selected.emit(item)
 # 获取方法
 func get_selected_items() -> Array[RenderItem]:

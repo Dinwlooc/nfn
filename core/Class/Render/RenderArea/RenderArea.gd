@@ -28,9 +28,7 @@ func process_request(request: RenderRequest) -> void:
 # 新增：处理ItemSet请求
 func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 	pass
-# 新增：更新ItemPack数据
-func _update_item_data(render_item: RenderItem, item_pack: ItemPack) -> void:
-	render_item.apply_pack(item_pack)
+
 # 新增：内部连接方法
 func _connect_item_to_area(item:RenderItem) -> void:
 	if render_requested.is_connected(item.render_update):
@@ -68,9 +66,12 @@ func set_render_context(context:RenderContext) -> void:
 		render_context.dragged_update.disconnect(tween_update)
 	render_context.dragged_update.connect(tween_update.unbind(1))
 
-# 抽象方法 - 子类必须实现
+## 抽象方法 - 子类必须实现
 func add_item(item:RenderItem, index:int = -1) -> void:
 	push_error("add_item must be implemented in subclass")
+##更新ItemPack数据
+func _update_item_data(render_item: RenderItem, item_pack: ItemPack) -> void:
+	render_item.apply_pack(item_pack)
 
 func remove_item(item:RenderItem) -> void:
 	push_error("remove_item must be implemented in subclass")

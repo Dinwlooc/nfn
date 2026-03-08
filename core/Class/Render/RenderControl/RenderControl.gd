@@ -9,6 +9,7 @@ var operation_manager: OperationManager = OperationManager.new(transport, render
 
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE, self)
+	render_context.set_operation_manager(operation_manager)
 	for child in get_children():
 		if child is RenderArea:
 			render_context.register_render_area(child)

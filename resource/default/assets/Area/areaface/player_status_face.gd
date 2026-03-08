@@ -29,6 +29,16 @@ const COLOR_HP_CURRENT: Color = Color(0.99, 0.1, 0.0,0.7)
 const COLOR_HP_LOST: Color = Color(0.5, 0.5, 0.5,0.7)
 const COLOR_MP_CURRENT: Color = Color(0, 1.0, 1.0,0.7)
 const COLOR_MP_LOST: Color = Color(0.2, 0.2, 0.2,0.7)
+## HP单次颜色变化时长（半闪烁时长）
+const HP_BLINK_DURATION: float = 0.2
+## MP单次颜色变化时长（半闪烁时长）
+const MP_BLINK_DURATION: float = 0.2
+## HP块相对于背景的缩放比例（宽高均适用）
+const HP_BLOCK_SCALE: float = 0.8
+## 每个MP单元包含的MP点数
+const MP_DOTS_PER_UNIT: int = 4
+## MP点淡出动画时长
+const MP_DOT_FADE_OUT_DURATION: float = 0.2
 
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
@@ -116,7 +126,6 @@ func _clear_display() -> void:
 	ap_label.text = "X 0"
 # ==================== HP 动画（修复负数索引问题）====================
 func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
-	# 钳位当前值用于渲染（避免负数索引）
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
 	_adjust_hp_bar_capacity(new_max, clamped_new_cur)  # 传入钳位后的当前值
@@ -183,21 +192,23 @@ func _relayout_hp_blocks() -> void:
 	var block_width: float = hp_fill_background.size.x / _cached_hp_max
 	for i in range(_hp_blocks.size()):
 		var block: Panel = _hp_blocks[i]
-		block.size = Vector2(block_width * 0.8, hp_fill_background.size.y * 0.8)
+		block.size = Vector2(block_width * HP_BLOCK_SCALE, hp_fill_background.size.y * HP_BLOCK_SCALE)
 		block.position = Vector2(i * block_width, 0)
 
 func _start_hp_block_blink(block: Panel, from_color: Color, to_color: Color) -> void:
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	stylebox.bg_color = from_color
-	UIAnimationUtils.blink_stylebox_bg_color(block, from_color, to_color, 2, 0.1)
+	UIAnimationUtils.blink_stylebox_bg_color(block, from_color, to_color, HP_BLINK_DURATION)
 
 func _start_hp_block_special_blink(block: Panel, target_color: Color) -> void:
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	var start_color: Color = stylebox.bg_color
 	var transparent: Color = Color(start_color.r, start_color.g, start_color.b, 0.0)
 	var tween: Tween = create_tween()
-	tween.tween_property(stylebox, ^"bg_color", transparent, 0.1)
-	tween.tween_property(stylebox, ^"bg_color", target_color, 0.1)
+	tween.tween_property(stylebox, ^"bg_color", transparent, HP_BLINK_DURATION)
+	tween.tween_property(stylebox, ^"bg_color", target_color, HP_BLINK_DURATION)
+	tween.tween_property(stylebox, ^"bg_color", transparent, HP_BLINK_DURATION)
+	tween.tween_property(stylebox, ^"bg_color", target_color, HP_BLINK_DURATION)
 
 # ==================== MP 动画（修复负数索引问题）====================
 func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
@@ -243,7 +254,7 @@ func _animate_mp_range(start: int, end: int, is_decrease: bool, limit: int) -> v
 		_start_mp_dot_blink(dot, from_color, to_color)
 
 func _ensure_mp_capacity(target_max: int) -> void:
-	var needed: int = ceili(float(target_max) / 4.0)
+	var needed: int = ceili(float(target_max) / float(MP_DOTS_PER_UNIT))
 	while _mp_units.size() < needed:
 		var unit: Control = mp_unit_template.duplicate() as Control
 		unit.visible = true
@@ -267,11 +278,11 @@ func _get_all_mp_dots() -> Array[ColorRect]:
 
 func _start_mp_dot_blink(dot: ColorRect, from_color: Color, to_color: Color) -> void:
 	dot.color = from_color
-	UIAnimationUtils.blink_color(dot, from_color, to_color, 2, 0.1)
+	UIAnimationUtils.blink_color(dot, from_color, to_color, MP_BLINK_DURATION)
 
 func _start_mp_dot_fade_out(dot: ColorRect, dot_index: int, new_max: int) -> void:
 	var tween: Tween = create_tween()
-	tween.tween_property(dot, ^"color", Color.TRANSPARENT, 0.2)
+	tween.tween_property(dot, ^"color", Color.TRANSPARENT, MP_DOT_FADE_OUT_DURATION)
 	tween.finished.connect(func():
 		var unit: Control = _find_unit_of_dot(dot)
 		if not unit:
