@@ -33,7 +33,7 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 		if render_item.area_name == get_area_name():
 			_update_item_data(render_item, item_pack)
 		else:
-			var current_area = render_context.get_render_area(render_item.area_name)
+			var current_area := render_context.get_render_area(render_item.area_name)
 			if current_area:
 				current_area.remove_item(render_item)
 			add_item(render_item)
@@ -41,6 +41,7 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 func _connect_item_to_area(item:RenderItem) -> void:
 	super._connect_item_to_area(item)
 	item.request_drag.connect(on_drag)
+	item.request_cancel_dragged.connect(on_cancel_drag)
 	item.request_select.connect(on_select)
 
 # 新增：内部断开连接方法

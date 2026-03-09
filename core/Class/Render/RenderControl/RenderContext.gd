@@ -24,6 +24,7 @@ class RenderItemPool extends RefCounted:
 class DragState:
 	var area:RenderArea
 	var card:RenderItem
+
 ##公共区域的玩家ID
 const PUBLIC_PLAYER_ID: int = -1
 var loacal_player_id:int = -1
@@ -37,7 +38,9 @@ var card_on_drag: DragState
 var operation_manager: OperationManager
 signal render_area_registered(area_name: StringName, area: RenderArea, player_id: int)
 signal render_area_unregistered(area_name: StringName, player_id: int)
-signal dragged_update(is_dragged:bool)
+signal area_created(area: RenderArea, player_id: int)
+signal dragging_started(item: RenderItem)   # 新增
+signal dragging_canceled(item: RenderItem)  # 新增
 
 func _init() -> void:
 	render_area_registered.connect(_on_render_area_registered)
@@ -46,6 +49,7 @@ func _on_render_area_registered(area_name: StringName, area: RenderArea, player_
 	if _callback_map.has(player_id) and _callback_map[player_id].has(area_name):
 		for callback in _callback_map[player_id][area_name]:
 			callback.call(area)
+
 # 获取实际的玩家ID用于字典访问
 func _get_actual_player_id(player_id: int) -> int:
 	if player_id == loacal_player_id:
@@ -128,14 +132,15 @@ func set_card_on_drag(area: RenderArea, realcard: RenderItem) -> void:
 	card_on_drag.card = realcard
 	card_on_drag.card.dragged = true
 	card_on_drag.area.tween_update(RenderEvent.new(RenderEvent.DefaultType.CARD_START_DRAGGING))
-	dragged_update.emit(true)
+	dragging_started.emit(realcard)
 
 func remove_card_on_drag() -> void:
 	if card_on_drag:
+		var card = card_on_drag.card
 		card_on_drag.card.dragged = false
 		card_on_drag.area.tween_update(RenderEvent.new(RenderEvent.DefaultType.CARD_CANCEL_DRAGGING))
+		dragging_canceled.emit(card)
 		card_on_drag = null
-		dragged_update.emit(false)
 
 func get_dragged_area() -> RenderArea:
 	return card_on_drag.area if card_on_drag else null
@@ -200,8 +205,6 @@ func remove_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID
 		return
 	unregister_render_area(area_name, player_id)
 	delete_render_area(area)
-# 添加到 RenderContext 类中
-signal area_created(area: RenderArea, player_id: int)
 
 ## 创建并注册渲染区域
 func create_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> RenderArea:

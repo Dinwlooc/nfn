@@ -38,15 +38,15 @@ func _ready() -> void:
 
 func data_update(new_item: RenderItem) -> void:
 	if item != new_item:
-		var button = get_node(^"Button")
+		var button:Button = get_node(^"Button")
 		if item:
 			button.button_down.disconnect(item.request_selecting)
 			button.button_down.disconnect(item.request_dragging)
-			button.button_up.disconnect(item.request_dragging)
+			button.button_up.disconnect(item.request_cancel_dragging)
 		item = new_item
 		button.button_down.connect(item.request_selecting)
 		button.button_down.connect(item.request_dragging)
-		button.button_up.connect(item.request_dragging)
+		button.button_up.connect(item.request_cancel_dragging)
 	var data: HandCardPack = item.data
 	_current_type = data.get_card_type()
 	texture_rect.texture = get_item_main_icon(data.name)

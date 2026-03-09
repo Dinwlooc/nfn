@@ -47,9 +47,12 @@ func _exit_tree() -> void:
 func on_drag(item:RenderItem) -> void:
 	if not render_context:
 		return
-	if Input.get_mouse_button_mask() == 1:
-		render_context.set_card_on_drag(self, item)
-	else:
+	render_context.set_card_on_drag(self, item)
+
+func on_cancel_drag(item:RenderItem) -> void:
+	if not render_context:
+		return
+	if render_context.get_dragged_card() == item:
 		render_context.remove_card_on_drag()
 
 # 渲染方法
@@ -62,9 +65,6 @@ func tween_update(render_event:RenderEvent = RenderEvent.NULL_EVENT) -> void:
 # 上下文管理
 func set_render_context(context:RenderContext) -> void:
 	render_context = context
-	if render_context.dragged_update.is_connected(tween_update.unbind(1)):
-		render_context.dragged_update.disconnect(tween_update)
-	render_context.dragged_update.connect(tween_update.unbind(1))
 
 ## 抽象方法 - 子类必须实现
 func add_item(item:RenderItem, index:int = -1) -> void:

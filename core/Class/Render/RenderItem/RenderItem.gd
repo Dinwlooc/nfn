@@ -25,6 +25,7 @@ signal reset_requested(item:RenderItem)
 signal data_requested(item:RenderItem)
 signal request_select(item:RenderItem)
 signal request_drag(item:RenderItem)
+signal request_cancel_dragged(item:RenderItem)
 signal request_face(item:RenderItem)
 
 func _init(new_data:TransPack = TransPack.NULL_PACK) -> void:
@@ -98,8 +99,11 @@ func request_dragging():
 		DraggingState.CHECKING:
 			dragging = DraggingState.FAILED
 		DraggingState.DRAGGING:
-			request_drag.emit(self)
 			dragging = DraggingState.READY
+
+func request_cancel_dragging():
+	dragging = DraggingState.READY
+	request_cancel_dragged.emit(self)
 
 func is_hovering(mouse_pos):
 	return Rect2(position,item_size).has_point(mouse_pos)

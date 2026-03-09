@@ -7,7 +7,7 @@ var pending_draw: bool = false
 var areahand: RenderAreaHand
 var areatargets: RenderAreaPlayers
 var is_dragging: bool = false
-var in_area:bool = false
+var in_area: bool = false
 @export var control: RenderControl
 const DRAW_COOLDOWN_DURATION: float = 0.35
 
@@ -18,7 +18,9 @@ func _ready() -> void:
 		curve_managers.append(manager)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.HAND, connect_to_areahand)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.PLAYERS, connect_to_areatargets)
-	control.render_context.dragged_update.connect(_on_dragged_update)
+	# 修改：连接新信号，使用 bind 传递拖拽状态
+	control.render_context.dragging_started.connect(_on_dragged_update.bind(true))
+	control.render_context.dragging_canceled.connect(_on_dragged_update.bind(false))
 
 func _physics_process(delta: float) -> void:
 	if draw_cooldown > 0:
@@ -67,10 +69,11 @@ func clear_arrow() -> void:
 	for manager in curve_managers:
 		manager.clear_arrow()
 
-func _on_dragged_update(dragged: bool) -> void:
+# 修改：接收 item 和拖拽状态，item 参数在此未使用但保留以匹配信号
+func _on_dragged_update(item: RenderItem, is_dragging: bool) -> void:
 	clear_arrow()
 	pending_draw = false
-	is_dragging = dragged
+	self.is_dragging = is_dragging
 	if not is_dragging && in_area:
 		delay_draw_arrow()
 
@@ -82,14 +85,23 @@ func render_event_handler(render_event: RenderEvent) -> void:
 			return
 		clear_arrow()
 		pending_draw = false
-	if event_type == RenderEvent.DefaultType.INTO_AREA:
+		draw_cooldown = DRAW_COOLDOWN_DURATION
+	elif event_type == RenderEvent.DefaultType.INTO_AREA:
 		in_area = true
 		if is_dragging:
 			clear_arrow()
 			return
-		draw_arrow()
-	if event_type == RenderEvent.DefaultType.CARD_SELECTION_CHANGED:
-		draw_arrow()
+		if draw_cooldown > 0:
+			delay_draw_arrow()
+		else:
+			draw_arrow()
+	elif event_type == RenderEvent.DefaultType.CARD_SELECTION_CHANGED:
+		if is_dragging:
+			return
+		if draw_cooldown > 0:
+			delay_draw_arrow()
+		else:
+			draw_arrow()
 
 func delay_draw_arrow() -> void:
 	draw_cooldown = DRAW_COOLDOWN_DURATION
