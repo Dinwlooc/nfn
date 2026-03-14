@@ -7,10 +7,20 @@ var _current_tween: Tween = null         # 当前物理受击的 Tween 实例
 @onready var backgound_character:ColorRect = $BackgoundCharacter
 @onready var character_container:AspectRatioContainer = $BackgoundCharacter/CharacterContainer
 @onready var character:Sprite2D  = $BackgoundCharacter/CharacterContainer/Character
+@onready var select_button:Button = $SelectButton
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
 	_setup_character_pivot.call_deferred()
 	character_container.resized.connect(_update_character_pivot)
+	select_button.pressed.connect(_on_select_button_pressed)
+
+func _into_area()->void:
+	super._into_area()
+	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
+
+func _outto_area()->void:
+	super._outto_area()
+	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
 func _setup_character_pivot() -> void:
 	_update_character_pivot()
@@ -101,13 +111,6 @@ func _on_physical_anim_finished() -> void:
 	_current_hp_damage = 0
 	_current_tween = null
 
-func _into_area() -> void:
-	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
-	pass
-
-func _outto_area() -> void:
-	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
-
 func card_move() -> void:
 	if area.items_pool.size() == 0:
 		return
@@ -116,3 +119,7 @@ func card_move() -> void:
 	if area.local_player.position == character_position:
 		return
 	UIAnimationUtils.tween_animations(area.local_player, { ^"position": character_position }, 0.1)
+
+func _on_select_button_pressed() -> void:
+	if area is RenderAreaPlayers and area.local_player:
+		area.local_player.request_selecting()

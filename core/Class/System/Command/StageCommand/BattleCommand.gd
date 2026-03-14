@@ -11,13 +11,13 @@ class Context extends CommandContext:
 		DONE            # 完成
 	}
 
-	var defensive_area: AreaDefensive
+	var defensive_area: AreaDefence
 	var top_card: Card
 	var pending_card: Card
 	var duel_result: int = DuelCommand.Context.Result.TIE
 	var duel_diff: int = 0
 	## 工具方法：设置战斗参数
-	func set_battle_params(area: AreaDefensive, top: Card, pending: Card) -> void:
+	func set_battle_params(area: AreaDefence, top: Card, pending: Card) -> void:
 		defensive_area = area
 		top_card = top
 		pending_card = pending

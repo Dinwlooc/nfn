@@ -21,20 +21,18 @@ shader_parameter/sprite_crossfade_amount = 1.0
 [node name="AreaFaceSelf" type="Control"]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 1396.0
-offset_top = 691.0
-offset_right = 1436.0
-offset_bottom = 731.0
+offset_left = 1393.0
+offset_top = 485.0
+offset_right = 1597.0
+offset_bottom = 847.0
 script = ExtResource("1_fqk35")
 metadata/_custom_type_script = "uid://btwt7f8flx66t"
 
 [node name="Backgound" type="ColorRect" parent="."]
 texture_filter = 1
 layout_mode = 0
-offset_left = 6.0
-offset_top = -141.0
-offset_right = 202.0
-offset_bottom = 203.0
+offset_right = 196.0
+offset_bottom = 344.0
 color = Color(0.968627, 0.482353, 0.219608, 0.411765)
 
 [node name="BackgoundCharacter" type="ColorRect" parent="."]
@@ -44,20 +42,21 @@ layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.023
 anchor_right = 0.023
-offset_left = 14.08
-offset_top = -134.0
-offset_right = 193.08
-offset_bottom = 144.0
+offset_left = 5.30803
+offset_top = 15.0
+offset_right = 184.308
+offset_bottom = 293.0
 color = Color(0.977015, 0.823146, 0.738518, 0.486275)
 
 [node name="CharacterContainer" type="AspectRatioContainer" parent="BackgoundCharacter"]
 texture_filter = 1
 texture_repeat = 1
 clip_contents = true
-layout_mode = 0
-offset_top = 1.0
-offset_right = 178.0
-offset_bottom = 316.0
+layout_mode = 1
+anchors_preset = -1
+offset_left = -17.0
+offset_right = 161.0
+offset_bottom = 355.0
 pivot_offset = Vector2(88, 315)
 stretch_mode = 0
 
@@ -65,15 +64,27 @@ stretch_mode = 0
 light_mask = 2
 texture_filter = 1
 material = SubResource("ShaderMaterial_waad1")
-position = Vector2(89, 189)
+position = Vector2(103, 200)
+scale = Vector2(1, 1.0026)
 texture = ExtResource("3_waad1")
 hframes = 2
 
 [node name="BackgoundAbility" type="ColorRect" parent="."]
 texture_filter = 1
 layout_mode = 0
-offset_left = 14.0
-offset_top = 152.0
-offset_right = 194.0
-offset_bottom = 195.0
+offset_left = 8.0
+offset_top = 298.0
+offset_right = 188.0
+offset_bottom = 341.0
 color = Color(1, 0.639216, 0.329412, 0.823529)
+
+[node name="SelectButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = -2.0
+offset_top = 2.0
+offset_right = 196.0
+offset_bottom = 348.0
+focus_mode = 0
+shortcut_feedback = false
+shortcut_in_tooltip = false
+flat = true

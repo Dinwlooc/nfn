@@ -1,5 +1,5 @@
 extends OrderedArea
-class_name AreaDefensive
+class_name AreaDefence
 
 signal battle_formed(top_card: Card, pending_card: Card)  # 斗牌形成时触发
 var is_settled: bool = false  # 是否已结算

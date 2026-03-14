@@ -23,10 +23,8 @@ func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 	if indices.is_empty():
 		return []
-
 	var removed: Array[Card] = []
 	var min_index = _ordered_pool.size()
-
 	for index in indices:
 		if index < 0 or index >= _ordered_pool.size() or _ordered_pool[index] == null:
 			continue
@@ -34,28 +32,22 @@ func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 		removed.append(_ordered_pool[index])
 		_card_id_to_index.erase(_ordered_pool[index].id)
 		_ordered_pool[index] = null
-
 	if not removed.is_empty():
 		area_cards_remove.emit(removed)
 		if min_index < _ordered_pool.size():
 			_compress_ordered_pool(min_index)
-
 	return removed
 
 func remove_top_cards(count: int) -> Array[Card]:
 	var removed: Array[Card] = []
 	count = min(count, card_count())
-
 	var start_index = max(0, _ordered_pool.size() - count)
 	removed = _ordered_pool.slice(start_index, _ordered_pool.size())
 	_ordered_pool.resize(_ordered_pool.size() - count)
-
 	for card in removed:
 		_card_id_to_index.erase(card.id)
-
 	if not removed.is_empty():
 		area_cards_remove.emit(removed)
-
 	return removed
 
 func card_count() -> int:

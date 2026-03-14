@@ -3,11 +3,17 @@ class_name GlobalConstants
 
 enum AreaType {DRAWING , HAND , PLAYERS ,STAGE ,DEFENSIVE,DISCARD}
 const KEY_AREA_TYPE = &"AreaType"
-const AREA_TYPES:Array[StringName] = [&"drawing",&"hand",&"players",&"stage",&"defensive",&"discard"]
+const AREA_TYPES:Array[StringName] = [&"drawing",&"hand",&"players",&"stage",&"defence",&"discard"]
 enum CardType { NULL, ATTACK ,DEFENCE,SPELL} # 官方内置类型枚举
 const CARD_TYPES:Array[StringName] = [&"null",&"attack",&"defence",&"spell"]
 const KEY_ITEM_TYPE = &"ItemType"
 enum GameStage { NULL, START, DRAW, MAIN, DISCARD, END }
+
+class DefaultArea:
+	const HAND:StringName = &"hand"
+	const PLAYERS:StringName = &"players"
+	const DENFENCE:StringName =  &"defence"
+	const STAGE:StringName = &"stage"
 
 const OP_PLAY_CARD: StringName = &"play_card"
 const OP_END_TURN: StringName = &"end_turn"

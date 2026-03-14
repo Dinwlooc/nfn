@@ -9,7 +9,7 @@ var MP: int                # 玩家当前精神值
 var AP: int                # 玩家当前的行动点
 var area_hand: AreaHand = AreaHand.new(self)
 var area_ability: AreaAbility = AreaAbility.new(self)
-var area_defensive: AreaDefensive = AreaDefensive.new(self)
+var area_defensive: AreaDefence = AreaDefence.new(self)
 var attributeModifiers: AttributeModifiers = AttributeModifiers.new()
 var disallowed_operations: Array[StringName] = []
 var last_pack: PlayerPack = null
@@ -70,13 +70,11 @@ func clear_pack_cache() -> void:
 	last_pack = null
 
 func send_pack(peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST) -> void:
-	var pack = get_pack()  # 获取增量包（自动处理缓存）
-	# 从常量类中获取玩家区域签名（例如 "players"）
-	var area_signature = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
-	# 构造 ItemSet 请求并发送，类型签名为 PlayerPack 的静态类名
+	var pack:ItemPack = get_pack()  # 获取增量包（自动处理缓存）
+	var area_signature:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
 	RenderRequest.ItemSet.new(
 		area_signature,
-		PlayerPack.get_class_name_static(),
+		RenderRequest.ItemSet.EventType.UPDATE,
 		[pack],
 		player_id
 	).send_to_player(peer_id)

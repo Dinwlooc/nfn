@@ -12,7 +12,7 @@ class Context extends CommandContext:
 		DONE           # 完成
 	}
 
-	var defensive_area: AreaDefensive = null
+	var defensive_area: AreaDefence = null
 	var attacker: Player = null
 	var top_card: Card = null
 	var second_card: Card = null
@@ -120,7 +120,7 @@ func _on_done_phase(game_state: GameState, _context: Context) -> void:
 	pass
 
 ## 工具方法：设置防御区域和攻击者
-func set_defense_context(area: AreaDefensive, attacker: Player) -> void:
+func set_defense_context(area: AreaDefence, attacker: Player) -> void:
 	_context.defensive_area = area
 	_context.attacker = attacker
 

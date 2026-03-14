@@ -31,16 +31,34 @@ func get_all_cards() -> Array[Card]:
 func get_card_ids() -> Array[int]:
 	assert(false, "子类必须实现 get_card_ids 方法")
 	return []
-# 公共方法（都有默认实现）
-func send_items(new_items: Array[ItemPack],peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST) -> void:
-	var player_id:int
+
+## 发送物品包到指定对等体（支持自定义事件类型和名称）
+func send_items(
+	new_items: Array[ItemPack],
+	peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST,
+	event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.DRAW,
+	custom_event_name: StringName = &""
+) -> void:
+	var player_id: int
 	if !player:
 		player_id = -1
 	else:
 		player_id = player.player_id
-	RenderRequest.ItemSet.new(area_name,CardPack.get_class_name_static(),new_items,player_id).send_to_player(peer_id)
+	RenderRequest.ItemSet.new(
+		area_name,
+		event_type,
+		new_items,
+		player_id,
+		player_id,
+		custom_event_name
+	).send_to_player(peer_id)
 
-func send_cards(new_cardpool: Array[Card]) -> void:
+## 发送卡牌包（如果区域私有，则只发送给所属玩家）
+func send_cards(
+	new_cardpool: Array[Card],
+	event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.DRAW,
+	custom_event_name: StringName = &""
+) -> void:
 	var card_packs: Array[ItemPack] = []
 	card_packs.resize(new_cardpool.size())
 	var i: int = 0
@@ -48,13 +66,12 @@ func send_cards(new_cardpool: Array[Card]) -> void:
 		card_packs.set(i, card.get_pack())
 		i += 1
 	if !is_private_visible:
-		send_items(card_packs)
+		send_items(card_packs, MultiplayerPeer.TARGET_PEER_BROADCAST, event_type, custom_event_name)
 		return
 	if player.peer_id < 0:
 		return
-	send_items(card_packs,player.peer_id)
+	send_items(card_packs, player.peer_id, event_type, custom_event_name)
 
-# 可选方法（有些区域可能不支持）
 func shuffle_card_pool() -> void:
 	pass
 

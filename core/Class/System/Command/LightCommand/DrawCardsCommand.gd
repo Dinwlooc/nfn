@@ -18,7 +18,6 @@ func _init(init_player_index: int, draw_count: int, name_overriding:StringName =
 	_context.set_draw_count(draw_count)
 ## 覆盖父类的初始化阶段方法
 func _on_init_phase(game_state: GameState, context: CardMoveCommand.Context) -> void:
-	# 将上下文转换为抽牌命令的上下文类型
 	var draw_context := context as Context
 	if not draw_context:
 		push_error("DrawCardsCommand: 上下文类型错误")

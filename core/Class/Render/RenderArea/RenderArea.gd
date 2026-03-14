@@ -11,10 +11,7 @@ signal context_ready()
 var select_limit:int = 1
 var render_context:RenderContext
 
-class DefaultArea:
-	const HAND:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
-	const PLAYERS:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
-	const STAGE:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.STAGE]
+const DefaultArea = GlobalConstants.DefaultArea
 
 func _ready() -> void:
 	ready_expand()
