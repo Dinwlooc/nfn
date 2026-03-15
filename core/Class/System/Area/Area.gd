@@ -32,24 +32,20 @@ func get_card_ids() -> Array[int]:
 	assert(false, "子类必须实现 get_card_ids 方法")
 	return []
 
-## 发送物品包到指定对等体（支持自定义事件类型和名称）
+## 发送物品包到指定对等体（支持自定义事件类型、来源玩家和名称）
 func send_items(
 	new_items: Array[ItemPack],
 	peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST,
 	event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.DRAW,
+	source_player_id: int = player.player_id,
 	custom_event_name: StringName = &""
 ) -> void:
-	var player_id: int
-	if !player:
-		player_id = -1
-	else:
-		player_id = player.player_id
 	RenderRequest.ItemSet.new(
 		area_name,
 		event_type,
 		new_items,
-		player_id,
-		player_id,
+		player.player_id, # area_player_id（区域拥有者）
+		source_player_id,   # 事件来源玩家ID
 		custom_event_name
 	).send_to_player(peer_id)
 
@@ -57,6 +53,7 @@ func send_items(
 func send_cards(
 	new_cardpool: Array[Card],
 	event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.DRAW,
+	source_player_id:int = player.player_id,
 	custom_event_name: StringName = &""
 ) -> void:
 	var card_packs: Array[ItemPack] = []
@@ -66,12 +63,11 @@ func send_cards(
 		card_packs.set(i, card.get_pack())
 		i += 1
 	if !is_private_visible:
-		send_items(card_packs, MultiplayerPeer.TARGET_PEER_BROADCAST, event_type, custom_event_name)
+		send_items(card_packs, MultiplayerPeer.TARGET_PEER_BROADCAST, event_type, source_player_id, custom_event_name)
 		return
 	if player.peer_id < 0:
 		return
-	send_items(card_packs, player.peer_id, event_type, custom_event_name)
-
+	send_items(card_packs, player.peer_id, event_type, source_player_id, custom_event_name)
 func shuffle_card_pool() -> void:
 	pass
 

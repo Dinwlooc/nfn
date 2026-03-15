@@ -5,8 +5,9 @@ signal battle_formed(top_card: Card, pending_card: Card)  # 斗牌形成时触�
 var is_settled: bool = false  # 是否已结算
 var pending_card: Card = null  # 缓冲槽中的斗牌
 
-func _ready() -> void:
-	area_name = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.DEFENSIVE]
+func _init_expand() -> void:
+	area_name = GlobalConstants.DefaultArea.DEFENCE
+	is_private_visible = false
 	area_cards_remove.connect(_on_cards_removed)
 # 卡牌移除时重新检查斗牌形成条件
 func _on_cards_removed(_removed_cards: Array[Card]) -> void:

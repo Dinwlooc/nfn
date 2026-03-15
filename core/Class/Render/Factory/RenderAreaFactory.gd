@@ -1,7 +1,7 @@
 extends RefCounted
 class_name RenderAreaFactory
 
-static var area_classes: Array[Script] = [RenderAreaHand,RenderAreaDefensive]
+static var area_classes: Array[Script] = [RenderAreaHand,RenderAreaDefence]
 static var registry: Dictionary[StringName, Script] = build_registry(area_classes)
 
 static func build_registry(classes: Array[Script]) -> Dictionary[StringName, Script]:

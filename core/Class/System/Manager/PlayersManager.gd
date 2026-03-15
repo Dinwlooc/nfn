@@ -63,6 +63,7 @@ func _get_player_delta_pack(player: Player) -> PlayerPack:
 func send_players_delta_updates(
 	target_players: Array[Player] = [],
 	event_type: int = RenderRequest.ItemSet.EventType.UPDATE,
+	source_player_id: int = RenderRequest.PUBLIC_AREA_PLAYER_ID,
 	custom_event_name: StringName = &""
 ) -> void:
 	var delta_packs: Array[ItemPack] = []
@@ -79,15 +80,17 @@ func send_players_delta_updates(
 		PLAYER_AREA,
 		event_type,
 		delta_packs,
-		area_player_id,
-		area_player_id,
-		custom_event_name
+		area_player_id,      # area_player_id
+		source_player_id,    # 事件来源玩家ID
+		custom_event_name    # 自定义事件名（仅当 event_type == CUSTOM 时有效）
 	)
 	GlobalTransport.send_render_request(MultiplayerPeer.TARGET_PEER_BROADCAST, item_set)
+
 ## 发送单个玩家的增量更新到所有对等体（便捷方法）
 func send_single_player_delta_update(
 	player: Player,
-	event_type:int = RenderRequest.ItemSet.EventType.UPDATE,
+	event_type: int = RenderRequest.ItemSet.EventType.UPDATE,
+	source_player_id: int = RenderRequest.PUBLIC_AREA_PLAYER_ID,
 	custom_event_name: StringName = &""
 ) -> void:
 	var pack: PlayerPack = _get_player_delta_pack(player)
@@ -100,7 +103,7 @@ func send_single_player_delta_update(
 		event_type,
 		delta_packs,
 		area_player_id,
-		area_player_id,
+		source_player_id,
 		custom_event_name
 	)
 	GlobalTransport.send_render_request(MultiplayerPeer.TARGET_PEER_BROADCAST, item_set)

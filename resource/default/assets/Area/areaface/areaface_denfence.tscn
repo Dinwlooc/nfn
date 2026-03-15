@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://fv1p6oclb4qh"]
+
+[ext_resource type="Script" uid="uid://dy06o1xxfvq4u" path="res://resource/default/assets/Area/areaface/areaface_denfence.gd" id="1_pci54"]
+
+[node name="AreaFaceDenfence" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_pci54")
+metadata/_custom_type_script = "uid://btwt7f8flx66t"

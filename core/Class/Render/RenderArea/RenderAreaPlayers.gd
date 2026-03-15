@@ -15,7 +15,10 @@ func _on_player_added(new_player:RenderItem)->void:
 		render_context.loacal_player_id = local_player.data.get_id()
 		local_player_received.emit(local_player)
 		return
-	render_context.create_render_area(DefaultArea.HAND,new_player.data.get_id())
+	var hand_area:RenderAreaHand = render_context.create_render_area(DefaultArea.HAND,new_player.data.get_id())
+	var defence_area:RenderAreaDefence = render_context.create_render_area(DefaultArea.DEFENCE,new_player.data.get_id())
+	new_player.add_child(hand_area)
+	new_player.add_child(defence_area)
 
 static func get_area_name_static()->StringName:
 	return DefaultArea.PLAYERS

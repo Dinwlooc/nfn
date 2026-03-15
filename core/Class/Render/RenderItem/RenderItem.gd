@@ -17,7 +17,6 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var data:TransPack
-var item_size = Vector2(58,88)
 signal select
 signal drag
 signal render_requested(render_event:RenderEvent)
@@ -69,10 +68,10 @@ func reset() -> void:
 	reset_requested.emit(self)
 
 func get_item_size()->Vector2:
-	return item_size
+	return size
 
 func set_item_size(new_size:Vector2):
-	item_size = new_size
+	size = new_size
 
 func set_hovering(new_hovering: bool) -> void:
 	if hovering == new_hovering:
@@ -106,7 +105,7 @@ func request_cancel_dragging():
 	request_cancel_dragged.emit(self)
 
 func is_hovering(mouse_pos):
-	return Rect2(position,item_size).has_point(mouse_pos)
+	return Rect2(position,size).has_point(mouse_pos)
 
 func get_id()->int:
 	if data:

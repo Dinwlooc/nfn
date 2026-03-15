@@ -56,15 +56,14 @@ func _on_play_a_card() -> void:
 
 func handle_request(request: RenderRequest) -> void:
 	var target_area: StringName = request.target_area
-	var render_area: RenderArea = render_context.get_render_area(target_area)
-	GlobalConsole._print(["接收到RenderRequest：", request.get_class_name(), ",目标：", request.target_area])
+	var target_area_player_id:int = request.target_area_player_id
+	var render_area: RenderArea = render_context.get_render_area(target_area,request.target_area_player_id)
+	GlobalConsole._print(["接收到RenderRequest：", request.get_class_name(), ",目标：", request.target_area,",属于：玩家",request.target_area_player_id])
 	if render_area:
 		render_area.process_request(request)
 	else:
 		push_error("RenderArea not found for target: " + str(target_area))
-		# 调试效果，尝试使用discard区域
 		render_context.get_render_area(&"discard").process_request(request)
 
 func _on_render_context_area_created(area: RenderArea, player_id: int) -> void:
-	add_child(area)
 	_initialize_render_area(area)

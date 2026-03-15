@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://s0d734yjh7uc"]
+[gd_scene load_steps=7 format=3 uid="uid://s0d734yjh7uc"]
 
 [ext_resource type="Script" uid="uid://inhy17k8yahq" path="res://resource/default/assets/Character/charactercard/charactertargetcard.gd" id="1_1lsym"]
 [ext_resource type="Texture2D" uid="uid://bnyo0uw1gbm0c" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami.png" id="2_4qsti"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://resource/default/assets/Area/areaface/areaface_self_properties.tscn" id="2_f0c7v"]
 [ext_resource type="Texture2D" uid="uid://dmodqi3s8ii8s" path="res://resource/default/assets/sfx/target_selected.png" id="3_4qsti"]
+[ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/areaface_denfence.tscn" id="3_ct3wd"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="4_gn4qo"]
 
 [node name="CharacterTargetCard" type="Control"]
@@ -50,6 +51,13 @@ offset_top = -167.57
 offset_right = 301.508
 offset_bottom = -91.0
 scale = Vector2(0.6, 0.6)
+mode = 1
+
+[node name="AreaFaceDenfence" parent="." instance=ExtResource("3_ct3wd")]
+offset_left = 14.0
+offset_top = 232.0
+offset_right = 232.0
+offset_bottom = 318.0
 mode = 1
 
 [node name="AspectRatioContainer" type="AspectRatioContainer" parent="."]

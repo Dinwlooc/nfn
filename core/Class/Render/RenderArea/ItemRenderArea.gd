@@ -88,8 +88,10 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 		index = items_pool.size()
 	var tree_position = _divide_index + index
 	if item.get_parent():
+		item.position += item.get_parent().position
 		item.get_parent().remove_child(item)
 	add_child(item)
+	item.position += -position
 	move_child(item, tree_position)
 	_connect_item_to_area(item)
 	_set_item_to_pool(item, index)
@@ -104,6 +106,8 @@ func remove_item(item:RenderItem) -> void:
 		items_pool[pool_id] = null
 		if item in selected_items:
 			selected_items.erase(item)
+			item.selected = false
+			item.render_update()
 		_compact_pool(pool_id, 1)
 	if render_context and item.data:
 		var item_type = item.data.get_class_name()

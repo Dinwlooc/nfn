@@ -116,7 +116,7 @@ func get_start_point_array() -> Array[Vector2]:
 		var item_size: Vector2 = cards[0].get_item_size()  # 同一区域卡牌大小一致
 		array.append_array(cards.map(
 			func(card: RenderItem) -> Vector2:
-				return card.position + Vector2(0, -item_size.y)  # 手牌顶部中心
+				return card.position + Vector2(0, - item_size.y/2.5)  # 手牌顶部中心
 		))
 	return array
 
@@ -128,10 +128,8 @@ func get_end_point_array() -> Array[Vector2]:
 		for card in cards:
 			var pos: Vector2
 			if card == areatargets.local_player:
-				# 本地玩家：指向卡牌顶部中心
 				pos = card.position + Vector2(item_size.x / 2.0, 0)
 			else:
-				# 其他玩家：指向卡牌底部中心
 				pos = card.position + Vector2(item_size.x / 2.0, item_size.y)
 			array.append(pos)
 	return array

@@ -52,6 +52,8 @@ func _on_render_area_registered(area_name: StringName, area: RenderArea, player_
 
 # 获取实际的玩家ID用于字典访问
 func _get_actual_player_id(player_id: int) -> int:
+	if loacal_player_id == -1:
+		return PUBLIC_PLAYER_ID
 	if player_id == loacal_player_id:
 		return PUBLIC_PLAYER_ID
 	return player_id

@@ -54,7 +54,6 @@ func _connect_to_area(target_area: RenderArea) -> void:
 		target_area.local_player_received.connect(_on_local_player_received)
 		if target_area.local_player:
 			_on_local_player_received(target_area.local_player)
-	# 手动模式下不做任何自动连接
 
 func _on_local_player_received(local_player: RenderItem) -> void:
 	set_player(local_player)
