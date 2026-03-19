@@ -14,7 +14,7 @@ func _init(p_game_state: GameState) -> void:
 func enter_expand() -> void:
 	_current_attacker = game_state.player_manager.get_player_by_seat(game_state.current_player_index)
 	_current_attacker_id = _current_attacker.player_id
-	game_state.request_set_responsive_players(PackedInt32Array([_current_attacker_id]))
+	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 
 func process_operation_request(request: OperationRequest) -> void:
 	if is_ended or is_paused:
@@ -45,8 +45,8 @@ func _process_play_card_request(request: OperationRequest.PlayCard) -> void:
 		return
 	game_state.queue_behavior(rule_result.command)
 	if rule_result.should_respond:
-		game_state.request_set_responsive_players(rule_result.responsive_players)
-		GlobalConsole._print(["主阶段：技能牌使用成功，其他玩家获得响应机会"])
+		game_state.set_responsive_players(rule_result.responsive_players)
+		GlobalConsole._print(["主阶段：技能牌使用成功"])
 	else:
 		GlobalConsole._print(["主阶段：卡牌使用成功,信息：",rule_result.message])
 	request.complete()
@@ -60,13 +60,13 @@ func _check_defensive_restrictions(card_id: int, target_id: int, is_to_center: b
 	var target_player = game_state.player_manager.get_player_by_id(target_id) if target_id >= 0 else null
 	match card_type:
 		&"attack":
-			if target_player and not target_player.area_defensive.is_empty():
-				GlobalConsole._print(["主阶段：目标守区非空，不能攻击"])
+			if target_player and not target_player.area_defensive.is_empty() and target_player.area_defensive.get_top_card().player == _current_attacker:
+				GlobalConsole._print(["主阶段：目标守区顶部仍是你的牌，你不能攻击"])
 				return false
 			return true
 		&"defence":
-			if not _current_attacker.area_defensive.is_empty():
-				GlobalConsole._print(["主阶段：自身守区非空，不能使用防御牌"])
+			if not _current_attacker.area_defensive.is_empty() and target_player.area_defensive.get_top_card().player == _current_attacker:
+				GlobalConsole._print(["主阶段：自身守区顶部仍是你的牌，你不能使用防御牌"])
 				return false
 			return true
 		&"skill":
@@ -80,5 +80,5 @@ func run() -> void:
 
 func end_stage_effect() -> void:
 	_current_attacker = null  # 清理缓存
-	game_state.request_set_responsive_players(PackedInt32Array())
+	game_state.set_responsive_players(PackedInt32Array())
 	GlobalConsole._print(["主阶段结束"])

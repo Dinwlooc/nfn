@@ -3,6 +3,7 @@ class_name Card
 
 @export var name:StringName
 @export var type:StringName
+var player:Player
 var id:int
 var area_name:StringName
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
@@ -27,3 +28,9 @@ func _create_card_pack() -> CardPack:
 ## 当卡牌移动到牌堆里时使用它，以释放增量更新缓存的巨大占用
 func clear_pack_cache() -> void:
 	last_pack = null
+
+func set_player(p_player:Player)->void:
+	player = p_player
+
+func clear_player()->void:
+	player = null

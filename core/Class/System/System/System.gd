@@ -17,9 +17,11 @@ func _init() -> void:
 	game_state.start_round.connect(stage_manager.start_round)
 	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
 	game_state.new_behavior.connect(command_processor.queue_behavior)
-	game_state.set_responsive_players.connect(operation_handler.set_responsive_players)
+	game_state.request_set_responsive_players.connect(operation_handler.set_responsive_players)
+	game_state.request_temp_stage.connect(stage_manager.start_temp_stage)
 	command_processor.command_processing.connect(modifier_manager.process_behavior)
 	command_processor.enable_processing.connect(_enable_processing)
+	command_processor.all_completed.connect(stage_manager._on_command_processor_idle)
 
 func _ready() -> void:
 	stage_manager.set_timer(timer)

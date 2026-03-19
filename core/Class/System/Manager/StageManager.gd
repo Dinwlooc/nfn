@@ -2,57 +2,59 @@ extends RefCounted
 class_name StageManager
 
 # 新增信号
-signal stage_completed()  # 单个阶段完成（临时或主阶段）
-signal stage_rolled_back(old_stage: Stage, new_stage: Stage)  # 阶段回退
-signal temp_stages_cleared()  # 所有临时阶段被清除
-signal round_ended()  # 回合结束信号
+signal stage_completed()
+signal stage_rolled_back(old_stage: Stage, new_stage: Stage)
+signal temp_stages_cleared()
+signal round_ended()
 signal stage_changed(old_stage: Stage, new_stage: Stage)
 signal temp_stage_started(temp_stage: Stage)
 signal round_completed()
 
-# 主阶段顺序数组（按游戏流程排列）
+# 主阶段顺序数组
 var main_stages: Array[Stage] = []
 var current_stage: Stage = null
-var temp_stage_stack: Array[Stage] = []
+var temp_stage_stack: Array[Stage] = []          # 正在执行的临时阶段栈（已暂停的父阶段）
+var pending_temp_stage_stack: Array[Stage] = []  # 待开始的临时阶段栈（后进先出）
 var timer: GameTimer
 var game_state: GameState
-var current_main_stage_index: int = -1  # 当前主阶段在顺序数组中的索引
-var current_player_id:int = 0
-var modifier_container:ModifierContainer
-static var MAIN_STAGES:Array[Script] = [
-		StageStart,
-		StageDraw,
-		StageMain,
-		StageDiscard,
-		StageEnd ]
+var current_main_stage_index: int = -1
+var current_player_id: int = 0
+var modifier_container: ModifierContainer
 
-func _init(p_game_state:GameState) -> void:
+static var MAIN_STAGES: Array[Script] = [
+	StageStart,
+	StageDraw,
+	StageMain,
+	StageDiscard,
+	StageEnd
+]
+
+func _init(p_game_state: GameState) -> void:
 	game_state = p_game_state
 	main_stages.resize(MAIN_STAGES.size())
 	for i in MAIN_STAGES.size():
 		main_stages[i] = MAIN_STAGES[i].new(game_state)
 		connect_stage_to_manager(main_stages[i])
 
-func connect_stage_to_manager(new_stage:Stage):
+func connect_stage_to_manager(new_stage: Stage) -> void:
 	new_stage.stage_ended.connect(_on_stage_ended)
 
 func set_modifier_container(container: ModifierContainer) -> void:
 	modifier_container = container
 
-## 处理已验证的操作请求
 func handle_validated_request(request: OperationRequest) -> void:
 	current_stage.process_operation_request(request)
 
-func set_timer(_timer: GameTimer):
+func set_timer(_timer: GameTimer) -> void:
 	if timer:
 		timer.timeout.disconnect(_on_timer_timeout)
 	timer = _timer
 	timer.timeout.connect(_on_timer_timeout)
-# 新增方法：结束当前阶段（统一接口）
+
 func complete_current_stage() -> void:
 	if current_stage and not current_stage.is_ended:
 		current_stage.end_stage()
-# 新增方法：结束所有临时阶段
+
 func complete_all_temp_stages() -> void:
 	if temp_stage_stack.is_empty():
 		return
@@ -65,32 +67,48 @@ func complete_all_temp_stages() -> void:
 		game_state.current_stage_stack = [main_stage_name]
 	temp_stages_cleared.emit()
 
-##插入临时阶段
+## 请求插入临时阶段（若处理器繁忙则进入待处理栈，否则立即开始）
 func start_temp_stage(temp_stage: Stage) -> void:
+	# 根据命令处理器是否繁忙决定立即开始或暂存
+	if game_state._process_active:
+		pending_temp_stage_stack.append(temp_stage)
+	else:
+		_start_immediate(temp_stage)
+
+## 立即开始临时阶段（内部方法）
+func _start_immediate(temp_stage: Stage) -> void:
 	if current_stage:
 		current_stage.pause()
 	temp_stage.is_temporary = true
 	connect_stage_to_manager(temp_stage)
+	# 将当前阶段推入执行栈（暂停）
 	temp_stage_stack.append(current_stage)
 	_transition_to(temp_stage)
 	temp_stage_started.emit(temp_stage)
-##结束当前回合
+
+## 命令处理器空闲时调用（由 System 连接 all_completed 信号）
+func _on_command_processor_idle() -> void:
+	if not pending_temp_stage_stack.is_empty():
+		var next_stage = pending_temp_stage_stack.pop_back()
+		_start_immediate(next_stage)
+
 func end_round() -> void:
 	if timer:
 		timer.stop()
 	if current_stage and not current_stage.is_ended:
 		current_stage.end_stage_effect()
+	# 清空所有栈
 	temp_stage_stack.clear()
+	pending_temp_stage_stack.clear()
 	current_main_stage_index = -1
 	current_stage = null
 	round_ended.emit()
 	round_completed.emit()
 
-# 修改后的阶段过渡核心方法
 func _transition_to(new_stage: Stage) -> void:
 	if not new_stage:
 		return
-	var old_stage:Stage = current_stage
+	var old_stage: Stage = current_stage
 	current_stage = new_stage
 	if new_stage.is_temporary:
 		game_state.current_stage_stack.append(new_stage.stage_name)
@@ -108,7 +126,6 @@ func _transition_to(new_stage: Stage) -> void:
 		new_stage.call_deferred(&"enter")
 		stage_changed.emit(old_stage, new_stage)
 
-##回退到上个阶段
 func _rollback_to_previous_stage() -> void:
 	if temp_stage_stack.is_empty():
 		push_error("没有可回退的阶段")
@@ -121,16 +138,14 @@ func _rollback_to_previous_stage() -> void:
 		current_stage.end_stage_effect()
 	previous_stage.resume()
 	_transition_to(previous_stage)
-##进入下一个主阶段
+
 func _advance_to_next_main_stage() -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= main_stages.size():
-		# 所有主阶段完成，结束回合
 		end_round()
 		return
 	_transition_to(main_stages[current_main_stage_index])
 
-## 阶段结束处理器
 func _on_stage_ended(ended_stage: Stage) -> void:
 	if ended_stage != current_stage:
 		return
@@ -144,16 +159,17 @@ func _on_stage_ended(ended_stage: Stage) -> void:
 			_rollback_to_previous_stage()
 	else:
 		_advance_to_next_main_stage()
-## 计时器超时处理
+
 func _on_timer_timeout() -> void:
 	if current_stage and not current_stage.is_ended:
-		complete_current_stage()  # 使用统一的结束接口
+		complete_current_stage()
 
-func start_round(player_id:int = 0) -> void:
+func start_round(player_id: int = 0) -> void:
 	current_main_stage_index = 0
 	current_player_id = player_id
 	temp_stage_stack.clear()
+	pending_temp_stage_stack.clear()   # 新回合清空待处理栈
 	_transition_to(main_stages[current_main_stage_index])
 
-func get_current_stage_enum()->int:
+func get_current_stage_enum() -> int:
 	return current_main_stage_index

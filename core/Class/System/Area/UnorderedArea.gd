@@ -7,18 +7,16 @@ var _unordered_pool: Dictionary[int, Card] = {}
 func cards_add(new_cardpool: Array[Card]) -> void:
 	for card in new_cardpool:
 		_unordered_pool[card.id] = card
-	area_cards_add.emit(new_cardpool)
+		area_card_added.emit(card)
 
 func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 	var removed: Array[Card] = []
 	for id in ids:
 		if _unordered_pool.has(id):
-			removed.append(_unordered_pool[id])
+			var card:Card = _unordered_pool[id]
+			removed.append(card)
+			area_card_removed.emit(card)
 			_unordered_pool.erase(id)
-
-	if not removed.is_empty():
-		area_cards_remove.emit(removed)
-
 	return removed
 
 func card_count() -> int:

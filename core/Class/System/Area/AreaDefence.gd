@@ -8,9 +8,9 @@ var pending_card: Card = null  # 缓冲槽中的斗牌
 func _init_expand() -> void:
 	area_name = GlobalConstants.DefaultArea.DEFENCE
 	is_private_visible = false
-	area_cards_remove.connect(_on_cards_removed)
+	after_cards_removed.connect(_on_after_cards_removed)
 # 卡牌移除时重新检查斗牌形成条件
-func _on_cards_removed(_removed_cards: Array[Card]) -> void:
+func _on_after_cards_removed() -> void:
 	check_battle_formation()
 # 添加缓冲槽卡牌（攻防中即将置入的斗牌）
 func add_pending_card(card: Card) -> void:
@@ -32,10 +32,9 @@ func commit_pending_card() -> void:
 func check_battle_formation() -> void:
 	if not pending_card:
 		return
-	var top = get_top_card()
-	# 需满足：1) 顶层牌存在 2) 顶层牌是敌方牌 3) 缓冲卡未销毁
+	var top:Card = get_top_card()
 	if top and top.owner != pending_card.owner:
-		emit_signal("battle_formed", top, pending_card)
+		battle_formed.emit(top, pending_card)
 # 获取顶层牌
 func get_top_card() -> Card:
 	var cards = get_all_cards()

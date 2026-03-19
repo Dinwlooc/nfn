@@ -4,8 +4,9 @@ class_name Area
 var player: Player
 var area_name: StringName
 var is_private_visible:bool = false
-signal area_cards_add(new_cardpool: Array[Card])
-signal area_cards_remove(removed_cards: Array[Card])
+signal area_card_added(new_cardpool: Card)
+signal area_card_removed(removed_cards: Card)
+signal after_cards_removed()
 
 func _init(_player: Player = null) -> void:
 	player = _player

@@ -7,11 +7,12 @@ var _card_id_to_index: Dictionary = {}
 
 func cards_add(new_cardpool: Array[Card]) -> void:
 	var start_index = _ordered_pool.size()
-	_ordered_pool.append_array(new_cardpool)
+	_ordered_pool.resize(_ordered_pool.size()+new_cardpool.size())
 	for i in range(new_cardpool.size()):
-		var card = new_cardpool[i]
+		var card:Card = new_cardpool[i]
+		_ordered_pool.set(start_index + i,card)
 		_card_id_to_index[card.id] = start_index + i
-	area_cards_add.emit(new_cardpool)
+		area_card_added.emit(card)
 
 func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 	var indices = PackedInt32Array()
@@ -29,13 +30,15 @@ func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 		if index < 0 or index >= _ordered_pool.size() or _ordered_pool[index] == null:
 			continue
 		min_index = min(min_index, index)
+		var card:Card = _ordered_pool[index]
 		removed.append(_ordered_pool[index])
-		_card_id_to_index.erase(_ordered_pool[index].id)
+		_card_id_to_index.erase(card.id)
 		_ordered_pool[index] = null
-	if not removed.is_empty():
-		area_cards_remove.emit(removed)
+		area_card_removed.emit(card)
 		if min_index < _ordered_pool.size():
 			_compress_ordered_pool(min_index)
+	if removed:
+		after_cards_removed.emit()
 	return removed
 
 func remove_top_cards(count: int) -> Array[Card]:
@@ -46,8 +49,9 @@ func remove_top_cards(count: int) -> Array[Card]:
 	_ordered_pool.resize(_ordered_pool.size() - count)
 	for card in removed:
 		_card_id_to_index.erase(card.id)
-	if not removed.is_empty():
-		area_cards_remove.emit(removed)
+		area_card_removed.emit(card)
+	if removed:
+		after_cards_removed.emit()
 	return removed
 
 func card_count() -> int:

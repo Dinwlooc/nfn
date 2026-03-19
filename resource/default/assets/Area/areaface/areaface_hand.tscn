@@ -18,9 +18,9 @@ script = ExtResource("1_08dya")
 [node name="UIContainer" type="Control" parent="."]
 anchors_preset = 0
 offset_left = 57.0
-offset_top = 36.0
+offset_top = 86.0
 offset_right = 573.0
-offset_bottom = 75.0
+offset_bottom = 125.0
 
 [node name="QuickSortUI" type="Panel" parent="UIContainer"]
 custom_minimum_size = Vector2(100, 20)

@@ -14,7 +14,8 @@ var current_stage_stack: Array[StringName] = []
 signal start_round(player_id:int)
 signal new_behavior_with_callback(command:BehaviorCommand,callback:Callable)
 signal new_behavior(command:BehaviorCommand)
-signal set_responsive_players(player_ids: PackedInt32Array)
+signal request_set_responsive_players(player_ids: PackedInt32Array)
+signal request_temp_stage(temp_stage: Stage)
 
 func load_cards() -> void:
 	area_drawing.cards_add(cardsmanager.load_all_cards())
@@ -44,8 +45,8 @@ func get_current_active_stage_name() -> StringName:
 		return current_stage_stack[current_stage_stack.size() - 1]
 	return &""
 ## 请求设置可响应玩家
-func request_set_responsive_players(player_ids: PackedInt32Array) -> void:
-	set_responsive_players.emit(player_ids)
+func set_responsive_players(player_ids: PackedInt32Array) -> void:
+	request_set_responsive_players.emit(player_ids)
 
 func queue_behavior(command:BehaviorCommand)-> void:
 	new_behavior.emit(command)
