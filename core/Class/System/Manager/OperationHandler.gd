@@ -25,7 +25,6 @@ func handle_request(request: OperationRequest) -> void:
 	var player_id = request.source_player_id
 	if !_can_accept_new_request(player_id):
 		return
-
 	_setup_request_tracking(player_id, request)
 	operation_validated.emit(request)
 

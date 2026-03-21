@@ -1,7 +1,6 @@
 extends RefCounted
 class_name StageManager
 
-# 新增信号
 signal stage_completed()
 signal stage_rolled_back(old_stage: Stage, new_stage: Stage)
 signal temp_stages_cleared()
@@ -10,7 +9,6 @@ signal stage_changed(old_stage: Stage, new_stage: Stage)
 signal temp_stage_started(temp_stage: Stage)
 signal round_completed()
 
-# 主阶段顺序数组
 var main_stages: Array[Stage] = []
 var current_stage: Stage = null
 var temp_stage_stack: Array[Stage] = []          # 正在执行的临时阶段栈（已暂停的父阶段）
@@ -19,7 +17,6 @@ var timer: GameTimer
 var game_state: GameState
 var current_main_stage_index: int = -1
 var current_player_id: int = 0
-var modifier_container: ModifierContainer
 
 static var MAIN_STAGES: Array[Script] = [
 	StageStart,
@@ -33,17 +30,14 @@ func _init(p_game_state: GameState) -> void:
 	game_state = p_game_state
 	main_stages.resize(MAIN_STAGES.size())
 	for i in MAIN_STAGES.size():
-		main_stages[i] = MAIN_STAGES[i].new(game_state)
+		main_stages[i] = MAIN_STAGES[i].new()
 		connect_stage_to_manager(main_stages[i])
 
 func connect_stage_to_manager(new_stage: Stage) -> void:
 	new_stage.stage_ended.connect(_on_stage_ended)
 
-func set_modifier_container(container: ModifierContainer) -> void:
-	modifier_container = container
-
 func handle_validated_request(request: OperationRequest) -> void:
-	current_stage.process_operation_request(request)
+	current_stage.process_operation_request(request, game_state)
 
 func set_timer(_timer: GameTimer) -> void:
 	if timer:
@@ -53,7 +47,7 @@ func set_timer(_timer: GameTimer) -> void:
 
 func complete_current_stage() -> void:
 	if current_stage and not current_stage.is_ended:
-		current_stage.end_stage()
+		current_stage.end_stage(game_state)
 
 func complete_all_temp_stages() -> void:
 	if temp_stage_stack.is_empty():
@@ -61,7 +55,7 @@ func complete_all_temp_stages() -> void:
 	while not temp_stage_stack.is_empty():
 		var stage = temp_stage_stack.pop_back()
 		if not stage.is_ended:
-			stage.end_stage_effect()
+			stage.end_stage_effect(game_state)
 	if game_state.current_stage_stack.size() > 1:
 		var main_stage_name = game_state.current_stage_stack[0]
 		game_state.current_stage_stack = [main_stage_name]
@@ -69,19 +63,17 @@ func complete_all_temp_stages() -> void:
 
 ## 请求插入临时阶段（若处理器繁忙则进入待处理栈，否则立即开始）
 func start_temp_stage(temp_stage: Stage) -> void:
-	# 根据命令处理器是否繁忙决定立即开始或暂存
 	if game_state._process_active:
 		pending_temp_stage_stack.append(temp_stage)
-	else:
-		_start_immediate(temp_stage)
+		return
+	_start_immediate(temp_stage)
 
 ## 立即开始临时阶段（内部方法）
 func _start_immediate(temp_stage: Stage) -> void:
 	if current_stage:
-		current_stage.pause()
+		current_stage.pause(game_state)
 	temp_stage.is_temporary = true
 	connect_stage_to_manager(temp_stage)
-	# 将当前阶段推入执行栈（暂停）
 	temp_stage_stack.append(current_stage)
 	_transition_to(temp_stage)
 	temp_stage_started.emit(temp_stage)
@@ -96,7 +88,7 @@ func end_round() -> void:
 	if timer:
 		timer.stop()
 	if current_stage and not current_stage.is_ended:
-		current_stage.end_stage_effect()
+		current_stage.end_stage_effect(game_state)
 	# 清空所有栈
 	temp_stage_stack.clear()
 	pending_temp_stage_stack.clear()
@@ -120,10 +112,10 @@ func _transition_to(new_stage: Stage) -> void:
 	else:
 		timer.stop()
 	if new_stage.is_paused:
-		new_stage.call_deferred(&"resume")
+		new_stage.call_deferred(&"resume", game_state)
 		stage_rolled_back.emit(old_stage, new_stage)
 	else:
-		new_stage.call_deferred(&"enter")
+		new_stage.call_deferred(&"enter", game_state)
 		stage_changed.emit(old_stage, new_stage)
 
 func _rollback_to_previous_stage() -> void:
@@ -135,8 +127,8 @@ func _rollback_to_previous_stage() -> void:
 		push_error("回退的阶段无效")
 		return
 	if current_stage:
-		current_stage.end_stage_effect()
-	previous_stage.resume()
+		current_stage.end_stage_effect(game_state)
+	previous_stage.resume(game_state)
 	_transition_to(previous_stage)
 
 func _advance_to_next_main_stage() -> void:
@@ -168,7 +160,7 @@ func start_round(player_id: int = 0) -> void:
 	current_main_stage_index = 0
 	current_player_id = player_id
 	temp_stage_stack.clear()
-	pending_temp_stage_stack.clear()   # 新回合清空待处理栈
+	pending_temp_stage_stack.clear()
 	_transition_to(main_stages[current_main_stage_index])
 
 func get_current_stage_enum() -> int:

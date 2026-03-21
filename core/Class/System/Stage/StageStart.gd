@@ -1,9 +1,9 @@
 extends Stage
 class_name StageStart
 
-func _init(p_game_state: GameState) -> void:
-	super._init(p_game_state)
+func _init() -> void:
+	super._init()
 	stage_name = &"Start"
 
-func run() -> void:
-	end_stage()
+func run(game_state:GameState) -> void:
+	end_stage(game_state)

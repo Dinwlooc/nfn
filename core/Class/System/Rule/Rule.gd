@@ -9,7 +9,6 @@ class RuleResult:
 	var message: String
 	var should_respond: bool = false  # 是否需要响应
 	var responsive_players: PackedInt32Array = PackedInt32Array()  # 响应玩家列表
-
 	func _init(p_is_valid: bool, p_command: BehaviorCommand = null, p_message: String = "",
 			 p_should_respond: bool = false, p_responsive_players: PackedInt32Array = PackedInt32Array()) -> void:
 		is_valid = p_is_valid

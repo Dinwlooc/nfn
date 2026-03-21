@@ -13,7 +13,7 @@ func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
 	game_state.timer = timer
 	game_state.users = tansport.network_manager.users
-	game_state.player_manager.peer_player_added.connect(operation_handler.update_verification_mapping)
+	game_state.player_manager.player_added.connect(_on_player_added)
 	game_state.start_round.connect(stage_manager.start_round)
 	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
 	game_state.new_behavior.connect(command_processor.queue_behavior)
@@ -33,10 +33,15 @@ func _ready() -> void:
 
 ## 处理阶段切换事件
 func _process(_delta: float) -> void:
-	if game_state._process_active:
-		command_processor.process()
-	else:
+	if not game_state._process_active:
 		set_process(false)
+		return
+	command_processor.process()
+
+
+func _on_player_added(player: Player) -> void:
+	GlobalConsole._print(["System: 新玩家加入,id:", player.player_id, "，peer_id:", player.peer_id])
+	operation_handler.update_verification_mapping(player.peer_id, player.player_id)
 
 func _enable_processing(enable: bool) -> void:
 	game_state._process_active = enable

@@ -1,46 +1,54 @@
 extends RefCounted
 class_name Stage
 
-signal stage_ended(stage:Stage)
+signal stage_ended(stage: Stage)
 signal behavior_command_issued(command: BehaviorCommand)
+
 var stage_name: StringName = &"Null"
-var time_limit: float = 0.0  #0表示不需要计时
+var time_limit: float = 0.0         # 0 表示不需要计时
 var is_temporary: bool = false
-var game_state: GameState
-var is_ended: bool = false  # 标记阶段是否已结束
-var is_paused:bool = false
+var is_ended: bool = false
+var is_paused: bool = false
 
-func _init(p_game_state: GameState) -> void:
-	game_state = p_game_state
-## 进入阶段
-func enter() -> void:
+func _init() -> void:
+	pass
+
+## 进入阶段（由管理器调用）
+func enter(game_state: GameState) -> void:
 	is_ended = false
-	GlobalConsole._print(["Stage:进入",stage_name,"阶段"])
-	enter_expand()
-	run()
+	GlobalConsole._print(["Stage:进入", stage_name, "阶段"])
+	enter_expand(game_state)
+	run(game_state)
 
-func run() -> void:
+## 扩展入口（供子类重写）
+func enter_expand(game_state: GameState) -> void:
 	pass
 
-func enter_expand() -> void:
+## 阶段主逻辑（供子类重写）
+func run(game_state: GameState) -> void:
 	pass
+
 ## 暂停阶段
-func pause() -> void:
+func pause(game_state: GameState) -> void:
 	is_paused = true
+
 ## 恢复阶段
-func resume() -> void:
+func resume(game_state: GameState) -> void:
+	is_paused = false
+
+## 阶段结束时的清理效果（供子类重写）
+func end_stage_effect(game_state: GameState) -> void:
 	pass
-## 阶段结束效果
-func end_stage_effect() -> void:
-	pass
-## 结束阶段
-func end_stage() -> void:
+
+## 结束阶段（由管理器调用）
+func end_stage(game_state: GameState) -> void:
 	if is_ended:
 		return
 	is_ended = true
 	is_paused = false
-	end_stage_effect()
+	end_stage_effect(game_state)
 	stage_ended.emit(self)
 
-func process_operation_request(request: OperationRequest) -> void:
+## 处理玩家操作请求（由管理器转发）
+func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
 	pass
