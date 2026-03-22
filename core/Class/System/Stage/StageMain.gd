@@ -9,7 +9,8 @@ func _init() -> void:
 	stage_name = &"Main"
 	time_limit = 60.0
 
-func enter_expand(game_state: GameState) -> void:
+func enter(game_state: GameState) -> void:
+	super.enter(game_state)
 	_current_attacker = game_state.player_manager.get_player_by_seat(game_state.current_player_index)
 	_current_attacker_id = _current_attacker.player_id
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))

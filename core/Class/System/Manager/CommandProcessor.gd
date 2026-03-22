@@ -24,8 +24,8 @@ func process() -> void:
 	if current_behavior._is_completed:
 		behavior_stack.pop_back()
 		return
-	current_behavior.execute(game_state)
 	command_processing.emit(current_behavior)
+	current_behavior.execute(game_state)
 
 ## 添加新命令到堆栈
 func queue_behavior(event: BehaviorCommand) -> void:

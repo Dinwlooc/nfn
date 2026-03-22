@@ -4,6 +4,8 @@ class_name Area
 var player: Player
 var area_name: StringName
 var is_private_visible:bool = false
+signal area_request_command(command: BehaviorCommand)
+signal area_request_command_with_callback(command: BehaviorCommand, callback: Callable)
 signal area_card_added(new_cardpool: Card)
 signal area_card_removed(removed_cards: Card)
 signal after_cards_removed()
@@ -95,3 +97,14 @@ func get_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 func get_top_cards(count: int) -> Array[Card]:
 	push_error("此区域不支持获取顶部卡牌")
 	return []
+
+## 请求命令入栈（无回调）
+func request_command(command: BehaviorCommand) -> void:
+	area_request_command.emit(command)
+
+## 请求命令入栈（带回调）
+func request_command_with_callback(command: BehaviorCommand, callback: Callable) -> void:
+	area_request_command_with_callback.emit(command, callback)
+
+func get_player()->Player:
+	return player

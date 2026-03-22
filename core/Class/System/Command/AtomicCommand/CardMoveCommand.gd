@@ -51,7 +51,6 @@ func execute(game_state: GameState) -> void:
 			_on_done_phase(game_state, _context)
 
 func _on_init_phase(game_state: GameState, _context: Context) -> void:
-	push_warning("_on_init_phase 应该在子类中被覆盖")
 	_context.phase = Context.Phase.MOVE_OUT
 
 func _on_move_out_phase(game_state: GameState, _context: Context) -> void:

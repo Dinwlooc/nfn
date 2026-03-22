@@ -32,5 +32,8 @@ func clear_pack_cache() -> void:
 func set_player(p_player:Player)->void:
 	player = p_player
 
+func get_player()->Player:
+	return player
+
 func clear_player()->void:
 	player = null

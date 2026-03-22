@@ -2,8 +2,6 @@ extends RefCounted
 class_name Stage
 
 signal stage_ended(stage: Stage)
-signal behavior_command_issued(command: BehaviorCommand)
-
 var stage_name: StringName = &"Null"
 var time_limit: float = 0.0         # 0 表示不需要计时
 var is_temporary: bool = false
@@ -17,12 +15,6 @@ func _init() -> void:
 func enter(game_state: GameState) -> void:
 	is_ended = false
 	GlobalConsole._print(["Stage:进入", stage_name, "阶段"])
-	enter_expand(game_state)
-	run(game_state)
-
-## 扩展入口（供子类重写）
-func enter_expand(game_state: GameState) -> void:
-	pass
 
 ## 阶段主逻辑（供子类重写）
 func run(game_state: GameState) -> void:
