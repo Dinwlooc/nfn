@@ -2,7 +2,7 @@ extends RefCounted
 class_name Player
 
 var peer_id: int = 0       # 对等体ID (0=AI)
-var player_id: int = 0     # 玩家ID (唯一标识)
+var player_id: int = -1     # 玩家ID (唯一标识)
 var seat_index: int = -1
 var HP: int                # 玩家当前生命
 var MP: int                # 玩家当前精神值
@@ -13,9 +13,14 @@ var area_defensive: AreaDefence = AreaDefence.new(self)
 var attributeModifiers: AttributeModifiers = AttributeModifiers.new()
 var disallowed_operations: Array[StringName] = []
 var last_pack: PlayerPack = null
+var morale_attack: int = 0    # 攻击战意
+var morale_defense: int = 0   # 防御战意
+static var NULL_PLAYER:Player = Player.new()
 
 func _init() -> void:
 	_init_attribute()
+	morale_attack = 0
+	morale_defense = 0
 
 func _init_attribute() -> void:
 	attributeModifiers.set_base_value(&"HP_max", 20)

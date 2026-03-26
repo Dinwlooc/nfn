@@ -23,8 +23,6 @@ func _init() -> void:
 	command_processor.command_processing.connect(modifier_manager.process_behavior)
 	command_processor.enable_processing.connect(_enable_processing)
 	command_processor.all_completed.connect(stage_manager._on_command_processor_idle)
-	area_manager.connect_area(game_state.area_center)
-	area_manager.connect_area(game_state.area_drawing)
 
 func _ready() -> void:
 	stage_manager.set_timer(timer)
@@ -41,13 +39,10 @@ func _process(_delta: float) -> void:
 		return
 	command_processor.process()
 
-
 func _on_player_added(player: Player) -> void:
 	GlobalConsole._print(["System: 新玩家加入,id:", player.player_id, "，peer_id:", player.peer_id])
 	operation_handler.update_verification_mapping(player.peer_id, player.player_id)
-	area_manager.connect_area(player.area_hand)
-	area_manager.connect_area(player.area_ability)
-	area_manager.connect_area(player.area_defensive)
+	area_manager.connect_area_denfence(player.area_defensive)
 
 func _enable_processing(enable: bool) -> void:
 	game_state._process_active = enable

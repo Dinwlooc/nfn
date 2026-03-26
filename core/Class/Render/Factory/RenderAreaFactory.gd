@@ -21,9 +21,9 @@ static func get_registered_area_names() -> Array[StringName]:
 static func get_registered_area_classes() -> Array[Script]:
 	return registry.values()
 ##根据区域名称创建并返回 RenderArea 实例
-static func create_area(area_name: StringName) -> RenderArea:
+static func create_area(area_name: StringName,player_id:int = -1) -> RenderArea:
 	var script: Script = registry.get(area_name)
 	if not script:
 		push_error("RenderAreaFactory: 未注册的区域名称 '%s'" % area_name)
 		return null
-	return script.new() as RenderArea
+	return script.new(player_id) as RenderArea

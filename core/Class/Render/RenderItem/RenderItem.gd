@@ -2,7 +2,8 @@
 extends Control
 class_name RenderItem
 
-var area_name:StringName
+var area_name:StringName = &""
+var player_id:int = -1
 var render_context:RenderContext
 enum DraggingState {
 	READY,          # 0 - 准备就绪
@@ -10,7 +11,6 @@ enum DraggingState {
 	DRAGGING,       # 2 - 长按中
 	FAILED          # 3 - 长按检测失败
 }
-var move_state:bool = false
 var pool_id:int
 var selected:bool = false
 var dragged:bool = false
@@ -53,7 +53,6 @@ func apply_pack(pack: ItemPack) -> void:
 		data_update(pack)
 
 func reset() -> void:
-	move_state = false
 	selected = false
 	dragged = false
 	dragging = DraggingState.READY
@@ -62,6 +61,7 @@ func reset() -> void:
 	area_name = &""
 	render_context = null
 	pool_id = -1
+	player_id = -1
 	position = Vector2.ZERO
 	rotation = 0
 	scale = Vector2.ONE

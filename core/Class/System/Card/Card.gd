@@ -36,4 +36,4 @@ func get_player()->Player:
 	return player
 
 func clear_player()->void:
-	player = null
+	player = Player.NULL_PLAYER

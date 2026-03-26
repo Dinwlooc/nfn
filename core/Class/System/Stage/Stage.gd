@@ -1,12 +1,13 @@
 extends RefCounted
 class_name Stage
 
-signal stage_ended(stage: Stage)
 var stage_name: StringName = &"Null"
-var time_limit: float = 0.0         # 0 表示不需要计时
+var time_limit: float = 0.0
 var is_temporary: bool = false
 var is_ended: bool = false
 var is_paused: bool = false
+signal stage_ended(stage: Stage)
+signal request_reset_timer(new_time_limit: float)
 
 func _init() -> void:
 	pass
@@ -32,7 +33,11 @@ func resume(game_state: GameState) -> void:
 func end_stage_effect(game_state: GameState) -> void:
 	pass
 
-## 结束阶段（由管理器调用）
+## 超时处理（默认结束阶段，子类可重写以实现自定义超时行为）
+func timeout(game_state: GameState) -> void:
+	end_stage(game_state)
+
+## 结束阶段
 func end_stage(game_state: GameState) -> void:
 	if is_ended:
 		return

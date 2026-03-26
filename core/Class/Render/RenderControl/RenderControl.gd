@@ -57,7 +57,9 @@ func _on_play_a_card() -> void:
 func handle_request(request: RenderRequest) -> void:
 	var target_area: StringName = request.target_area
 	var target_area_player_id:int = request.target_area_player_id
-	var render_area: RenderArea = render_context.get_render_area(target_area,request.target_area_player_id)
+	if target_area == RenderArea.DefaultArea.PLAYERS:
+		target_area_player_id = RenderContext.PUBLIC_PLAYER_ID
+	var render_area: RenderArea = render_context.get_render_area(target_area,target_area_player_id)
 	GlobalConsole._print(["接收到RenderRequest：", request.get_class_name(), ",目标：", request.target_area,",属于：玩家",request.target_area_player_id])
 	if render_area:
 		render_area.process_request(request)

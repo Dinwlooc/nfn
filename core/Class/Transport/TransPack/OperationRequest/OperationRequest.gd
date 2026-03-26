@@ -33,3 +33,11 @@ class PlayCard extends OperationRequest:
 		instance._card_id = TransPackSerializer.read(buffer, TYPE_INT)
 		instance._target_id = TransPackSerializer.read(buffer, TYPE_INT)
 		return instance
+## 放弃响应操作请求，通常产生与响应超时相同的效果。
+class AbandonResponse extends OperationRequest:
+	static func get_class_name_static() -> StringName:
+		return &"abandon_response"
+	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
+		pass
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> OperationRequest:
+		return AbandonResponse.new()

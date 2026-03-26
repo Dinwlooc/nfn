@@ -6,11 +6,11 @@ var area_name: StringName
 var is_private_visible:bool = false
 signal area_request_command(command: BehaviorCommand)
 signal area_request_command_with_callback(command: BehaviorCommand, callback: Callable)
-signal area_card_added(new_cardpool: Card)
-signal area_card_removed(removed_cards: Card)
+signal area_card_added(new_cardpool: Card,area:Area)
+signal area_card_removed(removed_cards: Card,area:Area)
 signal after_cards_removed()
 
-func _init(_player: Player = null) -> void:
+func _init(_player: Player = Player.NULL_PLAYER) -> void:
 	player = _player
 	_init_expand()
 
@@ -31,7 +31,7 @@ func get_card_by_id(card_id: int) -> Card:
 func get_all_cards() -> Array[Card]:
 	assert(false, "子类必须实现 get_all_cards 方法")
 	return []
-func get_card_ids() -> Array[int]:
+func get_card_ids() -> PackedInt32Array:
 	assert(false, "子类必须实现 get_card_ids 方法")
 	return []
 
@@ -71,6 +71,7 @@ func send_cards(
 	if player.peer_id < 0:
 		return
 	send_items(card_packs, player.peer_id, event_type, source_player_id, custom_event_name)
+
 func shuffle_card_pool() -> void:
 	pass
 

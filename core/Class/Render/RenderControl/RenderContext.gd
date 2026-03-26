@@ -210,7 +210,7 @@ func remove_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID
 
 ## 创建并注册渲染区域
 func create_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> RenderArea:
-	var area = RenderAreaFactory.create_area(area_name)
+	var area = RenderAreaFactory.create_area(area_name,player_id)
 	if not area:
 		return null
 	register_render_area(area, player_id)

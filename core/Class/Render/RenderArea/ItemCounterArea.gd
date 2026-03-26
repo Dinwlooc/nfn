@@ -13,7 +13,7 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 		if render_item.area_name == get_area_name():
 			_update_item_data(render_item, item_pack)
 		else:
-			var current_area = render_context.get_render_area(render_item.area_name)
+			var current_area:RenderArea = render_context.get_render_area(render_item.area_name,render_item.player_id)
 			if current_area:
 				current_area.remove_item(render_item)
 			add_item(render_item)

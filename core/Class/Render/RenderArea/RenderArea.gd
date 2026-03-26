@@ -10,8 +10,11 @@ signal context_ready()
 
 var select_limit:int = 1
 var render_context:RenderContext
-
+var player_id:int
 const DefaultArea = GlobalConstants.DefaultArea
+
+func _init(new_player_id:int = -1) -> void:
+	player_id = new_player_id
 
 func _ready() -> void:
 	ready_expand()

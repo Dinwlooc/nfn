@@ -33,7 +33,7 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 		if render_item.area_name == get_area_name():
 			_update_item_data(render_item, item_pack)
 		else:
-			var current_area := render_context.get_render_area(render_item.area_name)
+			var current_area :RenderArea = render_context.get_render_area(render_item.area_name,render_item.player_id)
 			if current_area:
 				current_area.remove_item(render_item)
 			add_item(render_item)
@@ -101,7 +101,7 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 func remove_item(item:RenderItem) -> void:
 	if item.get_parent() == self:
 		remove_child(item)
-	var pool_id = item.pool_id
+	var pool_id:int = item.pool_id
 	if pool_id >= 0 and pool_id < items_pool.size() and items_pool[pool_id] == item:
 		items_pool[pool_id] = null
 		if item in selected_items:
@@ -109,10 +109,6 @@ func remove_item(item:RenderItem) -> void:
 			item.selected = false
 			item.render_update()
 		_compact_pool(pool_id, 1)
-	if render_context and item.data:
-		var item_type = item.data.get_class_name()
-		var item_id = item.data.get_id()
-		render_context.unregister_render_item(item_type, item_id)
 	_disconnect_item_from_area(item)
 	items_removed.emit(item)
 	render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_REMOVE))
@@ -126,6 +122,7 @@ func move_item_in_tree(item:RenderItem, new_pool_index:int) -> void:
 # 数据池操作
 func _set_item_to_pool(item:RenderItem, index:int) -> void:
 	item.area_name = get_area_name()
+	item.player_id = player_id
 	item.pool_id = index
 	if index >= items_pool.size():
 		items_pool.append(item)

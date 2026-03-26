@@ -20,16 +20,19 @@ func verify_operation(request: OperationRequest) -> bool:
 func handle_request(request: OperationRequest) -> void:
 	GlobalConsole._print(["OperationHandler:接受到请求：",request.get_class_name()])
 	if !verify_operation(request):
-		GlobalConsole._print(["OperationHandler:取消请求：",request.get_class_name(),"原因：对等体访问了不合法的玩家"])
+		GlobalConsole._print(["OperationHandler:取消请求：",request.get_class_name(),"。原因：访问了不合法的玩家"])
 		return
-	var player_id = request.source_player_id
+	var player_id:int = request.source_player_id
 	if !_can_accept_new_request(player_id):
+		GlobalConsole._print(["OperationHandler:取消请求：",request.get_class_name(),"。原因：玩家无响应权"])
 		return
 	_setup_request_tracking(player_id, request)
 	operation_validated.emit(request)
 
 func _can_accept_new_request(player_id: int) -> bool:
-	return _pending_requests.get(player_id, _null_request) == _null_request
+	if not _pending_requests.has(player_id):
+		return false
+	return _pending_requests.get(player_id) == _null_request
 
 func _setup_request_tracking(player_id: int, request: OperationRequest) -> void:
 	_pending_requests[player_id] = request
@@ -79,7 +82,7 @@ func _enable_player_response(player_id: int) -> void:
 func _disable_player_response(player_id: int) -> void:
 	if !_pending_requests.has(player_id):
 		return
-	var request = _pending_requests[player_id]
+	var request:OperationRequest = _pending_requests[player_id]
 	if request != _null_request:
 		_cleanup_request(player_id, RequestState.CANCELLED)
 	_pending_requests.erase(player_id)

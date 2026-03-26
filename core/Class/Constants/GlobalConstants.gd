@@ -14,6 +14,7 @@ class DefaultArea:
 	const PLAYERS:StringName = &"players"
 	const DEFENCE:StringName =  &"defence"
 	const STAGE:StringName = &"stage"
+	const DISCARD:StringName = &"discard"
 
 const OP_PLAY_CARD: StringName = &"play_card"
 const OP_END_TURN: StringName = &"end_turn"

@@ -44,12 +44,10 @@ func _on_prepare_phase(game_state: GameState, _context: Context) -> void:
 		push_error("防御区域未设置")
 		_context.phase = Context.Phase.DONE
 		return
-
 	if not _context.attacker:
 		push_error("攻击者未设置")
 		_context.phase = Context.Phase.DONE
 		return
-
 	_context.top_card = _context.defensive_area.get_top_card()
 	_context.second_card = _context.defensive_area.get_second_card()
 	_context.is_unilateral = (_context.second_card == null)
@@ -64,24 +62,21 @@ func _on_duel_phase(game_state: GameState, _context: Context) -> void:
 	_context.phase = Context.Phase.DAMAGE
 
 func _on_damage_phase(game_state: GameState, _context: Context) -> void:
-	var defender = _context.defensive_area.player
-
-	if _context.top_card.is_attack_card():  # 攻击牌结算
-		var health_dmg = _context.top_card.get_physical_damage()
-		var mental_dmg = _context.top_card.get_mental_damage()
-
+	var defender:Player = _context.defensive_area.player
+	if _context.top_card.type == &"attack":
+		var health_dmg:int = _context.top_card.get_attribute(&"power")
+		var mental_dmg:int = _context.top_card.get_attribute(&"power")
 		if not _context.is_unilateral:
 			match _context.duel_result:
 				DuelCommand.Context.Result.A_WIN:  # 攻击牌胜
 					mental_dmg = max(0, mental_dmg - _context.duel_diff)
 				DuelCommand.Context.Result.TIE:
-					var defense_power = _context.second_card.get_attribute(&"power")
+					var defense_power:int = _context.second_card.get_attribute(&"power")
 					mental_dmg = max(0, mental_dmg - defense_power)
 				DuelCommand.Context.Result.B_WIN:  # 防御牌胜
-					var defense_power = _context.second_card.get_attribute(&"power")
+					var defense_power:int = _context.second_card.get_attribute(&"power")
 					mental_dmg = max(0, mental_dmg - (_context.duel_diff + defense_power))
 					health_dmg = max(0, health_dmg - _context.duel_diff)
-
 		var damage_cmd = DamageCommand.new(
 			defender,
 			health_dmg,
@@ -90,12 +85,10 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 			_context.attacker.player_id
 		)
 		append_companion_command(damage_cmd)
-	elif _context.top_card.is_defense_card():  # 防御牌结算
-		var mental_dmg = _context.top_card.get_mental_damage()
-
+	elif _context.top_card.type == &"defence":  # 防御牌结算
+		var mental_dmg:int = _context.top_card.get_attribute(&"power")
 		if not _context.is_unilateral and _context.duel_result == DuelCommand.Context.Result.A_WIN:
 			mental_dmg = max(0, mental_dmg - _context.duel_diff)
-
 		var damage_cmd = DamageCommand.new(
 			_context.attacker,
 			0,
@@ -104,26 +97,25 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 			defender.player_id
 		)
 		append_companion_command(damage_cmd)
-
 	_context.phase = Context.Phase.EFFECT
 
 func _on_effect_phase(game_state: GameState, _context: Context) -> void:
-	# 效果阶段，无原生功能，仅供修饰机制使用
 	_context.phase = Context.Phase.CLEAR
 
 func _on_clear_phase(game_state: GameState, _context: Context) -> void:
-	_context.defensive_area.clear_defense_area()
+	var move_cmd := CardMoveCommand.new(_context.player_id, &"CardMove", CardMoveCommand.Context.new())
+	move_cmd._context.source_area = _context.defensive_area
+	move_cmd._context.target_area = game_state.area_discard
+	move_cmd._context.set_id_mode(_context.defensive_area.get_card_ids())
+	game_state.queue_behavior(move_cmd)
 	_context.phase = Context.Phase.DONE
-	complete()
 
 func _on_done_phase(game_state: GameState, _context: Context) -> void:
-	pass
-
+	complete()
 ## 工具方法：设置防御区域和攻击者
 func set_defense_context(area: AreaDefence, attacker: Player) -> void:
 	_context.defensive_area = area
 	_context.attacker = attacker
-
 ## 拼点完成回调
 func _on_duel_completed(result: DuelCommand.Context.Result, diff: int) -> void:
 	_context.duel_result = result
