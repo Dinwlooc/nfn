@@ -34,7 +34,6 @@ func get_all_cards() -> Array[Card]:
 func get_card_ids() -> PackedInt32Array:
 	assert(false, "子类必须实现 get_card_ids 方法")
 	return []
-
 ## 发送物品包到指定对等体（支持自定义事件类型、来源玩家和名称）
 func send_items(
 	new_items: Array[ItemPack],
@@ -62,15 +61,16 @@ func send_cards(
 	var card_packs: Array[ItemPack] = []
 	card_packs.resize(new_cardpool.size())
 	var i: int = 0
+	if is_private_visible:
+		for card in new_cardpool:
+			card_packs.set(i, card.get_pack())
+			i += 1
+		send_items(card_packs, player.peer_id, event_type, source_player_id, custom_event_name)
+		return
 	for card in new_cardpool:
-		card_packs.set(i, card.get_pack())
+		card_packs.set(i, card.get_full_pack())
 		i += 1
-	if !is_private_visible:
-		send_items(card_packs, MultiplayerPeer.TARGET_PEER_BROADCAST, event_type, source_player_id, custom_event_name)
-		return
-	if player.peer_id < 0:
-		return
-	send_items(card_packs, player.peer_id, event_type, source_player_id, custom_event_name)
+	send_items(card_packs, MultiplayerPeer.TARGET_PEER_BROADCAST, event_type, source_player_id, custom_event_name)
 
 func shuffle_card_pool() -> void:
 	pass

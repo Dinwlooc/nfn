@@ -106,7 +106,7 @@ func _on_clear_phase(game_state: GameState, _context: Context) -> void:
 	var move_cmd := CardMoveCommand.new(_context.player_id, &"CardMove", CardMoveCommand.Context.new())
 	move_cmd._context.source_area = _context.defensive_area
 	move_cmd._context.target_area = game_state.area_discard
-	move_cmd._context.set_id_mode(_context.defensive_area.get_card_ids())
+	move_cmd._context.set_top_mode(_context.defensive_area.get_all_cards().size())
 	game_state.queue_behavior(move_cmd)
 	_context.phase = Context.Phase.DONE
 

@@ -4,6 +4,7 @@ class_name OperationRequestSerializer
 # 所有支持的操作请求类型数组
 static var operation_classes: Array[Script] = [
 	OperationRequest.PlayCard,
+	OperationRequest.AbandonResponse
 ]
 
 # 构建双向注册表

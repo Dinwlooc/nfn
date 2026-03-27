@@ -43,7 +43,7 @@ func _on_init_phase(game_state: GameState, _context: Context) -> void:
 
 func _on_create_duel_phase(game_state: GameState, _context: Context) -> void:
 	var duel_command := DuelCommand.new(0)  # 玩家占位
-	duel_command.duel_context.set_cards(_context.top_card, _context.pending_card, &"BattleCommand")
+	duel_command._context.set_cards(_context.top_card, _context.pending_card, &"BattleCommand")
 	duel_command.duel_completed.connect(_on_duel_completed)
 	append_companion_command(duel_command)
 	_context.phase = Context.Phase.PROCESS_RESULT
@@ -53,7 +53,7 @@ func _on_process_result_phase(game_state: GameState, _context: Context) -> void:
 	_context.phase = Context.Phase.DONE
 
 func _on_done_phase(game_state: GameState, _context: Context) -> void:
-	# 根据斗牌结果修改战意
+	_context.defensive_area.commit_pending_card()
 	var attacker:Player = _context.pending_card.player   # 出牌方为攻击方
 	var defender:Player = _context.defensive_area.player  # 守区所有者为防御方
 	if not attacker or not defender:

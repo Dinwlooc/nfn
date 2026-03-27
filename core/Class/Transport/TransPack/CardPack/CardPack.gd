@@ -23,6 +23,8 @@ func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: String
 	super._init(init_id)
 	name = init_name
 	type = GlobalRegistry.get_constant_index(ItemType, init_type_name)
+	if name != &"": merge_mask |= 1 << MainProperty.NAME
+	if type != GlobalConstants.CardType.NULL: merge_mask |= 1 << MainProperty.TYPE
 
 # 序列化实现（调用父类方法并扩展）
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:

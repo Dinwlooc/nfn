@@ -5,7 +5,7 @@ var _peer_player_map: Dictionary[int, int] = {}
 var _pending_requests: Dictionary[int, OperationRequest] = {}
 var _null_request: OperationRequest = OperationRequest.new()
 signal operation_validated(request: OperationRequest)
-signal permissions_updated
+signal permissions_updated(player_ids: PackedInt32Array)
 enum RequestState { CANCELLED, COMPLETED }
 
 func update_verification_mapping(peer_id: int, player_id: int) -> void:
@@ -14,6 +14,8 @@ func update_verification_mapping(peer_id: int, player_id: int) -> void:
 func verify_operation(request: OperationRequest) -> bool:
 	if request == _null_request:
 		return false
+	if request.source_peer_id == -1:
+		return true
 	var source_player_id = _peer_player_map.get(request.source_peer_id, -1)
 	return source_player_id == request.source_player_id
 
@@ -30,6 +32,8 @@ func handle_request(request: OperationRequest) -> void:
 	operation_validated.emit(request)
 
 func _can_accept_new_request(player_id: int) -> bool:
+	if player_id == -1:
+		return true
 	if not _pending_requests.has(player_id):
 		return false
 	return _pending_requests.get(player_id) == _null_request
@@ -105,4 +109,4 @@ func set_responsive_players(player_ids: PackedInt32Array) -> void:
 		_disable_player_response(player_id)
 	for player_id in player_ids:
 		_enable_player_response(player_id)
-	permissions_updated.emit()
+	permissions_updated.emit(player_ids)

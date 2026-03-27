@@ -1,21 +1,28 @@
 extends Stage
 class_name StageDefense
+
 # ========== 常量 ==========
-const DEFAULT_TIME_LIMIT: float = 3.0
+const DEFAULT_TIME_LIMIT: float = 30.0
 const MIN_TIME_LIMIT: float = 5.0
 const TIME_PENALTY_STEP: float = 30.0
 const TIME_PENALTY_DECREMENT: float = 15.0
+
 # ========== 引用 ==========
 var defense_area: AreaDefence
 var attacker: Player
 var defender: Player
+
 # ========== 计时相关 ==========
 var last_timer_reset_time: int = 0
 var current_responsive_player_id: int = -1
 var total_time_used: Dictionary[int, float] = {}
 var dynamic_time_limit: Dictionary[int, float] = {}
+
 # ========== 内部状态 ==========
-var _game_state: GameState = null  # 用于信号回调中访问 game_state
+# 存储绑定的回调，用于信号断开
+var _defense_area_signal_binding: Callable = Callable()
+var _all_commands_completed_binding: Callable = Callable()
+
 # ========== 初始化 ==========
 func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	super._init()
@@ -24,27 +31,10 @@ func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	self.defender = defense_area.player
 	stage_name = &"DefenseBattle"
 	time_limit = DEFAULT_TIME_LIMIT
-	_connect_defense_area_signals()
-
-func _connect_defense_area_signals() -> void:
-	# 避免重复连接
-	if defense_area.area_card_added.is_connected(_on_defense_area_card_changed):
-		defense_area.area_card_added.disconnect(_on_defense_area_card_changed)
-	if defense_area.area_card_removed.is_connected(_on_defense_area_card_changed):
-		defense_area.area_card_removed.disconnect(_on_defense_area_card_changed)
-	defense_area.area_card_added.connect(_on_defense_area_card_changed)
-	defense_area.area_card_removed.connect(_on_defense_area_card_changed)
-
-func _disconnect_defense_area_signals() -> void:
-	if defense_area.area_card_added.is_connected(_on_defense_area_card_changed):
-		defense_area.area_card_added.disconnect(_on_defense_area_card_changed)
-	if defense_area.area_card_removed.is_connected(_on_defense_area_card_changed):
-		defense_area.area_card_removed.disconnect(_on_defense_area_card_changed)
 
 # ========== 阶段生命周期 ==========
 func enter(game_state: GameState) -> void:
 	super.enter(game_state)
-	_game_state = game_state
 	for p in [attacker.player_id, defender.player_id]:
 		total_time_used[p] = 0.0
 		dynamic_time_limit[p] = DEFAULT_TIME_LIMIT
@@ -52,21 +42,30 @@ func enter(game_state: GameState) -> void:
 		defense_area.commit_pending_card()
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
+	_connect_defense_area_signals(game_state)
+	_connect_all_commands_completed_signal(game_state)
 	_check_and_generate_battle_command(game_state)
+
 	GlobalConsole._print(["守区攻防阶段开始，当前响应玩家：", current_responsive_player_id])
 
 func resume(game_state: GameState) -> void:
 	super.resume(game_state)
-	_game_state = game_state
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
+	_connect_defense_area_signals(game_state)
+	_connect_all_commands_completed_signal(game_state)
+
+func pause(game_state: GameState) -> void:
+	super.pause(game_state)
+	_disconnect_defense_area_signals()
+	_disconnect_all_commands_completed_signal(game_state)
 
 func end_stage_effect(game_state: GameState) -> void:
 	if defense_area.pending_card:
 		defense_area.commit_pending_card()
 	game_state.set_responsive_players(PackedInt32Array())
 	_disconnect_defense_area_signals()
-	_game_state = null
+	_disconnect_all_commands_completed_signal(game_state)
 	GlobalConsole._print(["守区攻防阶段结束"])
 
 # ========== 操作请求处理 ==========
@@ -81,7 +80,6 @@ func process_operation_request(request: OperationRequest, game_state: GameState)
 		_:
 			GlobalConsole._print(["守区攻防阶段：不支持的操作类型", request.get_class_name_static()])
 
-# ---------- 出牌请求 ----------
 func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState) -> void:
 	var rule_result = Rule.check_and_create_command(
 		request._card_id,
@@ -102,31 +100,23 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["守区攻防阶段：规则未返回命令"])
 		request.cancel()
 		return
+
 	var elapsed: float = _get_elapsed_time_since_last_reset()
 	game_state.queue_behavior_with_callback(command, func():
 		_total_time_used_update(current_responsive_player_id, elapsed)
-		_update_responsive_player(game_state)
-		_reset_timer_for_current_player()
-		GlobalConsole._print(["守区攻防阶段：出牌成功，当前响应玩家：", current_responsive_player_id])
+		GlobalConsole._print(["守区攻防阶段：出牌成功，等待所有命令完成后更新响应权"])
 	)
 	request.complete()
 
-# ---------- 结算请求 ----------
 func timeout(game_state: GameState) -> void:
-	# 超时时自动放弃响应，生成放弃响应请求
 	if is_ended or is_paused:
 		return
-	var abandon_request = OperationRequest.AbandonResponse.new()
-	abandon_request.source_player_id = current_responsive_player_id
-	# 将请求交给阶段处理（会触发结算）
+	var abandon_request := OperationRequest.AbandonResponse.new(current_responsive_player_id)
 	process_operation_request(abandon_request, game_state)
 
-# 完善 _process_settle_request
 func _process_settle_request(request: OperationRequest, game_state: GameState) -> void:
-	# 创建结算命令
 	var settle_cmd = SettleCommand.new(current_responsive_player_id)
 	settle_cmd.set_defense_context(defense_area, attacker)
-	# 排队并附加回调，结算完成后结束阶段
 	game_state.queue_behavior_with_callback(settle_cmd, func():
 		if not is_ended:
 			end_stage(game_state)
@@ -145,11 +135,6 @@ func _check_defense_battle_restrictions(card_id: int, game_state: GameState) -> 
 			GlobalConsole._print(["守区攻防阶段：顶层为空，只有攻方可出牌"])
 			return false
 		if card.type == &"attack":
-			var distance: int = game_state.player_manager.calculate_distance(attacker.seat_index, defender.seat_index)
-			var attack_range: int = card.get_attribute(&"attack_range")
-			if attack_range <= distance:
-				GlobalConsole._print(["守区攻防阶段：攻击距离不足"])
-				return false
 			return true
 		elif card.type == &"skill":
 			if card.get_attribute(&"is_group_attack"):
@@ -164,11 +149,6 @@ func _check_defense_battle_restrictions(card_id: int, game_state: GameState) -> 
 			GlobalConsole._print(["守区攻防阶段：顶层为守方牌，只有攻方可出牌"])
 			return false
 		if card.type == &"attack":
-			var distance: int = game_state.player_manager.calculate_distance(attacker.seat_index, defender.seat_index)
-			var attack_range: int = card.get_attribute(&"attack_range")
-			if attack_range <= distance:
-				GlobalConsole._print(["守区攻防阶段：攻击距离不足"])
-				return false
 			return true
 		elif card.type == &"skill":
 			if card.get_attribute(&"is_group_attack"):
@@ -204,7 +184,6 @@ func _update_responsive_player(game_state: GameState) -> void:
 func _check_and_generate_battle_command(game_state: GameState) -> void:
 	if not defense_area.check_battle_formation():
 		return
-	# 获取斗牌的两张牌
 	var top_card: Card
 	var second_card: Card
 	if defense_area.pending_card:
@@ -216,10 +195,10 @@ func _check_and_generate_battle_command(game_state: GameState) -> void:
 	var battle_command = BattleCommand.new(defense_area, top_card, second_card)
 	game_state.queue_behavior(battle_command)
 
-func _on_defense_area_card_changed(_card: Card, _area: Area) -> void:
-	if is_ended or is_paused or not _game_state:
+func _on_defense_area_card_changed(_card: Card, _area: Area, game_state: GameState) -> void:
+	if is_ended or is_paused:
 		return
-	_check_and_generate_battle_command(_game_state)
+	_check_and_generate_battle_command(game_state)
 
 # ========== 计时辅助 ==========
 func _reset_timer_for_current_player() -> void:
@@ -244,3 +223,38 @@ func _total_time_used_update(player_id: int, elapsed: float) -> void:
 	new_limit = max(new_limit, MIN_TIME_LIMIT)
 	dynamic_time_limit[player_id] = new_limit
 	GlobalConsole._print(["玩家", player_id, "总用时", new_total, "s，动态时间限", new_limit, "s"])
+
+# ========== 信号管理 ==========
+func _connect_defense_area_signals(game_state: GameState) -> void:
+	# 先断开可能残留的连接
+	_disconnect_defense_area_signals()
+	# 创建绑定的回调并存储
+	_defense_area_signal_binding = _on_defense_area_card_changed.bind(game_state)
+	defense_area.area_card_added.connect(_defense_area_signal_binding)
+	defense_area.area_card_removed.connect(_defense_area_signal_binding)
+
+func _disconnect_defense_area_signals() -> void:
+	if _defense_area_signal_binding != Callable():
+		if defense_area.area_card_added.is_connected(_defense_area_signal_binding):
+			defense_area.area_card_added.disconnect(_defense_area_signal_binding)
+		if defense_area.area_card_removed.is_connected(_defense_area_signal_binding):
+			defense_area.area_card_removed.disconnect(_defense_area_signal_binding)
+		_defense_area_signal_binding = Callable()
+
+func _connect_all_commands_completed_signal(game_state: GameState) -> void:
+	_disconnect_all_commands_completed_signal(game_state)
+	_all_commands_completed_binding = _on_all_commands_completed.bind(game_state)
+	game_state.all_commands_completed.connect(_all_commands_completed_binding)
+
+func _disconnect_all_commands_completed_signal(game_state:GameState) -> void:
+	if _all_commands_completed_binding != Callable():
+		if game_state and game_state.all_commands_completed.is_connected(_all_commands_completed_binding):
+			game_state.all_commands_completed.disconnect(_all_commands_completed_binding)
+	_all_commands_completed_binding = Callable()
+
+func _on_all_commands_completed(game_state: GameState) -> void:
+	if is_ended or is_paused:
+		return
+	_update_responsive_player(game_state)
+	_reset_timer_for_current_player()
+	GlobalConsole._print(["守区攻防阶段：命令全部完成，已更新响应权为玩家", current_responsive_player_id])

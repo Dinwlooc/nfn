@@ -23,6 +23,8 @@ func _on_console_close() -> void:
 	network_manager.close()
 
 func send_render_request(peer_id: int, request: RenderRequest) -> void:
+	if peer_id < 0:
+		return
 	rpc_id(peer_id, &"receive_render_request", RenderRequestSerializer.serialize(request))
 
 @rpc("authority", "call_local", "reliable")

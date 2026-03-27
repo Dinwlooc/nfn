@@ -9,6 +9,7 @@ var stage_manager := StageManager.new(game_state)
 var operation_handler := OperationHandler.new()
 var area_manager:= AreaManager.new(game_state)
 var tansport:Transport = GlobalTransport
+var npc_peer_manager: NPCPeerManager = NPCPeerManager.new(game_state)
 
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
@@ -23,6 +24,8 @@ func _init() -> void:
 	command_processor.command_processing.connect(modifier_manager.process_behavior)
 	command_processor.enable_processing.connect(_enable_processing)
 	command_processor.all_completed.connect(stage_manager._on_command_processor_idle)
+	npc_peer_manager.operation_requested.connect(operation_handler.handle_request)
+	operation_handler.permissions_updated.connect(npc_peer_manager.on_permissions_updated)
 
 func _ready() -> void:
 	stage_manager.set_timer(timer)

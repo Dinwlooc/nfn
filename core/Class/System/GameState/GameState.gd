@@ -18,6 +18,7 @@ signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
 signal new_behavior(command: BehaviorCommand)
 signal request_set_responsive_players(player_ids: PackedInt32Array)
 signal request_temp_stage(temp_stage: Stage)
+signal all_commands_completed()
 
 func load_cards() -> void:
 	area_drawing.cards_add(cardsmanager.load_all_cards())

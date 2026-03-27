@@ -54,7 +54,6 @@ func _init(
 	suit = init_suit
 	modified_power = init_modified_power
 	modified_cost = init_modified_cost
-
 	# 初始化时设置掩码（基于与标准值的差异）
 	if power != STANDARD_POWER: merge_mask |= 1 << Property.POWER
 	if cost != STANDARD_COST: merge_mask |= 1 << Property.COST
