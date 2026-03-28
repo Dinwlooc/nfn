@@ -67,14 +67,13 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 		var health_dmg:int = _context.top_card.get_attribute(&"power")
 		var mental_dmg:int = _context.top_card.get_attribute(&"power")
 		if not _context.is_unilateral:
+			var defense_power:int = _context.second_card.get_attribute(&"power")
 			match _context.duel_result:
 				DuelCommand.Context.Result.A_WIN:  # 攻击牌胜
-					mental_dmg = max(0, mental_dmg - _context.duel_diff)
+					mental_dmg = max(0, mental_dmg - defense_power)
 				DuelCommand.Context.Result.TIE:
-					var defense_power:int = _context.second_card.get_attribute(&"power")
 					mental_dmg = max(0, mental_dmg - defense_power)
 				DuelCommand.Context.Result.B_WIN:  # 防御牌胜
-					var defense_power:int = _context.second_card.get_attribute(&"power")
 					mental_dmg = max(0, mental_dmg - (_context.duel_diff + defense_power))
 					health_dmg = max(0, health_dmg - _context.duel_diff)
 		var damage_cmd = DamageCommand.new(

@@ -64,23 +64,23 @@ static func _read_varint(buffer: StreamPeerBuffer) -> int:
 		shift += 7
 		if (byte & VARINT_CONTINUE_FLAG) == 0:
 			break
-	var sign = (result & 1) * -2 + 1  # 0->1, 1->-1
-	return (result >> 1) * sign
+	var _sign:int = (result & 1) * -2 + 1  # 0->1, 1->-1
+	return (result >> 1) * _sign
 
 # 字符串序列化（保持不变）
 static func _write_string(buffer: StreamPeerBuffer, value: String) -> void:
 	var utf8_bytes = value.to_utf8_buffer()
-	var len = utf8_bytes.size()
-	_write_varint(buffer, len)
-	if len > 0:
+	var _len = utf8_bytes.size()
+	_write_varint(buffer, _len)
+	if _len > 0:
 		buffer.put_data(utf8_bytes)
 
 # 字符串反序列化（保持不变）
 static func _read_string(buffer: StreamPeerBuffer) -> String:
-	var len = _read_varint(buffer)
-	if len == 0:
+	var _len = _read_varint(buffer)
+	if _len == 0:
 		return ""
-	var result = buffer.get_utf8_string(len)
+	var result = buffer.get_utf8_string(_len)
 	return result if result else ""
 
 static func _write_packed_int_array(buffer: StreamPeerBuffer, array) -> void:

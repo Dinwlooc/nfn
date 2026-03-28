@@ -17,8 +17,6 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var data:TransPack
-signal select
-signal drag
 signal render_requested(render_event:RenderEvent)
 signal reset_requested(item:RenderItem)
 signal data_requested(item:RenderItem)

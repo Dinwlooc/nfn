@@ -7,7 +7,6 @@ func _init(game_state: GameState, player_id: int) -> void:
 
 ## 返回操作请求：若在守区攻防阶段且为防守方，则随机打出一张防御牌
 func get_operation_request() -> OperationRequest:
-	# 卫语句：非守区攻防阶段直接返回
 	var stage_name: StringName = _game_state.get_current_active_stage_name()
 	if stage_name != &"DefenseBattle":
 		return OperationRequest.AbandonResponse.new(_player_id).use_npc_peer_id()
@@ -51,3 +50,9 @@ func _find_defense_card(player: Player) -> Card:
 		if card.type == &"defence":
 			return card
 	return null
+
+func await_npc_ready():
+	var scene_tree: SceneTree = Engine.get_main_loop() as SceneTree
+	if not scene_tree:
+		return
+	await scene_tree.create_timer(1.0).timeout

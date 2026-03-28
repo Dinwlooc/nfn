@@ -78,7 +78,6 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		request._card_id,
 		_current_attacker_id,
 		request._target_id,
-		request._is_to_center,
 		game_state
 	)
 	if not rule_result.is_valid:
@@ -86,7 +85,7 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		request.cancel()
 		return
 	# 主阶段专属限制检查
-	if not _check_main_stage_restrictions(request._card_id, request._target_id, request._is_to_center, game_state):
+	if not _check_main_stage_restrictions(request._card_id, request._target_id, game_state):
 		request.cancel()
 		return
 	# 执行命令
@@ -100,7 +99,7 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 	request.complete()
 
 # ========== 主阶段专属限制 ==========
-func _check_main_stage_restrictions(card_id: int, target_id: int, is_to_center: bool, game_state: GameState) -> bool:
+func _check_main_stage_restrictions(card_id: int, target_id: int, game_state: GameState) -> bool:
 	var card: Card = game_state.cardsmanager.get_card_by_id(card_id)
 	if not card:
 		GlobalConsole._print(["主阶段：卡牌不存在"])
@@ -109,7 +108,7 @@ func _check_main_stage_restrictions(card_id: int, target_id: int, is_to_center: 
 	match card_type:
 		&"attack":
 			# 对守区使用攻击牌时，检查目标守区已结算次数是否小于攻击者速度
-			if not is_to_center and target_id >= 0:
+			if target_id >= 0:
 				var target_player: Player = game_state.player_manager.get_player_by_id(target_id)
 				if target_player:
 					var defense_area: AreaDefence = target_player.area_defensive
@@ -117,16 +116,16 @@ func _check_main_stage_restrictions(card_id: int, target_id: int, is_to_center: 
 						GlobalConsole._print(["主阶段：目标守区已结算次数(%d) >= 攻击者速度(%d)，不能攻击" % [defense_area.settle_count, _current_attacker.get_attribute(&"speed")]])
 						return false
 			# 继续原有防御限制检查（顶层守方卡牌判断）
-			return _check_defensive_restrictions(card_id, target_id, is_to_center, game_state)
+			return _check_defensive_restrictions(card_id, target_id, game_state)
 		&"defence":
-			return _check_defensive_restrictions(card_id, target_id, is_to_center, game_state)
+			return _check_defensive_restrictions(card_id, target_id, game_state)
 		&"skill":
 			return true
 		_:
 			GlobalConsole._print(["主阶段：不明类型卡牌，尝试打出"])
 			return true
 
-func _check_defensive_restrictions(card_id: int, target_id: int, is_to_center: bool, game_state: GameState) -> bool:
+func _check_defensive_restrictions(card_id: int, target_id: int, game_state: GameState) -> bool:
 	var card: Card = game_state.cardsmanager.get_card_by_id(card_id)
 	if not card:
 		return false

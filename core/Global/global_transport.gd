@@ -13,7 +13,7 @@ func _ready() -> void:
 	GlobalConsole.c_connect_to.connect(_on_console_connect_to)
 	GlobalConsole.c_close.connect(_on_console_close)
 
-func _process(delta: float) -> void:
+func _process(_delta: float) -> void:
 	network_manager.poll()
 # 控制台命令处理
 func _on_console_connect_to(new_url: String) -> void:

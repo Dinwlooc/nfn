@@ -41,30 +41,29 @@ func _init(
 	_context.set_target_area_type(target_area_type)
 	_context.set_card_ids(card_ids)
 ## 覆盖父类的初始化阶段方法
-func _on_init_phase(game_state: GameState, context: CardMoveCommand.Context) -> void:
-	var play_context := context as Context
-	if not play_context:
+func _on_init_phase(game_state: GameState) -> void:
+	if not _context is Context:
 		push_error("PlayCardsCommand: 上下文类型错误")
-		context.phase = CardMoveCommand.Context.Phase.DONE
+		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
-	if not play_context.are_card_ids_valid():
+	if not _context.are_card_ids_valid():
 		push_error("PlayCardsCommand: 无效的卡牌ID数组")
-		context.phase = CardMoveCommand.Context.Phase.DONE
+		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
-	context.source_area = game_state.player_manager.get_player_by_id(play_context.source_player_id).area_hand
-	match play_context.target_area_type:
+	_context.source_area = game_state.player_manager.get_player_by_id(_context.source_player_id).area_hand
+	match _context.target_area_type:
 		Context.TargetAreaType.CENTER:
-			context.target_area = game_state.area_center
+			_context.target_area = game_state.area_center
 		Context.TargetAreaType.PLAYER_DEF:
-			var target_player: Player = game_state.player_manager.get_player_by_id(play_context.target_player_id)
+			var target_player: Player = game_state.player_manager.get_player_by_id(_context.target_player_id)
 			if not target_player:
 				push_error("PlayCardsCommand: 未找到目标玩家")
-				context.phase = CardMoveCommand.Context.Phase.DONE
+				_context.phase = CardMoveCommand.Context.Phase.DONE
 				return
-			context.target_area = target_player.area_defensive
+			_context.target_area = target_player.area_defensive
 		_:
 			push_error("PlayCardsCommand: 无效的目标区域类型")
-			context.phase = CardMoveCommand.Context.Phase.DONE
+			_context.phase = CardMoveCommand.Context.Phase.DONE
 			return
-	play_context.set_id_mode(play_context.card_ids)
-	context.phase = CardMoveCommand.Context.Phase.MOVE_OUT
+	_context.set_id_mode(_context.card_ids)
+	_context.phase = CardMoveCommand.Context.Phase.MOVE_OUT

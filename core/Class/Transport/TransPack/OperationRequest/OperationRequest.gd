@@ -25,7 +25,6 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NU
 class PlayCard extends OperationRequest:
 	var _card_id: int
 	var _target_id: int
-	var _is_to_center:bool
 	func _init(player_id:int = -1,card_id:int = -1,target_id:int =-1) -> void:
 		source_player_id = player_id
 		_card_id = card_id

@@ -13,24 +13,24 @@ func _init() -> void:
 	pass
 
 ## 进入阶段（由管理器调用）
-func enter(game_state: GameState) -> void:
+func enter(_game_state: GameState) -> void:
 	is_ended = false
 	GlobalConsole._print(["Stage:进入", stage_name, "阶段"])
 
 ## 阶段主逻辑（供子类重写）
-func run(game_state: GameState) -> void:
+func run(_game_state: GameState) -> void:
 	pass
 
 ## 暂停阶段
-func pause(game_state: GameState) -> void:
+func pause(_game_state: GameState) -> void:
 	is_paused = true
 
 ## 恢复阶段
-func resume(game_state: GameState) -> void:
+func resume(_game_state: GameState) -> void:
 	is_paused = false
 
 ## 阶段结束时的清理效果（供子类重写）
-func end_stage_effect(game_state: GameState) -> void:
+func end_stage_effect(_game_state: GameState) -> void:
 	pass
 
 ## 超时处理（默认结束阶段，子类可重写以实现自定义超时行为）
@@ -47,5 +47,5 @@ func end_stage(game_state: GameState) -> void:
 	stage_ended.emit(self)
 
 ## 处理玩家操作请求（由管理器转发）
-func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
+func process_operation_request(_request: OperationRequest, _game_state: GameState) -> void:
 	pass

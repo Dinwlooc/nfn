@@ -17,17 +17,17 @@ func _init(init_player_index: int, draw_count: int, name_overriding:StringName =
 	super._init(init_player_index,name_overriding,context_overriding)
 	_context.set_draw_count(draw_count)
 ## 覆盖父类的初始化阶段方法
-func _on_init_phase(game_state: GameState, context: CardMoveCommand.Context) -> void:
-	var draw_context := context as Context
+func _on_init_phase(game_state: GameState) -> void:
+	var draw_context := _context as Context
 	if not draw_context:
 		push_error("DrawCardsCommand: 上下文类型错误")
-		context.phase = CardMoveCommand.Context.Phase.DONE
+		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
-	context.source_area = game_state.area_drawing
-	context.target_area = game_state.player_manager.get_player_by_seat(context.player_id).area_hand
-	var actual_draw_count = draw_context.get_actual_draw_count(context.source_area)
+	_context.source_area = game_state.area_drawing
+	_context.target_area = game_state.player_manager.get_player_by_seat(_context.player_id).area_hand
+	var actual_draw_count = draw_context.get_actual_draw_count(_context.source_area)
 	if actual_draw_count <= 0:
-		context.phase = CardMoveCommand.Context.Phase.DONE
+		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
 	draw_context.set_top_mode(actual_draw_count)
-	context.phase = CardMoveCommand.Context.Phase.MOVE_OUT
+	_context.phase = CardMoveCommand.Context.Phase.MOVE_OUT

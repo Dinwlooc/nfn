@@ -30,9 +30,7 @@ func process() -> void:
 
 ## 添加新命令到堆栈
 func queue_behavior(event: BehaviorCommand) -> void:
-	var connection = event.companion_command_requested.connect(
-		_on_companion_command_requested
-	)
+	event.companion_command_requested.connect(_on_companion_command_requested)
 	behavior_stack.push_back(event)
 	if is_empty:
 		is_empty = false

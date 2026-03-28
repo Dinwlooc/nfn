@@ -55,16 +55,15 @@ static func check_and_create_command(
 	card_id: int,
 	source_player_id: int,
 	target_id: int,
-	is_to_center: bool,
 	game_state: GameState
 ) -> RuleResult:
 	var basic_result = _validate_basic_by_ids(
-		card_id, source_player_id, target_id, is_to_center, game_state
+		card_id, source_player_id, target_id, game_state
 	)
 	if not basic_result.is_valid:
 		return basic_result
 	return _check_and_create_with_instances(
-		card_id, source_player_id, target_id, is_to_center, game_state
+		card_id, source_player_id, target_id, game_state
 	)
 
 ## 使用实例参数的内部方法
@@ -72,13 +71,12 @@ static func _check_and_create_with_instances(
 	card_id: int,
 	source_player_id: int,
 	target_id: int,
-	is_to_center: bool,
 	game_state: GameState
 ) -> RuleResult:
 	var card = game_state.cardsmanager.get_card_by_id(card_id)
 	var source_player = game_state.player_manager.get_player_by_id(source_player_id)
 	var target_player = null
-	if not is_to_center and target_id >= 0:
+	if  target_id >= 0:
 		target_player = game_state.player_manager.get_player_by_id(target_id)
 	var card_type = card.type
 	var rule_config = _card_rules.get(card_type)
@@ -88,7 +86,6 @@ static func _check_and_create_with_instances(
 		card,
 		source_player,
 		target_player,
-		is_to_center,
 		rule_config,
 		game_state
 	)
@@ -117,7 +114,6 @@ static func _validate_basic_by_ids(
 	card_id: int,
 	source_player_id: int,
 	target_id: int,
-	is_to_center: bool,
 	game_state: GameState
 ) -> RuleResult:
 	var card = game_state.cardsmanager.get_card_by_id(card_id)
@@ -128,13 +124,10 @@ static func _validate_basic_by_ids(
 		return RuleResult.new(false, null, "玩家不存在")
 	if not source_player.area_hand or not source_player.area_hand.get_card_by_id(card_id):
 		return RuleResult.new(false, null, "玩家不拥有该卡牌")
-	if not is_to_center:
-		if target_id != source_player_id:
-			var target_player = game_state.player_manager.get_player_by_id(target_id)
-			if not target_player:
-				return RuleResult.new(false, null, "目标玩家不存在")
-	if is_to_center:
-		return RuleResult.new(false, null, "暂不支持对中心区域使用")
+	if target_id != source_player_id:
+		var target_player = game_state.player_manager.get_player_by_id(target_id)
+		if not target_player:
+			return RuleResult.new(false, null, "目标玩家不存在")
 	return RuleResult.new(true)
 
 ## 运行验证器链（使用实例参数）
@@ -142,7 +135,6 @@ static func _run_validators_with_instances(
 	card: Card,
 	source_player: Player,
 	target_player: Player,
-	is_to_center: bool,
 	rule_config: Dictionary,
 	game_state: GameState
 ) -> RuleResult:
@@ -153,7 +145,6 @@ static func _run_validators_with_instances(
 			card,
 			source_player,
 			target_player,
-			is_to_center,
 			rule_config,
 			game_state
 		)
@@ -167,15 +158,11 @@ static func _execute_validator_with_instances(
 	card: Card,
 	source_player: Player,
 	target_player: Player,
-	is_to_center: bool,
 	rule_config: Dictionary,
 	game_state: GameState
 ) -> RuleResult:
 	var target_id = target_player.player_id if target_player else -1
 	match validator_name:
-		Validator.TARGET_CENTER:
-			if is_to_center and not rule_config.get(&"target_center", false):
-				return RuleResult.new(false, null, "此卡牌不能对中心区域使用")
 		Validator.TARGET_SELF:
 			if target_id != source_player.player_id:
 				return RuleResult.new(false, null, "此卡牌只能对自己使用")
@@ -227,7 +214,6 @@ static func check_and_create_command_with_instances(
 		card,
 		source_player,
 		target_player,
-		is_to_center,
 		rule_config,
 		game_state
 	)

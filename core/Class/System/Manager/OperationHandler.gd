@@ -25,15 +25,13 @@ func handle_request(request: OperationRequest) -> void:
 		GlobalConsole._print(["OperationHandler:取消请求：",request.get_class_name(),"。原因：访问了不合法的玩家"])
 		return
 	var player_id:int = request.source_player_id
-	if !_can_accept_new_request(player_id):
+	if not _can_accept_new_request(player_id):
 		GlobalConsole._print(["OperationHandler:取消请求：",request.get_class_name(),"。原因：玩家无响应权"])
 		return
 	_setup_request_tracking(player_id, request)
 	operation_validated.emit(request)
 
 func _can_accept_new_request(player_id: int) -> bool:
-	if player_id == -1:
-		return true
 	if not _pending_requests.has(player_id):
 		return false
 	return _pending_requests.get(player_id) == _null_request

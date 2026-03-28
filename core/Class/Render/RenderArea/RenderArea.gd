@@ -26,7 +26,7 @@ func process_request(request: RenderRequest) -> void:
 	if request is RenderRequest.ItemSet:
 		_process_item_set(request as RenderRequest.ItemSet)
 # 新增：处理ItemSet请求
-func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
+func _process_item_set(_item_set: RenderRequest.ItemSet) -> void:
 	pass
 
 # 新增：内部连接方法
@@ -67,13 +67,13 @@ func set_render_context(context:RenderContext) -> void:
 	render_context = context
 
 ## 抽象方法 - 子类必须实现
-func add_item(item:RenderItem, index:int = -1) -> void:
+func add_item(_item:RenderItem, _index:int = -1) -> void:
 	push_error("add_item must be implemented in subclass")
 ##更新ItemPack数据
 func _update_item_data(render_item: RenderItem, item_pack: ItemPack) -> void:
 	render_item.apply_pack(item_pack)
 
-func remove_item(item:RenderItem) -> void:
+func remove_item(_item:RenderItem) -> void:
 	push_error("remove_item must be implemented in subclass")
 
 func get_item_count() -> int:

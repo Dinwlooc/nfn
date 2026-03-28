@@ -31,17 +31,17 @@ func _init_attribute() -> void:
 
 func apply_health_damage(
 	amount: int,
-	mechanism: int,
-	source_id: int,
-	modifiers: PackedInt32Array
+	_mechanism: int,
+	_source_id: int,
+	_modifiers: PackedInt32Array
 ) -> void:
 	HP = HP - amount
 
 func apply_mental_damage(
 	amount: int,
-	mechanism: int,
-	source_id: int,
-	modifiers: PackedInt32Array
+	_mechanism: int,
+	_source_id: int,
+	_modifiers: PackedInt32Array
 ) -> void:
 	MP = max(0, MP - amount)
 
@@ -75,7 +75,7 @@ func _create_player_pack() -> PlayerPack:
 func clear_pack_cache() -> void:
 	last_pack = null
 
-func send_pack(peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST) -> void:
+func send_pack(target_peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST) -> void:
 	var pack:ItemPack = get_pack()  # 获取增量包（自动处理缓存）
 	var area_signature:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
 	RenderRequest.ItemSet.new(
@@ -83,4 +83,4 @@ func send_pack(peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST) -> void:
 		RenderRequest.ItemSet.EventType.UPDATE,
 		[pack],
 		player_id
-	).send_to_player(peer_id)
+	).send_to_player(target_peer_id)

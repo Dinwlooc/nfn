@@ -17,15 +17,15 @@ func _init(_player: Player = Player.NULL_PLAYER) -> void:
 func _init_expand() -> void:
 	pass
 # 抽象方法，子类必须实现
-func cards_add(new_cardpool: Array[Card]) -> void:
+func cards_add(_new_cardpool: Array[Card]) -> void:
 	assert(false, "子类必须实现 cards_add 方法")
-func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
+func remove_cards_by_ids(_ids: PackedInt32Array) -> Array[Card]:
 	assert(false, "子类必须实现 remove_cards_by_ids 方法")
 	return []
 func card_count() -> int:
 	assert(false, "子类必须实现 card_count 方法")
 	return 0
-func get_card_by_id(card_id: int) -> Card:
+func get_card_by_id(_card_id: int) -> Card:
 	assert(false, "子类必须实现 get_card_by_id 方法")
 	return null
 func get_all_cards() -> Array[Card]:
@@ -75,11 +75,11 @@ func send_cards(
 func shuffle_card_pool() -> void:
 	pass
 
-func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
+func remove_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]:
 	push_error("此区域不支持按索引移除")
 	return []
 
-func remove_top_cards(count: int) -> Array[Card]:
+func remove_top_cards(_count: int) -> Array[Card]:
 	push_error("此区域不支持堆顶移除")
 	return []
 
@@ -91,11 +91,11 @@ func get_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 			result.append(card)
 	return result
 
-func get_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
+func get_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]:
 	push_error("此区域不支持按索引获取")
 	return []
 
-func get_top_cards(count: int) -> Array[Card]:
+func get_top_cards(_count: int) -> Array[Card]:
 	push_error("此区域不支持获取顶部卡牌")
 	return []
 

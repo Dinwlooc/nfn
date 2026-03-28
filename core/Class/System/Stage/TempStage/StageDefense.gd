@@ -85,7 +85,6 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		request._card_id,
 		request.source_player_id,
 		request._target_id,
-		request._is_to_center,
 		game_state
 	)
 	if not rule_result.is_valid:

@@ -25,7 +25,7 @@ func _on_player_added(player: Player) -> void:
 ## 传入 player_ids 数组，遍历每个玩家，若存在 NPC 实例则调用其 get_operation_request() 获取请求。
 func on_permissions_updated(player_ids: PackedInt32Array) -> void:
 	for player_id in player_ids:
-		_retry_request(player_id)
+		_try_send_npc_request(player_id)
 
 ## 当某个操作请求被取消时，延迟重试该玩家的请求
 func _on_request_cancelled(player_id: int) -> void:
@@ -36,11 +36,18 @@ func _retry_request(player_id: int) -> void:
 	if not _npc_peers.has(player_id):
 		return
 	var npc := _npc_peers[player_id]
-	var request := npc.get_operation_request()
+	var request :OperationRequest = npc.get_operation_request()
 	if request == null:
 		return
 	request.cancelled.connect(_on_request_cancelled.bind(request.source_player_id))
 	operation_requested.emit(request)
+
+func _try_send_npc_request(player_id: int)->void:
+	if not _npc_peers.has(player_id):
+		return
+	var npc := _npc_peers[player_id]
+	await npc.await_npc_ready()
+	_retry_request(player_id)
 
 ## 可选：清理所有 NPC（例如游戏结束时）
 func clear() -> void:

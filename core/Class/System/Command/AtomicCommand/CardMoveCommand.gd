@@ -42,18 +42,18 @@ func _init( player_id: int ,name_overriding: StringName, context_overriding:Cont
 func execute(game_state: GameState) -> void:
 	match _context.phase:
 		Context.Phase.INIT:
-			_on_init_phase(game_state, _context)
+			_on_init_phase(game_state)
 		Context.Phase.MOVE_OUT:
-			_on_move_out_phase(game_state, _context)
+			_on_move_out_phase(game_state)
 		Context.Phase.MOVE_IN:
-			_on_move_in_phase(game_state, _context)
+			_on_move_in_phase(game_state)
 		Context.Phase.DONE:
-			_on_done_phase(game_state, _context)
+			_on_done_phase(game_state)
 
-func _on_init_phase(game_state: GameState, _context: Context) -> void:
+func _on_init_phase(_game_state: GameState) -> void:
 	_context.phase = Context.Phase.MOVE_OUT
 
-func _on_move_out_phase(game_state: GameState, _context: Context) -> void:
+func _on_move_out_phase(_game_state: GameState) -> void:
 	if not _context.source_area:
 		push_error("移出区域未设置")
 		_context.phase = Context.Phase.DONE
@@ -92,7 +92,7 @@ func _on_move_out_phase(game_state: GameState, _context: Context) -> void:
 		return
 	_context.phase = Context.Phase.MOVE_IN
 
-func _on_move_in_phase(game_state: GameState, _context: Context) -> void:
+func _on_move_in_phase(_game_state: GameState) -> void:
 	if not _context.target_area:
 		push_error("移入区域未设置")
 		_context.phase = Context.Phase.DONE
@@ -104,5 +104,5 @@ func _on_move_in_phase(game_state: GameState, _context: Context) -> void:
 	GlobalConsole._print(["CardMoveCommand:卡牌移动完成"])
 	complete()
 
-func _on_done_phase(game_state: GameState, _context: Context) -> void:
+func _on_done_phase(game_state: GameState) -> void:
 	pass

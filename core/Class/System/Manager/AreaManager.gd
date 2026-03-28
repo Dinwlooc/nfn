@@ -12,6 +12,12 @@ func connect_area_denfence(area: AreaDefence) -> void:
 	GlobalConsole._print(["AreaManager:连接至守区"])
 
 func _start_defense_battle_stage(card: Card,area:AreaDefence) -> void:
-	var _command := StartDefenseBattleStageCommand.new(area,card.player)
-	_game_state.queue_behavior(_command)
-	GlobalConsole._print(["AreaManager:尝试开启守区攻防阶段"])
+	var has_defense_stage:bool = false
+	for stage in _game_state.get_temp_stage():
+		if stage is StageDefense:
+			has_defense_stage = true
+			break
+	if not has_defense_stage:
+		var _command := StartDefenseBattleStageCommand.new(area,card.player)
+		_game_state.queue_behavior(_command)
+		GlobalConsole._print(["AreaManager:尝试开启守区攻防阶段"])
