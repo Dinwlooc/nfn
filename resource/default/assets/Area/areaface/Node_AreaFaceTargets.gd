@@ -8,7 +8,7 @@ const TWEEN_TIME = 0.35
 
 func _ready()->void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
-	original_position = position
+	original_position = global_position
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size

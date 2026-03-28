@@ -29,7 +29,7 @@ enum Mode { AUTO, MANUAL }
 func _ready() -> void:
 	if mode == Mode.AUTO:
 		request_area(RenderArea.DefaultArea.DEFENCE)
-	original_position = position
+	original_position = global_position
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size

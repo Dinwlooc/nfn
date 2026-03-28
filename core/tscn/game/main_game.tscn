@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=19 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System/System.gd" id="2_gpy5h"]
@@ -15,6 +15,7 @@
 [ext_resource type="Script" uid="uid://de88q80xklxqh" path="res://core/Class/Render/RenderArea/RenderAreaPlayers.gd" id="14_a6oxl"]
 [ext_resource type="Script" uid="uid://b2kx1en87wqae" path="res://core/Class/Render/RenderArea/RenderAreaDiscard.gd" id="14_eqfmo"]
 [ext_resource type="Script" uid="uid://bqpyx1hbdgjdl" path="res://core/Class/Render/RenderArea/RenderAreaDefence.gd" id="15_eqfmo"]
+[ext_resource type="Script" uid="uid://5o64qp3kknjx" path="res://resource/default/assets/Area/areaface/areaface_discard.gd" id="15_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://b025ean41nrj6" path="res://core/tscn/game/console.tscn" id="15_vjhr3"]
 [ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/areaface_denfence.tscn" id="16_jjejj"]
 
@@ -114,6 +115,13 @@ offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("14_eqfmo")
 metadata/_custom_type_script = "uid://b2kx1en87wqae"
+
+[node name="AreaFace" type="Control" parent="Control/AreaDiscard"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("15_ppvbj")
+metadata/_custom_type_script = "uid://btwt7f8flx66t"
 
 [node name="AreaDenfence" type="Control" parent="Control"]
 anchors_preset = 0

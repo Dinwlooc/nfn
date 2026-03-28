@@ -25,7 +25,6 @@ func data_update(new_item:RenderItem)-> void:
 			$AreaFaceSelf_Properties.set_render_context(item.render_context)
 			$AreaFaceDenfence.request_area(RenderArea.DefaultArea.DEFENCE,item.data.get_id())
 			$AreaFaceDenfence.set_render_context(item.render_context)
-			$AreaFaceDenfence.original_position += position
 	item.set_item_size(size)
 	Nicon_init_position = Nicon.position
 

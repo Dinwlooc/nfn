@@ -89,3 +89,31 @@ func _update_background_color() -> void:
 	else:
 		target_color = color_map[&"normal"]
 	_stylebox.bg_color = target_color
+## 重置卡面到初始状态（用于回收复用）
+func reset() -> void:
+	# 断开旧的信号（如果有）
+	if item:
+		var button: Button = get_node(^"Button")
+		if button and item:
+			if button.button_down.is_connected(item.request_selecting):
+				button.button_down.disconnect(item.request_selecting)
+			if button.button_down.is_connected(item.request_dragging):
+				button.button_down.disconnect(item.request_dragging)
+			if button.button_up.is_connected(item.request_cancel_dragging):
+				button.button_up.disconnect(item.request_cancel_dragging)
+	# 清空引用
+	item = null
+	_current_type = &""
+	# 重置 UI 元素
+	texture_rect.texture = null
+	cost_label.text = ""
+	damage_label.text = ""
+	description_label.text = ""
+	name_label.text = ""
+	vertical_name_label.text = ""
+	suit_sprite.frame = 0
+	# 重置背景颜色
+	if _stylebox:
+		_stylebox.bg_color = DEFAULT_COLOR
+	# 重置可见性
+	vertical_name_label.visible = false

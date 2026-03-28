@@ -26,11 +26,7 @@ func get_operation_request() -> OperationRequest:
 	var defense_card: Card = _find_defense_card(self_player)
 	if defense_card == null:
 		return OperationRequest.AbandonResponse.new(_player_id).use_npc_peer_id()
-	# 构造出牌请求
-	var request := OperationRequest.PlayCard.new(defense_card.id, _player_id).use_npc_peer_id()
-	request.source_player_id = _player_id
-	request.source_peer_id = -1 #这将跳过对等体控制权认证
-	return request
+	return OperationRequest.PlayCard.new(_player_id,defense_card.id, _player_id).use_npc_peer_id()
 
 ## 可选：重写 cleanup 进行资源释放
 func cleanup() -> void:

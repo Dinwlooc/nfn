@@ -28,7 +28,6 @@ func _ready():
 	input_load()
 	suggestion_labels_load()
 	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE, self)
-	position = original_position
 
 func animate_panel_position(target_position: Vector2, duration: float = 0.3):
 	if panel_tween and panel_tween.is_running():

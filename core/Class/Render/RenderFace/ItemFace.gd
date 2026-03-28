@@ -22,3 +22,6 @@ func get_real_name(item_name:StringName) -> String:
 
 func get_description(item_name:StringName) -> String:
 	return 	GlobalConfig.get_translation(StringName(String(item_name)+"_DES"))
+## 重置卡面到初始状态（用于回收复用）
+func reset() -> void:
+	pass

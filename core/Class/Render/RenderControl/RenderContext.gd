@@ -27,7 +27,7 @@ class DragState:
 
 ##公共区域的玩家ID
 const PUBLIC_PLAYER_ID: int = -1
-var loacal_player_id:int = -1
+var local_player_id:int = -1
 ##第一层为玩家ID，第二层为区域名到RenderArea的映射
 var _render_areas :Dictionary[int, Dictionary] = {}
 ##第一层为玩家ID，第二层为区域名到回调数组的映射
@@ -52,9 +52,9 @@ func _on_render_area_registered(area_name: StringName, area: RenderArea, player_
 
 # 获取实际的玩家ID用于字典访问
 func _get_actual_player_id(player_id: int) -> int:
-	if loacal_player_id == -1:
+	if local_player_id == -1:
 		return PUBLIC_PLAYER_ID
-	if player_id == loacal_player_id:
+	if player_id == local_player_id:
 		return PUBLIC_PLAYER_ID
 	return player_id
 
@@ -170,9 +170,9 @@ func _recycle_item_deferred(item: RenderItem) -> void:
 		unregister_render_item(item_type, item_id)
 	if item.area_name:
 		for player_id in _render_areas:
-			var areas = _render_areas[player_id]
+			var areas:Dictionary = _render_areas[player_id]
 			if areas.has(item.area_name):
-				var current_area = areas[item.area_name]
+				var current_area:RenderArea = areas[item.area_name]
 				if current_area:
 					current_area._disconnect_item_from_area(item)
 				break

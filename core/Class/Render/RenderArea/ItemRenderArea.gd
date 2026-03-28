@@ -51,6 +51,8 @@ func _disconnect_item_from_area(item:RenderItem) -> void:
 		item.request_drag.disconnect(on_drag)
 	if item.request_select.is_connected(on_select):
 		item.request_select.disconnect(on_select)
+	if item.request_cancel_dragged.is_connected(on_cancel_drag):
+		item.request_cancel_dragged.disconnect(on_cancel_drag)
 
 func get_render_item_child_index() -> int:
 	return _divide_index
@@ -90,8 +92,8 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 	if item.get_parent():
 		item.position += item.get_parent().position
 		item.get_parent().remove_child(item)
+	item.position -= self.global_position
 	add_child(item)
-	item.position += -position
 	move_child(item, tree_position)
 	_connect_item_to_area(item)
 	_set_item_to_pool(item, index)
@@ -100,6 +102,7 @@ func add_item(item:RenderItem, index:int = -1) -> void:
 # 修改：实现remove_item方法
 func remove_item(item:RenderItem) -> void:
 	if item.get_parent() == self:
+		item.position = item.global_position
 		remove_child(item)
 	var pool_id:int = item.pool_id
 	if pool_id >= 0 and pool_id < items_pool.size() and items_pool[pool_id] == item:

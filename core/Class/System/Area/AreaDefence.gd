@@ -57,11 +57,10 @@ func get_second_card() -> Card:
 	var cards:Array[Card] = get_all_cards()
 	return cards[-2] if cards.size() >= 2 else null
 
-# 清空守区（结算结束时调用）
-func clear_defense_area() -> Array[Card]:
-	var ids:PackedInt32Array = get_card_ids()
+# 结算守区
+func settle_defense_area() -> Array[Card]:
 	settle_count += 1
-	return remove_cards_by_ids(ids)
+	return get_all_cards()
 
 # 重置守区状态（新攻防开始时调用）
 func reset() -> void:

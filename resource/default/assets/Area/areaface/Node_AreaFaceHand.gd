@@ -64,6 +64,10 @@ const SIGN_NEGATIVE: float = -1.0
 @onready var quick_sort_button = $UIContainer/QuickSortUI/QuickSortButton
 @onready var play_card_ui = $UIContainer/PlayCardUI
 @onready var play_card_button = $UIContainer/PlayCardUI/PlayCardButton
+@onready var discard_cards_ui = $UIContainer/DiscardCardsUI
+@onready var discard_button = $UIContainer/DiscardCardsUI/DiscardCardsButton
+@onready var abandon_response_ui = $UIContainer/AbandonResponseUI
+@onready var abandon_response_button = $UIContainer/AbandonResponseUI/AbandonResponseButton
 
 ## 预计算的正弦表
 var _sine_table: PackedFloat64Array = PackedFloat64Array()
@@ -76,7 +80,7 @@ var _order_dirty: bool = true
 
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.HAND)
-	original_position = position
+	original_position = global_position
 	original_size = size
 	area_target_position = original_position
 	area_target_size = original_size
@@ -86,7 +90,10 @@ func _ready() -> void:
 	_update_total_scale_factor()  # 初始化缩放因子
 	last_swap_time_ms = -SWAP_COOLDOWN_DURATION_MS
 	play_card_button.pressed.connect(_on_play_card_button_pressed)
-	play_card_ui.visible = false  # 初始隐藏
+	play_card_ui.visible = false
+	discard_button.pressed.connect(_on_discard_button_pressed)
+	abandon_response_button.pressed.connect(_on_abandon_response_button_pressed)
+	discard_cards_ui.visible = false
 
 ## 根据卡牌数量更新缩放
 func _update_total_scale_factor() -> void:
@@ -128,7 +135,9 @@ func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	if event_type == RenderEvent.DefaultType.SWAP_CARD:
 		_order_dirty = true
 	if event_type == RenderEvent.DefaultType.CARD_SELECTION_CHANGED:
-		play_card_ui.visible = not area.get_selected_items().is_empty()
+		var has_selection: bool = not area.get_selected_items().is_empty()
+		play_card_ui.visible = has_selection
+		discard_cards_ui.visible = has_selection
 	card_move(render_event)
 
 ## 进入区域时的展开动画
@@ -339,3 +348,30 @@ func sort_region(start: int, end: int) -> void:
 func _on_play_card_button_pressed() -> void:
 	var op_manager:OperationManager= render_context.get_operation_manager()
 	var event:RenderEvent = op_manager.upload_play_card()
+
+# 添加回调
+func _on_discard_button_pressed() -> void:
+	if not render_context:
+		return
+	var op_manager: OperationManager = render_context.get_operation_manager()
+	if not op_manager:
+		return
+	var event: RenderEvent = op_manager.upload_discard_cards()
+	# 可处理返回的事件，如显示错误提示
+	_handle_operation_event(event)
+
+func _on_abandon_response_button_pressed() -> void:
+	if not render_context:
+		return
+	var op_manager: OperationManager = render_context.get_operation_manager()
+	if not op_manager:
+		return
+	var event: RenderEvent = op_manager.upload_abandon_response()
+	_handle_operation_event(event)
+
+# 处理操作事件，显示状态（简单示例）
+func _handle_operation_event(event: RenderEvent) -> void:
+	var status: int = event.config.get(&"status", -1)
+	if status == OperationManager.RequestStatus.SUCCESS:
+		return
+	print("操作失败，状态码: ", status)

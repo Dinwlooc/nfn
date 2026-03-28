@@ -27,6 +27,7 @@ func _init_attribute() -> void:
 	attributeModifiers.set_base_value(&"MP_max", 20)
 	attributeModifiers.set_base_value(&"init_AP", 3)
 	attributeModifiers.set_base_value(&"draw_cards_count", 2)
+	attributeModifiers.set_base_value(&"speed", 1)
 
 func apply_health_damage(
 	amount: int,

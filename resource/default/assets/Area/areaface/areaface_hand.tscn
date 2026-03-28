@@ -64,3 +64,45 @@ offset_right = 101.0
 offset_bottom = 39.0
 action_mode = 0
 flat = true
+
+[node name="DiscardCardsUI" type="Panel" parent="UIContainer"]
+custom_minimum_size = Vector2(100, 20)
+offset_left = 515.0
+offset_right = 615.0
+offset_bottom = 39.0
+
+[node name="DiscardCardsLabel" type="Label" parent="UIContainer/DiscardCardsUI"]
+layout_mode = 0
+offset_right = 101.0
+offset_bottom = 39.0
+text = "弃牌"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DiscardCardsButton" type="Button" parent="UIContainer/DiscardCardsUI"]
+layout_mode = 0
+offset_right = 101.0
+offset_bottom = 39.0
+action_mode = 0
+flat = true
+
+[node name="AbandonResponseUI" type="Panel" parent="UIContainer"]
+custom_minimum_size = Vector2(100, 20)
+offset_left = 635.0
+offset_right = 735.0
+offset_bottom = 39.0
+
+[node name="AbandonResponseLabel" type="Label" parent="UIContainer/AbandonResponseUI"]
+layout_mode = 0
+offset_right = 101.0
+offset_bottom = 39.0
+text = "放弃响应"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AbandonResponseButton" type="Button" parent="UIContainer/AbandonResponseUI"]
+layout_mode = 0
+offset_right = 101.0
+offset_bottom = 39.0
+action_mode = 0
+flat = true
