@@ -1,5 +1,6 @@
 extends RefCounted
 class_name NPCPeer
+
 var _game_state: GameState
 var _player_id: int
 
@@ -8,13 +9,14 @@ func _init(game_state: GameState, player_id: int) -> void:
 	_game_state = game_state
 	_player_id = player_id
 
-## npc在行动前的趣味性互动。
+## NPC在行动前的趣味性互动（可重写）
 func await_npc_ready():
 	pass
-## 子类实现自己的决策逻辑，返回一个 OperationRequest 或 null
-## 如果返回非空请求，NPCPeerManager 会发射 operation_requested 信号并处理取消重试。
-func get_operation_request() -> OperationRequest:
-	return null
+
+## 异步决策接口：子类必须实现此方法，决策完成后调用 callback，传入 OperationRequest 或 null
+## @param callback: Callable 接受一个参数（OperationRequest 或 null）
+func request_decision_async(callback: Callable) -> void:
+	push_error("子类必须实现 request_decision_async")
 
 ## 清理资源，子类可重写
 func cleanup() -> void:
