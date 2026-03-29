@@ -20,7 +20,7 @@ func _init() -> void:
 
 func enter(game_state: GameState) -> void:
 	super.enter(game_state)
-	_current_attacker = game_state.player_manager.get_player_by_seat(game_state.current_player_index)
+	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_context.current_player_id)
 	_current_attacker_id = _current_attacker.player_id
 	_current_time_limit = ENTER_TIME_LIMIT
 	# 设置响应玩家并启动计时
@@ -33,7 +33,7 @@ func enter(game_state: GameState) -> void:
 func resume(game_state: GameState) -> void:
 	super.resume(game_state)
 	# 恢复时重新同步当前玩家（可能未变）
-	_current_attacker = game_state.player_manager.get_player_by_seat(game_state.current_player_index)
+	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_context.current_player_id)
 	_current_attacker_id = _current_attacker.player_id
 	_current_time_limit = RESUME_TIME_LIMIT
 	# 重新设置响应玩家（确保正确）并重置计时
@@ -115,7 +115,6 @@ func _check_main_stage_restrictions(card_id: int, target_id: int, game_state: Ga
 					if defense_area and defense_area.settle_count >= _current_attacker.get_attribute(&"speed"):
 						GlobalConsole._print(["主阶段：目标守区已结算次数(%d) >= 攻击者速度(%d)，不能攻击" % [defense_area.settle_count, _current_attacker.get_attribute(&"speed")]])
 						return false
-			# 继续原有防御限制检查（顶层守方卡牌判断）
 			return _check_defensive_restrictions(card_id, target_id, game_state)
 		&"defence":
 			return _check_defensive_restrictions(card_id, target_id, game_state)
@@ -133,12 +132,12 @@ func _check_defensive_restrictions(card_id: int, target_id: int, game_state: Gam
 	var target_player = game_state.player_manager.get_player_by_id(target_id) if target_id >= 0 else null
 	match card_type:
 		&"attack":
-			if target_player and not target_player.area_defensive.is_empty() and target_player.area_defensive.get_top_card().player == _current_attacker:
+			if target_player and target_player.area_defensive.get_top_card() and target_player.area_defensive.get_top_card().player == _current_attacker:
 				GlobalConsole._print(["主阶段：目标守区顶部仍是你的牌，你不能攻击"])
 				return false
 			return true
 		&"defence":
-			if not _current_attacker.area_defensive.is_empty() and _current_attacker.area_defensive.get_top_card().player == _current_attacker:
+			if _current_attacker.area_defensive.get_top_card() and _current_attacker.area_defensive.get_top_card().player == _current_attacker:
 				GlobalConsole._print(["主阶段：自身守区顶部仍是你的牌，你不能使用防御牌"])
 				return false
 			return true

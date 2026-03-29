@@ -61,11 +61,13 @@ func get_second_card() -> Card:
 func settle_defense_area() -> Array[Card]:
 	settle_count += 1
 	return get_all_cards()
-
+## 仅重置结算次数（保留缓冲槽卡牌）
+func reset_settle_count() -> void:
+	settle_count = 0
 # 重置守区状态（新攻防开始时调用）
 func reset() -> void:
-	settle_count = 0           # 计数归零
-	pending_card = null
+	settle_count = 0
+	commit_pending_card()
 
 func is_empty() -> bool:
-	return (!pending_card && _ordered_pool.is_empty())
+	return ( not pending_card and _ordered_pool.is_empty())

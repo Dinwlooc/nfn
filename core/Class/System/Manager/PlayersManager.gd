@@ -133,3 +133,7 @@ func get_player_full_pack(player_id: int) -> PlayerPack:
 	if player:
 		return player.get_full_pack()
 	return null
+## 通过玩家ID获取座位索引，若玩家不存在则返回-1
+func get_seat_index_by_player_id(player_id: int) -> int:
+	var player: Player = _players_by_id.get(player_id)
+	return player.seat_index if player else -1

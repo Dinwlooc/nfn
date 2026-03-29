@@ -56,7 +56,11 @@ func recover_to_full() -> void:
 # 将玩家AP设置为其初始值
 func reset_ap() -> void:
 	AP = get_attribute(&"init_AP")
-
+## 获取手牌上限，基于当前精神值的1/4（向上取整）设置基础值，并返回最终值
+func get_hand_limit() -> int:
+	var base_limit: int = ceili(float(MP) / 4.0)
+	attributeModifiers.set_base_value(&"hand_limit", base_limit)
+	return get_attribute(&"hand_limit")
 # 获取玩家包（支持增量更新）
 func get_pack() -> PlayerPack:
 	if last_pack == null:

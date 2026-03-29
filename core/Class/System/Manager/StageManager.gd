@@ -1,13 +1,7 @@
 extends RefCounted
 class_name StageManager
 
-signal stage_completed()
-signal stage_rolled_back(old_stage: Stage, new_stage: Stage)
-signal temp_stages_cleared()
-signal round_ended()
-signal stage_changed(old_stage: Stage, new_stage: Stage)
-signal temp_stage_started(temp_stage: Stage)
-signal round_completed()
+# 注意：所有回合/阶段信号已转移到 StageContext 中，此处不再定义信号
 
 var main_stages: Array[Stage] = []
 var pending_temp_stage_stack: Array[Stage] = []   # 待开始的临时阶段栈（后进先出）
@@ -30,15 +24,15 @@ func _init(p_game_state: GameState) -> void:
 	stage_context = StageContext.new()
 	# 注入到 GameState
 	game_state.stage_context = stage_context
-
 	main_stages.resize(MAIN_STAGES.size())
 	for i in MAIN_STAGES.size():
 		main_stages[i] = MAIN_STAGES[i].new()
-		connect_stage_to_manager(main_stages[i])
 
 func connect_stage_to_manager(new_stage: Stage) -> void:
-	new_stage.stage_ended.connect(_on_stage_ended)
-	new_stage.request_reset_timer.connect(_on_stage_reset_timer_requested)
+	if not new_stage.stage_ended.is_connected(_on_stage_ended):
+		new_stage.stage_ended.connect(_on_stage_ended)
+	if not new_stage.request_reset_timer.is_connected(_on_stage_reset_timer_requested):
+		new_stage.request_reset_timer.connect(_on_stage_reset_timer_requested)
 
 func _disconnect_stage_signals(stage: Stage) -> void:
 	if stage.stage_ended.is_connected(_on_stage_ended):
@@ -66,10 +60,9 @@ func complete_all_temp_stages() -> void:
 	while not stage_context.temp_stage_stack.is_empty():
 		var stage = stage_context.temp_stage_stack.pop_back()
 		if not stage.is_ended:
-			stage.end_stage_effect(game_state)
+			stage.end_stage(game_state)
 	# 清空临时阶段栈，保留主阶段信息
-	# 原逻辑中还会清空 game_state.current_stage_stack，现在由 GameState 通过 context 获取
-	temp_stages_cleared.emit()
+	stage_context.temp_stages_cleared.emit()
 
 ## 请求插入临时阶段（若处理器繁忙则进入待处理栈，否则立即开始）
 func start_temp_stage(temp_stage: Stage) -> void:
@@ -88,7 +81,7 @@ func _start_immediate(temp_stage: Stage) -> void:
 	# 将当前阶段压入暂停栈
 	stage_context.temp_stage_stack.append(cur)
 	_transition_to(temp_stage)
-	temp_stage_started.emit(temp_stage)
+	stage_context.temp_stage_started.emit(temp_stage)
 
 ## 命令处理器空闲时调用（由 System 连接 all_completed 信号）
 func _on_command_processor_idle() -> void:
@@ -100,16 +93,16 @@ func end_round() -> void:
 	if timer:
 		timer.stop()
 	if stage_context.current_stage and not stage_context.current_stage.is_ended:
-		stage_context.current_stage.end_stage_effect(game_state)
-	# 清空所有栈
+		stage_context.current_stage.end_stage(game_state)
 	stage_context.temp_stage_stack.clear()
 	pending_temp_stage_stack.clear()
 	stage_context.current_main_stage_name = &""
 	stage_context.current_player_id = 0
 	stage_context.current_stage = null
 	current_main_stage_index = -1
-	round_ended.emit()
-	round_completed.emit()
+	GlobalConsole._print(["StageManager:回合结束。"])
+	stage_context.round_ended.emit()
+	stage_context.round_completed.emit()
 
 func _transition_to(new_stage: Stage) -> void:
 	if not new_stage:
@@ -128,12 +121,13 @@ func _transition_to(new_stage: Stage) -> void:
 		timer.start(new_stage.time_limit)
 	else:
 		timer.stop()
+	connect_stage_to_manager(new_stage)
 	if new_stage.is_paused:
 		new_stage.call_deferred(&"resume", game_state)
-		stage_rolled_back.emit(old_stage, new_stage)
+		stage_context.stage_rolled_back.emit(old_stage, new_stage)
 	else:
 		new_stage.call_deferred(&"enter", game_state)
-		stage_changed.emit(old_stage, new_stage)
+		stage_context.stage_changed.emit(old_stage, new_stage)
 
 func _rollback_to_previous_stage() -> void:
 	if stage_context.temp_stage_stack.is_empty():
@@ -151,7 +145,8 @@ func _rollback_to_previous_stage() -> void:
 func _advance_to_next_main_stage() -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= main_stages.size():
-		end_round()
+		GlobalConsole._print(["StageManager:自动推进回合。"])
+		game_state.queue_behavior(NewRoundCommand.new(stage_context.current_player_id))
 		return
 	_transition_to(main_stages[current_main_stage_index])
 
@@ -160,7 +155,7 @@ func _on_stage_ended(ended_stage: Stage) -> void:
 		return
 	if timer:
 		timer.stop()
-	stage_completed.emit()
+	stage_context.stage_completed.emit(ended_stage)  # 添加 stage 参数
 	if ended_stage.is_temporary:
 		if stage_context.temp_stage_stack.is_empty():
 			_advance_to_next_main_stage()
@@ -175,6 +170,7 @@ func _on_timer_timeout() -> void:
 		cur.timeout(game_state)
 
 func start_round(player_id: int = 0) -> void:
+	end_round()
 	current_main_stage_index = 0
 	stage_context.current_player_id = player_id
 	stage_context.temp_stage_stack.clear()

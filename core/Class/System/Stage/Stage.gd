@@ -17,10 +17,6 @@ func enter(_game_state: GameState) -> void:
 	is_ended = false
 	GlobalConsole._print(["Stage:进入", stage_name, "阶段"])
 
-## 阶段主逻辑（供子类重写）
-func run(_game_state: GameState) -> void:
-	pass
-
 ## 暂停阶段
 func pause(_game_state: GameState) -> void:
 	is_paused = true

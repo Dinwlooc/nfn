@@ -67,6 +67,7 @@ flat = true
 
 [node name="DiscardCardsUI" type="Panel" parent="UIContainer"]
 custom_minimum_size = Vector2(100, 20)
+layout_mode = 0
 offset_left = 515.0
 offset_right = 615.0
 offset_bottom = 39.0
@@ -88,6 +89,7 @@ flat = true
 
 [node name="AbandonResponseUI" type="Panel" parent="UIContainer"]
 custom_minimum_size = Vector2(100, 20)
+layout_mode = 0
 offset_left = 635.0
 offset_right = 735.0
 offset_bottom = 39.0

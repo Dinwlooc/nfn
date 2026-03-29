@@ -36,12 +36,11 @@ func on_init_setup_phase(game_state: GameState) -> void:
 	else:
 		game_state.player_manager.add_player(1)
 	game_state.player_manager.ensure_min_players(2)
-	game_state.current_player_index = 0
 	game_state.player_manager.send_players_delta_updates()
 	_context.phase = Phase.START_DRAW
 
 func on_start_draw_phase(game_state: GameState) -> void:
-	var new_round_cmd = NewRoundCommand.new(0)
+	var new_round_cmd = NewRoundCommand.new(0,0)
 	append_companion_command(new_round_cmd)
 	for i in range(game_state.player_manager.players.size()):
 		var draw_cmd = DrawCardsCommand.new(i, 4)

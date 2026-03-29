@@ -63,7 +63,7 @@ func get_card_by_id(card_id: int) -> Card:
 	return null
 
 func get_all_cards() -> Array[Card]:
-	return _ordered_pool.duplicate()
+	return _ordered_pool
 
 func get_card_ids() -> PackedInt32Array:
 	var ids: PackedInt32Array = []

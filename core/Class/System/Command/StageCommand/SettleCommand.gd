@@ -11,7 +11,6 @@ class Context extends CommandContext:
 		CLEAR,         # 守区清空阶段
 		DONE           # 完成
 	}
-
 	var defensive_area: AreaDefence = null
 	var attacker: Player = null
 	var top_card: Card = null

@@ -37,6 +37,8 @@ func _ready() -> void:
 
 ## 处理阶段切换事件
 func _process(_delta: float) -> void:
+	if Engine.get_process_frames() % 2 :
+		return
 	if not game_state._process_active:
 		set_process(false)
 		return
@@ -74,11 +76,11 @@ func _draw_cards_test() -> void:
 		GlobalConsole._print("System:Error:c_draw未生效。无存活玩家。")
 		return
 	var draw_event = DrawCardsCommand.new(
-		game_state.current_player_index,
+		game_state.stage_context.current_player_id,
 		2  # 默认抽卡数量
 		)
 	command_processor.queue_behavior(draw_event)
-	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % game_state.current_player_index)
+	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % game_state.stage_context.current_player_id)
 
 func _damage(hp_damage:int = 1,mp_damage:int = 1,player_id:int = 0)->void:
 	command_processor.queue_behavior(DamageCommand.new(game_state.player_manager.get_player_by_id(player_id),hp_damage,mp_damage))

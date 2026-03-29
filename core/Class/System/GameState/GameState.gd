@@ -5,7 +5,6 @@ class_name GameState
 var area_center := AreaCenter.new()
 var area_drawing := AreaDrawing.new()
 var area_discard := AreaDiscard.new()
-var current_player_index := 0
 var cardsmanager := CardsManager.new()
 var player_manager := PlayersManager.new()
 var timer: GameTimer

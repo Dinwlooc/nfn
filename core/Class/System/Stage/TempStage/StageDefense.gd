@@ -26,6 +26,7 @@ var _all_commands_completed_binding: Callable = Callable()
 # ========== 初始化 ==========
 func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	super._init()
+	is_temporary = true
 	self.defense_area = defense_area
 	self.attacker = attacker
 	self.defender = defense_area.player
