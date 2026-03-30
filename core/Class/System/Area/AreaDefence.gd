@@ -3,6 +3,7 @@ class_name AreaDefence
 
 var settle_count: int = 0
 var pending_card: Card = null
+signal area_pending_card_added(card:Card,area:AreaDefence)
 
 func _init_expand() -> void:
 	area_name = GlobalConstants.DefaultArea.DEFENCE
@@ -18,6 +19,7 @@ func cards_add(cards:Array[Card]) -> void:
 		commit_pending_card()
 	add_pending_card(cards[0])
 	area_card_added.emit(pending_card,self)
+	area_pending_card_added.emit(pending_card,self)
 # 添加缓冲槽卡牌（攻防中即将置入的斗牌）
 func add_pending_card(card: Card) -> void:
 	if pending_card:
@@ -60,6 +62,7 @@ func get_second_card() -> Card:
 # 结算守区
 func settle_defense_area() -> Array[Card]:
 	settle_count += 1
+	print("守区结算计数+1")
 	return get_all_cards()
 ## 仅重置结算次数（保留缓冲槽卡牌）
 func reset_settle_count() -> void:

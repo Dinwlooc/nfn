@@ -6,18 +6,15 @@ const DEFAULT_TIME_LIMIT: float = 30.0
 const MIN_TIME_LIMIT: float = 5.0
 const TIME_PENALTY_STEP: float = 30.0
 const TIME_PENALTY_DECREMENT: float = 15.0
-
 # ========== 引用 ==========
 var defense_area: AreaDefence
 var attacker: Player
 var defender: Player
-
 # ========== 计时相关 ==========
 var last_timer_reset_time: int = 0
 var current_responsive_player_id: int = -1
 var total_time_used: Dictionary[int, float] = {}
 var dynamic_time_limit: Dictionary[int, float] = {}
-
 # ========== 内部状态 ==========
 # 存储绑定的回调，用于信号断开
 var _defense_area_signal_binding: Callable = Callable()
@@ -128,47 +125,15 @@ func _check_defense_battle_restrictions(card_id: int, game_state: GameState) -> 
 	var card: Card = game_state.cardsmanager.get_card_by_id(card_id)
 	if not card:
 		return false
-	var top: Card = defense_area.get_top_card()
-	var is_attacker_turn: bool = (current_responsive_player_id == attacker.player_id)
-	if top == null:
-		if not is_attacker_turn:
-			GlobalConsole._print(["守区攻防阶段：顶层为空，只有攻方可出牌"])
-			return false
-		if card.type == &"attack":
-			return true
-		elif card.type == &"skill":
-			if card.get_attribute(&"is_group_attack"):
-				GlobalConsole._print(["守区攻防阶段：不能使用群体攻击技能"])
-				return false
-			return true
-		else:
-			GlobalConsole._print(["守区攻防阶段：攻方只能使用攻击或技能牌"])
-			return false
-	if top.player == defender:
-		if not is_attacker_turn:
-			GlobalConsole._print(["守区攻防阶段：顶层为守方牌，只有攻方可出牌"])
-			return false
-		if card.type == &"attack":
-			return true
-		elif card.type == &"skill":
-			if card.get_attribute(&"is_group_attack"):
-				GlobalConsole._print(["守区攻防阶段：不能使用群体攻击技能"])
-				return false
-			return true
-		else:
-			GlobalConsole._print(["守区攻防阶段：攻方只能使用攻击或技能牌"])
-			return false
-	if top.player == attacker:
-		if is_attacker_turn:
-			GlobalConsole._print(["守区攻防阶段：顶层为攻方牌，只有守方可出牌"])
-			return false
-		if card.type == &"defence":
-			return true
-		else:
-			GlobalConsole._print(["守区攻防阶段：守方只能使用防御牌"])
-			return false
-	GlobalConsole._print(["守区攻防阶段：顶层所有者无效"])
-	return false
+	var source_player: Player = game_state.player_manager.get_player_by_id(current_responsive_player_id)
+	return RuleCardUsage.can_use_card_in_defense(
+		card,
+		source_player,
+		defense_area,
+		attacker,
+		defender,
+		current_responsive_player_id
+	)
 
 # ========== 响应权更新 ==========
 func _update_responsive_player(game_state: GameState) -> void:

@@ -8,7 +8,6 @@ const RESUME_TIME_LIMIT: float = 30.0  # 恢复时的计时上限
 # ========== 内部状态 ==========
 var _current_attacker_id: int = -1
 var _current_attacker: Player = null
-var _current_time_limit: float = ENTER_TIME_LIMIT  # 当前计时上限（动态变化）
 var last_timer_reset_time: int = 0                 # 用于计时（虽然不惩罚，但保持接口统一）
 var _all_commands_completed_binding: Callable = Callable()  # 命令完成信号绑定
 
@@ -20,26 +19,21 @@ func _init() -> void:
 
 func enter(game_state: GameState) -> void:
 	super.enter(game_state)
-	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_context.current_player_id)
+	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.player_id
-	_current_time_limit = ENTER_TIME_LIMIT
 	# 设置响应玩家并启动计时
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
-	_reset_timer_for_current_player()
+	_reset_timer_for_current_player(ENTER_TIME_LIMIT)
 	# 连接所有命令完成信号
 	_connect_all_commands_completed_signal(game_state)
 	GlobalConsole._print(["主阶段开始，当前玩家：", _current_attacker_id])
 
 func resume(game_state: GameState) -> void:
 	super.resume(game_state)
-	# 恢复时重新同步当前玩家（可能未变）
-	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_context.current_player_id)
+	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.player_id
-	_current_time_limit = RESUME_TIME_LIMIT
-	# 重新设置响应玩家（确保正确）并重置计时
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
-	_reset_timer_for_current_player()
-	# 重新连接信号（确保信号连接）
+	_reset_timer_for_current_player(ENTER_TIME_LIMIT/2)
 	_connect_all_commands_completed_signal(game_state)
 	GlobalConsole._print(["主阶段恢复，当前玩家：", _current_attacker_id])
 
@@ -90,12 +84,7 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		return
 	# 执行命令
 	game_state.queue_behavior(rule_result.command)
-	# 如果规则指定了响应权变化，立即设置（但命令完成后会刷新）
-	if rule_result.should_respond:
-		game_state.set_responsive_players(rule_result.responsive_players)
-		GlobalConsole._print(["主阶段：技能牌使用成功，响应权已更新"])
-	else:
-		GlobalConsole._print(["主阶段：卡牌使用成功"])
+	GlobalConsole._print(["主阶段：卡牌使用成功"])
 	request.complete()
 
 # ========== 主阶段专属限制 ==========
@@ -104,49 +93,16 @@ func _check_main_stage_restrictions(card_id: int, target_id: int, game_state: Ga
 	if not card:
 		GlobalConsole._print(["主阶段：卡牌不存在"])
 		return false
-	var card_type = card.type
-	match card_type:
-		&"attack":
-			# 对守区使用攻击牌时，检查目标守区已结算次数是否小于攻击者速度
-			if target_id >= 0:
-				var target_player: Player = game_state.player_manager.get_player_by_id(target_id)
-				if target_player:
-					var defense_area: AreaDefence = target_player.area_defensive
-					if defense_area and defense_area.settle_count >= _current_attacker.get_attribute(&"speed"):
-						GlobalConsole._print(["主阶段：目标守区已结算次数(%d) >= 攻击者速度(%d)，不能攻击" % [defense_area.settle_count, _current_attacker.get_attribute(&"speed")]])
-						return false
-			return _check_defensive_restrictions(card_id, target_id, game_state)
-		&"defence":
-			return _check_defensive_restrictions(card_id, target_id, game_state)
-		&"skill":
-			return true
-		_:
-			GlobalConsole._print(["主阶段：不明类型卡牌，尝试打出"])
-			return true
-
-func _check_defensive_restrictions(card_id: int, target_id: int, game_state: GameState) -> bool:
-	var card: Card = game_state.cardsmanager.get_card_by_id(card_id)
-	if not card:
-		return false
-	var card_type = card.type
-	var target_player = game_state.player_manager.get_player_by_id(target_id) if target_id >= 0 else null
-	match card_type:
-		&"attack":
-			if target_player and target_player.area_defensive.get_top_card() and target_player.area_defensive.get_top_card().player == _current_attacker:
-				GlobalConsole._print(["主阶段：目标守区顶部仍是你的牌，你不能攻击"])
-				return false
-			return true
-		&"defence":
-			if _current_attacker.area_defensive.get_top_card() and _current_attacker.area_defensive.get_top_card().player == _current_attacker:
-				GlobalConsole._print(["主阶段：自身守区顶部仍是你的牌，你不能使用防御牌"])
-				return false
-			return true
-		_:
-			return true
+	var source_player: Player = game_state.player_manager.get_player_by_id(_current_attacker_id)
+	var target_player: Player = game_state.player_manager.get_player_by_id(target_id) if target_id >= 0 else null
+	var can_use = RuleCardUsage.can_use_card_in_main(card, source_player, target_player, game_state)
+	if not can_use:
+		GlobalConsole._print(["主阶段：规则不允许使用此卡牌"])
+	return can_use
 
 # ========== 计时辅助 ==========
-func _reset_timer_for_current_player() -> void:
-	request_reset_timer.emit(_current_time_limit)
+func _reset_timer_for_current_player(new_time_limit:int) -> void:
+	request_reset_timer.emit(new_time_limit)
 	last_timer_reset_time = Time.get_ticks_msec()
 
 # ========== 信号管理 ==========
@@ -164,7 +120,6 @@ func _disconnect_all_commands_completed_signal(game_state: GameState) -> void:
 func _on_all_commands_completed(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
-	# 命令全部完成后，重新设置响应玩家（刷新阻塞）并重置计时器
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
-	_reset_timer_for_current_player()
+	_reset_timer_for_current_player(ENTER_TIME_LIMIT/2)
 	GlobalConsole._print(["主阶段：所有命令完成，已刷新响应权为玩家", _current_attacker_id])

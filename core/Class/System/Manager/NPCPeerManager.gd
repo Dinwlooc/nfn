@@ -33,9 +33,9 @@ func _on_request_cancelled(player_id: int) -> void:
 		_retry_counts[player_id] = count + 1
 		call_deferred(&"_retry_request", player_id)
 	else:
-		var abandon_req = OperationRequest.AbandonResponse.new(player_id).use_npc_peer_id()
+		var abandon_req := OperationRequest.AbandonResponse.new(player_id).use_npc_peer_id()
 		_retry_counts.erase(player_id)
-		operation_requested.emit(abandon_req)
+		call_deferred(&"emit_operation_requested",abandon_req)
 
 func _retry_request(player_id: int) -> void:
 	if not _npc_peers.has(player_id):
@@ -65,8 +65,8 @@ func _on_npc_decision(player_id: int, serial: int, request: OperationRequest) ->
 	_decision_serial.erase(player_id)
 	if request == null:
 		request = OperationRequest.AbandonResponse.new(player_id).use_npc_peer_id()
-	request.cancelled.connect(_on_request_cancelled.bind(player_id))
-	operation_requested.emit(request)
+	request.cancelled.connect(_on_request_cancelled.bind(player_id),CONNECT_ONE_SHOT)
+	emit_operation_requested(request)
 
 func clear() -> void:
 	for npc in _npc_peers.values():
@@ -74,3 +74,6 @@ func clear() -> void:
 	_npc_peers.clear()
 	_retry_counts.clear()
 	_decision_serial.clear()
+
+func emit_operation_requested(request: OperationRequest):
+	operation_requested.emit(request)

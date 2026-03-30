@@ -8,7 +8,7 @@ func _init() -> void:
 
 func enter(game_state: GameState) -> void:
 	super.enter(game_state)
-	var player_id:int = game_state.stage_context.current_player_id
+	var player_id:int = game_state.stage_manager.current_player_id
 	var draw_count = game_state.player_manager.get_player_by_id(player_id).get_attribute(&"draw_cards_count")
 	var draw_event = DrawCardsCommand.new(player_id, draw_count)
 	var callback:Callable = func(): end_stage(game_state)

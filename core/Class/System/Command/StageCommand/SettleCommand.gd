@@ -61,6 +61,9 @@ func _on_duel_phase(game_state: GameState, _context: Context) -> void:
 	_context.phase = Context.Phase.DAMAGE
 
 func _on_damage_phase(game_state: GameState, _context: Context) -> void:
+	if not _context.top_card:
+		_context.phase = Context.Phase.DONE
+		return
 	var defender:Player = _context.defensive_area.player
 	if _context.top_card.type == &"attack":
 		var health_dmg:int = _context.top_card.get_attribute(&"power")

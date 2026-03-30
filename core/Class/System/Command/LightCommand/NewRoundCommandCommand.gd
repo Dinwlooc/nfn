@@ -19,7 +19,7 @@ func execute(game_state: GameState) -> void:
 		if player_count == 0:
 			complete()
 			return
-		var current_index:int = game_state.player_manager.get_seat_index_by_player_id(game_state.stage_context.current_player_id)
+		var current_index:int = game_state.player_manager.get_seat_index_by_player_id(game_state.stage_manager.current_player_id)
 		var next_index: int = (current_index + 1) % player_count
 		var next_player: Player = game_state.player_manager.get_player_by_seat(next_index)
 		if next_player == null:
