@@ -1,11 +1,8 @@
 extends Stage
 class_name StageDiscard
 
-# ========== 常量 ==========
 const TIME_LIMIT: float = 10.0   # 弃牌阶段总时间限制（秒）
-# ========== 内部状态 ==========
 var _players_to_discard: Dictionary[int, int] = {}          # player_id -> 还需弃牌的数量
-var _all_commands_completed_binding: Callable = Callable()  # 命令完成信号绑定
 
 # ========== 生命周期 ==========
 func _init() -> void:

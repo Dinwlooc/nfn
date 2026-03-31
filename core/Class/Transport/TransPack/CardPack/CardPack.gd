@@ -60,6 +60,8 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 
 func update_merge_mask() -> void:
 	super.update_merge_mask()
+	if is_full_update:
+		return
 	if name != &"": merge_mask |= 1 << MainProperty.NAME
 	if type != 0: merge_mask |= 1 << MainProperty.TYPE
 

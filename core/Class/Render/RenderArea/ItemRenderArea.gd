@@ -110,7 +110,7 @@ func remove_item(item:RenderItem) -> void:
 		if item in selected_items:
 			selected_items.erase(item)
 			item.selected = false
-			item.render_update()
+			item.render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_REMOVE))
 		_compact_pool(pool_id, 1)
 	_disconnect_item_from_area(item)
 	items_removed.emit(item)

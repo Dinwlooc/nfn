@@ -15,10 +15,8 @@ var last_timer_reset_time: int = 0
 var current_responsive_player_id: int = -1
 var total_time_used: Dictionary[int, float] = {}
 var dynamic_time_limit: Dictionary[int, float] = {}
-# ========== 内部状态 ==========
-# 存储绑定的回调，用于信号断开
+# ========== 其他信号绑定 ==========
 var _defense_area_signal_binding: Callable = Callable()
-var _all_commands_completed_binding: Callable = Callable()
 
 # ========== 初始化 ==========
 func _init(defense_area: AreaDefence, attacker: Player) -> void:
@@ -32,7 +30,7 @@ func _init(defense_area: AreaDefence, attacker: Player) -> void:
 
 # ========== 阶段生命周期 ==========
 func enter(game_state: GameState) -> void:
-	super.enter(game_state)
+	# 先初始化内部数据，再调用基类（基类会连接 all_commands_completed 信号）
 	for p in [attacker.player_id, defender.player_id]:
 		total_time_used[p] = 0.0
 		dynamic_time_limit[p] = DEFAULT_TIME_LIMIT
@@ -40,31 +38,30 @@ func enter(game_state: GameState) -> void:
 		defense_area.commit_pending_card()
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
-	_connect_defense_area_signals(game_state)
-	_connect_all_commands_completed_signal(game_state)
+	_connect_defense_area_signals(game_state)   # 防御区自己的信号
 	_check_and_generate_battle_command(game_state)
-
 	GlobalConsole._print(["守区攻防阶段开始，当前响应玩家：", current_responsive_player_id])
+	super.enter(game_state)   # 基类连接命令完成信号
 
 func resume(game_state: GameState) -> void:
-	super.resume(game_state)
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
-	_connect_all_commands_completed_signal(game_state)
+	GlobalConsole._print(["守区攻防阶段恢复，当前响应玩家：", current_responsive_player_id])
+	super.resume(game_state)   # 基类重新连接命令完成信号
 
 func pause(game_state: GameState) -> void:
-	super.pause(game_state)
 	_disconnect_defense_area_signals()
-	_disconnect_all_commands_completed_signal(game_state)
+	GlobalConsole._print(["守区攻防阶段暂停"])
+	super.pause(game_state)   # 基类断开命令完成信号
 
 func end_stage_effect(game_state: GameState) -> void:
 	if defense_area.pending_card:
 		defense_area.commit_pending_card()
 	game_state.set_responsive_players(PackedInt32Array())
 	_disconnect_defense_area_signals()
-	_disconnect_all_commands_completed_signal(game_state)
 	GlobalConsole._print(["守区攻防阶段结束"])
+	super.end_stage_effect(game_state)
 
 # ========== 操作请求处理 ==========
 func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
@@ -97,7 +94,6 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["守区攻防阶段：规则未返回命令"])
 		request.cancel()
 		return
-
 	var elapsed: float = _get_elapsed_time_since_last_reset()
 	game_state.queue_behavior_with_callback(command, func():
 		_total_time_used_update(current_responsive_player_id, elapsed)
@@ -189,11 +185,9 @@ func _total_time_used_update(player_id: int, elapsed: float) -> void:
 	dynamic_time_limit[player_id] = new_limit
 	GlobalConsole._print(["玩家", player_id, "总用时", new_total, "s，动态时间限", new_limit, "s"])
 
-# ========== 信号管理 ==========
+# ========== 防御区信号管理（独立） ==========
 func _connect_defense_area_signals(game_state: GameState) -> void:
-	# 先断开可能残留的连接
 	_disconnect_defense_area_signals()
-	# 创建绑定的回调并存储
 	_defense_area_signal_binding = _on_defense_area_card_changed.bind(game_state)
 	defense_area.area_card_added.connect(_defense_area_signal_binding)
 	defense_area.area_card_removed.connect(_defense_area_signal_binding)
@@ -206,18 +200,8 @@ func _disconnect_defense_area_signals() -> void:
 			defense_area.area_card_removed.disconnect(_defense_area_signal_binding)
 		_defense_area_signal_binding = Callable()
 
-func _connect_all_commands_completed_signal(game_state: GameState) -> void:
-	_disconnect_all_commands_completed_signal(game_state)
-	_all_commands_completed_binding = _on_all_commands_completed.bind(game_state)
-	game_state.all_commands_completed.connect(_all_commands_completed_binding)
-
-func _disconnect_all_commands_completed_signal(game_state:GameState) -> void:
-	if _all_commands_completed_binding != Callable():
-		if game_state and game_state.all_commands_completed.is_connected(_all_commands_completed_binding):
-			game_state.all_commands_completed.disconnect(_all_commands_completed_binding)
-	_all_commands_completed_binding = Callable()
-
-func _on_all_commands_completed(game_state: GameState) -> void:
+# ------------------ 实现基类抽象方法 ------------------
+func _on_all_commands_completed_impl(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
 	_update_responsive_player(game_state)

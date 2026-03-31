@@ -19,7 +19,7 @@ var hovering:bool = false
 var data:TransPack
 signal render_requested(render_event:RenderEvent)
 signal reset_requested(item:RenderItem)
-signal data_requested(item:RenderItem)
+signal data_requested(item:RenderItem,render_event:RenderEvent)
 signal request_select(item:RenderItem)
 signal request_drag(item:RenderItem)
 signal request_cancel_dragged(item:RenderItem)
@@ -33,10 +33,10 @@ func _ready() -> void:
 	request_face.emit(self)
 	data_requested.emit(self)
 
-func data_update(new_card_data:TransPack)-> void:
+func data_update(new_card_data:TransPack,render_event:RenderEvent = RenderEvent.NULL_EVENT)-> void:
 	data = new_card_data
 	if is_inside_tree():
-		data_requested.emit(self)
+		data_requested.emit(self,render_event)
 	else :
 		request_ready()
 

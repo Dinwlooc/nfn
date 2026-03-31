@@ -114,7 +114,9 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 	return delta_mask
 
 func update_merge_mask() -> void:
-	super.update_merge_mask()  # 先调用父类掩码设置
+	super.update_merge_mask()
+	if is_full_update:
+		return
 	if power != STANDARD_POWER: merge_mask |= 1 << Property.POWER
 	if cost != STANDARD_COST: merge_mask |= 1 << Property.COST
 	if suit != STANDARD_SUIT: merge_mask |= 1 << Property.SUIT

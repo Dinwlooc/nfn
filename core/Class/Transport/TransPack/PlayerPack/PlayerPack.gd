@@ -152,6 +152,8 @@ func calculate_delta_mask(old_pack: PlayerPack) -> int:
 
 func update_merge_mask() -> void:
 	super.update_merge_mask()
+	if is_full_update:
+		return
 	if seat_index != STANDARD_SEAT_INDEX: merge_mask |= 1 << MainProperty.SEAT_INDEX
 	if HP != STANDARD_HP: merge_mask |= 1 << MainProperty.HP
 	if MP != STANDARD_MP: merge_mask |= 1 << MainProperty.MP

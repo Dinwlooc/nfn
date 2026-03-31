@@ -18,7 +18,6 @@ func _ready() -> void:
 		curve_managers.append(manager)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.HAND, connect_to_areahand)
 	control.render_context.connect_renderarea(RenderArea.DefaultArea.PLAYERS, connect_to_areatargets)
-	# 修改：连接新信号，使用 bind 传递拖拽状态
 	control.render_context.dragging_started.connect(_on_dragged_update.bind(true))
 	control.render_context.dragging_canceled.connect(_on_dragged_update.bind(false))
 
@@ -102,6 +101,9 @@ func render_event_handler(render_event: RenderEvent) -> void:
 			delay_draw_arrow()
 		else:
 			draw_arrow()
+	elif event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
+		clear_arrow()
+		return
 
 func delay_draw_arrow() -> void:
 	draw_cooldown = DRAW_COOLDOWN_DURATION
