@@ -1,26 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://s0d734yjh7uc"]
+[gd_scene load_steps=7 format=3 uid="uid://s0d734yjh7uc"]
 
 [ext_resource type="Script" uid="uid://inhy17k8yahq" path="res://resource/default/assets/Character/charactercard/charactertargetcard.gd" id="1_1lsym"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://resource/default/assets/Area/areaface/areaface_self_properties.tscn" id="2_f0c7v"]
 [ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/areaface_denfence.tscn" id="3_ct3wd"]
+[ext_resource type="PackedScene" uid="uid://bjdp8ibnlaew1" path="res://resource/default/assets/Character/charactercard/character_container.tscn" id="4_ct3wd"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="4_gn4qo"]
-[ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/flash_color.gdshader" id="4_iwfka"]
-[ext_resource type="Texture2D" uid="uid://bqorna25qfuyo" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami_Sprite.png" id="5_bf61q"]
 [ext_resource type="Texture2D" uid="uid://caivq3rbvlms4" path="res://resource/default/assets/Character/charactercard/character_selected_icon.png" id="5_ct3wd"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_g8p6n"]
-shader = ExtResource("4_iwfka")
-shader_parameter/flash_color = Color(0, 0, 0, 1)
-shader_parameter/flash_intensity = 0.0
-shader_parameter/alpha = 1.0
-shader_parameter/enable_crossfade = false
-shader_parameter/crossfade_amount = 1.0
-shader_parameter/enable_sprite_crossfade = false
-shader_parameter/early_frame = 0
-shader_parameter/current_frame = 0
-shader_parameter/hframes = 1
-shader_parameter/vframes = 1
-shader_parameter/sprite_crossfade_amount = 1.0
 
 [node name="CharacterTargetCard" type="Control"]
 layout_mode = 3
@@ -64,31 +49,41 @@ offset_right = 232.0
 offset_bottom = 318.0
 mode = 1
 
-[node name="CharacterContainer" type="Control" parent="."]
+[node name="CharacterPanel" type="Control" parent="."]
 clip_contents = true
 anchors_preset = 0
 offset_left = 13.0
-offset_top = 8.0
-offset_right = 115.0
-offset_bottom = 147.0
+offset_top = 6.0
+offset_right = 127.0
+offset_bottom = 161.0
 
-[node name="BackgoundCharacter" type="ColorRect" parent="CharacterContainer"]
+[node name="BackgoundCharacter" type="ColorRect" parent="CharacterPanel"]
 texture_filter = 1
 layout_mode = 2
-anchor_left = 0.023
-anchor_right = 0.023
-offset_left = -2.576
-offset_right = 98.424
-offset_bottom = 138.0
+offset_left = -11.0
+offset_top = -11.0
+offset_right = 385.0
+offset_bottom = 341.0
 color = Color(0.309804, 0.152941, 0.0509804, 0.486275)
 
-[node name="Character" type="Sprite2D" parent="CharacterContainer"]
-material = SubResource("ShaderMaterial_g8p6n")
-position = Vector2(51.8248, 172.25)
-scale = Vector2(0.8, 0.8)
-texture = ExtResource("5_bf61q")
-flip_h = true
-hframes = 2
+[node name="Anchor" type="Control" parent="CharacterPanel"]
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.328
+anchor_right = 0.5
+anchor_bottom = 0.906
+offset_left = -53.0
+offset_top = -41.84
+offset_right = -13.0
+offset_bottom = -91.43
+scale = Vector2(0.9, 0.9)
+
+[node name="CharacterContainer" parent="CharacterPanel/Anchor" instance=ExtResource("4_ct3wd")]
+clip_contents = false
+layout_mode = 1
+offset_left = -28.0
+offset_right = 150.0
+offset_bottom = 267.425
 
 [node name="SelectedIcon" type="TextureRect" parent="."]
 visible = false
