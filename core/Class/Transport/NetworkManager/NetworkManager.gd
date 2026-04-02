@@ -56,7 +56,7 @@ func random_create() -> bool:
 			user.get_config()
 			users[current_id] = user
 			peer_connected.emit(current_id)
-		GlobalConsole._print(["NetworkManager: 服务器成功启动:ws://localhost: ", port])
+		GlobalConsole._print(["NetworkManager: 服务器成功启动:ws://localhost:", port])
 		multiplayer_api.multiplayer_peer = peer
 		connection_succeeded.emit()
 		return true

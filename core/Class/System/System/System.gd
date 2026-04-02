@@ -3,7 +3,6 @@ class_name System
 
 @export var timer: GameTimer
 var game_state := GameState.new()
-var modifier_manager := ModifierManager.new(game_state)
 var command_processor := CommandProcessor.new(game_state)
 var operation_handler := OperationHandler.new()
 var area_manager := AreaManager.new(game_state)
@@ -17,7 +16,6 @@ func _init() -> void:
 	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
 	game_state.new_behavior.connect(command_processor.queue_behavior)
 	game_state.request_set_responsive_players.connect(operation_handler.set_responsive_players)
-	command_processor.command_processing.connect(modifier_manager.process_behavior)
 	command_processor.enable_processing.connect(_enable_processing)
 	command_processor.all_completed.connect(_on_command_processor_all_completed)
 	npc_peer_manager.operation_requested.connect(operation_handler.handle_request)

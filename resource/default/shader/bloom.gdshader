@@ -25,10 +25,10 @@ bool in_range(float lum) {
 void fragment() {
 	vec4 original = texture(TEXTURE, UV);
 	float lum = dot(original.rgb, vec3(0.2126, 0.7152, 0.0722));
-	
+
 	// 提取范围内的像素（否则置零）
 	vec4 highlight = in_range(lum) ? original : vec4(0.0);
-	
+
 	// 对范围内像素进行高斯模糊
 	vec4 blurred = vec4(0.0);
 	for (int i = 0; i < 9; i++) {
@@ -42,7 +42,7 @@ void fragment() {
 			blurred += sample_color * kernel[i];
 		}
 	}
-	
+
 	// 脉冲强度
 	float final_intensity = intensity;
 	if (enable_pulse) {

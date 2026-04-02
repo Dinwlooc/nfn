@@ -1,5 +1,5 @@
 ## 具体修饰器实现：链接到内部可调用体的中转类
-extends ModifierContainer
+extends RefCounted
 class_name Modifier
 
 var modifier_name: StringName
