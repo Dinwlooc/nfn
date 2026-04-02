@@ -13,7 +13,6 @@ var npc_peer_manager: NPCPeerManager = NPCPeerManager.new(game_state)
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
 	game_state.timer = timer
-	game_state.users = transport.network_manager.users
 	game_state.player_manager.player_added.connect(_on_player_added)
 	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
 	game_state.new_behavior.connect(command_processor.queue_behavior)
@@ -33,6 +32,11 @@ func _ready() -> void:
 	game_state.load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
 	timer.timeout.connect(game_state.stage_manager.on_timer_timeout.bind(game_state))
+	call_deferred(&"start_server")
+
+func start_server()->void:
+	transport.start_server()
+	game_state.users = transport.network_manager.users
 
 func _process(_delta: float) -> void:
 	if Engine.get_process_frames() % 4 != 0:

@@ -64,7 +64,7 @@ func handle_request(request: RenderRequest) -> void:
 	if render_area:
 		render_area.process_request(request)
 	else:
-		push_error("RenderArea not found for target: " + str(target_area))
+		push_error("RenderArea not found for target: " + str(target_area) + ",player:" + str(request.target_area_player_id) )
 		render_context.get_render_area(&"discard").process_request(request)
 
 func _on_render_context_area_created(area: RenderArea, player_id: int) -> void:

@@ -5,11 +5,9 @@ class_name DiscardCardsCommand
 class Context extends CardMoveCommand.Context:
 	var source_player_id: int = 0
 	var card_ids: PackedInt32Array = PackedInt32Array()
-
 	## 设置源玩家ID
 	func set_source_player_id(id: int) -> void:
 		source_player_id = id
-
 	## 设置卡牌ID数组
 	func set_card_ids(ids: PackedInt32Array) -> void:
 		card_ids = ids

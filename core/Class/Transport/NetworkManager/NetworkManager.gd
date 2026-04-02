@@ -22,7 +22,6 @@ func set_multiplayer(multiplayer: MultiplayerAPI) -> void:
 	multiplayer.server_disconnected.connect(_on_multiplayer_server_disconnected)
 	multiplayer.peer_connected.connect(_on_multiplayer_peer_connected)
 	multiplayer.peer_disconnected.connect(_on_multiplayer_peer_disconnected)
-	random_create()
 
 func _init() -> void:
 	GlobalConsole._print("NetworkManager: 网络管理器初始化完成")
@@ -57,7 +56,7 @@ func random_create() -> bool:
 			user.get_config()
 			users[current_id] = user
 			peer_connected.emit(current_id)
-		GlobalConsole._print(["NetworkManager: 服务器成功启动，端口: ", port])
+		GlobalConsole._print(["NetworkManager: 服务器成功启动:ws://localhost: ", port])
 		multiplayer_api.multiplayer_peer = peer
 		connection_succeeded.emit()
 		return true

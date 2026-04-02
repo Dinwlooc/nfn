@@ -14,10 +14,12 @@ func _ready() -> void:
 	GlobalConsole.c_close.connect(_on_console_close)
 
 func _process(_delta: float) -> void:
-	network_manager.poll()
+	if network_manager:
+		network_manager.poll()
 # 控制台命令处理
 func _on_console_connect_to(new_url: String) -> void:
 	network_manager.url_connect(new_url)
+	set_process(true)
 
 func _on_console_close() -> void:
 	network_manager.close()
@@ -47,3 +49,6 @@ func receive_operation_request(data: PackedByteArray) -> void:
 		operation_request_received.emit(op)
 	else:
 		push_error("Failed to deserialize operation request")
+
+func start_server()->void:
+	network_manager.random_create()

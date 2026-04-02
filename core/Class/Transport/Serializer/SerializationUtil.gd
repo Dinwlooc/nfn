@@ -64,8 +64,7 @@ static func _read_varint(buffer: StreamPeerBuffer) -> int:
 		shift += 7
 		if (byte & VARINT_CONTINUE_FLAG) == 0:
 			break
-	var _sign:int = (result & 1) * -2 + 1  # 0->1, 1->-1
-	return (result >> 1) * _sign
+	return (result >> 1) ^ (-(result & 1))
 
 # 字符串序列化（保持不变）
 static func _write_string(buffer: StreamPeerBuffer, value: String) -> void:

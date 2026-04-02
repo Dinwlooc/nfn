@@ -53,7 +53,7 @@ func _on_render_area_registered(area_name: StringName, area: RenderArea, player_
 # 获取实际的玩家ID用于字典访问
 func _get_actual_player_id(player_id: int) -> int:
 	if local_player_id == -1:
-		return PUBLIC_PLAYER_ID
+		return player_id
 	if player_id == local_player_id:
 		return PUBLIC_PLAYER_ID
 	return player_id
@@ -80,15 +80,28 @@ func disconnect_renderarea(area_name: StringName, callback: Callable, player_id:
 			if _callback_map[actual_player_id].is_empty():
 				_callback_map.erase(actual_player_id)
 
+## 注册渲染区域（带冲突修正）
 func register_render_area(area: RenderArea, player_id: int = PUBLIC_PLAYER_ID) -> void:
-	var actual_player_id: int = _get_actual_player_id(player_id)
-	if not _render_areas.has(actual_player_id):
-		_render_areas[actual_player_id] = {}
-	if _render_areas[actual_player_id].has(area.get_area_name()):
-		push_error("Duplicate area registration: " + area.get_area_name() + " for player " + str(player_id))
+	var default_id: int = _get_actual_player_id(player_id)
+	var area_name: StringName = area.get_area_name()
+	# 卫语句：默认ID下未占用则直接注册
+	if not _render_areas.has(default_id) or not _render_areas[default_id].has(area_name):
+		if not _render_areas.has(default_id):
+			_render_areas[default_id] = {}
+		_render_areas[default_id][area_name] = area
+		render_area_registered.emit(area_name, area, player_id)
 		return
-	_render_areas[actual_player_id][area.get_area_name()] = area
-	render_area_registered.emit(area.get_area_name(), area, player_id)
+	# 若默认ID已被占用，且是公共ID且传入ID不为公共ID，则尝试使用传入ID注册
+	if default_id == PUBLIC_PLAYER_ID and player_id != PUBLIC_PLAYER_ID:
+		var alt_id: int = player_id  # 此处不调用 _get_actual_player_id，直接用原始ID
+		if not _render_areas.has(alt_id) or not _render_areas[alt_id].has(area_name):
+			if not _render_areas.has(alt_id):
+				_render_areas[alt_id] = {}
+			_render_areas[alt_id][area_name] = area
+			render_area_registered.emit(area_name, area, player_id)
+			return
+	# 其他情况（包括公共ID冲突且无法使用其他ID）报错
+	push_error("Duplicate area registration: " + area_name + " for player " + str(player_id))
 
 func unregister_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> void:
 	var actual_player_id: int = _get_actual_player_id(player_id)

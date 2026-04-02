@@ -72,6 +72,7 @@ func send_cards(
 		i += 1
 	send_items(card_packs, MultiplayerPeer.TARGET_PEER_BROADCAST, event_type, source_player_id, custom_event_name)
 
+
 func shuffle_card_pool() -> void:
 	pass
 

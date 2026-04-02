@@ -6,8 +6,6 @@ extends ItemFace
 @onready var character_container: Control = $CharacterPanel
 ## 角色动画节点（已封装受击动画）
 @onready var character: CharacterFace = $CharacterPanel/Anchor/CharacterContainer
-## 角色背景节点
-@onready var character_background: ColorRect = $CharacterContainer/BackgoundCharacter
 ## 角色属性节点
 @onready var properties: AreaFace = $AreaFaceSelf_Properties
 ## 防御区域节点
@@ -155,8 +153,6 @@ func _apply_selected_effects() -> void:
 	_current_tween.set_trans(SELECT_ANIMATION_TRANS)
 	_current_tween.parallel().tween_property(character_container, ^"position", Vector2.ZERO, SELECT_ANIMATION_DURATION)
 	_current_tween.parallel().tween_property(character_container, ^"size", size , SELECT_ANIMATION_DURATION)
-	_current_tween.parallel().tween_property(character_background, ^"position", Vector2.ZERO, SELECT_ANIMATION_DURATION)
-	_current_tween.parallel().tween_property(character_background, ^"size", size , SELECT_ANIMATION_DURATION)
 	_current_tween.parallel().tween_property(properties, ^"position", _properties_original_position + Vector2(PROPERTIES_SHIFT_X, 0), SELECT_ANIMATION_DURATION)
 	_current_tween.parallel().tween_property(properties, ^"scale", _properties_original_scale * PROPERTIES_SCALE, SELECT_ANIMATION_DURATION)
 	selected_icon.visible = true
