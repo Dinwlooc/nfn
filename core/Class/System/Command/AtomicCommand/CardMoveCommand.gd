@@ -1,4 +1,4 @@
-## 卡牌移动命令 - 重构后
+## 卡牌移动命令
 extends BehaviorCommand
 class_name CardMoveCommand
 
@@ -20,23 +20,50 @@ class Context extends CommandContext:
 	var move_out_param = null
 	var target_area: Area = null
 	var moved_cards: Array[Card] = []
+
 	## 获取移动的卡牌
 	func get_moved_cards() -> Array[Card]:
 		return moved_cards
+
 	## 工具方法：设置顶部移除模式
-	func set_top_mode(count: int) -> void:
+	func set_top_mode(count: int) -> Context:
 		move_out_mode = MoveOutMode.TOP
 		move_out_param = count
+		return self
 	## 工具方法：设置索引移除模式
-	func set_indices_mode(indices: PackedInt32Array) -> void:
+	func set_indices_mode(indices: PackedInt32Array) ->Context:
 		move_out_mode = MoveOutMode.INDICES
 		move_out_param = indices
+		return self
 	## 工具方法：设置ID移除模式
-	func set_id_mode(ids: PackedInt32Array) -> void:
+	func set_id_mode(ids: PackedInt32Array) -> Context:
 		move_out_mode = MoveOutMode.BY_ID
 		move_out_param = ids
+		return self
+	func set_target_area(area:Area)->Context:
+		target_area = area
+		return self
+	func set_source_area(area:Area)->Context:
+		source_area = area
+		return self
+	## 重写：主修饰玩家ID数组（从被移动卡牌的拥有者中提取，发起者置于首位）
+	func get_primary_modifier_player_ids() -> PackedInt32Array:
+		if not player_id or player_id < 0:
+			return []
+		var ids: PackedInt32Array = [player_id]
+		for card in moved_cards:
+			var owner_id = card.get_owner_id() if card else -1
+			if not owner_id == -1 and not owner_id == player_id and not owner_id in ids:
+				ids.append(owner_id)
+		return ids
+
+	## 重写：主修饰卡牌数组
+	func get_primary_modifier_cards() -> Array[Card]:
+		if phase < Phase.MOVE_OUT:
+			return []
+		return moved_cards
 ## 卡牌移动命令
-func _init( player_id: int ,name_overriding: StringName, context_overriding:Context = Context.new()) -> void:
+func _init( player_id: int ,name_overriding: StringName = &"Move", context_overriding:Context = Context.new()) -> void:
 	super._init(player_id,name_overriding,context_overriding)
 
 func execute(game_state: GameState) -> void:

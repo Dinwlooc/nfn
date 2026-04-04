@@ -106,3 +106,6 @@ func _compress_ordered_pool(start_index: int) -> void:
 				_card_id_to_index[_ordered_pool[read_index].id] = write_index
 			write_index += 1
 	_ordered_pool.resize(write_index)
+
+func is_empty()->bool:
+	return _ordered_pool.is_empty()

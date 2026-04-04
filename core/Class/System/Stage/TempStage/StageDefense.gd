@@ -108,8 +108,7 @@ func timeout(game_state: GameState) -> void:
 	process_operation_request(abandon_request, game_state)
 
 func _process_settle_request(request: OperationRequest, game_state: GameState) -> void:
-	var settle_cmd = SettleCommand.new(current_responsive_player_id)
-	settle_cmd.set_defense_context(defense_area, attacker)
+	var settle_cmd = SettleCommand.new(current_responsive_player_id,defense_area)
 	game_state.queue_behavior_with_callback(settle_cmd, func():
 		if not is_ended:
 			end_stage(game_state)

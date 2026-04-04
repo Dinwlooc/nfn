@@ -30,6 +30,23 @@ class Context extends CommandContext:
 		card1 = card_a
 		card2 = card_b
 		source_system = source
+
+	func get_primary_modifier_player_ids() -> PackedInt32Array:
+		var ids: PackedInt32Array = [player_id]
+		if card1 and card2:
+			var other_id = card2.get_owner_id() if card1.get_owner_id() == player_id else card1.get_owner_id()
+			if other_id != -1 and other_id != player_id:
+				ids.append(other_id)
+		return ids
+
+	## 重写：主修饰卡牌数组（发起者卡牌在前，对手卡牌在后）
+	func get_primary_modifier_cards() -> Array[Card]:
+		if not card1 or not card2:
+			return []
+		if card1.get_owner_id() == player_id:
+			return [card1, card2]
+		else:
+			return [card2, card1]
 ## 拼点命令
 func _init(player_id: int,name_overriding = &"Duel", context_overriding: Context = Context.new()) -> void:
 	super._init(player_id,name_overriding, context_overriding)

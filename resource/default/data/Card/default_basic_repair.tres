@@ -11,4 +11,5 @@ attack_range = 1
 settlement_damage_bonus = 0
 name = &"nfn:basic_repair"
 type = &"spell"
+modifiers = Array[Script]([])
 metadata/_custom_type_script = "uid://dd70gbxq1gppb"

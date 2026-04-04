@@ -71,12 +71,12 @@ func create_handcards_all_suit(template_path: String) -> Array[HandCard]:
 	return cards
 ## 加载所有卡牌
 func load_all_cards() -> Array[Card]:
-	var card_templates = GlobalConfig.get_cards_list()
+	var card_templates:PackedStringArray = GlobalConfig.get_cards_list()
 	var all_cards: Array[Card] = []
-	var total_cards = card_templates.size() * SUITS.size()
+	var total_cards:int = card_templates.size() * SUITS.size()
 	_ensure_capacity(total_cards)
-	for template_path in card_templates:
-		var card_template = load(template_path)
+	for template_path:String in card_templates:
+		var card_template:Card = load(template_path)
 		if not card_template:
 			push_error("Failed to load card template: " + template_path)
 			continue

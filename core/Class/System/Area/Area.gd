@@ -107,5 +107,8 @@ func request_command(command: BehaviorCommand) -> void:
 func request_command_with_callback(command: BehaviorCommand, callback: Callable) -> void:
 	area_request_command_with_callback.emit(command, callback)
 
+func is_empty()->bool:
+	return true
+
 func get_player()->Player:
 	return player

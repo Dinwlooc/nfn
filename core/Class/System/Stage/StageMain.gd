@@ -17,32 +17,29 @@ func _init() -> void:
 	time_limit = ENTER_TIME_LIMIT
 
 func enter(game_state: GameState) -> void:
-	# 先初始化自身状态，再调用基类（基类会连接信号）
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.player_id
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT)
 	GlobalConsole._print(["主阶段开始，当前玩家：", _current_attacker_id])
-	super.enter(game_state)   # 基类会连接 all_commands_completed 信号
+	super.enter(game_state)
 
 func resume(game_state: GameState) -> void:
-	# 恢复前先刷新状态
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.player_id
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT / 2)
 	GlobalConsole._print(["主阶段恢复，当前玩家：", _current_attacker_id])
-	super.resume(game_state)   # 基类会重新连接信号
+	super.resume(game_state)
 
 func pause(game_state: GameState) -> void:
-	super.pause(game_state)   # 基类会断开信号
-	# 子类额外清理（如有）
+	super.pause(game_state)
 
 func end_stage_effect(game_state: GameState) -> void:
 	_current_attacker = null
 	game_state.set_responsive_players(PackedInt32Array())
 	GlobalConsole._print(["主阶段结束"])
-	super.end_stage_effect(game_state)   # 可选，基类无操作
+	super.end_stage_effect(game_state)
 
 # ========== 操作请求处理 ==========
 func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
@@ -77,6 +74,10 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 	if not _check_main_stage_restrictions(request._card_id, request._target_id, game_state):
 		request.cancel()
 		return
+	## 额外校验：防御牌对自己使用时需守区非空
+	if not _validate_defense_self_usage(request._card_id, request._target_id, _current_attacker_id, game_state):
+		request.cancel()
+		return
 	game_state.queue_behavior(rule_result.command)
 	GlobalConsole._print(["主阶段：卡牌使用成功"])
 	request.complete()
@@ -93,13 +94,27 @@ func _check_main_stage_restrictions(card_id: int, target_id: int, game_state: Ga
 		GlobalConsole._print(["主阶段：规则不允许使用此卡牌"])
 	return can_use
 
+## 防御牌对自己使用时的额外规则：自身守区不能为空
+func _validate_defense_self_usage(card_id: int, target_id: int, source_player_id: int, game_state: GameState) -> bool:
+	var card: Card = game_state.cardsmanager.get_card_by_id(card_id)
+	if not card:
+		return false
+	if card.type == &"defence" and target_id == source_player_id:
+		var player: Player = game_state.player_manager.get_player_by_id(source_player_id)
+		if not player:
+			return false
+		var defense_area:AreaDefence = player.area_defensive
+		if not defense_area.is_empty():
+			GlobalConsole._print(["主阶段：对自己使用防御牌需要守区为空"])
+			return false
+	return true
+
 func _reset_timer_for_current_player(new_time_limit: int) -> void:
 	request_reset_timer.emit(new_time_limit)
 	last_timer_reset_time = Time.get_ticks_msec()
 
 # ------------------ 实现基类抽象方法 ------------------
 func _on_all_commands_completed_impl(game_state: GameState) -> void:
-	# 空闲期：恢复响应权并重置计时器
 	if is_ended or is_paused:
 		return
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))

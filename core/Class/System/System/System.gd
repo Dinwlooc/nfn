@@ -8,6 +8,7 @@ var operation_handler := OperationHandler.new()
 var area_manager := AreaManager.new(game_state)
 var transport: Transport = GlobalTransport
 var npc_peer_manager: NPCPeerManager = NPCPeerManager.new(game_state)
+var modifier_manager := ModifierManager.new()
 
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
@@ -18,6 +19,7 @@ func _init() -> void:
 	game_state.request_set_responsive_players.connect(operation_handler.set_responsive_players)
 	command_processor.enable_processing.connect(_enable_processing)
 	command_processor.all_completed.connect(_on_command_processor_all_completed)
+	command_processor.command_processing.connect(_on_command_processing)
 	npc_peer_manager.operation_requested.connect(operation_handler.handle_request)
 	operation_handler.permissions_updated.connect(npc_peer_manager.on_permissions_updated)
 	game_state.stage_manager.set_timer(timer)
@@ -48,6 +50,9 @@ func _on_player_added(player: Player) -> void:
 	GlobalConsole._print(["System: 新玩家加入,id:", player.player_id, "，peer_id:", player.peer_id])
 	operation_handler.update_verification_mapping(player.peer_id, player.player_id)
 	area_manager.connect_area_denfence(player.area_defensive)
+
+func _on_command_processing(command: BehaviorCommand) -> void:
+	modifier_manager.process_modifiers(command._context, game_state)
 
 func _enable_processing(enable: bool) -> void:
 	game_state._process_active = enable

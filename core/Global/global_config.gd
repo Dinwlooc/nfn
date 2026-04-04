@@ -19,11 +19,11 @@ func get_translation(key: StringName, lang: StringName = &"Zh_CN") -> String:
 	var resource = load_resource(&"translation", lang)
 	return resource.get_message(key) if resource else String(key)
 
-func get_cards_list(list_name: StringName = &"default") -> Array[String]:
+func get_cards_list(list_name: StringName = &"default") -> PackedStringArray:
 	var config = _load_config("res://cards_load_list.cfg")
 	if not config:
 		return []
-	var cards_list: Array[String] = []
+	var cards_list: PackedStringArray = []
 	for card_key in config.get_section_keys(list_name):
 		var count: int = config.get_value(list_name, card_key)
 		var card_path := get_resource_path(&"cards", card_key)

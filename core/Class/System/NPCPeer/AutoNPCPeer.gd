@@ -56,7 +56,7 @@ func _get_decision_data() -> DecisionData:
 			for card in hand_area.get_all_cards():
 				data.hand_cards.append({&"id": card.id, &"type": card.type})
 		var defense_area: AreaDefence = self_player.area_defensive
-		data.defense_area_empty = (defense_area == null or defense_area.get_all_cards().is_empty())
+		data.defense_area_empty = (defense_area == null or defense_area.is_empty())
 		data.self_speed = self_player.get_attribute(&"speed")
 	else:
 		data.defense_area_empty = true

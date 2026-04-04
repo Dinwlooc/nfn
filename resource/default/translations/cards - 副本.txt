@@ -1,2 +1,0 @@
-key,zh-CN,en
-nfn:basic_attack,交锋,cross swords

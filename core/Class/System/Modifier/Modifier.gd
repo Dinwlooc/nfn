@@ -2,16 +2,6 @@
 extends RefCounted
 class_name Modifier
 
-var modifier_name: StringName
-var command_name: StringName
-var callable: Callable
-
-func _init(name: StringName, command: StringName, callable_obj: Callable):
-	modifier_name = name
-	command_name = command
-	callable = callable_obj
-
-## 执行修饰操作
-func process_command(command: BehaviorCommand) -> void:
-	if command.event_name == command_name:
-		callable.call(command)
+## 主处理方法，用于应用修饰器效果。
+static func process(context: CommandContext, state: GameState, creator: Object) -> void:
+	pass

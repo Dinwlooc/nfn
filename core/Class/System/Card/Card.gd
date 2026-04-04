@@ -8,6 +8,13 @@ var id:int
 var area_name:StringName
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
 var last_pack: CardPack = null
+@export var modifiers: Array[Script]
+
+func add_modifier(modifier: Script) -> void:
+	modifiers.append(modifier)
+
+func remove_modifier(modifier: Script) -> void:
+	modifiers.erase(modifier)
 
 func get_attribute(attribute:StringName) -> int:
 	return attributeModifiers.get_final_value(attribute)
@@ -37,3 +44,8 @@ func get_player()->Player:
 
 func clear_player()->void:
 	player = Player.NULL_PLAYER
+
+func get_owner_id()->int:
+	if not player:
+		return -1
+	return player.player_id

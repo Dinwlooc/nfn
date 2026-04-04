@@ -1,5 +1,6 @@
-[gd_resource type="Resource" script_class="HandCard" load_steps=2 format=3 uid="uid://cvtw8wnsvyfp0"]
+[gd_resource type="Resource" script_class="HandCard" load_steps=3 format=3 uid="uid://cvtw8wnsvyfp0"]
 
+[ext_resource type="Script" uid="uid://bxumydctuiihd" path="res://resource/default/data/CardModifier/settlement_return_to_hand.gd" id="1_0xey4"]
 [ext_resource type="Script" uid="uid://dd70gbxq1gppb" path="res://core/Class/System/Card/HandCard.gd" id="1_46w4n"]
 
 [resource]
@@ -7,6 +8,9 @@ script = ExtResource("1_46w4n")
 power = 3
 cost = 1
 suit = 4
+attack_range = 1
+settlement_damage_bonus = 0
 name = &"nfn:basic_attack"
 type = &"attack"
+modifiers = Array[Script]([ExtResource("1_0xey4")])
 metadata/_custom_type_script = "uid://dd70gbxq1gppb"

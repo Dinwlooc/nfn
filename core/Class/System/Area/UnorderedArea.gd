@@ -30,3 +30,6 @@ func get_all_cards() -> Array[Card]:
 
 func get_card_ids() -> PackedInt32Array:
 	return _unordered_pool.keys()
+
+func is_empty()->bool:
+	return _unordered_pool.is_empty()
