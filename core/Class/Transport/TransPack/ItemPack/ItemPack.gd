@@ -31,6 +31,8 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = 
 # 公共合并逻辑
 func merge(update_pack: ItemPack) -> void:
 	id = update_pack.id
+	if update_pack.version != version + 1:
+		print("发现版本错误：id:%d,version:%d",[id,version])
 	version = update_pack.version
 	# 具体属性合并由子类实现，全量更新包因掩码全1会覆盖所有属性
 # 获取ID

@@ -21,7 +21,6 @@ func enter(game_state: GameState) -> void:
 	_current_attacker_id = _current_attacker.player_id
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT)
-	GlobalConsole._print(["主阶段开始，当前玩家：", _current_attacker_id])
 	super.enter(game_state)
 
 func resume(game_state: GameState) -> void:
@@ -29,7 +28,6 @@ func resume(game_state: GameState) -> void:
 	_current_attacker_id = _current_attacker.player_id
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT / 2)
-	GlobalConsole._print(["主阶段恢复，当前玩家：", _current_attacker_id])
 	super.resume(game_state)
 
 func pause(game_state: GameState) -> void:
@@ -38,7 +36,6 @@ func pause(game_state: GameState) -> void:
 func end_stage_effect(game_state: GameState) -> void:
 	_current_attacker = null
 	game_state.set_responsive_players(PackedInt32Array())
-	GlobalConsole._print(["主阶段结束"])
 	super.end_stage_effect(game_state)
 
 # ========== 操作请求处理 ==========

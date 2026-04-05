@@ -41,19 +41,16 @@ func enter(game_state: GameState) -> void:
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
 	_check_and_generate_battle_command(game_state)
-	GlobalConsole._print(["守区攻防阶段开始，当前响应玩家：", current_responsive_player_id])
 	super.enter(game_state)
 
 func resume(game_state: GameState) -> void:
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
-	GlobalConsole._print(["守区攻防阶段恢复，当前响应玩家：", current_responsive_player_id])
 	super.resume(game_state)
 
 func pause(game_state: GameState) -> void:
 	_disconnect_defense_area_signals()
-	GlobalConsole._print(["守区攻防阶段暂停"])
 	super.pause(game_state)
 
 func end_stage_effect(game_state: GameState) -> void:
@@ -61,7 +58,6 @@ func end_stage_effect(game_state: GameState) -> void:
 		defense_area.commit_pending_card()
 	_disconnect_defense_area_signals()
 	_pending_stage_end = false
-	GlobalConsole._print(["守区攻防阶段结束"])
 	super.end_stage_effect(game_state)
 
 # ========== 操作请求处理 ==========

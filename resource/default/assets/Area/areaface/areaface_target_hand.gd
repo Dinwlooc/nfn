@@ -39,6 +39,7 @@ func _on_item_created_for_removing(item: RenderItem) -> void:
 
 ## 当手牌区添加新的 RenderItem 时调用（移入动画）
 func _on_item_added(item: RenderItem) -> void:
+	area.remove_item(item)
 	var tween: Tween = create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(item, ^"position", position, MOVE_DURATION)\

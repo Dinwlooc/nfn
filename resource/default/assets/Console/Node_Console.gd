@@ -1,12 +1,13 @@
 extends Control
 
-@onready var vbox_container: Control = $VBoxContainer
-@onready var panel: Control = $Panel
+@onready var vbox_container: VBoxContainer = $VBoxContainer
+@onready var panel: TextEdit = $Panel
 @onready var input_line_edit: LineEdit = $Input
+
 var settlement: Node
 var selection: Node
 var players_panel: Node
-var panel_display = false
+var panel_display: bool = false
 var start: Node
 var labels: Array
 var command_history: Array = []
@@ -20,14 +21,32 @@ var filtered: Array
 var command_suggestions: Array = GlobalConsole.command_list.keys()
 var panel_tween: Tween
 var _ignore_text_changed: bool = false
+
 const MAX_HISTORY: int = 100
 const page_size: int = 9
+
+# ---------- 优化日志输出相关 ----------
+var _log_buffer: Array[String] = []
+var _flush_timer: Timer = null
+const MAX_LINES: int = 500               # 最大保留行数
+const FLUSH_INTERVAL: float = 0.15      # 刷新间隔（秒）
+const BATCH_FLUSH_THRESHOLD: int = 20    # 缓冲区超过此数量立即刷新
 
 func _ready():
 	command_load()
 	input_load()
 	suggestion_labels_load()
 	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE, self)
+	_setup_log_optimization()
+
+func _setup_log_optimization():
+	panel.editable = false
+	_flush_timer = Timer.new()
+	_flush_timer.wait_time = FLUSH_INTERVAL
+	_flush_timer.one_shot = false
+	_flush_timer.timeout.connect(_flush_log_buffer)
+	add_child(_flush_timer)
+	_flush_timer.start()
 
 func animate_panel_position(target_position: Vector2, duration: float = 0.3):
 	if panel_tween and panel_tween.is_running():
@@ -74,7 +93,7 @@ func suggestion_labels_load():
 		labels[i].gui_input.connect(_on_suggestion_clicked.bind(i))
 		labels[i].mouse_entered.connect(labels[i].call_deferred.bind(&"grab_focus"))
 
-#####信号触发函数####
+##### 信号触发函数 #####
 func _on_focus_entered():
 	history_navigation_enabled = true
 	current_history_index = -1
@@ -119,7 +138,6 @@ func _on_suggestion_clicked(event: InputEvent, index: int):
 
 func _on_suggestion_focused(index: int):
 	labels[index].select_all()
-	# 卫语句：处理翻页指示符或不可见项
 	if labels[index].text == "..." || !labels[index].visible:
 		input_line_edit.call_deferred(&"grab_focus")
 		current_page = 0
@@ -134,7 +152,6 @@ func _on_suggestion_focused(index: int):
 
 func _on_command_submitted(new_text: String):
 	var command_with_args = new_text.strip_edges().to_lower()
-	# 卫语句：空命令直接返回
 	if command_with_args.is_empty():
 		return
 
@@ -155,7 +172,7 @@ func _on_command_submitted(new_text: String):
 	GlobalConsole.command(command, args)
 	input_line_edit.text = ""
 
-#####主要功能函数#####
+##### 主要功能函数 #####
 func update_page_display(page: int):
 	var start = page * page_size
 	var end = min(start + page_size, filtered.size())
@@ -206,19 +223,34 @@ func _input(event):
 				KEY_DOWN:
 					navigate_history(false)
 		return
-	if  event is InputEventMouseButton:
-			var local_pos = vbox_container.get_local_mouse_position()
-			if Rect2(Vector2(), vbox_container.size).has_point(local_pos):
-				match event.button_index:
-					MOUSE_BUTTON_WHEEL_UP:
-						current_page = max(current_page - 1, 0)
-						update_page_display(current_page)
-					MOUSE_BUTTON_WHEEL_DOWN:
-						var max_page = int(ceil(float(filtered.size()) / page_size)) - 1
-						current_page = min(current_page + 1, max_page)
-						update_page_display(current_page)
-			return
-# 以下为全局打印系统
+	if event is InputEventMouseButton:
+		var local_pos = vbox_container.get_local_mouse_position()
+		if Rect2(Vector2(), vbox_container.size).has_point(local_pos):
+			match event.button_index:
+				MOUSE_BUTTON_WHEEL_UP:
+					current_page = max(current_page - 1, 0)
+					update_page_display(current_page)
+				MOUSE_BUTTON_WHEEL_DOWN:
+					var max_page = int(ceil(float(filtered.size()) / page_size)) - 1
+					current_page = min(current_page + 1, max_page)
+					update_page_display(current_page)
+		return
+
+# ---------- 优化的全局打印系统 ----------
 func append_text(text: String):
-	panel.text += "\n" + text
-	panel.scroll_vertical = panel.get_line_count()
+	_log_buffer.append(text)
+	if _log_buffer.size() >= BATCH_FLUSH_THRESHOLD:
+		_flush_log_buffer()
+
+func _flush_log_buffer():
+	if _log_buffer.is_empty():
+		return
+	# 合并缓冲区文本
+	var new_text = "\n".join(_log_buffer)
+	_log_buffer.clear()
+	# 追加到 TextEdit
+	panel.text += "\n" + new_text
+	# 限制总行数（避免内存膨胀）
+	var lines = panel.text.split("\n")
+	if lines.size() > MAX_LINES:
+		panel.text = "\n".join(lines.slice(-MAX_LINES))

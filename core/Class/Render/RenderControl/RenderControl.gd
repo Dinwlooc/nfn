@@ -1,23 +1,52 @@
-## RenderControl - 根节点，负责初始化
 extends Control
 class_name RenderControl
+
+## 渲染请求队列处理器（先进先出，每帧处理一个）
+class RenderRequestQueue:
+	extends RefCounted
+	var _queue: Array[RenderRequest] = []
+	var _owner: RenderControl
+
+	func _init(owner: RenderControl) -> void:
+		_owner = owner
+
+	## 入队请求
+	func enqueue(request: RenderRequest) -> void:
+		_queue.append(request)
+
+	## 每帧处理一个请求
+	func process_one() -> void:
+		if _queue.is_empty():
+			return
+		var request = _queue.pop_front()
+		_owner._handle_request_immediate(request)
 
 var render_context: RenderContext = RenderContext.new()
 var face_manager: FaceManager = FaceManager.new()
 var transport: Transport = GlobalTransport
 var operation_manager: OperationManager = OperationManager.new(transport, render_context)
+## 渲染请求队列
+var _request_queue: RenderRequestQueue
 
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE, self)
 	render_context.set_operation_manager(operation_manager)
+	# 初始化队列处理器
+	_request_queue = RenderRequestQueue.new(self)
+	# 连接信号到队列的入队方法
+	transport.render_request_received.connect(_request_queue.enqueue)
+	# 初始化子节点区域
 	for child in get_children():
 		if child is RenderArea:
 			render_context.register_render_area(child)
 			_initialize_render_area(child)
 	GlobalConsole.c_play_selected_card.connect(_on_play_a_card)
-	transport.render_request_received.connect(handle_request)
 	render_context._item_pool.item_created.connect(face_manager.connect_to_item)
 	render_context.area_created.connect(_on_render_context_area_created)
+
+func _process(_delta: float) -> void:
+	# 每帧处理一个渲染请求，防止单帧过载
+	_request_queue.process_one()
 
 func _initialize_render_area(area: RenderArea) -> void:
 	area.set_render_context(render_context)
@@ -54,17 +83,18 @@ func _init_preset_item(item: RenderItem, area: RenderArea, pool_index: int) -> v
 func _on_play_a_card() -> void:
 	operation_manager.upload_play_card()
 
-func handle_request(request: RenderRequest) -> void:
+## 立即处理渲染请求（由队列调用，不对外暴露）
+func _handle_request_immediate(request: RenderRequest) -> void:
 	var target_area: StringName = request.target_area
-	var target_area_player_id:int = request.target_area_player_id
+	var target_area_player_id: int = request.target_area_player_id
 	if target_area == RenderArea.DefaultArea.PLAYERS:
 		target_area_player_id = RenderContext.PUBLIC_PLAYER_ID
-	var render_area: RenderArea = render_context.get_render_area(target_area,target_area_player_id)
-	GlobalConsole._print(["接收到RenderRequest：", request.get_class_name(), ",目标：", request.target_area,",属于：玩家",request.target_area_player_id])
+	var render_area: RenderArea = render_context.get_render_area(target_area, target_area_player_id)
+	GlobalConsole._print(["接收到RenderRequest：", request.get_class_name(), ",目标：", request.target_area, ",属于：玩家", request.target_area_player_id])
 	if render_area:
 		render_area.process_request(request)
 	else:
-		push_error("RenderArea not found for target: " + str(target_area) + ",player:" + str(request.target_area_player_id) )
+		push_error("RenderArea not found for target: " + str(target_area) + ",player:" + str(request.target_area_player_id))
 		render_context.get_render_area(&"discard").process_request(request)
 
 func _on_render_context_area_created(area: RenderArea, player_id: int) -> void:
