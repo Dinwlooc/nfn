@@ -4,6 +4,7 @@ class_name RenderRequestSerializer
 # 所有支持的渲染请求类型数组（官方类型 + 模组追加）
 static var render_request_classes: Array[Script] = [
 	RenderRequest.ItemSet,
+	RenderRequest.ItemCountSet,
 ]
 
 # 构建注册表（类 -> 索引）

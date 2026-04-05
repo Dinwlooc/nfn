@@ -7,7 +7,6 @@ signal area_pending_card_added(card:Card,area:AreaDefence)
 
 func _init_expand() -> void:
 	area_name = GlobalConstants.DefaultArea.DEFENCE
-	is_private_visible = false
 
 func cards_add(cards:Array[Card]) -> void:
 	if not cards:
@@ -60,10 +59,8 @@ func get_second_card() -> Card:
 	return cards[-2] if cards.size() >= 2 else null
 
 # 结算守区
-func settle_defense_area() -> Array[Card]:
+func settle_defense_area() -> void:
 	settle_count += 1
-	print("守区结算计数+1")
-	return get_all_cards()
 ## 仅重置结算次数（保留缓冲槽卡牌）
 func reset_settle_count() -> void:
 	settle_count = 0

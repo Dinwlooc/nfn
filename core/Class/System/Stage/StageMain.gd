@@ -74,10 +74,6 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 	if not _check_main_stage_restrictions(request._card_id, request._target_id, game_state):
 		request.cancel()
 		return
-	## 额外校验：防御牌对自己使用时需守区非空
-	if not _validate_defense_self_usage(request._card_id, request._target_id, _current_attacker_id, game_state):
-		request.cancel()
-		return
 	game_state.queue_behavior(rule_result.command)
 	GlobalConsole._print(["主阶段：卡牌使用成功"])
 	request.complete()
@@ -89,25 +85,10 @@ func _check_main_stage_restrictions(card_id: int, target_id: int, game_state: Ga
 		return false
 	var source_player: Player = game_state.player_manager.get_player_by_id(_current_attacker_id)
 	var target_player: Player = game_state.player_manager.get_player_by_id(target_id) if target_id >= 0 else null
-	var can_use = RuleCardUsage.can_use_card_in_main(card, source_player, target_player, game_state)
+	var can_use:bool = RuleCardUsage.can_use_card_in_main(card, source_player, target_player, game_state)
 	if not can_use:
 		GlobalConsole._print(["主阶段：规则不允许使用此卡牌"])
 	return can_use
-
-## 防御牌对自己使用时的额外规则：自身守区不能为空
-func _validate_defense_self_usage(card_id: int, target_id: int, source_player_id: int, game_state: GameState) -> bool:
-	var card: Card = game_state.cardsmanager.get_card_by_id(card_id)
-	if not card:
-		return false
-	if card.type == &"defence" and target_id == source_player_id:
-		var player: Player = game_state.player_manager.get_player_by_id(source_player_id)
-		if not player:
-			return false
-		var defense_area:AreaDefence = player.area_defensive
-		if not defense_area.is_empty():
-			GlobalConsole._print(["主阶段：对自己使用防御牌需要守区为空"])
-			return false
-	return true
 
 func _reset_timer_for_current_player(new_time_limit: int) -> void:
 	request_reset_timer.emit(new_time_limit)

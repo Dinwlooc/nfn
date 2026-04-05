@@ -17,6 +17,8 @@ var total_time_used: Dictionary[int, float] = {}
 var dynamic_time_limit: Dictionary[int, float] = {}
 # ========== 其他信号绑定 ==========
 var _defense_area_signal_binding: Callable = Callable()
+# ========== 结束标志 ==========
+var _pending_stage_end: bool = false
 
 # ========== 初始化 ==========
 func _init(defense_area: AreaDefence, attacker: Player) -> void:
@@ -30,7 +32,6 @@ func _init(defense_area: AreaDefence, attacker: Player) -> void:
 
 # ========== 阶段生命周期 ==========
 func enter(game_state: GameState) -> void:
-	# 先初始化内部数据，再调用基类（基类会连接 all_commands_completed 信号）
 	for p in [attacker.player_id, defender.player_id]:
 		total_time_used[p] = 0.0
 		dynamic_time_limit[p] = DEFAULT_TIME_LIMIT
@@ -38,28 +39,28 @@ func enter(game_state: GameState) -> void:
 		defense_area.commit_pending_card()
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
-	_connect_defense_area_signals(game_state)   # 防御区自己的信号
+	_connect_defense_area_signals(game_state)
 	_check_and_generate_battle_command(game_state)
 	GlobalConsole._print(["守区攻防阶段开始，当前响应玩家：", current_responsive_player_id])
-	super.enter(game_state)   # 基类连接命令完成信号
+	super.enter(game_state)
 
 func resume(game_state: GameState) -> void:
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
 	GlobalConsole._print(["守区攻防阶段恢复，当前响应玩家：", current_responsive_player_id])
-	super.resume(game_state)   # 基类重新连接命令完成信号
+	super.resume(game_state)
 
 func pause(game_state: GameState) -> void:
 	_disconnect_defense_area_signals()
 	GlobalConsole._print(["守区攻防阶段暂停"])
-	super.pause(game_state)   # 基类断开命令完成信号
+	super.pause(game_state)
 
 func end_stage_effect(game_state: GameState) -> void:
 	if defense_area.pending_card:
 		defense_area.commit_pending_card()
-	game_state.set_responsive_players(PackedInt32Array())
 	_disconnect_defense_area_signals()
+	_pending_stage_end = false
 	GlobalConsole._print(["守区攻防阶段结束"])
 	super.end_stage_effect(game_state)
 
@@ -108,11 +109,9 @@ func timeout(game_state: GameState) -> void:
 	process_operation_request(abandon_request, game_state)
 
 func _process_settle_request(request: OperationRequest, game_state: GameState) -> void:
-	var settle_cmd = SettleCommand.new(current_responsive_player_id,defense_area)
-	game_state.queue_behavior_with_callback(settle_cmd, func():
-		if not is_ended:
-			end_stage(game_state)
-	)
+	var settle_cmd = SettleCommand.new(current_responsive_player_id, defense_area)
+	game_state.queue_behavior(settle_cmd)
+	_pending_stage_end = true
 	request.complete()
 
 # ========== 守区攻防专用验证 ==========
@@ -203,6 +202,11 @@ func _disconnect_defense_area_signals() -> void:
 func _on_all_commands_completed_impl(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
+	# 如果需要结束阶段，则调用结束
+	if _pending_stage_end:
+		end_stage(game_state)
+		return
+	# 否则正常更新响应权和计时器
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
-	GlobalConsole._print(["守区攻防阶段：命令全部完成，已更新响应权为玩家", current_responsive_player_id])
+	GlobalConsole._print(["守区攻防阶段：命令全部完成，已更新玩家响应权"])

@@ -19,7 +19,7 @@ static func can_use_card_in_main(
 				return false
 			# 如果目标玩家守区不为空，检查顶部卡牌拥有者
 			var target_defense: AreaDefence = target_player.area_defensive
-			if target_defense and not target_defense.get_all_cards().is_empty():
+			if target_defense and not target_defense.is_empty():
 				var top_card: Card = target_defense.get_top_card()
 				if top_card and top_card.player == source_player:
 					# 目标守区顶部是自己的牌，不能攻击
@@ -33,13 +33,11 @@ static func can_use_card_in_main(
 			# 如果目标玩家是自己的守区，检查顶部是否为自己的牌
 			if target_player == source_player:
 				var self_defense: AreaDefence = source_player.area_defensive
-				if self_defense and not self_defense.get_all_cards().is_empty():
-					var top_card: Card = self_defense.get_top_card()
-					if top_card and top_card.player == source_player:
-						# 顶部是自己的牌，不能使用防御牌
-						return false
-				return true
-			# 对他人使用防御牌？通常防御牌只能用于自己守区，这里假设 target_player 应为自己
+				if self_defense and self_defense.is_empty():
+					return true
+				var top_card: Card = self_defense.get_top_card()
+				if not top_card.player == source_player:
+					return true
 			return false
 		&"skill":
 			# 技能卡可能需要更多检查，这里简化，假设都可以使用

@@ -73,6 +73,7 @@ func _on_prepare_phase(game_state: GameState, _context: Context) -> void:
 		push_error("防御区域未设置")
 		_context.phase = Context.Phase.DONE
 		return
+	_context.defensive_area.settle_defense_area()
 	_context.settle_card = _context.defensive_area.get_top_card()
 	if _context.defensive_area.get_second_card() and not _context.defensive_area.get_second_card().player == _context.get_settle_card().player:
 		_context.oppose_card = _context.defensive_area.get_second_card()

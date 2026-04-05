@@ -126,10 +126,9 @@ func _on_move_in_phase(_game_state: GameState) -> void:
 		return
 	if not _context.is_virtual:
 		_context.target_area.cards_add(_context.moved_cards)
-		_context.target_area.send_cards(_context.moved_cards)
+		TransRule.send_cards(_context.source_area,_context.target_area,_context.moved_cards)
 	_context.phase = Context.Phase.DONE
 	GlobalConsole._print(["CardMoveCommand:卡牌移动完成"])
-	complete()
 
 func _on_done_phase(game_state: GameState) -> void:
-	pass
+	complete()

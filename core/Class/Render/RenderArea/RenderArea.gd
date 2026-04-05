@@ -7,7 +7,7 @@ signal selected(item:RenderItem)
 signal items_added(item:RenderItem)
 signal items_removed(item:RenderItem)
 signal context_ready()
-
+signal item_created_for_removing(item: RenderItem)
 var select_limit:int = 1
 var render_context:RenderContext
 var player_id:int
@@ -25,10 +25,13 @@ func ready_expand() -> void:
 func process_request(request: RenderRequest) -> void:
 	if request is RenderRequest.ItemSet:
 		_process_item_set(request as RenderRequest.ItemSet)
-# 新增：处理ItemSet请求
+## 处理ItemSet请求
 func _process_item_set(_item_set: RenderRequest.ItemSet) -> void:
 	pass
 
+## 处理ItemCountSet 请求
+func _process_item_count_set(_item_count_set: RenderRequest.ItemCountSet) -> void:
+	pass
 # 新增：内部连接方法
 func _connect_item_to_area(item:RenderItem) -> void:
 	if render_requested.is_connected(item.render_update):
@@ -75,7 +78,11 @@ func _update_item_data(render_item: RenderItem, item_pack: ItemPack) -> void:
 
 func remove_item(_item:RenderItem) -> void:
 	push_error("remove_item must be implemented in subclass")
-
+func remove_item_count(_count: int) -> void:
+	push_error("remove_item_count must be implemented in subclass")
+## 响应ItemCountSet的数量增加方法
+func add_item_count(_count: int) -> void:
+	push_error("add_item_count must be implemented in subclass")
 func get_item_count() -> int:
 	push_error("get_item_count must be implemented in subclass")
 	return 0

@@ -10,6 +10,8 @@ extends ItemFace
 @onready var properties: AreaFace = $AreaFaceSelf_Properties
 ## 防御区域节点
 @onready var area_defence: AreaFace = $AreaFaceDenfence
+## 手牌表现节点（新增）
+@onready var area_hand: AreaFace = $AreaFaceHand
 
 ## 选中动画时长（秒）
 const SELECT_ANIMATION_DURATION: float = 0.2
@@ -59,6 +61,9 @@ func _ready() -> void:
 	_properties_original_position = properties.position
 	_properties_original_scale = properties.scale
 	character.set_mirrored(true)
+	# 请求手牌区（手动模式，因为手牌表现是挂件，需要在场景中手动配置）
+	if area_hand:
+		area_hand.request_area(RenderArea.DefaultArea.HAND)
 
 ## 更新卡片数据（由外部调用）
 func data_update(new_item: RenderItem) -> void:
@@ -84,6 +89,8 @@ func data_update(new_item: RenderItem) -> void:
 	properties.set_render_context(item.render_context)
 	area_defence.request_area(RenderArea.DefaultArea.DEFENCE, item.data.get_id())
 	area_defence.set_render_context(item.render_context)
+	area_hand.request_area(RenderArea.DefaultArea.HAND, item.data.get_id())
+	area_hand.set_render_context(item.render_context)
 	item.set_item_size(size)
 	_init_cached_stats()  # 初始化缓存
 	call_deferred(&"_refresh_ui")

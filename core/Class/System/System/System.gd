@@ -42,7 +42,6 @@ func _process(_delta: float) -> void:
 	if Engine.get_process_frames() % 4 != 0:
 		return
 	if not game_state._process_active:
-		set_process(false)
 		return
 	command_processor.process()
 

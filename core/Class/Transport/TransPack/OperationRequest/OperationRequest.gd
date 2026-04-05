@@ -1,8 +1,11 @@
 extends TransPack
 class_name OperationRequest
 
+enum State{ PROCESS,CANCELLED,COMPLETED }
+
 var source_peer_id:int
 var source_player_id:int
+var state:State = State.PROCESS
 signal cancelled()
 signal completed()
 static func get_class_name_static() -> StringName:
@@ -11,8 +14,10 @@ func use_npc_peer_id() -> OperationRequest:
 	source_peer_id = -1
 	return self
 func cancel() -> void:
+	state = State.CANCELLED
 	cancelled.emit()
 func complete() -> void:
+	state = State.COMPLETED
 	completed.emit()
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	TransPackSerializer.write(buffer, source_player_id)

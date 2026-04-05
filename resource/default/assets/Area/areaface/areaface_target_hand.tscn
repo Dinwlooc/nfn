@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://2reoptdkag2j"]
+
+[ext_resource type="Script" uid="uid://dbxcb2w7hwjsg" path="res://resource/default/assets/Area/areaface/areaface_target_hand.gd" id="1_ltj7m"]
+
+[node name="$AreaFaceHand" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("1_ltj7m")
+metadata/_custom_type_script = "uid://btwt7f8flx66t"

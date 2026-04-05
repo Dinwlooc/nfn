@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://s0d734yjh7uc"]
+[gd_scene load_steps=8 format=3 uid="uid://s0d734yjh7uc"]
 
 [ext_resource type="Script" uid="uid://inhy17k8yahq" path="res://resource/default/assets/Character/charactercard/charactertargetcard.gd" id="1_1lsym"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://resource/default/assets/Area/areaface/areaface_self_properties.tscn" id="2_f0c7v"]
 [ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/areaface_denfence.tscn" id="3_ct3wd"]
 [ext_resource type="PackedScene" uid="uid://bjdp8ibnlaew1" path="res://resource/default/assets/Character/charactercard/character_container.tscn" id="4_ct3wd"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="4_gn4qo"]
+[ext_resource type="PackedScene" uid="uid://2reoptdkag2j" path="res://resource/default/assets/Area/areaface/areaface_target_hand.tscn" id="4_iwfka"]
 [ext_resource type="Texture2D" uid="uid://caivq3rbvlms4" path="res://resource/default/assets/Character/charactercard/character_selected_icon.png" id="5_ct3wd"]
 
 [node name="CharacterTargetCard" type="Control"]
@@ -48,6 +49,12 @@ offset_top = 232.0
 offset_right = 232.0
 offset_bottom = 318.0
 mode = 1
+
+[node name="AreaFaceHand" parent="." instance=ExtResource("4_iwfka")]
+offset_left = 11.0
+offset_top = 170.0
+offset_right = 119.0
+offset_bottom = 224.0
 
 [node name="CharacterPanel" type="Control" parent="."]
 clip_contents = true

@@ -3,7 +3,7 @@ class_name AreaDiscard
 
 func _init_expand()->void:
 	area_name = GlobalConstants.DefaultArea.DISCARD
-	is_private_visible = false
+	visibility = Visibility.INVISIBLE
 	area_card_added.connect(_on_area_card_added)
 
 func _on_area_card_added(card:Card,_area:Area)->void:

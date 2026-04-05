@@ -30,10 +30,14 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 		return
 	for item_pack in item_set.items:
 		var render_item: RenderItem = render_context.get_or_create_item(item_pack)
+		if render_item.area_name == &"":
+			var source_area:RenderArea = render_context.get_render_area(item_set.source_area_name,item_set.source_area_player_id)
+			if source_area:
+				source_area.item_created_for_removing.emit(render_item)
 		if render_item.area_name == get_area_name():
 			_update_item_data(render_item, item_pack)
 		else:
-			var current_area :RenderArea = render_context.get_render_area(render_item.area_name,render_item.player_id)
+			var current_area: RenderArea = render_context.get_render_area(render_item.area_name, render_item.player_id)
 			if current_area:
 				current_area.remove_item(render_item)
 			add_item(render_item)

@@ -165,12 +165,15 @@ func get_dragged_card() -> RenderItem:
 
 # 创建或获取项目
 func get_or_create_item(item_pack: ItemPack) -> RenderItem:
-	var item = get_render_item_by_id(item_pack.get_class_name(), item_pack.get_id())
+	var item = get_item(item_pack)
 	if not item:
 		item = _item_pool.create_item(item_pack)
 		item.render_context = self
 		register_render_item(item_pack.get_class_name(), item_pack.get_id(), item)
 	return item
+
+func get_item(item_pack: ItemPack) ->RenderItem:
+	return get_render_item_by_id(item_pack.get_class_name(), item_pack.get_id())
 
 # 延迟回收请求
 func request_recycle_item(item: RenderItem) -> void:

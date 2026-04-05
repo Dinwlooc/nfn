@@ -21,4 +21,6 @@ func _on_init_phase(game_state: GameState, _context: StartTempStageCommand.Conte
 			break
 	if not has_defense_stage and not ctx.defense_area.player == ctx.attacker:
 		ctx.stage = StageDefense.new(ctx.defense_area, ctx.attacker)
+	else:
+		_context.defense_area.commit_pending_card()
 	ctx.phase = Context.Phase.DONE
