@@ -9,7 +9,6 @@ var player_manager := PlayersManager.new()
 var timer: GameTimer
 var users: Dictionary[int, User]
 var _process_active := false
-# 直接持有 StageManager
 var stage_manager: StageManager = StageManager.new()
 signal start_round(player_id: int)
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
@@ -58,3 +57,25 @@ func set_responsive_players(player_ids: PackedInt32Array) -> void:
 
 func queue_behavior(command: BehaviorCommand) -> void:
 	new_behavior.emit(command)
+
+## 通过玩家ID获取玩家实例
+func get_player_by_id(player_id: int) -> Player:
+	if not player_manager:
+		return null
+	return player_manager.get_player_by_id(player_id)
+
+## 通过卡牌ID获取卡牌实例
+func get_card_by_id(card_id: int) -> Card:
+	if not cardsmanager:
+		return null
+	return cardsmanager.get_card_by_id(card_id)
+
+## 通过座位索引获取玩家实例
+func get_player_by_seat(seat_index: int) -> Player:
+	if not player_manager:
+		return null
+	return player_manager.get_player_by_seat(seat_index)
+
+## 通过用户ID获取用户实例
+func get_user_by_id(user_id: int) -> User:
+	return users.get(user_id)

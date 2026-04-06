@@ -58,34 +58,31 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["主阶段：非当前玩家操作，忽略"])
 		request.cancel()
 		return
-	var rule_result = Rule.check_and_create_command(
-		request._card_id,
-		_current_attacker_id,
-		request._target_id,
-		game_state
-	)
+	var card: Card = game_state.cardsmanager.get_card_by_id(request._card_id)
+	var source_player: Player = game_state.player_manager.get_player_by_id(request.source_player_id)
+	var target_player: Player = game_state.player_manager.get_player_by_id(request._target_id) if request._target_id >= 0 else null
+	if not card or not source_player:
+		GlobalConsole._print(["主阶段：卡牌或玩家实例获取失败"])
+		request.cancel()
+		return
+	# Rule 验证
+	var rule_result = Rule.check_and_create_command(card, source_player, target_player, false, game_state)
 	if not rule_result.is_valid:
 		GlobalConsole._print(["主阶段：", rule_result.message])
 		request.cancel()
 		return
-	if not _check_main_stage_restrictions(request._card_id, request._target_id, game_state):
+	# 主阶段专用验证
+	var usage_result = _check_main_stage_restrictions(card, source_player, target_player, game_state)
+	if not usage_result.is_valid:
+		GlobalConsole._print(["主阶段：", usage_result.message])
 		request.cancel()
 		return
 	game_state.queue_behavior(rule_result.command)
 	GlobalConsole._print(["主阶段：卡牌使用成功"])
 	request.complete()
 
-func _check_main_stage_restrictions(card_id: int, target_id: int, game_state: GameState) -> bool:
-	var card: Card = game_state.cardsmanager.get_card_by_id(card_id)
-	if not card:
-		GlobalConsole._print(["主阶段：卡牌不存在"])
-		return false
-	var source_player: Player = game_state.player_manager.get_player_by_id(_current_attacker_id)
-	var target_player: Player = game_state.player_manager.get_player_by_id(target_id) if target_id >= 0 else null
-	var can_use:bool = RuleCardUsage.can_use_card_in_main(card, source_player, target_player, game_state)
-	if not can_use:
-		GlobalConsole._print(["主阶段：规则不允许使用此卡牌"])
-	return can_use
+func _check_main_stage_restrictions(card: Card, source_player: Player, target_player: Player, game_state: GameState) -> RuleCardUsage.UsageResult:
+	return RuleCardUsage.can_use_card_in_main(card, source_player, target_player, game_state)
 
 func _reset_timer_for_current_player(new_time_limit: int) -> void:
 	request_reset_timer.emit(new_time_limit)

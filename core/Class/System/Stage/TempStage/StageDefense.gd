@@ -73,17 +73,24 @@ func process_operation_request(request: OperationRequest, game_state: GameState)
 			GlobalConsole._print(["守区攻防阶段：不支持的操作类型", request.get_class_name_static()])
 
 func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState) -> void:
-	var rule_result = Rule.check_and_create_command(
-		request._card_id,
-		request.source_player_id,
-		request._target_id,
-		game_state
-	)
+	# 获取实例
+	var card: Card = game_state.cardsmanager.get_card_by_id(request._card_id)
+	var source_player: Player = game_state.player_manager.get_player_by_id(request.source_player_id)
+	var target_player: Player = game_state.player_manager.get_player_by_id(request._target_id) if request._target_id >= 0 else null
+	if not card or not source_player:
+		GlobalConsole._print(["守区攻防阶段：卡牌或玩家实例获取失败"])
+		request.cancel()
+		return
+	# Rule 验证
+	var rule_result = Rule.check_and_create_command(card, source_player, target_player, false, game_state)
 	if not rule_result.is_valid:
 		GlobalConsole._print(["守区攻防阶段：", rule_result.message])
 		request.cancel()
 		return
-	if not _check_defense_battle_restrictions(request._card_id, game_state):
+	# 守区阶段专用验证
+	var usage_result = _check_defense_battle_restrictions(card, source_player, game_state)
+	if not usage_result.is_valid:
+		GlobalConsole._print(["守区攻防阶段：", usage_result.message])
 		request.cancel()
 		return
 	var command: BehaviorCommand = rule_result.command
@@ -111,11 +118,7 @@ func _process_settle_request(request: OperationRequest, game_state: GameState) -
 	request.complete()
 
 # ========== 守区攻防专用验证 ==========
-func _check_defense_battle_restrictions(card_id: int, game_state: GameState) -> bool:
-	var card: Card = game_state.cardsmanager.get_card_by_id(card_id)
-	if not card:
-		return false
-	var source_player: Player = game_state.player_manager.get_player_by_id(current_responsive_player_id)
+func _check_defense_battle_restrictions(card: Card, source_player: Player, game_state: GameState) -> RuleCardUsage.UsageResult:
 	return RuleCardUsage.can_use_card_in_defense(
 		card,
 		source_player,
@@ -198,11 +201,9 @@ func _disconnect_defense_area_signals() -> void:
 func _on_all_commands_completed_impl(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
-	# 如果需要结束阶段，则调用结束
 	if _pending_stage_end:
 		end_stage(game_state)
 		return
-	# 否则正常更新响应权和计时器
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
 	GlobalConsole._print(["守区攻防阶段：命令全部完成，已更新玩家响应权"])
