@@ -1,6 +1,6 @@
 ## 出牌规则类
 extends RefCounted
-class_name Rule
+class_name RuleCardPlay
 
 ## 规则检查结果
 class RuleResult:

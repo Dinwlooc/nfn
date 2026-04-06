@@ -1,6 +1,6 @@
 ## 渲染请求发送规则工具类
-class_name TransRule
 extends RefCounted
+class_name RuleTrans
 
 ## 发送数量变化请求（仅 ItemCountSet）
 static func send_count_change(
@@ -129,7 +129,7 @@ static func _distribute_item_request(
 		[Area.Visibility.PRIVATE, Area.Visibility.PUBLIC]:
 			make_item_set.call().send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 		[Area.Visibility.PRIVATE, Area.Visibility.PRIVATE]:
-			push_error("TransRule: PRIVATE->PRIVATE not implemented, please handle manually")
+			push_error("RuleTrans: PRIVATE->PRIVATE not implemented, please handle manually")
 			return
 		[Area.Visibility.PRIVATE, Area.Visibility.INVISIBLE]:
 			var owner_peer: int = source_area.player.peer_id
@@ -144,4 +144,4 @@ static func _distribute_item_request(
 		[Area.Visibility.INVISIBLE, Area.Visibility.INVISIBLE]:
 			make_item_count_set.call().send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 		_:
-			push_error("TransRule: unknown visibility combination")
+			push_error("RuleTrans: unknown visibility combination")

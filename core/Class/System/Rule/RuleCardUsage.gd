@@ -1,6 +1,7 @@
 ## 卡牌使用规则静态工具类
-class_name RuleCardUsage
 extends RefCounted
+class_name RuleCardUsage
+
 
 ## 验证结果类
 class UsageResult:

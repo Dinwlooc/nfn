@@ -71,8 +71,8 @@ func send_players_delta_updates(
 		var pack: PlayerPack = _get_player_delta_pack(player)
 		if pack:
 			delta_packs.append(pack)
-	# 使用 TransRule 发送
-	TransRule.send_player_delta_updates(delta_packs, event_type, source_player_id, custom_event_name)
+	# 使用 RuleTrans 发送
+	RuleTrans.send_player_delta_updates(delta_packs, event_type, source_player_id, custom_event_name)
 
 ## 发送单个玩家的增量更新到所有对等体（便捷方法）
 func send_single_player_delta_update(
@@ -84,7 +84,7 @@ func send_single_player_delta_update(
 	var pack: PlayerPack = _get_player_delta_pack(player)
 	if !pack:
 		return
-	TransRule.send_player_delta_updates([pack], event_type, source_player_id, custom_event_name)
+	RuleTrans.send_player_delta_updates([pack], event_type, source_player_id, custom_event_name)
 
 ## 发送所有玩家的全量信息到指定对等体
 func send_all_players_full_updates(peer_id: int) -> void:

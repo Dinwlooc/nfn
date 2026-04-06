@@ -81,8 +81,8 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["守区攻防阶段：卡牌或玩家实例获取失败"])
 		request.cancel()
 		return
-	# Rule 验证
-	var rule_result = Rule.check_and_create_command(card, source_player, target_player, false, game_state)
+	# RuleCardPlay 验证
+	var rule_result = RuleCardPlay.check_and_create_command(card, source_player, target_player, false, game_state)
 	if not rule_result.is_valid:
 		GlobalConsole._print(["守区攻防阶段：", rule_result.message])
 		request.cancel()
