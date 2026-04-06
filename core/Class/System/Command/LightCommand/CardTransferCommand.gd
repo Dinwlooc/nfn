@@ -27,3 +27,4 @@ func _init(
 	_context.target_area = target_area
 	_context.move_out_mode = move_out_mode
 	_context.move_out_param = move_out_param
+	_context.set_event_type(RenderRequest.ItemSet.EventType.TRANSFER)

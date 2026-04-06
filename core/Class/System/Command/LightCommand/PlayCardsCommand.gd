@@ -40,6 +40,7 @@ func _init(
 	_context.set_target_player_id(target_player_id)
 	_context.set_target_area_type(target_area_type)
 	_context.set_card_ids(card_ids)
+	_context.set_event_type(RenderRequest.ItemSet.EventType.TRANSFER)
 ## 覆盖父类的初始化阶段方法
 func _on_init_phase(game_state: GameState) -> void:
 	if not _context is Context:

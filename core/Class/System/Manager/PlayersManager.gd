@@ -58,8 +58,6 @@ func get_operation_disallowed(player_id: int) -> Array[StringName]:
 func _get_player_delta_pack(player: Player) -> PlayerPack:
 	var pack: PlayerPack = player.get_pack()
 	return pack if pack.merge_mask != 0 else null
-## 发送单个或多个玩家的增量更新到所有对等体
-## 外部调用此方法来发送玩家数据更新
 func send_players_delta_updates(
 	target_players: Array[Player] = [],
 	event_type: int = RenderRequest.ItemSet.EventType.UPDATE,
@@ -73,18 +71,8 @@ func send_players_delta_updates(
 		var pack: PlayerPack = _get_player_delta_pack(player)
 		if pack:
 			delta_packs.append(pack)
-	if delta_packs.is_empty():
-		return
-	var area_player_id := RenderRequest.PUBLIC_AREA_PLAYER_ID
-	var item_set := RenderRequest.ItemSet.new(
-		PLAYER_AREA,
-		event_type,
-		delta_packs,
-		area_player_id,      # area_player_id
-		source_player_id,    # 事件来源玩家ID
-		custom_event_name    # 自定义事件名（仅当 event_type == CUSTOM 时有效）
-	)
-	GlobalTransport.send_render_request(MultiplayerPeer.TARGET_PEER_BROADCAST, item_set)
+	# 使用 TransRule 发送
+	TransRule.send_player_delta_updates(delta_packs, event_type, source_player_id, custom_event_name)
 
 ## 发送单个玩家的增量更新到所有对等体（便捷方法）
 func send_single_player_delta_update(
@@ -96,26 +84,24 @@ func send_single_player_delta_update(
 	var pack: PlayerPack = _get_player_delta_pack(player)
 	if !pack:
 		return
-	var delta_packs: Array[ItemPack] = [pack]
-	var area_player_id := RenderRequest.PUBLIC_AREA_PLAYER_ID
-	var item_set := RenderRequest.ItemSet.new(
-		PLAYER_AREA,
-		event_type,
-		delta_packs,
-		area_player_id,
-		source_player_id,
-		custom_event_name
-	)
-	GlobalTransport.send_render_request(MultiplayerPeer.TARGET_PEER_BROADCAST, item_set)
+	TransRule.send_player_delta_updates([pack], event_type, source_player_id, custom_event_name)
+
 ## 发送所有玩家的全量信息到指定对等体
-## 外部调用此方法，通常用于新玩家加入或重连
 func send_all_players_full_updates(peer_id: int) -> void:
 	var full_packs: Array[ItemPack] = []
 	for player in players:
 		full_packs.append(player.get_full_pack())
 	if full_packs.size() > 0:
-		var item_set := RenderRequest.ItemSet.new(PLAYER_AREA,RenderRequest.ItemSet.EventType.UPDATE, full_packs)
-		GlobalTransport.send_render_request(peer_id, item_set)
+		# 全量信息使用特殊事件类型（例如 UPDATE），但不需要原区域信息
+		var request := RenderRequest.ItemSet.new(
+			PLAYER_AREA,
+			RenderRequest.ItemSet.EventType.UPDATE,
+			full_packs,
+			RenderRequest.PUBLIC_AREA_PLAYER_ID,
+			PLAYER_AREA,
+			RenderRequest.PUBLIC_AREA_PLAYER_ID
+		)
+		GlobalTransport.send_render_request(peer_id, request)
 ## 清除所有玩家的增量包缓存
 ## 可用于游戏阶段切换或需要强制全量更新时
 func clear_all_players_cache() -> void:

@@ -9,18 +9,13 @@ var player_manager := PlayersManager.new()
 var timer: GameTimer
 var users: Dictionary[int, User]
 var _process_active := false
-
 # 直接持有 StageManager
-var stage_manager: StageManager
-
+var stage_manager: StageManager = StageManager.new()
 signal start_round(player_id: int)
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
 signal new_behavior(command: BehaviorCommand)
 signal request_set_responsive_players(player_ids: PackedInt32Array)
 signal all_commands_completed()
-
-func _init():
-	stage_manager = StageManager.new()
 
 func load_cards() -> void:
 	area_drawing.cards_add(cardsmanager.load_all_cards())

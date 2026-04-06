@@ -26,6 +26,7 @@ func _init(
 	super._init(source_player_id, name_overriding, context_overriding)
 	_context.set_source_player_id(source_player_id)
 	_context.set_card_ids(card_ids)
+	_context.set_event_type(RenderRequest.ItemSet.EventType.DISCARD)
 
 ## 覆盖父类的初始化阶段方法
 func _on_init_phase(game_state: GameState) -> void:

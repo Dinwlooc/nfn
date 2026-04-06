@@ -8,32 +8,40 @@ var target_area_player_id: int = PUBLIC_AREA_PLAYER_ID
 func send_to_player(peer_id: int) -> void:
 	GlobalTransport.send_render_request(peer_id, self)
 
-# 序列化公共属性
+# 序列化（标准态差异：target_area始终传输，target_area_player_id仅非默认值传输）
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, target_area)
-	SerializationUtil.write(buffer, target_area_player_id)
+	var mask: int = 0
+	if target_area_player_id != PUBLIC_AREA_PLAYER_ID:
+		mask |= 1  # bit0 表示 player_id 存在
+	SerializationUtil.write(buffer, mask)
+	if mask & 1:
+		SerializationUtil.write(buffer, target_area_player_id)
 
-# 反序列化公共属性
+# 反序列化
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> RenderRequest:
 	if pack == NULL_PACK:
 		pack = RenderRequest.new()
 	pack.target_area = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-	pack.target_area_player_id = SerializationUtil.read(buffer, TYPE_INT)
+	var mask: int = SerializationUtil.read(buffer, TYPE_INT)
+	if mask & 1:
+		pack.target_area_player_id = SerializationUtil.read(buffer, TYPE_INT)
+	else:
+		pack.target_area_player_id = PUBLIC_AREA_PLAYER_ID
 	return pack
 
+
+# ========== ItemSet ==========
 class ItemSet extends RenderRequest:
 	enum EventType {
-		CUSTOM, DRAW, ACQUIRE, GENERATE, DISCARD, DEATH, HIDE, UPDATE, STRIKE, ATTACK,
+		CUSTOM, DRAW, ACQUIRE, GENERATE, DISCARD, DEATH, HIDE, UPDATE, STRIKE, ATTACK, TRANSFER
 	}
 	var event_type: EventType
 	var event_source_player_id: int = PUBLIC_AREA_PLAYER_ID
-	var custom_event_name: StringName
+	var custom_event_name: StringName      # 不再在构造函数中设置，通过链式函数设置
 	var items: Array[ItemPack] = []
-
-	# 新增：原区域信息（用于渲染层自动识别）
-	var source_area_name: StringName = &""
-	var source_area_player_id: int = PUBLIC_AREA_PLAYER_ID
-	# 内部掩码
+	var source_area_name: StringName
+	var source_area_player_id: int
 	var _mask: int = 0
 	enum SourceMask {
 		NONE = 0,
@@ -41,23 +49,30 @@ class ItemSet extends RenderRequest:
 		PLAYER_ID = 1 << 1,
 	}
 
+	# 构造函数：补全原区域参数，移除 custom_name
 	func _init(
 		target_area_name: StringName = &"",
 		event_type_val: EventType = EventType.CUSTOM,
 		items_array: Array[ItemPack] = [],
 		area_player_id: int = PUBLIC_AREA_PLAYER_ID,
-		source_player_id: int = area_player_id,
-		custom_name: StringName = &"",
+		override_source_area_name: StringName = target_area_name,
+		override_source_area_player_id: int = area_player_id,
 	) -> void:
 		target_area = target_area_name
 		event_type = event_type_val
-		event_source_player_id = source_player_id
-		custom_event_name = custom_name
+		event_source_player_id = source_area_player_id   # 默认事件源就是原区域玩家
 		items = items_array
 		target_area_player_id = area_player_id
-		# 初始化原区域字段默认为目标区域相同（避免额外传输）
-		source_area_name = target_area_name
-		source_area_player_id = area_player_id
+		source_area_name = override_source_area_name
+		source_area_player_id = override_source_area_player_id
+
+	# 链式设置自定义事件名称（仅在类型为 CUSTOM 时可用）
+	func set_custom_event_name(name: StringName) -> ItemSet:
+		if event_type == EventType.CUSTOM:
+			custom_event_name = name
+		else:
+			push_error("Cannot set custom event name when event_type is not CUSTOM")
+		return self
 
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)
@@ -66,8 +81,6 @@ class ItemSet extends RenderRequest:
 		if event_type == EventType.CUSTOM:
 			SerializationUtil.write(buffer, custom_event_name)
 		ItemSerializer.serialize_array(items, buffer)
-
-		# 计算掩码：仅当与原区域与目标区域不同时才传输
 		_mask = SourceMask.NONE
 		if source_area_name != target_area:
 			_mask |= SourceMask.AREA_NAME
@@ -90,8 +103,6 @@ class ItemSet extends RenderRequest:
 			if item_set.event_type == EventType.CUSTOM:
 				item_set.custom_event_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 			item_set.items = ItemSerializer.deserialize_array(buffer)
-
-			# 读取掩码并恢复原区域字段
 			var mask: int = SerializationUtil.read(buffer, TYPE_INT)
 			if mask & SourceMask.AREA_NAME:
 				item_set.source_area_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
@@ -105,16 +116,16 @@ class ItemSet extends RenderRequest:
 
 	static func get_class_name_static() -> StringName:
 		return &"ItemSet"
-# 卡牌数量变化渲染请求，携带变化后的总数量及事件信息
+
+
+# ========== ItemCountSet ==========
 class ItemCountSet extends RenderRequest:
 	var total_count: int = 0
 	var event_type: ItemSet.EventType = ItemSet.EventType.CUSTOM
 	var event_source_player_id: int = PUBLIC_AREA_PLAYER_ID
-	var custom_event_name: StringName = &""
-
-	# 新增：原区域信息
-	var source_area_name: StringName = &""
-	var source_area_player_id: int = PUBLIC_AREA_PLAYER_ID
+	var custom_event_name: StringName
+	var source_area_name: StringName
+	var source_area_player_id: int
 	var _mask: int = 0
 	enum SourceMask {
 		NONE = 0,
@@ -122,22 +133,30 @@ class ItemCountSet extends RenderRequest:
 		PLAYER_ID = 1 << 1,
 	}
 
+	# 构造函数：补全原区域参数，移除 custom_name
 	func _init(
 		target_area_name: StringName = &"",
 		count: int = 0,
 		event_type_val: ItemSet.EventType = ItemSet.EventType.CUSTOM,
 		area_player_id: int = PUBLIC_AREA_PLAYER_ID,
-		source_player_id: int = area_player_id,
-		custom_name: StringName = &"",
+		override_source_area_name: StringName = target_area_name,
+		override_source_area_player_id: int = area_player_id,
 	) -> void:
 		target_area = target_area_name
 		total_count = count
 		event_type = event_type_val
-		event_source_player_id = source_player_id
-		custom_event_name = custom_name
+		event_source_player_id = source_area_player_id
 		target_area_player_id = area_player_id
-		source_area_name = target_area_name
-		source_area_player_id = area_player_id
+		source_area_name = override_source_area_name
+		source_area_player_id = override_source_area_player_id
+
+	# 链式设置自定义事件名称（仅在类型为 CUSTOM 时可用）
+	func set_custom_event_name(name: StringName) -> ItemCountSet:
+		if event_type == ItemSet.EventType.CUSTOM:
+			custom_event_name = name
+		else:
+			push_error("Cannot set custom event name when event_type is not CUSTOM")
+		return self
 
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)
