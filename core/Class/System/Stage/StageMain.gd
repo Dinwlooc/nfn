@@ -82,7 +82,7 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 	request.complete()
 
 func _check_main_stage_restrictions(card: Card, source_player: Player, target_player: Player, game_state: GameState) -> RuleCardUsage.UsageResult:
-	return RuleCardUsage.can_use_card_in_main(card, source_player, target_player, game_state)
+	return RuleCardUsage.can_use_card_in_main(card, source_player, target_player.area_defensive, game_state)
 
 func _reset_timer_for_current_player(new_time_limit: int) -> void:
 	request_reset_timer.emit(new_time_limit)
