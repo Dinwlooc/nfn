@@ -76,7 +76,8 @@ var _global_phase_index: int = 0
 var is_sorting: bool = false
 ## 当前卡牌总数决定的缩放因子（16张以下为1.0，32张时为0.75）
 var total_scale_factor: float = 1.0
-var _order_dirty: bool = true
+## 有序性计数器：手动交换、卡牌增删时 +1；排序完成后归零
+var _order_dirty_counter: int = 10
 
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.HAND)
@@ -125,7 +126,7 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type:StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
 		_update_total_scale_factor()
-		_order_dirty = true
+		_order_dirty_counter += 1   # 卡牌增删，有序性计数器 +1
 	target_position = UIAnimationUtils.generate_coordinates(area_target_position, area_target_size, area.items_pool.size())
 	tween_update(render_event)
 
@@ -133,7 +134,7 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type:StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.SWAP_CARD:
-		_order_dirty = true
+		_order_dirty_counter += 1   # 手动交换（通过 swap_cards 触发），计数器 +1
 	if event_type == RenderEvent.DefaultType.CARD_SELECTION_CHANGED:
 		var has_selection: bool = not area.get_selected_items().is_empty()
 		play_card_ui.visible = has_selection
@@ -298,7 +299,7 @@ func _compute_scale_from_dx(dx: float) -> float:
 
 # 按钮按下时的处理（设置冷却）
 func _on_quick_sort_button_pressed() -> void:
-	if not _order_dirty:
+	if _order_dirty_counter == 0:      # 计数器为0时无需排序
 		return
 	if is_sorting:
 		return
@@ -333,17 +334,51 @@ func _quick_sort_cards() -> void:
 	await get_tree().create_timer(TWEEN_TIME).timeout
 	sort_region(0, attack_end - 1)                # 攻击区
 	sort_region(attack_end, defence_end - 1)      # 防御区
-	sort_region(defence_end, pool.size() - 1)            # 技能区
+	sort_region(defence_end, pool.size() - 1)      # 技能区
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
-	_order_dirty = false
+	_order_dirty_counter = 0   # 排序完成，计数器归零
 
+## 对指定区间进行排序，根据有序性计数器决定使用插入排序或快速排序
 func sort_region(start: int, end: int) -> void:
-	var pool = area.items_pool
+	if start >= end:
+		return
+	# 若有序性计数器 >= 10，使用快速排序（认为原顺序已被严重破坏）
+	if _order_dirty_counter >= 10:
+		quick_sort_region(start, end)
+		return
+	insert_sort_region(start, end)
+
+## 插入排序（原 sort_region 逻辑）
+func insert_sort_region(start: int, end: int) -> void:
+	var pool:Array[RenderItem] = area.items_pool
 	for i in range(start + 1, end + 1):
-		var j = i
+		var j:int = i
 		while j > start and pool[j].data.id < pool[j-1].data.id:
 			area.swap_items_no_event(j, j-1)
 			j -= 1
+
+## 快速排序（对区间 [start, end] 按 data.id 升序排列）
+func quick_sort_region(start: int, end: int) -> void:
+	if start >= end:
+		return
+	var pivot_idx:int = _partition(start, end)
+	quick_sort_region(start, pivot_idx - 1)
+	quick_sort_region(pivot_idx + 1, end)
+## 分区函数（Lomuto 方案），返回基准元素的最终位置
+func _partition(start: int, end: int) -> int:
+	var pool:Array[RenderItem] = area.items_pool
+	# 选取最后一个元素作为基准
+	var pivot_id:int = pool[end].data.get_id()
+	var i:int = start - 1
+	for j in range(start, end):
+		if pool[j].data.id <= pivot_id:
+			i += 1
+			if i != j:
+				area.swap_items_no_event(i, j)
+	# 将基准放到正确位置
+	if i + 1 != end:
+		area.swap_items_no_event(i + 1, end)
+	return i + 1
 
 func _on_play_card_button_pressed() -> void:
 	var op_manager:OperationManager= render_context.get_operation_manager()

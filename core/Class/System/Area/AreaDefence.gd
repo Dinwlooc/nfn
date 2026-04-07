@@ -2,72 +2,57 @@ extends OrderedArea
 class_name AreaDefence
 
 var settle_count: int = 0
-var pending_card: Card = null
-signal area_pending_card_added(card:Card,area:AreaDefence)
+signal battle_formation_detected(top_card: Card, second_card: Card)
 
+## 初始化扩展
 func _init_expand() -> void:
 	area_name = GlobalConstants.DefaultArea.DEFENCE
+	area_card_added.connect(_on_cards_changed)
+	area_card_removed.connect(_on_cards_changed)
 
-func cards_add(cards:Array[Card]) -> void:
-	if not cards:
+## 添加卡牌（直接调用基类，不再使用缓冲槽）
+func cards_add(cards: Array[Card]) -> void:
+	if cards.is_empty():
 		return
-	if cards.size() > 1:
-		super.cards_add(cards)
-		return
-	if pending_card:
-		commit_pending_card()
-	add_pending_card(cards[0])
-	area_card_added.emit(pending_card,self)
-	area_pending_card_added.emit(pending_card,self)
-# 添加缓冲槽卡牌（攻防中即将置入的斗牌）
-func add_pending_card(card: Card) -> void:
-	if pending_card:
-		commit_pending_card()
-	pending_card = card
-	check_battle_formation()
-# 移除缓冲槽卡牌（如被摧毁时调用）
-func remove_pending_card() -> Card:
-	var card:Card = pending_card
-	pending_card = null
-	return card
-# 提交缓冲槽卡牌到牌堆顶部
-func commit_pending_card() -> void:
-	if pending_card:
-		super.cards_add([pending_card])  # 调用基类同步方法
-		pending_card = null
-# 检查斗牌形成条件
+	super.cards_add(cards)
+
+## 移除卡牌（基类已发出信号，无需重写，但为了检测需保留信号连接）
+
+## 检查并发出斗牌信号
+func _check_and_emit_battle_formation() -> void:
+	var top: Card = get_top_card()
+	var second: Card = get_second_card()
+	if top and second and top.player != second.player:
+		battle_formation_detected.emit(top, second)
+
+## 卡牌变化时的回调
+func _on_cards_changed(_card: Card, _area: Area) -> void:
+	_check_and_emit_battle_formation()
+
+## 检查斗牌条件（供外部调用）
 func check_battle_formation() -> bool:
-	var top: Card
-	var sub: Card
-	if pending_card:
-		top = pending_card
-		sub = get_top_card()
-	else:
-		top = get_top_card()
-		sub = get_second_card()
-	if top and sub and top.player != sub.player:
-		return true
-	return false
-# 获取顶层牌
+	var top: Card = get_top_card()
+	var second: Card = get_second_card()
+	return top != null and second != null and top.player != second.player
+
+## 获取顶层牌
 func get_top_card() -> Card:
-	var cards:Array[Card] = get_all_cards()
+	var cards: Array[Card] = get_all_cards()
 	return cards[-1] if not cards.is_empty() else null
 
-# 获取次层牌
+## 获取次层牌
 func get_second_card() -> Card:
-	var cards:Array[Card] = get_all_cards()
+	var cards: Array[Card] = get_all_cards()
 	return cards[-2] if cards.size() >= 2 else null
 
-# 结算守区
+## 结算守区
 func settle_defense_area() -> void:
 	settle_count += 1
-## 仅重置结算次数（保留缓冲槽卡牌）
+
+## 仅重置结算次数
 func reset_settle_count() -> void:
 	settle_count = 0
-# 重置守区状态（新攻防开始时调用）
+
+## 重置守区状态
 func reset() -> void:
 	settle_count = 0
-	commit_pending_card()
-
-func is_empty() -> bool:
-	return ( not pending_card and _ordered_pool.is_empty())
