@@ -88,45 +88,58 @@ func _on_duel_phase(game_state: GameState, _context: Context) -> void:
 		append_companion_command(duel)
 	_context.phase = Context.Phase.DAMAGE
 
+## 伤害阶段：调用 Rule 类计算伤害与战意，生成单个 DamageCommand
 func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 	if not _context.settle_card:
 		_context.phase = Context.Phase.DONE
 		return
+	var attacker: Player = game_state.player_manager.get_player_by_id(_context.settle_card.get_owner_id())
 	var defender: Player = _context.defensive_area.player
-	if _context.settle_card.type == &"attack":
-		var health_dmg: int = _context.settle_card.get_attribute(&"power")
-		var mental_dmg: int = _context.settle_card.get_attribute(&"power")
-		if not _context.is_unilateral:
-			var defense_power: int = _context.oppose_card.get_attribute(&"power")
-			match _context.duel_result:
-				DuelCommand.Context.Result.A_WIN:
-					mental_dmg = max(0, mental_dmg - defense_power)
-				DuelCommand.Context.Result.TIE:
-					mental_dmg = max(0, mental_dmg - defense_power)
-				DuelCommand.Context.Result.B_WIN:
-					mental_dmg = max(0, mental_dmg - (_context.duel_diff + defense_power))
-					health_dmg = max(0, health_dmg - _context.duel_diff)
-		var damage_cmd = DamageCommand.new(
-			defender,
-			health_dmg,
-			mental_dmg,
-			DamageCommand.SourceMechanism.GENERAL,
-			_context.get_settle_card().get_owner_id()
-		)
-		append_companion_command(damage_cmd)
-	elif _context.settle_card.type == &"defence":
-		var mental_dmg: int = _context.settle_card.get_attribute(&"power")
-		if not _context.is_unilateral and _context.duel_result == DuelCommand.Context.Result.A_WIN:
-			mental_dmg = max(0, mental_dmg - _context.duel_diff)
-		var damage_cmd = DamageCommand.new(
-			_context.get_oppose_card().player,
-			0,
-			mental_dmg,
-			DamageCommand.SourceMechanism.GENERAL,
-			defender.player_id
-		)
-		append_companion_command(damage_cmd)
+	if not attacker or not defender:
+		_context.phase = Context.Phase.DONE
+		return
+	# 调用纯函数计算结算结果
+	var result: Rule.SettleResult = Rule.evaluate(
+		_context.settle_card,
+		_context.oppose_card,
+		_context.duel_result,
+		_context.duel_diff,
+		_context.is_unilateral,
+		attacker,
+		defender,
+		{}  # 暂不使用卡牌覆盖规则
+	)
+	# 在生成伤害命令前处理战意授予
+	_apply_combat_will_grants(result.combat_will_grants)
+	# 确定伤害目标与数值（健康或精神伤害非零时至少存在一个目标）
+	var damage_target: Player = result.health_damage_target if result.health_damage_target else result.mental_damage_target
+	if not damage_target:
+		_context.phase = Context.Phase.EFFECT
+		return
+	var health_val: int = result.health_damage_value
+	var mental_val: int = result.mental_damage_value
+	var damage_cmd := DamageCommand.new(
+		damage_target,
+		health_val,
+		mental_val,
+		DamageCommand.SourceMechanism.GENERAL,
+		_context.settle_card.get_owner_id()
+	)
+	append_companion_command(damage_cmd)
 	_context.phase = Context.Phase.EFFECT
+## 应用战意授予条目（直接操作 Player 属性）
+static func _apply_combat_will_grants(grants: Array) -> void:
+	for grant in grants:
+		var player: Player = grant.target_player
+		if not player:
+			continue
+		var total_value: int = grant.base_value + grant.extra_value
+		if total_value <= 0:
+			continue
+		if grant.is_defense:
+			player.morale_defense += total_value
+		else:
+			player.morale_attack += total_value
 
 func _on_effect_phase(game_state: GameState, _context: Context) -> void:
 	_context.phase = Context.Phase.CLEAR

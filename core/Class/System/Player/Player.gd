@@ -88,3 +88,11 @@ func send_pack(target_peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST) -> void:
 		[pack],
 		player_id
 	).send_to_player(target_peer_id)
+
+## 增加攻击战意
+func add_morale_attack(value: int) -> void:
+	morale_attack += value
+
+## 增加防御战意
+func add_morale_defense(value: int) -> void:
+	morale_defense += value
