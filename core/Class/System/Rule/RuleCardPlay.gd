@@ -57,7 +57,6 @@ static func check_and_create_command(
 	card: Card,
 	source_player: Player,
 	target_player: Player,
-	is_to_center: bool,
 	game_state: GameState,
 	override_rules: Dictionary = {}
 ) -> RuleResult:
@@ -69,37 +68,32 @@ static func check_and_create_command(
 	if not source_player.area_hand or not source_player.area_hand.get_card_by_id(card.id):
 		return RuleResult.new(false, null, "玩家不拥有该卡牌")
 
-	var card_type = card.type
+	var card_type: StringName = card.type
 	var base_rule_config = _card_rules.get(card_type)
 	if not base_rule_config:
 		return RuleResult.new(false, null, "不支持的卡牌类型: %s" % card_type)
 
 	# 合并覆盖规则（仅在需要时创建副本）
-	var rule_config = _merge_rule_config(base_rule_config, override_rules)
+	var rule_config: Dictionary = _merge_rule_config(base_rule_config, override_rules)
 
-	# 区域模式验证
-	var area_result = _validate_play_area_mode(rule_config[Validator.PLAY_AREA_MODE], is_to_center)
-	if not area_result.is_valid:
-		return area_result
-
-	# 目标许可验证
-	var target_result = _validate_target_permission(
+	# 目标许可验证（包含区域模式对 target 的必要性检查）
+	var target_result: RuleResult = _validate_target_permission(
 		rule_config[Validator.TARGET_PERMISSION],
 		source_player,
 		target_player,
-		rule_config[Validator.PLAY_AREA_MODE]
+		rule_config[Validator.PLAY_AREA_MODE]  # 使用配置的区域模式
 	)
 	if not target_result.is_valid:
 		return target_result
 
 	# 距离验证
 	if rule_config.get(&"distance_check", false):
-		var distance_result = _validate_distance(card, source_player, target_player, game_state)
+		var distance_result: RuleResult = _validate_distance(card, source_player, target_player, game_state)
 		if not distance_result.is_valid:
 			return distance_result
 
-	# 构建命令
-	var command = _build_command(source_player, card, target_player, rule_config[Validator.PLAY_AREA_MODE])
+	# 构建命令（区域模式完全由配置决定）
+	var command: BehaviorCommand = _build_command(source_player, card, target_player, rule_config[Validator.PLAY_AREA_MODE])
 	return RuleResult.new(true, command, "卡牌使用检查通过")
 
 ## 合并基础规则与覆盖规则（仅在存在有效覆盖时创建副本）
@@ -121,17 +115,6 @@ static func _merge_rule_config(base: Dictionary, overrides: Dictionary) -> Dicti
 			merged[key] = overrides[key]
 	return merged
 
-## 验证出牌区域模式是否与玩家意图一致
-static func _validate_play_area_mode(required_mode: PlayAreaMode, is_to_center: bool) -> RuleResult:
-	match required_mode:
-		PlayAreaMode.CENTER:
-			if not is_to_center:
-				return RuleResult.new(false, null, "此卡牌必须出牌到中心区")
-		PlayAreaMode.TARGET_DEFENSE:
-			if is_to_center:
-				return RuleResult.new(false, null, "此卡牌必须出牌到目标守区")
-	return RuleResult.new(true)
-
 ## 验证目标许可（基于掩码和区域模式）
 static func _validate_target_permission(
 	permission_mask: int,
@@ -146,7 +129,7 @@ static func _validate_target_permission(
 	if area_mode != PlayAreaMode.CENTER and target == null:
 		return RuleResult.new(false, null, "此卡牌需要指定一个目标玩家")
 
-	var is_self = (target.player_id == source.player_id)
+	var is_self := (target.player_id == source.player_id)
 	if is_self:
 		if not (permission_mask & TargetPermissionFlags.SELF):
 			return RuleResult.new(false, null, "此卡牌不能对自己使用")
@@ -173,7 +156,7 @@ static func _validate_distance(card: Card, source: Player, target: Player, game_
 
 ## 构建出牌命令
 static func _build_command(source: Player, card: Card, target: Player, area_mode: PlayAreaMode) -> BehaviorCommand:
-	var target_player_id = target.player_id if target else -1
+	var target_player_id: int = target.player_id if target else -1
 	var target_area_type: int
 	match area_mode:
 		PlayAreaMode.CENTER:

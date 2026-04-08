@@ -5,7 +5,7 @@ extends AreaFace
 ## 动画时长（秒）
 const MOVE_DURATION: float = 0.3
 ## 动画缓动类型
-const MOVE_EASE: int = Tween.EASE_OUT
+const MOVE_EASE: int = Tween.EASE_IN_OUT
 ## 动画过渡类型
 const MOVE_TRANS: int = Tween.TRANS_QUAD
 
@@ -39,16 +39,14 @@ func _on_item_created_for_removing(item: RenderItem) -> void:
 
 ## 当手牌区添加新的 RenderItem 时调用（移入动画）
 func _on_item_added(item: RenderItem) -> void:
-	area.remove_item(item)
 	var tween: Tween = create_tween()
-	tween.set_parallel(true)
 	tween.tween_property(item, ^"position", position, MOVE_DURATION)\
 		.set_trans(MOVE_TRANS).set_ease(MOVE_EASE)
-	# 动画完成后回收该 item（因为已经移动到目标区域，此临时 item 不再需要）
 	tween.finished.connect(_on_move_finished.bind(item), CONNECT_ONE_SHOT)
 
 ## 动画完成时回收临时 RenderItem
 func _on_move_finished(item: RenderItem) -> void:
+	area.remove_item(item)
 	if render_context:
 		render_context.request_recycle_item(item)
 

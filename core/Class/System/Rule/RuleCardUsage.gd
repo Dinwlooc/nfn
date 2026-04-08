@@ -24,13 +24,12 @@ class UsageResult:
 		message = p_message
 
 class Validator:
-	const STACK_LIMIT := &"stack_limit"      # 堆栈限制（主阶段）
-	const SPEED_LIMIT := &"speed_limit"      # 速度限制（主阶段）
-	const DEFENSE_STATE := &"defense_state"  # 防御阶段守区状态检查
+	const STACK_LIMIT := &"stack_limit"      # 守区堆栈限制
+	const SPEED_LIMIT := &"speed_limit"      # 速度限制
 	const DEFENSE_GROUP_ATTACK := &"defense_group_attack"
 
-# ---------- 主阶段配置 ----------
-static var _main_card_rules: Dictionary = {
+# ---------- 配置 ----------
+static var _card_rules: Dictionary = {
 	&"attack": {
 		Validator.STACK_LIMIT: true,
 		Validator.SPEED_LIMIT: true,
@@ -40,44 +39,7 @@ static var _main_card_rules: Dictionary = {
 	},
 	&"skill": {},
 }
-
-# ---------- 防御阶段配置 ----------
-static var _defense_state_allowed: Dictionary = {
-	&"empty": {
-		&"attack": true,
-		&"defence": false,
-		&"skill": true,
-	},
-	&"top_defender": {
-		&"attack": true,
-		&"defence": false,
-		&"skill": true,
-	},
-	&"top_attacker": {
-		&"attack": false,
-		&"defence": true,
-		&"skill": false,
-	},
-}
-
-static var _defense_extra_validators: Dictionary = {
-	&"skill": [Validator.DEFENSE_GROUP_ATTACK],
-}
-
-static var _defense_validator_funcs: Dictionary = {
-	Validator.DEFENSE_STATE: _validate_defense_state,
-	Validator.DEFENSE_GROUP_ATTACK: _validate_defense_group_attack,
-}
-
-static func _get_defense_validators_for_card(card_type: StringName) -> Array:
-	var validators = [Validator.DEFENSE_STATE]
-	var extra = _defense_extra_validators.get(card_type, [])
-	validators.append_array(extra)
-	return validators
-
-# ---------- 主阶段入口 ----------
 ## @param defense_area 需要检查堆栈限制的守区（攻击牌为目标守区，防御牌为自己守区，技能牌可为空）
-## @param speed_defense_area 需要检查速度限制的守区（攻击牌为目标守区，其他情况传 null，由配置决定是否调用）
 static func can_use_card_in_main(
 	card: Card,
 	source_player: Player,
@@ -86,8 +48,8 @@ static func can_use_card_in_main(
 ) -> UsageResult:
 	if not card:
 		return UsageResult.new(false, ErrorCode.CARD_NULL, "卡牌实例为空")
-	var card_type = card.type
-	var rule_config = _main_card_rules.get(card_type)
+	var card_type:StringName = card.type
+	var rule_config:Dictionary = _card_rules.get(card_type)
 	if not rule_config:
 		return UsageResult.new(false, ErrorCode.UNKNOWN_CARD_TYPE, "未知卡牌类型: %s" % card_type)
 	for validator_name in rule_config:
@@ -131,49 +93,19 @@ static func can_use_card_in_defense(
 ) -> UsageResult:
 	if not card:
 		return UsageResult.new(false, ErrorCode.CARD_NULL, "卡牌实例为空")
-	var card_type = card.type
-	var validators = _get_defense_validators_for_card(card_type)
-	for validator_name in validators:
-		var func_ref = _defense_validator_funcs.get(validator_name)
-		if not func_ref:
+	var card_type:StringName = card.type
+	var rule_config:Dictionary = _card_rules.get(card_type)
+	if not rule_config:
+		return UsageResult.new(false, ErrorCode.UNKNOWN_CARD_TYPE, "未知卡牌类型: %s" % card_type)
+	for validator_name in rule_config:
+		if not rule_config[validator_name]:
 			continue
-		var result = func_ref.call(card, source_player, defense_area, attacker, defender, current_responsive_player_id)
-		if not result.is_valid:
-			return result
-	return UsageResult.new(true)
-
-static func _validate_defense_state(
-	card: Card,
-	_source: Player,
-	defense_area: AreaDefence,
-	attacker: Player,
-	defender: Player,
-	current_responsive_player_id: int
-) -> UsageResult:
-	var is_attacker_turn = (current_responsive_player_id == attacker.player_id)
-	var top_card = defense_area.get_top_card()
-	var state_key: StringName
-	if top_card == null:
-		state_key = &"empty"
-		if not is_attacker_turn:
-			return UsageResult.new(false, ErrorCode.WRONG_TURN, "守区为空时只有攻方可出牌")
-	elif top_card.player == defender:
-		state_key = &"top_defender"
-		if not is_attacker_turn:
-			return UsageResult.new(false, ErrorCode.WRONG_TURN, "守区顶层是守方牌，只有攻方可出牌")
-	elif top_card.player == attacker:
-		state_key = &"top_attacker"
-		if is_attacker_turn:
-			return UsageResult.new(false, ErrorCode.WRONG_TURN, "守区顶层是攻方牌，只有守方可出牌")
-	else:
-		return UsageResult.new(false, ErrorCode.UNKNOWN_TOP_OWNER, "守区顶层牌归属异常")
-
-	var allowed_map = _defense_state_allowed.get(state_key)
-	if not allowed_map:
-		return UsageResult.new(false, ErrorCode.INVALID_CARD_TYPE, "未知守区状态")
-	var allowed = allowed_map.get(card.type, false)
-	if not allowed:
-		return UsageResult.new(false, ErrorCode.INVALID_CARD_TYPE, "当前守区状态下不允许使用该卡牌类型")
+		match validator_name:
+			Validator.STACK_LIMIT:
+				if defense_area:
+					var result = _validate_stack_limit(defense_area, source_player)
+					if not result.is_valid:
+						return result
 	return UsageResult.new(true)
 
 static func _validate_defense_group_attack(
