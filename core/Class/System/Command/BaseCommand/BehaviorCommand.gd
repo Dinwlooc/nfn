@@ -25,3 +25,10 @@ func execute(game_state: GameState) -> void:
 func append_companion_command(command: BehaviorCommand) -> void:
 	companion_command_requested.emit(command)
 ## 取消命令
+
+func cancel()->void:
+	if _context:
+		if not _context.can_be_cancelled:
+			return
+		_context.cancel()
+	complete()

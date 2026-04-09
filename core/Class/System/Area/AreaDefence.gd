@@ -7,16 +7,19 @@ signal battle_formation_detected(top_card: Card, second_card: Card)
 ## 初始化扩展
 func _init_expand() -> void:
 	area_name = GlobalConstants.DefaultArea.DEFENCE
+	# 不再需要监听卡牌变化来设置标记，但仍需发出斗牌信号供外部使用
 	area_card_added.connect(_on_cards_changed)
 	area_card_removed.connect(_on_cards_changed)
 
-## 添加卡牌（直接调用基类，不再使用缓冲槽）
+## 添加卡牌
 func cards_add(cards: Array[Card]) -> void:
 	if cards.is_empty():
 		return
 	super.cards_add(cards)
 
-## 移除卡牌（基类已发出信号，无需重写，但为了检测需保留信号连接）
+## 卡牌变化时发出斗牌信号（外部可根据需要处理）
+func _on_cards_changed(_card: Card, _area: Area) -> void:
+	_check_and_emit_battle_formation()
 
 ## 检查并发出斗牌信号
 func _check_and_emit_battle_formation() -> void:
@@ -24,10 +27,6 @@ func _check_and_emit_battle_formation() -> void:
 	var second: Card = get_second_card()
 	if top and second and top.player != second.player:
 		battle_formation_detected.emit(top, second)
-
-## 卡牌变化时的回调
-func _on_cards_changed(_card: Card, _area: Area) -> void:
-	_check_and_emit_battle_formation()
 
 ## 检查斗牌条件（供外部调用）
 func check_battle_formation() -> bool:

@@ -99,7 +99,7 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 		_context.phase = Context.Phase.DONE
 		return
 	# 调用纯函数计算结算结果
-	var result: Rule.SettleResult = Rule.evaluate(
+	var result: RuleSettle.Result = RuleSettle.evaluate(
 		_context.settle_card,
 		_context.oppose_card,
 		_context.duel_result,
@@ -128,7 +128,7 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 	append_companion_command(damage_cmd)
 	_context.phase = Context.Phase.EFFECT
 ## 应用战意授予条目（直接操作 Player 属性）
-static func _apply_combat_will_grants(grants: Array) -> void:
+static func _apply_combat_will_grants(grants: Array[RuleSettle.CombatWillGrant]) -> void:
 	for grant in grants:
 		var player: Player = grant.target_player
 		if not player:
@@ -138,8 +138,8 @@ static func _apply_combat_will_grants(grants: Array) -> void:
 			continue
 		if grant.is_defense:
 			player.morale_defense += total_value
-		else:
-			player.morale_attack += total_value
+			continue
+		player.morale_attack += total_value
 
 func _on_effect_phase(game_state: GameState, _context: Context) -> void:
 	_context.phase = Context.Phase.CLEAR

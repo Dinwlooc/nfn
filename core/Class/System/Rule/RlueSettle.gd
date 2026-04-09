@@ -1,6 +1,6 @@
 ## 守区结算规则类（纯函数/验证器模式）
 extends RefCounted
-class_name Rule
+class_name RuleSettle
 
 ## 验证器名称常量
 class Validator:
@@ -32,28 +32,28 @@ enum CombatWillFlag {
 }
 
 ## 结算结果类（纯数据容器）
-class SettleResult:
+class Result:
 	var health_damage_target: Player           ## 生命伤害目标玩家
 	var health_damage_value: int               ## 生命伤害数值
 	var mental_damage_target: Player           ## 精神伤害目标玩家
 	var mental_damage_value: int               ## 精神伤害数值
 	var combat_will_grants: Array[CombatWillGrant]  ## 战意授予信息列表
-
-	## 战意授予条目
-	class CombatWillGrant:
-		var target_player: Player   ## 获得战意的玩家
-		var is_defense: bool        ## 是否为防御战意
-		var base_value: int         ## 基础战意值
-		var extra_value: int        ## 额外战意值（差值）
-
-		func _init(p_target: Player, p_is_defense: bool, p_base: int, p_extra: int) -> void:
-			target_player = p_target
-			is_defense = p_is_defense
-			base_value = p_base
-			extra_value = p_extra
-
 	func _init() -> void:
 		combat_will_grants = []
+
+	## 战意授予条目
+class CombatWillGrant:
+	var target_player: Player   ## 获得战意的玩家
+	var is_defense: bool        ## 是否为防御战意
+	var base_value: int         ## 基础战意值
+	var extra_value: int        ## 额外战意值（差值）
+	func _init(p_target: Player, p_is_defense: bool, p_base: int, p_extra: int) -> void:
+		target_player = p_target
+		is_defense = p_is_defense
+		base_value = p_base
+		extra_value = p_extra
+
+
 
 ## 预设规则字典（键为卡牌类型 StringName）
 static var _settle_rules: Dictionary = {
@@ -81,9 +81,9 @@ static var _settle_rules: Dictionary = {
 ## @param defender 防守方玩家（守区玩家）
 ## @param override_rules 覆盖规则字典
 ## @return SettleResult 结算结果容器
-static func evaluate(settle_card: Card, oppose_card: Card, duel_result: int, duel_diff: int, is_unilateral: bool, attacker: Player, defender: Player, override_rules: Dictionary = {}) -> SettleResult:
+static func evaluate(settle_card: Card, oppose_card: Card, duel_result: int, duel_diff: int, is_unilateral: bool, attacker: Player, defender: Player, override_rules: Dictionary = {}) -> Result:
 	if not settle_card:
-		return SettleResult.new()
+		return Result.new()
 	var card_type: StringName = settle_card.type
 	var base_rules: Dictionary = _settle_rules.get(card_type, {})
 	var rules: Dictionary = _merge_rules(base_rules, override_rules)
@@ -99,7 +99,7 @@ static func evaluate(settle_card: Card, oppose_card: Card, duel_result: int, due
 	var health_target: Player = _get_player_by_orientation(orientation, attacker, defender) if health_dmg > 0 else null
 	var mental_target: Player = _get_player_by_orientation(orientation, attacker, defender) if mental_dmg > 0 else null
 	# 构建结果对象
-	var result: SettleResult = SettleResult.new()
+	var result: Result = Result.new()
 	result.health_damage_target = health_target
 	result.health_damage_value = health_dmg
 	result.mental_damage_target = mental_target
@@ -168,10 +168,10 @@ static func _generate_combat_will_grants(settle_card: Card, oppose_card: Card, d
 	if mask & CombatWillFlag.ENABLE_BASE:
 		var base_val: int = settle_card.get_attribute(&"power")
 		if base_val > 0:
-			out_grants.append(SettleResult.CombatWillGrant.new(settle_owner, is_defense, base_val, 0))
+			out_grants.append(CombatWillGrant.new(settle_owner, is_defense, base_val, 0))
 	# 结算牌胜利额外战意
 	if not is_unilateral and duel_result == DuelCommand.Context.Result.A_WIN and (mask & CombatWillFlag.EXTRA_ON_SETTLE_WIN) and duel_diff > 0:
-		out_grants.append(SettleResult.CombatWillGrant.new(settle_owner, is_defense, 0, duel_diff))
+		out_grants.append(CombatWillGrant.new(settle_owner, is_defense, 0, duel_diff))
 	# 对抗牌胜利额外战意
 	if not is_unilateral and duel_result == DuelCommand.Context.Result.B_WIN and oppose_owner and (mask & CombatWillFlag.EXTRA_ON_OPPOSE_WIN) and duel_diff > 0:
-		out_grants.append(SettleResult.CombatWillGrant.new(oppose_owner, is_defense, 0, duel_diff))
+		out_grants.append(CombatWillGrant.new(oppose_owner, is_defense, 0, duel_diff))

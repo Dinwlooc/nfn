@@ -25,6 +25,9 @@ func _init(area: AreaDefence, top: Card, second: Card, name_overriding: StringNa
 	super._init(0, name_overriding, Context.new())
 	_context.set_battle_params(area, top, second)
 
+## 取消斗牌命令（不会执行任何效果）
+
+
 func execute(game_state: GameState) -> void:
 	match _context.phase:
 		Context.Phase.INIT:
@@ -37,8 +40,10 @@ func execute(game_state: GameState) -> void:
 			_on_done_phase(game_state, _context)
 
 func _on_init_phase(game_state: GameState, _context: Context) -> void:
+	# 不再检查堆栈变化，直接检查双方是否同属一个玩家
 	if _context.second_card.player == _context.top_card.player:
 		_context.phase = Context.Phase.DONE
+		return
 	_context.phase = Context.Phase.CREATE_DUEL
 
 func _on_create_duel_phase(game_state: GameState, _context: Context) -> void:
@@ -54,7 +59,7 @@ func _on_process_result_phase(game_state: GameState, _context: Context) -> void:
 	if not player_top or not player_second:
 		_context.phase = Context.Phase.DONE
 		return
-	# 双方各获得1点基础战意（根据各自卡牌类型）
+	# 双方各获得1点基础战意
 	_add_morale_by_card(player_top, _context.top_card, BASE_MORALE_GAIN)
 	_add_morale_by_card(player_second, _context.second_card, BASE_MORALE_GAIN)
 	# 胜利方额外获得1点战意
@@ -72,12 +77,11 @@ func _on_process_result_phase(game_state: GameState, _context: Context) -> void:
 func _on_done_phase(game_state: GameState, _context: Context) -> void:
 	complete()
 
-## 根据卡牌类型增加对应战意（攻击牌加攻击战意，防御牌加防御战意）
 func _add_morale_by_card(player: Player, card: Card, amount: int) -> void:
 	if card.type == &"attack":
-		player.morale_attack += amount
+		player.add_morale_attack(amount)
 	else:
-		player.morale_defense += amount
+		player.add_morale_defense(amount)
 
 func _on_duel_completed(result: int, diff: int) -> void:
 	_context.duel_result = result
