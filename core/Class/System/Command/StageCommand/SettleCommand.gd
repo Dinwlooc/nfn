@@ -12,6 +12,7 @@ class Context extends CommandContext:
 		DONE           # 完成
 	}
 	var defensive_area: AreaDefence = null
+	var attacker:Player = null
 	var settle_card: Card = null       # 原 top_card -> 结算牌
 	var oppose_card: Card = null       # 原 second_card -> 对抗牌
 	var is_unilateral: bool = false
@@ -49,9 +50,10 @@ class Context extends CommandContext:
 		return cards
 
 ## 结算命令
-func _init(player_id: int,target_defensive_area: AreaDefence, name_overriding: StringName = &"Settle", context_overriding: Context = Context.new()) -> void:
+func _init(player_id: int,target_defensive_area: AreaDefence,attacker:Player, name_overriding: StringName = &"Settle", context_overriding: Context = Context.new()) -> void:
 	super._init(player_id, name_overriding, context_overriding)
 	_context.defensive_area = target_defensive_area
+	_context.attacker = attacker
 
 func execute(game_state: GameState) -> void:
 	match _context.phase:
@@ -93,11 +95,8 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 	if not _context.settle_card:
 		_context.phase = Context.Phase.DONE
 		return
-	var attacker: Player = game_state.player_manager.get_player_by_id(_context.settle_card.get_owner_id())
 	var defender: Player = _context.defensive_area.player
-	if not attacker or not defender:
-		_context.phase = Context.Phase.DONE
-		return
+	var attacker: Player = _context.attacker
 	# 调用纯函数计算结算结果
 	var result: RuleSettle.Result = RuleSettle.evaluate(
 		_context.settle_card,
@@ -109,10 +108,9 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 		defender,
 		{}  # 暂不使用卡牌覆盖规则
 	)
-	# 在生成伤害命令前处理战意授予
 	_apply_combat_will_grants(result.combat_will_grants)
-	# 确定伤害目标与数值（健康或精神伤害非零时至少存在一个目标）
-	var damage_target: Player = result.health_damage_target if result.health_damage_target else result.mental_damage_target
+	# 确定伤害目标与数值
+	var damage_target: Player = result.target
 	if not damage_target:
 		_context.phase = Context.Phase.EFFECT
 		return

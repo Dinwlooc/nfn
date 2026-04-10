@@ -33,9 +33,8 @@ enum CombatWillFlag {
 
 ## 结算结果类（纯数据容器）
 class Result:
-	var health_damage_target: Player           ## 生命伤害目标玩家
+	var target: Player           ## 伤害目标玩家
 	var health_damage_value: int               ## 生命伤害数值
-	var mental_damage_target: Player           ## 精神伤害目标玩家
 	var mental_damage_value: int               ## 精神伤害数值
 	var combat_will_grants: Array[CombatWillGrant]  ## 战意授予信息列表
 	func _init() -> void:
@@ -96,13 +95,11 @@ static func evaluate(settle_card: Card, oppose_card: Card, duel_result: int, due
 	var mental_dmg: int = _calc_damage(base_power, mental_mode, duel_result, duel_diff, oppose_power, is_unilateral)
 	# 确定伤害目标
 	var orientation: AttackOrientation = rules.get(Validator.ATTACK_ORIENTATION, AttackOrientation.DEFENDER)
-	var health_target: Player = _get_player_by_orientation(orientation, attacker, defender) if health_dmg > 0 else null
-	var mental_target: Player = _get_player_by_orientation(orientation, attacker, defender) if mental_dmg > 0 else null
+	var target: Player = _get_player_by_orientation(orientation, attacker, defender)
 	# 构建结果对象
 	var result: Result = Result.new()
-	result.health_damage_target = health_target
+	result.target = target
 	result.health_damage_value = health_dmg
-	result.mental_damage_target = mental_target
 	result.mental_damage_value = mental_dmg
 	# 生成战意授予信息
 	_generate_combat_will_grants(settle_card, oppose_card, duel_result, duel_diff, is_unilateral, rules.get(Validator.COMBAT_WILL_MODE, 0), attacker, defender, result.combat_will_grants)

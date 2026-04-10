@@ -77,5 +77,5 @@ func execute(game_state: GameState) -> void:
 						_context.source_player_id,
 						_context.damage_modifiers
 					)
-				_context.target_player.send_pack()
+				RuleTrans.send_player_delta_updates([_context.target_player],RenderRequest.ItemSet.EventType.ATTACK,_context.source_player_id)
 			complete()

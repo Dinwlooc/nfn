@@ -6,7 +6,7 @@ var _is_completed: bool = false
 var _context: CommandContext
 
 signal companion_command_requested(command: BehaviorCommand)
-signal event_completed
+signal command_completed()
 
 func _init(init_player_id: int = -1,name_overriding:StringName = &"Null" ,context_overriding:CommandContext = CommandContext.new()):
 	_context = context_overriding
@@ -15,7 +15,7 @@ func _init(init_player_id: int = -1,name_overriding:StringName = &"Null" ,contex
 
 func complete() -> void:
 	_is_completed = true
-	event_completed.emit()
+	command_completed.emit()
 	_context.is_completed = true
 
 func execute(game_state: GameState) -> void:

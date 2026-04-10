@@ -79,16 +79,6 @@ func _create_player_pack() -> PlayerPack:
 func clear_pack_cache() -> void:
 	last_pack = null
 
-func send_pack(target_peer_id = MultiplayerPeer.TARGET_PEER_BROADCAST) -> void:
-	var pack:ItemPack = get_pack()  # 获取增量包（自动处理缓存）
-	var area_signature:StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
-	RenderRequest.ItemSet.new(
-		area_signature,
-		RenderRequest.ItemSet.EventType.UPDATE,
-		[pack],
-		player_id
-	).send_to_player(target_peer_id)
-
 ## 增加攻击战意
 func add_morale_attack(value: int) -> void:
 	morale_attack += value

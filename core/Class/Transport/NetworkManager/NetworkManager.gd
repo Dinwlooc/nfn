@@ -1,11 +1,12 @@
+## 网络管理器，封装 WebSocket 连接生命周期与状态管理
 extends RefCounted
 class_name NetworkManager
 
 enum ConnectionState { DISCONNECTED, CONNECTING, CONNECTED }
 
-var peer = WebSocketMultiplayerPeer.new()
-var users: Dictionary[int,User]  # 改用字典，key为peer_id
-var url: String
+var peer: WebSocketMultiplayerPeer = WebSocketMultiplayerPeer.new()
+var users: Dictionary[int, User] = {}        ## 对等体 ID 到 User 实例的映射
+var url: String = ""
 var connection_state: ConnectionState = ConnectionState.DISCONNECTED
 var multiplayer_api: MultiplayerAPI
 
@@ -26,9 +27,12 @@ func set_multiplayer(multiplayer: MultiplayerAPI) -> void:
 func _init() -> void:
 	GlobalConsole._print("NetworkManager: 网络管理器初始化完成")
 
+## 轮询网络事件（仅在连接活跃时执行）
 func poll() -> void:
+	if connection_state == ConnectionState.DISCONNECTED:
+		return
 	if connection_state == ConnectionState.CONNECTING:
-		var status = peer.get_connection_status()
+		var status: int = peer.get_connection_status()
 		if status == MultiplayerPeer.CONNECTION_CONNECTED:
 			connection_state = ConnectionState.CONNECTED
 			GlobalConsole._print("NetworkManager: 连接成功")
@@ -38,31 +42,33 @@ func poll() -> void:
 			GlobalConsole._print("NetworkManager: 连接失败")
 			connection_failed.emit()
 	peer.poll()
-# 从 peer 获取当前连接的 id
+
+## 获取当前对等体 ID（若未连接返回 -1）
 func get_current_id() -> int:
 	if peer and peer.get_connection_status() != MultiplayerPeer.CONNECTION_DISCONNECTED:
 		return peer.get_unique_id()
 	return -1
-# 服务器启动
-func random_create() -> bool:
-	var port = randi_range(1024, 65535)
-	if peer.create_server(port) == OK:
-		url = "ws://localhost:" + str(port)
-		connection_state = ConnectionState.CONNECTED
-		var current_id = get_current_id()
-		if current_id != -1:
-			var user := User.new()
-			user.id = current_id
-			user.get_config()
-			users[current_id] = user
-			peer_connected.emit(current_id)
-		GlobalConsole._print(["NetworkManager: 服务器成功启动:ws://localhost:", port])
-		multiplayer_api.multiplayer_peer = peer
-		connection_succeeded.emit()
-		return true
-	return false
 
-# 客户端连接
+## 启动服务器（随机端口）
+func random_create() -> bool:
+	var port: int = randi_range(1024, 65535)
+	if peer.create_server(port) != OK:
+		return false
+	url = "ws://localhost:" + str(port)
+	connection_state = ConnectionState.CONNECTED
+	var current_id: int = get_current_id()
+	if current_id != -1:
+		var user: User = User.new()
+		user.id = current_id
+		user.get_config()
+		users[current_id] = user
+		peer_connected.emit(current_id)
+	GlobalConsole._print(["NetworkManager: 服务器成功启动:ws://localhost:", port])
+	multiplayer_api.multiplayer_peer = peer
+	connection_succeeded.emit()
+	return true
+
+## 客户端连接
 func url_connect(new_url: String) -> bool:
 	if connection_state != ConnectionState.DISCONNECTED:
 		close()
@@ -72,24 +78,27 @@ func url_connect(new_url: String) -> bool:
 		return true
 	return false
 
+## 关闭当前连接
 func close() -> void:
 	peer.close()
 	users.clear()
 	connection_state = ConnectionState.DISCONNECTED
 	GlobalConsole._print("NetworkManager: 网络连接已关闭")
 
+## 获取当前已连接用户数量
 func get_user_count() -> int:
 	return users.size()
 
+## 获取底层 WebSocket 对等体实例
 func get_peer() -> WebSocketMultiplayerPeer:
 	return peer
 
-# MultiplayerAPI 信号处理函数
+# --- MultiplayerAPI 信号处理 ---
 func _on_multiplayer_connected_to_server() -> void:
 	GlobalConsole._print("NetworkManager: 已连接到服务器")
-	var current_id = get_current_id()
+	var current_id: int = get_current_id()
 	if current_id != -1:
-		var user := User.new()
+		var user: User = User.new()
 		user.id = current_id
 		user.get_config()
 		users[current_id] = user
@@ -109,7 +118,7 @@ func _on_multiplayer_server_disconnected() -> void:
 
 func _on_multiplayer_peer_connected(peer_id: int) -> void:
 	GlobalConsole._print(["NetworkManager: 对等体连接，ID: ", peer_id])
-	var new_user = User.new()
+	var new_user: User = User.new()
 	new_user.id = peer_id
 	users[peer_id] = new_user
 	peer_connected.emit(peer_id)
