@@ -13,7 +13,7 @@ class Context extends CommandContext:
 
 	var card1: HandCard
 	var card2: HandCard
-	var source_system: StringName
+	var event_name: StringName
 	var cached_power1: float = 0.0
 	var cached_power2: float = 0.0
 	var result: int = Result.TIE
@@ -26,10 +26,10 @@ class Context extends CommandContext:
 		TIE
 	}
 	## 工具方法：设置拼点卡片
-	func set_cards(card_a: HandCard, card_b: HandCard, source: StringName) -> void:
+	func set_cards(card_a: HandCard, card_b: HandCard, source_event_name: StringName) -> void:
 		card1 = card_a
 		card2 = card_b
-		source_system = source
+		event_name = source_event_name
 
 	func get_primary_modifier_player_ids() -> PackedInt32Array:
 		var ids: PackedInt32Array = [player_id]

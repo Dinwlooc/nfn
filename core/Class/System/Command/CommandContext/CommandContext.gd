@@ -4,7 +4,7 @@ class_name CommandContext
 
 var player_id: int
 ## 命令类型标识
-var event_name: StringName
+var command_name: StringName
 ## 命令阶段（执行进度）
 var phase: int = 0
 ## 命令是否被视为完成。不影响命令的实际完成情况。

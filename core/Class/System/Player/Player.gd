@@ -86,3 +86,17 @@ func add_morale_attack(value: int) -> void:
 ## 增加防御战意
 func add_morale_defense(value: int) -> void:
 	morale_defense += value
+
+## 增加行动点
+func add_ap(amount: int) -> void:
+	AP += amount
+	if AP < 0:
+		AP = 0
+## 减少行动点
+func sub_ap(amount: int) -> void:
+	AP -= amount
+	if AP < 0:
+		AP = 0
+## 设置行动点
+func set_ap(value: int) -> void:
+	AP = max(0, value)

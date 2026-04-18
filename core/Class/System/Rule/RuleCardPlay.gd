@@ -1,4 +1,4 @@
-## 出牌规则类（重构版）
+## 出牌规则类
 extends RefCounted
 class_name RuleCardPlay
 

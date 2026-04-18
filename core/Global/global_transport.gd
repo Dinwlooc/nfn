@@ -1,13 +1,11 @@
-## 传输层节点，负责管理网络连接与请求分发
+## 传输层节点，负责管理网络连接与请求分发。
 extends Node
 class_name Transport
 
 signal render_request_received(request: RenderRequest)
 signal operation_request_received(op: OperationRequest)
 signal peer_update(peer_id: int)
-
 const POLL_FRAME_INTERVAL: int = 6            ## 每隔多少帧轮询一次（60fps 下约 10 次/秒）
-
 var network_manager: NetworkManager
 
 func _ready() -> void:
@@ -31,20 +29,14 @@ func _on_console_connect_to(new_url: String) -> void:
 func _on_console_close() -> void:
 	network_manager.close()
 
-## 发送渲染请求（本地延迟，远程 RPC）
+## 发送渲染请求（自动处理本地/远程调用）
 func send_render_request(peer_id: int, request: RenderRequest) -> void:
-	# 本地请求直接发射信号
-	if peer_id == multiplayer.get_unique_id():
-		call_deferred(&"_emit_render_request_local", request)
-		return
 	var data: PackedByteArray = RenderRequestSerializer.serialize(request)
-	if peer_id == 0:
-		call_deferred(&"_emit_render_request_local", request)
+	if peer_id >= 0:
+		# 广播：所有对等体（包括本地）都会收到
 		rpc_id(0, &"receive_render_request", data)
 		return
-	if peer_id > 0:
-		rpc_id(peer_id, &"receive_render_request", data)
-		return
+	# 排除模式：向除 -peer_id 外的所有远程对等体发送（本地不自动执行）
 	var exclude_id: int = -peer_id
 	for id: int in multiplayer.get_peers():
 		if id != exclude_id:
@@ -53,7 +45,7 @@ func send_render_request(peer_id: int, request: RenderRequest) -> void:
 func _emit_render_request_local(request: RenderRequest) -> void:
 	render_request_received.emit(request)
 
-@rpc("authority", "call_remote", "reliable")
+@rpc("authority", "call_local", "reliable")
 func receive_render_request(serialized_request: PackedByteArray) -> void:
 	var request: RenderRequest = RenderRequestSerializer.deserialize(serialized_request)
 	if not request:
@@ -61,19 +53,16 @@ func receive_render_request(serialized_request: PackedByteArray) -> void:
 		return
 	call_deferred(&"_emit_render_request_local", request)
 
-## 上传操作请求（本地延迟，远程 RPC）
+## 上传操作请求（本地服务器自动转为本地调用）
 func upload_operation_request(op: OperationRequest) -> void:
-	var target: int = MultiplayerPeer.TARGET_PEER_SERVER
-	if multiplayer.get_unique_id() == 1:
-		op.source_peer_id = multiplayer.get_unique_id()
-		call_deferred(&"_emit_operation_request_local", op)
-	else:
-		rpc_id(target, &"receive_operation_request", OperationRequestSerializer.serialize(op))
+	var data: PackedByteArray = OperationRequestSerializer.serialize(op)
+	# 始终向服务器（ID=1）发送，若本地就是服务器则自动本地调用
+	rpc_id(1, &"receive_operation_request", data)
 
 func _emit_operation_request_local(op: OperationRequest) -> void:
 	operation_request_received.emit(op)
 
-@rpc("any_peer", "call_remote", "reliable")
+@rpc("any_peer", "call_local", "reliable")
 func receive_operation_request(data: PackedByteArray) -> void:
 	var op: OperationRequest = OperationRequestSerializer.deserialize(data)
 	if op:
