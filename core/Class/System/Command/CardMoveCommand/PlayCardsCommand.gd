@@ -37,14 +37,16 @@ func _init(
 	card_ids: PackedInt32Array,
 	target_player_id: int,
 	target_area_type: Context.TargetAreaType = Context.TargetAreaType.PLAYER_DEF,
-	name_overriding:StringName = &"PlayCards",
+	ap_source_player: Player = null,
+	name_overriding: StringName = &"PlayCards",
 	context_overriding = Context.new()
 ) -> void:
-	super._init(source_player_id,name_overriding,context_overriding)
+	super._init(source_player_id, name_overriding, context_overriding)
 	_context.set_source_player_id(source_player_id)
 	_context.set_target_player_id(target_player_id)
 	_context.set_target_area_type(target_area_type)
 	_context.set_card_ids(card_ids)
+	_context.set_ap_source_player(ap_source_player)
 	_context.set_event_type(RenderRequest.ItemSet.EventType.TRANSFER)
 ## 覆盖父类的初始化阶段方法
 func _on_init_phase(game_state: GameState) -> void:
@@ -65,9 +67,6 @@ func _on_init_phase(game_state: GameState) -> void:
 		var total_cost: int = 0
 		for card in cards:
 			total_cost += card.get_attribute(&"cost")
-		if total_cost > source_player.AP:
-			_context.phase = CardMoveCommand.Context.Phase.DONE
-			return
 		var ap_cmd := ActionPointCommand.new(
 			source_player,
 			total_cost,
@@ -75,7 +74,6 @@ func _on_init_phase(game_state: GameState) -> void:
 			&"play_card"
 		)
 		append_companion_command(ap_cmd)
-
 	# 原有逻辑：设置区域
 	_context.source_area = game_state.player_manager.get_player_by_id(_context.source_player_id).area_hand
 	match _context.target_area_type:

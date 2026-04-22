@@ -66,14 +66,22 @@ func _init(p_player: Player, p_amount: int, p_operation: Context.Operation, p_ev
 func execute(game_state: GameState) -> void:
 	var ctx: Context = _context
 	if not ctx.player:
-		push_error("ActionPointChangeCommand: 未设置被影响的玩家")
+		push_error("ActionPointCommand: 未设置被影响的玩家")
 		complete()
 		return
+	var modified: bool = false
 	match ctx.operation:
 		Context.Operation.ADD:
-			ctx.player.add_ap(ctx.amount)
+			if ctx.amount != 0:
+				ctx.player.add_ap(ctx.amount)
+				modified = true
 		Context.Operation.SUB:
-			ctx.player.sub_ap(ctx.amount)
+			if ctx.amount != 0:
+				ctx.player.sub_ap(ctx.amount)
+				modified = true
 		Context.Operation.SET:
 			ctx.player.set_ap(ctx.amount)
+			modified = true
+	if modified:
+		RuleTrans.send_player_delta_updates([ctx.player])
 	complete()

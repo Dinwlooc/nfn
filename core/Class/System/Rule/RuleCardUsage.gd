@@ -37,7 +37,7 @@ static var _card_rules: Dictionary = {
 	&"defence": {
 		Validator.STACK_LIMIT: true,
 	},
-	&"skill": {},
+	&"spell": {},
 }
 ## @param defense_area 需要检查堆栈限制的守区（攻击牌为目标守区，防御牌为自己守区，技能牌可为空）
 static func can_use_card_in_main(
