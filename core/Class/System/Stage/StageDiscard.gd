@@ -14,7 +14,8 @@ func enter(game_state: GameState) -> void:
 	super.enter(game_state)
 	var responsive_players: PackedInt32Array = []
 	for player in game_state.player_manager.players:
-		var hand_count: int = player.area_hand.get_all_cards().size()
+		var hand_area: AreaHand = game_state.get_hand_area(player.player_id)
+		var hand_count: int = hand_area.get_all_cards().size() if hand_area else 0
 		var hand_limit: int = player.get_hand_limit()
 		if hand_count > hand_limit:
 			var need_discard: int = hand_count - hand_limit
@@ -24,7 +25,7 @@ func enter(game_state: GameState) -> void:
 	if responsive_players.is_empty():
 		end_stage(game_state)
 		return
-	# 设置响应玩家并启动计时（仅此一次，后续不再重设）
+	# 设置响应玩家并启动计时
 	game_state.set_responsive_players(responsive_players)
 	_reset_timer()
 	_connect_all_commands_completed_signal(game_state)
@@ -35,7 +36,6 @@ func resume(game_state: GameState) -> void:
 	if _players_to_discard.is_empty():
 		end_stage(game_state)
 		return
-	# 恢复时仅重置计时，不修改响应玩家列表
 	_reset_timer()
 	_connect_all_commands_completed_signal(game_state)
 	GlobalConsole._print(["弃牌阶段恢复，剩余需弃牌玩家：", _players_to_discard.keys()])
@@ -45,7 +45,6 @@ func pause(game_state: GameState) -> void:
 	_disconnect_all_commands_completed_signal(game_state)
 
 func end_stage_effect(game_state: GameState) -> void:
-	# 清理所有未完成的弃牌需求（理论上已通过超时或放弃响应处理）
 	_force_discard_for_all(game_state)
 	game_state.set_responsive_players(PackedInt32Array())
 	_disconnect_all_commands_completed_signal(game_state)
@@ -74,7 +73,7 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 		request.complete()
 		return
 	var need_count: int = _players_to_discard[player_id]  # 还需弃置的数量
-	var hand_area: AreaHand = game_state.player_manager.get_player_by_id(player_id).area_hand
+	var hand_area: AreaHand = game_state.get_hand_area(player_id)
 	if not hand_area:
 		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "的手牌区"])
 		request.cancel()
@@ -99,16 +98,13 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "提交的卡牌均无效"])
 		request.cancel()
 		return
-	# 超量时从后往前取适量
 	var actual_discard: PackedInt32Array
 	if valid_ids.size() > need_count:
 		actual_discard = valid_ids.slice(valid_ids.size() - need_count, valid_ids.size())
 	else:
 		actual_discard = valid_ids
-	# 生成弃牌命令（立即执行）
 	var discard_command := DiscardCardsCommand.new(player_id, actual_discard)
 	game_state.queue_behavior(discard_command)
-	# 更新还需弃牌数量
 	var new_need: int = need_count - actual_discard.size()
 	if new_need == 0:
 		_players_to_discard.erase(player_id)
@@ -126,12 +122,11 @@ func _process_abandon_response(request: OperationRequest.AbandonResponse, game_s
 		request.complete()
 		return
 	var need_count: int = _players_to_discard[player_id]
-	var hand_area: AreaHand = game_state.player_manager.get_player_by_id(player_id).area_hand
+	var hand_area: AreaHand = game_state.get_hand_area(player_id)
 	var hand_card_ids: PackedInt32Array = hand_area.get_card_ids()
 	if hand_card_ids.size() < need_count:
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "手牌不足", need_count, "张，将弃置所有手牌"])
 		need_count = hand_card_ids.size()
-	# 随机选取 need_count 张卡牌
 	var selected: PackedInt32Array = []
 	if need_count > 0:
 		selected = _random_select(hand_card_ids, need_count)
@@ -155,7 +150,7 @@ func _force_discard_for_all(game_state: GameState) -> void:
 		return
 	for player_id in _players_to_discard.keys():
 		var need_count: int = _players_to_discard[player_id]
-		var hand_area: AreaHand = game_state.player_manager.get_player_by_id(player_id).area_hand
+		var hand_area: AreaHand = game_state.get_hand_area(player_id)
 		var hand_card_ids: PackedInt32Array = hand_area.get_card_ids()
 		if hand_card_ids.size() < need_count:
 			need_count = hand_card_ids.size()
@@ -193,3 +188,4 @@ func _disconnect_all_commands_completed_signal(game_state: GameState) -> void:
 func _on_all_commands_completed(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
+	# 此处可添加后续逻辑，当前留空

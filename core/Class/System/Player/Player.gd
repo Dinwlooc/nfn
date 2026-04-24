@@ -7,9 +7,6 @@ var seat_index: int = -1
 var HP: int                # 玩家当前生命
 var MP: int                # 玩家当前精神值
 var AP: int                # 玩家当前的行动点
-var area_hand: AreaHand = AreaHand.new(self)
-var area_ability: AreaAbility = AreaAbility.new(self)
-var area_defensive: AreaDefence = AreaDefence.new(self)
 var attributeModifiers: AttributeModifiers = AttributeModifiers.new()
 var disallowed_operations: Array[StringName] = []
 var last_pack: PlayerPack = null

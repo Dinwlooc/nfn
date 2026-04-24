@@ -46,7 +46,7 @@ func _on_init_phase(game_state: GameState) -> void:
 		push_error("DiscardCardsCommand: 未找到源玩家")
 		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
-	_context.source_area = source_player.area_hand
+	_context.source_area = game_state.get_hand_area(_context.source_player_id)
 	# 目标区域是弃牌堆
 	_context.target_area = game_state.area_discard
 	# 设置移出模式为ID模式

@@ -15,7 +15,7 @@ static func process(context: CommandContext, state: GameState, creator: Object) 
 	var transfer_cmd := CardTransferCommand.new(
 		creator.get_owner_id(),
 		context.defensive_area,
-		creator.player.area_hand,
+		state.get_hand_area(creator.get_owner_id()),
 		CardTransferCommand.Context.MoveOutMode.BY_ID,
 		PackedInt32Array([creator.id])
 	)

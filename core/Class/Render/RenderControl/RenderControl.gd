@@ -6,14 +6,11 @@ class RenderRequestQueue:
 	extends RefCounted
 	var _queue: Array[RenderRequest] = []
 	var _owner: RenderControl
-
 	func _init(owner: RenderControl) -> void:
 		_owner = owner
-
 	## 入队请求
 	func enqueue(request: RenderRequest) -> void:
 		_queue.append(request)
-
 	## 每帧处理一个请求
 	func process_one() -> void:
 		if _queue.is_empty():
@@ -31,11 +28,8 @@ var _request_queue: RenderRequestQueue
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE, self)
 	render_context.set_operation_manager(operation_manager)
-	# 初始化队列处理器
 	_request_queue = RenderRequestQueue.new(self)
-	# 连接信号到队列的入队方法
 	transport.render_request_received.connect(_request_queue.enqueue)
-	# 初始化子节点区域
 	for child in get_children():
 		if child is RenderArea:
 			render_context.register_render_area(child)
@@ -45,7 +39,6 @@ func _ready() -> void:
 	render_context.area_created.connect(_on_render_context_area_created)
 
 func _process(_delta: float) -> void:
-	# 每帧处理一个渲染请求，防止单帧过载
 	_request_queue.process_one()
 
 func _initialize_render_area(area: RenderArea) -> void:

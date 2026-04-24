@@ -65,14 +65,15 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["主阶段：卡牌或玩家实例获取失败"])
 		request.cancel()
 		return
-	# RuleCardPlay 验证
+	# RuleCardPlay 验证（无需修改，因其内部会通过 game_state 获取区域）
 	var rule_result = RuleCardPlay.check_and_create_command(card, source_player, target_player, game_state)
 	if not rule_result.is_valid:
 		GlobalConsole._print(["主阶段：", rule_result.message])
 		request.cancel()
 		return
 	# 主阶段专用验证
-	var usage_result = _check_main_stage_restrictions(card, source_player, target_player, game_state)
+	var target_defense: AreaDefence = game_state.get_defense_area(request._target_id) if target_player else null
+	var usage_result = _check_main_stage_restrictions(card, source_player, target_player, target_defense, game_state)
 	if not usage_result.is_valid:
 		GlobalConsole._print(["主阶段：", usage_result.message])
 		request.cancel()
@@ -81,8 +82,8 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 	GlobalConsole._print(["主阶段：卡牌使用成功"])
 	request.complete()
 
-func _check_main_stage_restrictions(card: Card, source_player: Player, target_player: Player, game_state: GameState) -> RuleCardUsage.UsageResult:
-	return RuleCardUsage.can_use_card_in_main(card, source_player, target_player.area_defensive, game_state)
+func _check_main_stage_restrictions(card: Card, source_player: Player, target_player: Player, target_defense: AreaDefence, game_state: GameState) -> RuleCardUsage.UsageResult:
+	return RuleCardUsage.can_use_card_in_main(card, source_player, target_defense, game_state)
 
 func _reset_timer_for_current_player(new_time_limit: int) -> void:
 	request_reset_timer.emit(new_time_limit)

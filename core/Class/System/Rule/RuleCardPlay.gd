@@ -75,7 +75,8 @@ static func check_and_create_command(
 		return RuleResult.new(false, null, "卡牌实例为空")
 	if not source_player:
 		return RuleResult.new(false, null, "源玩家实例为空")
-	if not source_player.area_hand or not source_player.area_hand.get_card_by_id(card.id):
+	var hand_area: AreaHand = game_state.get_hand_area(source_player.player_id)
+	if not hand_area or not hand_area.get_card_by_id(card.id):
 		return RuleResult.new(false, null, "玩家不拥有该卡牌")
 	var card_type: StringName = card.type
 	var base_rule_config = _card_rules.get(card_type)

@@ -67,6 +67,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState)
 			_process_settle_request(request, game_state)
 		_:
 			GlobalConsole._print(["守区攻防阶段：不支持的操作类型", request.get_class_name_static()])
+			request.cancel()
 
 func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState) -> void:
 	var card: Card = game_state.cardsmanager.get_card_by_id(request._card_id)

@@ -10,6 +10,8 @@ var timer: GameTimer
 var users: Dictionary[int, User]
 var _process_active := false
 var stage_manager: StageManager = StageManager.new()
+var area_manager: AreaManager = null  # 由 System 注入
+
 signal start_round(player_id: int)
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
 signal new_behavior(command: BehaviorCommand)
@@ -79,3 +81,21 @@ func get_player_by_seat(seat_index: int) -> Player:
 ## 通过用户ID获取用户实例
 func get_user_by_id(user_id: int) -> User:
 	return users.get(user_id)
+
+## 获取指定玩家的手牌区域
+func get_hand_area(player_id: int) -> AreaHand:
+	if not area_manager:
+		return null
+	return area_manager.get_hand_area(player_id)
+
+## 获取指定玩家的守备区域
+func get_defense_area(player_id: int) -> AreaDefence:
+	if not area_manager:
+		return null
+	return area_manager.get_defense_area(player_id)
+
+## 获取指定玩家的技能区域
+func get_ability_area(player_id: int) -> AreaAbility:
+	if not area_manager:
+		return null
+	return area_manager.get_ability_area(player_id)

@@ -48,20 +48,18 @@ func _get_decision_data() -> DecisionData:
 	data.player_id = _player_id
 	data.has_attacked_in_main = _has_attacked_in_main_this_round
 	data.current_stage_name = _game_state.get_current_active_stage_name()
-
 	var self_player: Player = _game_state.player_manager.get_player_by_id(_player_id)
 	if self_player:
-		var hand_area: AreaHand = self_player.area_hand
+		var hand_area: AreaHand = _game_state.get_hand_area(_player_id)
 		if hand_area:
 			for card in hand_area.get_all_cards():
 				data.hand_cards.append({&"id": card.id, &"type": card.type})
-		var defense_area: AreaDefence = self_player.area_defensive
+		var defense_area: AreaDefence = _game_state.get_defense_area(_player_id)
 		data.defense_area_empty = (defense_area == null or defense_area.is_empty())
 		data.self_speed = self_player.get_attribute(&"speed")
 	else:
 		data.defense_area_empty = true
 		data.self_speed = 0
-
 	if data.current_stage_name == &"DefenseBattle":
 		var defense_stage: StageDefense = _get_defense_stage()
 		if defense_stage:
@@ -71,7 +69,6 @@ func _get_decision_data() -> DecisionData:
 			data.is_responsive = false
 	else:
 		data.is_responsive = true
-
 	# 收集其他玩家ID及守区结算次数
 	var others: PackedInt32Array = PackedInt32Array()
 	data.other_players_settle_counts.clear()
@@ -79,12 +76,11 @@ func _get_decision_data() -> DecisionData:
 		if p.player_id != _player_id:
 			others.append(p.player_id)
 			var settle_count: int = 0
-			var def_area: AreaDefence = p.area_defensive
+			var def_area: AreaDefence = _game_state.get_defense_area(p.player_id)
 			if def_area:
 				settle_count = def_area.settle_count
 			data.other_players_settle_counts[p.player_id] = settle_count
 	data.other_player_ids = others
-
 	return data
 
 ## 静态决策函数（纯计算，线程安全）
@@ -131,7 +127,7 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 			# 否则放弃
 			result[&"type"] = &"abandon"
 		&"DefenseBattle":
-			# 守区攻防阶段：有响应权时才能出牌，决策只考虑类型匹配，不进行复杂规则检查（由阶段类验证）
+			# 守区攻防阶段：有响应权时才能出牌
 			if not data.is_responsive:
 				result[&"type"] = &"abandon"
 				return result

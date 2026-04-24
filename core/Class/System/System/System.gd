@@ -23,6 +23,7 @@ func _init() -> void:
 	npc_peer_manager.operation_requested.connect(operation_handler.handle_request)
 	operation_handler.permissions_updated.connect(npc_peer_manager.on_permissions_updated)
 	game_state.stage_manager.set_timer(timer)
+	game_state.area_manager = area_manager
 
 func _ready() -> void:
 	game_state.stage_manager.set_timer(timer)
@@ -48,7 +49,7 @@ func _process(_delta: float) -> void:
 func _on_player_added(player: Player) -> void:
 	GlobalConsole._print(["System: 新玩家加入,id:", player.player_id, "，peer_id:", player.peer_id])
 	operation_handler.update_verification_mapping(player.peer_id, player.player_id)
-	area_manager.connect_area_denfence(player.area_defensive)
+	area_manager.create_areas_for_player(player)
 
 func _on_command_processing(command: BehaviorCommand) -> void:
 	modifier_manager.process_modifiers(command._context, game_state)

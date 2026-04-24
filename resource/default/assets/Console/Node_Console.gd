@@ -21,15 +21,21 @@ var filtered: Array
 var command_suggestions: Array = GlobalConsole.command_list.keys()
 var panel_tween: Tween
 var _ignore_text_changed: bool = false
-
-const MAX_HISTORY: int = 100
+const MAX_HISTORY: int = 20
 const page_size: int = 9
-
 # ---------- 优化日志输出相关 ----------
-var _log_buffer: Array[String] = []
+## 日志缓冲区，使用紧凑数组减少内存碎片
+var _log_buffer: PackedStringArray = PackedStringArray()
+## 用于保护跨线程缓冲区操作的互斥锁
+var _flush_mutex: Mutex = Mutex.new()
+## 标记当前是否有刷新操作正在执行（避免重复触发）
+var _is_flushing: bool = false
+## 工作线程引用，用于异步刷新
+var _flush_thread: Thread = null
+## 刷新定时器，定期将缓冲区内容刷新到面板
 var _flush_timer: Timer = null
-const MAX_LINES: int = 500               # 最大保留行数
-const FLUSH_INTERVAL: float = 0.15      # 刷新间隔（秒）
+const MAX_LINES: int = 100               # 最大保留行数
+const FLUSH_INTERVAL: float = 1.00      # 刷新间隔（秒）
 const BATCH_FLUSH_THRESHOLD: int = 20    # 缓冲区超过此数量立即刷新
 
 func _ready():
@@ -39,6 +45,7 @@ func _ready():
 	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE, self)
 	_setup_log_optimization()
 
+## 初始化日志优化组件（禁用编辑、创建定时器）
 func _setup_log_optimization():
 	panel.editable = false
 	_flush_timer = Timer.new()
@@ -114,7 +121,6 @@ func _on_text_changed(new_text: String):
 			return s.to_lower().begins_with(new_text.to_lower()))
 	else:
 		filtered = command_suggestions.duplicate()
-
 	var condition = filtered.is_empty()
 	toggle_suggestions(!condition)
 	filtered.append("...")
@@ -142,7 +148,6 @@ func _on_suggestion_focused(index: int):
 		input_line_edit.call_deferred(&"grab_focus")
 		current_page = 0
 		return
-
 	if current_selection == 0 && index == 8 && current_page:
 		current_page -= 1
 	if current_selection == 8 && index == 0:
@@ -154,12 +159,10 @@ func _on_command_submitted(new_text: String):
 	var command_with_args = new_text.strip_edges().to_lower()
 	if command_with_args.is_empty():
 		return
-
 	command_history.append(command_with_args)
 	if command_history.size() > MAX_HISTORY:
 		command_history.remove_at(0)
 	current_history_index = 0
-
 	var parts = command_with_args.split("(", false, 1)
 	var command = parts[0].to_lower()
 	var args_str = parts[1] if parts.size() > 1 else ""
@@ -237,20 +240,61 @@ func _input(event):
 		return
 
 # ---------- 优化的全局打印系统 ----------
+## 向日志缓冲区追加一条文本，若达到刷新阈值则触发异步刷新
 func append_text(text: String):
+	_flush_mutex.lock()
 	_log_buffer.append(text)
-	if _log_buffer.size() >= BATCH_FLUSH_THRESHOLD:
+	var should_flush: bool = _log_buffer.size() >= BATCH_FLUSH_THRESHOLD
+	_flush_mutex.unlock()
+	if should_flush:
 		_flush_log_buffer()
 
+## 异步刷新日志缓冲区到面板
 func _flush_log_buffer():
-	if _log_buffer.is_empty():
+	_flush_mutex.lock()
+	if _is_flushing:
+		_flush_mutex.unlock()
 		return
-	# 合并缓冲区文本
-	var new_text = "\n".join(_log_buffer)
-	_log_buffer.clear()
-	# 追加到 TextEdit
-	panel.text += "\n" + new_text
-	# 限制总行数（避免内存膨胀）
-	var lines = panel.text.split("\n")
+	if _log_buffer.is_empty():
+		_flush_mutex.unlock()
+		return
+	_is_flushing = true
+	# 取出当前缓冲区并清空（避免同时写入）
+	var buffer_copy: PackedStringArray = _log_buffer
+	_log_buffer = PackedStringArray()
+	_flush_mutex.unlock()
+	# 读取当前面板文本（主线程安全）
+	var current_text: String = panel.text
+	# 启动工作线程进行字符串处理
+	if _flush_thread and _flush_thread.is_started():
+		_flush_thread.wait_to_finish()
+	_flush_thread = Thread.new()
+	_flush_thread.start(_thread_process_flush.bind(current_text, buffer_copy))
+
+## 线程内执行的纯函数：将新增行拼接到当前文本并限制最大行数，返回最终文本（无状态）
+## @param current_text 面板当前的文本内容
+## @param new_lines   本次新增的日志行（PackedStringArray）
+## @return 处理后的完整文本
+static func _thread_process_flush(current_text: String, new_lines: PackedStringArray) -> String:
+	var combined: String = current_text
+	if not new_lines.is_empty():
+		combined += "\n" + "\n".join(new_lines)
+	var lines: PackedStringArray = combined.split("\n")
 	if lines.size() > MAX_LINES:
-		panel.text = "\n".join(lines.slice(-MAX_LINES))
+		lines = lines.slice(lines.size() - MAX_LINES)
+		combined = "\n".join(lines)
+	return combined
+
+## 线程完成后的回调（主线程执行），更新面板并重置刷新状态
+func _on_flush_completed(final_text: String):
+	panel.text = final_text
+	_is_flushing = false
+
+## 在_process中轮询线程是否完成，调用回调（避免阻塞）
+func _process(_delta: float) -> void:
+	if _flush_thread and _flush_thread.is_started() and _flush_thread.is_alive():
+		return
+	if _flush_thread and _flush_thread.is_started():
+		var result: String = _flush_thread.wait_to_finish()
+		_flush_thread = null
+		_on_flush_completed(result)

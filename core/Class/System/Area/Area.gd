@@ -29,8 +29,6 @@ func _init_expand() -> void:
 func is_visible_to(peer_id: int) -> bool:
 	match visibility:
 		Visibility.PUBLIC:
-			# 公共所属区域的私有可见等效于不可见，但此处仅根据可见性判断
-			# 若区域是公共所属（player.player_id == PUBLIC_AREA_PLAYER_ID）且可见性为PRIVATE，应视为不可见
 			if player.player_id == RenderRequest.PUBLIC_AREA_PLAYER_ID and visibility == Visibility.PRIVATE:
 				return false
 			return true
