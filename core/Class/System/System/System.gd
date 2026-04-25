@@ -5,7 +5,7 @@ class_name System
 var game_state := GameState.new()
 var command_processor := CommandProcessor.new(game_state)
 var operation_handler := OperationHandler.new()
-var area_manager := AreaManager.new(game_state)
+var trigger_manager := TriggerManager.new()
 var transport: Transport = GlobalTransport
 var npc_peer_manager: NPCPeerManager = NPCPeerManager.new(game_state)
 var modifier_manager := ModifierManager.new()
@@ -23,19 +23,19 @@ func _init() -> void:
 	npc_peer_manager.operation_requested.connect(operation_handler.handle_request)
 	operation_handler.permissions_updated.connect(npc_peer_manager.on_permissions_updated)
 	game_state.stage_manager.set_timer(timer)
-	game_state.area_manager = area_manager
 
 func _ready() -> void:
 	game_state.stage_manager.set_timer(timer)
 	transport.operation_request_received.connect(operation_handler.handle_request)
 	operation_handler.operation_validated.connect(_on_operation_validated)
+	trigger_manager.initialize(self)
 	signal_connect_test()
 	game_state.load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
 	timer.timeout.connect(game_state.stage_manager.on_timer_timeout.bind(game_state))
 	call_deferred(&"start_server")
 
-func start_server()->void:
+func start_server() -> void:
 	transport.start_server()
 	game_state.users = transport.network_manager.users
 
@@ -49,7 +49,7 @@ func _process(_delta: float) -> void:
 func _on_player_added(player: Player) -> void:
 	GlobalConsole._print(["System: 新玩家加入,id:", player.player_id, "，peer_id:", player.peer_id])
 	operation_handler.update_verification_mapping(player.peer_id, player.player_id)
-	area_manager.create_areas_for_player(player)
+	game_state.area_registry.create_areas_for_player(player)
 
 func _on_command_processing(command: BehaviorCommand) -> void:
 	modifier_manager.process_modifiers(command._context, game_state)
