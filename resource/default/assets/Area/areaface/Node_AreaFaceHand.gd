@@ -1,3 +1,4 @@
+# file: Node_AreaFaceHand.gd
 extends AreaFace
 
 ## 原始位置（未展开时的锚点）
@@ -309,76 +310,59 @@ func _on_quick_sort_button_pressed() -> void:
 	is_sorting = false
 	quick_sort_button.disabled = false
 
+## 执行两步重排：先按类型分区，再在各类内部按 ID 排序。
 func _quick_sort_cards() -> void:
 	var pool: Array[RenderItem] = area.items_pool
-	var attack_end: int = 0  # 下一个攻击牌插入位置
-	var defence_end: int = 0 # 下一个防御牌插入位置
-	for i in pool.size():
-		if pool[i].data.get_card_type() == &"attack":
-			if i == attack_end:
-				attack_end += 1
-				continue
-			area.swap_items_no_event(i, attack_end)
-			attack_end += 1
-		if pool[i].data.get_card_type() == &"defence":
-			if defence_end == 0:
-				defence_end = attack_end #校准起点
-			if i == defence_end:
-				defence_end += 1
-				continue
-			area.swap_items_no_event(i, defence_end)
-			defence_end += 1
-		if pool[i].data.get_card_type() == &"spell":
-			continue
+	if pool.is_empty():
+		return
+	var card_type: StringName = pool[0].data.get_class_name()
+	var classification: Dictionary = _classify_pool_ids(pool)
+	var atk_ids: PackedInt32Array = classification[&"attack"]
+	var def_ids: PackedInt32Array = classification[&"defence"]
+	var spl_ids: PackedInt32Array = classification[&"spell"]
+	var partitioned_ids: PackedInt32Array = _concat_arrays(atk_ids, def_ids, spl_ids)
+	area.rearrange_items(partitioned_ids, card_type)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
 	await get_tree().create_timer(TWEEN_TIME).timeout
-	sort_region(0, attack_end - 1)                # 攻击区
-	sort_region(attack_end, defence_end - 1)      # 防御区
-	sort_region(defence_end, pool.size() - 1)      # 技能区
+	atk_ids.sort()
+	def_ids.sort()
+	spl_ids.sort()
+	var sorted_ids: PackedInt32Array = _concat_arrays(atk_ids, def_ids, spl_ids)
+	area.rearrange_items(sorted_ids, card_type)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
-	_order_dirty_counter = 0   # 排序完成，计数器归零
+	_order_dirty_counter = 0
 
-## 对指定区间进行排序，根据有序性计数器决定使用插入排序或快速排序
-func sort_region(start: int, end: int) -> void:
-	if start >= end:
-		return
-	# 若有序性计数器 >= 10，使用快速排序（认为原顺序已被严重破坏）
-	if _order_dirty_counter >= 10:
-		quick_sort_region(start, end)
-		return
-	insert_sort_region(start, end)
+## 扫描池一次，按类型将ID分组到三个紧缩数组中。
+func _classify_pool_ids(pool: Array[RenderItem]) -> Dictionary:
+	var atk: PackedInt32Array = PackedInt32Array()
+	var def: PackedInt32Array = PackedInt32Array()
+	var spl: PackedInt32Array = PackedInt32Array()
+	for item: RenderItem in pool:
+		var type: StringName = item.data.get_card_type()
+		if type == &"attack":
+			atk.append(item.data.id)
+		elif type == &"defence":
+			def.append(item.data.id)
+		else:
+			spl.append(item.data.id)
+	return {&"attack": atk, &"defence": def, &"spell": spl}
 
-## 插入排序（原 sort_region 逻辑）
-func insert_sort_region(start: int, end: int) -> void:
-	var pool:Array[RenderItem] = area.items_pool
-	for i in range(start + 1, end + 1):
-		var j:int = i
-		while j > start and pool[j].data.id < pool[j-1].data.id:
-			area.swap_items_no_event(j, j-1)
-			j -= 1
-
-## 快速排序（对区间 [start, end] 按 data.id 升序排列）
-func quick_sort_region(start: int, end: int) -> void:
-	if start >= end:
-		return
-	var pivot_idx:int = _partition(start, end)
-	quick_sort_region(start, pivot_idx - 1)
-	quick_sort_region(pivot_idx + 1, end)
-## 分区函数（Lomuto 方案），返回基准元素的最终位置
-func _partition(start: int, end: int) -> int:
-	var pool:Array[RenderItem] = area.items_pool
-	# 选取最后一个元素作为基准
-	var pivot_id:int = pool[end].data.get_id()
-	var i:int = start - 1
-	for j in range(start, end):
-		if pool[j].data.id <= pivot_id:
-			i += 1
-			if i != j:
-				area.swap_items_no_event(i, j)
-	# 将基准放到正确位置
-	if i + 1 != end:
-		area.swap_items_no_event(i + 1, end)
-	return i + 1
+## 拼接三个紧缩数组为一个，保持原有顺序。
+func _concat_arrays(a: PackedInt32Array, b: PackedInt32Array, c: PackedInt32Array) -> PackedInt32Array:
+	var total: int = a.size() + b.size() + c.size()
+	var result: PackedInt32Array = PackedInt32Array()
+	result.resize(total)
+	var offset: int = 0
+	for i: int in a.size():
+		result[offset] = a[i]
+		offset += 1
+	for i: int in b.size():
+		result[offset] = b[i]
+		offset += 1
+	for i: int in c.size():
+		result[offset] = c[i]
+		offset += 1
+	return result
 
 func _on_play_card_button_pressed() -> void:
 	var op_manager:OperationManager= render_context.get_operation_manager()
@@ -392,7 +376,6 @@ func _on_discard_button_pressed() -> void:
 	if not op_manager:
 		return
 	var event: RenderEvent = op_manager.upload_discard_cards()
-	# 可处理返回的事件，如显示错误提示
 	_handle_operation_event(event)
 
 func _on_abandon_response_button_pressed() -> void:

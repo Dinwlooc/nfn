@@ -227,6 +227,37 @@ func swap_items_no_event(pool_id_a: int, pool_id_b: int) -> void:
 	_update_item_position(item_a, pool_id_b)
 	_update_item_position(item_b, pool_id_a)
 
+## 完全重排渲染项顺序。根据[param target_ids]（长度需与池容量一致）将池内项一次性调整到位。
+## [param item_type]为渲染项的类型名，用于从[RenderContext]查找项实例。
+func rearrange_items(target_ids: PackedInt32Array, item_type: StringName) -> void:
+	var pool: Array[RenderItem] = items_pool
+	if pool.size() != target_ids.size():
+		push_error("target_ids size mismatch in rearrange_items")
+		return
+	if not render_context:
+		push_error("RenderContext not set in ItemRenderArea")
+		return
+	var n: int = target_ids.size()
+	var i: int = 0
+	var buf: RenderItem = null
+	var hole: int = 0
+	while i < n:
+		var current: RenderItem = pool[i]
+		if current and current.get_id() == target_ids[i]:
+			i += 1
+			continue
+		buf = current
+		hole = i
+		while true:
+			var target_id: int = target_ids[hole]
+			var next_item: RenderItem = render_context.get_render_item_by_id(item_type, target_id)
+			if next_item == buf:
+				_update_item_position(buf, hole)
+				break
+			var old_pos: int = next_item.pool_id
+			_update_item_position(next_item, hole)
+			hole = old_pos
+		i += 1
 # ==================== 查询方法 ====================
 
 ## 返回对象池中的总项数。
