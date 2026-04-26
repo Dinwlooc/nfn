@@ -6,7 +6,10 @@ class_name TriggerManager
 var system_triggers: Array[SystemTrigger] = []
 var gamestate_triggers: Array[GameStateTrigger] = []
 static var system_trigger_classes: Array[Script] = [
-
+	PlayerTrigger,
+	CommandTrigger,
+	OperationTrigger,
+	TimerTimeoutTrigger
 ]
 static var gamestate_trigger_classes: Array[Script] = [
 	DefenseBattleTrigger,

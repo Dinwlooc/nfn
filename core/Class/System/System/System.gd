@@ -13,26 +13,14 @@ var modifier_manager := ModifierManager.new()
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
 	game_state.timer = timer
-	game_state.player_manager.player_added.connect(_on_player_added)
-	game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
-	game_state.new_behavior.connect(command_processor.queue_behavior)
-	game_state.request_set_responsive_players.connect(operation_handler.set_responsive_players)
-	command_processor.enable_processing.connect(_enable_processing)
-	command_processor.all_completed.connect(_on_command_processor_all_completed)
-	command_processor.command_processing.connect(_on_command_processing)
-	npc_peer_manager.operation_requested.connect(operation_handler.handle_request)
-	operation_handler.permissions_updated.connect(npc_peer_manager.on_permissions_updated)
 	game_state.stage_manager.set_timer(timer)
 
 func _ready() -> void:
 	game_state.stage_manager.set_timer(timer)
-	transport.operation_request_received.connect(operation_handler.handle_request)
-	operation_handler.operation_validated.connect(_on_operation_validated)
 	trigger_manager.initialize(self)
 	signal_connect_test()
 	game_state.load_cards()
 	GlobalConsole.c_close.connect(signal_disconnect_test)
-	timer.timeout.connect(game_state.stage_manager.on_timer_timeout.bind(game_state))
 	call_deferred(&"start_server")
 
 func start_server() -> void:
@@ -46,29 +34,6 @@ func _process(_delta: float) -> void:
 		return
 	command_processor.process()
 
-func _on_player_added(player: Player) -> void:
-	GlobalConsole._print(["System: 新玩家加入,id:", player.player_id, "，peer_id:", player.peer_id])
-	operation_handler.update_verification_mapping(player.peer_id, player.player_id)
-	game_state.area_registry.create_areas_for_player(player)
-
-func _on_command_processing(command: BehaviorCommand) -> void:
-	modifier_manager.process_modifiers(command._context, game_state)
-
-func _enable_processing(enable: bool) -> void:
-	game_state._process_active = enable
-	set_process(enable)
-
-func _on_new_behavior_with_callback(command: BehaviorCommand, callback: Callable):
-	command_processor.all_completed.connect(callback, CONNECT_ONE_SHOT)
-	command_processor.queue_behavior(command)
-
-func _on_command_processor_all_completed() -> void:
-	game_state.stage_manager.on_command_processor_idle(game_state)
-
-func _on_operation_validated(request: OperationRequest) -> void:
-	game_state.stage_manager.handle_validated_request(request, game_state)
-
-# 调试函数保持不变...
 func _start_game() -> void:
 	if game_state.stage_manager.get_current_stage_enum() != -1:
 		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
