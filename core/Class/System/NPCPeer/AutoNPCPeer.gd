@@ -95,9 +95,9 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 			var defense_cards: Array[Dictionary] = []
 			for card in data.hand_cards:
 				match card[&"type"]:
-					&"attack":
+					GlobalConstants.DefaultCard.ATTACK:
 						attack_cards.append(card)
-					&"defence":
+					GlobalConstants.DefaultCard.DEFENCE:
 						defense_cards.append(card)
 					_:
 						pass
@@ -134,7 +134,7 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 			if data.defense_stage_owner_id == data.player_id:
 				# 守方只能出防御牌
 				for card in data.hand_cards:
-					if card[&"type"] == &"defence":
+					if card[&"type"] == GlobalConstants.DefaultCard.DEFENCE:
 						result[&"type"] = &"play_card"
 						result[&"card_id"] = card[&"id"]
 						result[&"target_id"] = data.player_id
@@ -142,7 +142,7 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 			else:
 				# 攻方可出攻击或技能
 				for card in data.hand_cards:
-					if card[&"type"] == &"attack" or card[&"type"] == &"skill":
+					if card[&"type"] == GlobalConstants.DefaultCard.ATTACK or card[&"type"] == &"skill":
 						result[&"type"] = &"play_card"
 						result[&"card_id"] = card[&"id"]
 						result[&"target_id"] = data.defense_stage_owner_id

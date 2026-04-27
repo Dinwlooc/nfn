@@ -317,9 +317,9 @@ func _quick_sort_cards() -> void:
 		return
 	var card_type: StringName = pool[0].data.get_class_name()
 	var classification: Dictionary = _classify_pool_ids(pool)
-	var atk_ids: PackedInt32Array = classification[&"attack"]
-	var def_ids: PackedInt32Array = classification[&"defence"]
-	var spl_ids: PackedInt32Array = classification[&"spell"]
+	var atk_ids: PackedInt32Array = classification[GlobalConstants.DefaultCard.ATTACK]
+	var def_ids: PackedInt32Array = classification[GlobalConstants.DefaultCard.DEFENCE]
+	var spl_ids: PackedInt32Array = classification[GlobalConstants.DefaultCard.SPELL]
 	var partitioned_ids: PackedInt32Array = _concat_arrays(atk_ids, def_ids, spl_ids)
 	area.rearrange_items(partitioned_ids, card_type)
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
@@ -339,13 +339,13 @@ func _classify_pool_ids(pool: Array[RenderItem]) -> Dictionary:
 	var spl: PackedInt32Array = PackedInt32Array()
 	for item: RenderItem in pool:
 		var type: StringName = item.data.get_card_type()
-		if type == &"attack":
+		if type == GlobalConstants.DefaultCard.ATTACK:
 			atk.append(item.data.id)
-		elif type == &"defence":
+		elif type == GlobalConstants.DefaultCard.DEFENCE:
 			def.append(item.data.id)
 		else:
 			spl.append(item.data.id)
-	return {&"attack": atk, &"defence": def, &"spell": spl}
+	return {GlobalConstants.DefaultCard.ATTACK: atk, GlobalConstants.DefaultCard.DEFENCE: def, GlobalConstants.DefaultCard.SPELL: spl}
 
 ## 拼接三个紧缩数组为一个，保持原有顺序。
 func _concat_arrays(a: PackedInt32Array, b: PackedInt32Array, c: PackedInt32Array) -> PackedInt32Array:

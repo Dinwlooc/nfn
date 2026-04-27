@@ -12,17 +12,17 @@ extends ItemFace
 
 ## 背景颜色定义（带透明度）
 const TYPE_COLORS: Dictionary[StringName, Dictionary] = {
-	&"attack": {
+	GlobalConstants.DefaultCard.ATTACK: {
 		&"normal": Color(1.0, 0.5, 0.5, 0.5),
 		&"hover":  Color(1.0, 0.5, 0.5, 0.7),
 		&"select": Color(1.0, 0.5, 0.5, 1.0)
 	},
-	&"defence": {
+	GlobalConstants.DefaultCard.DEFENCE: {
 		&"normal": Color(0.5, 0.8, 1.0, 0.5),
 		&"hover":  Color(0.5, 0.8, 1.0, 0.7),
 		&"select": Color(0.5, 0.8, 1.0, 1.0)
 	},
-	&"spell": {
+	GlobalConstants.DefaultCard.SPELL: {
 		&"normal": Color(0.3, 0.8, 0.3, 0.5),
 		&"hover":  Color(0.3, 0.8, 0.3, 0.7),
 		&"select": Color(0.3, 0.8, 0.3, 1.0)
@@ -59,10 +59,10 @@ func _refresh_ui() -> void:
 	texture_rect.texture = get_item_main_icon(data.name)
 	item.set_item_size(size)
 	match _current_type:
-		&"defence":
+		GlobalConstants.DefaultCard.DEFENCE:
 			cost_label.text = "/"
 			damage_label.text = "威力" + str(data.modified_power)
-		&"spell":
+		GlobalConstants.DefaultCard.SPELL:
 			cost_label.text = "消耗" + str(data.modified_cost)
 			damage_label.text = "/"
 		_:

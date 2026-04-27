@@ -58,7 +58,7 @@ func quickly_select(item: RenderItem) -> void:
 	var selected: Array[RenderItem] = area.get_selected_items()
 	var local_player:RenderItem = area.local_player
 	match card_type:
-		&"attack":
+		GlobalConstants.DefaultCard.ATTACK:
 			if selected.is_empty():
 				for player in area.items_pool:
 					if player != local_player:
@@ -70,7 +70,7 @@ func quickly_select(item: RenderItem) -> void:
 					if player != local_player:
 						area.on_select(player)
 						break
-		&"defence":
+		GlobalConstants.DefaultCard.DEFENCE:
 			var has_self :bool= false
 			for s in selected:
 				if s == local_player:

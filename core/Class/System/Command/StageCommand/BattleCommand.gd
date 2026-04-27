@@ -78,7 +78,7 @@ func _on_done_phase(game_state: GameState, _context: Context) -> void:
 	complete()
 
 func _add_morale_by_card(player: Player, card: Card, amount: int) -> void:
-	if card.type == &"attack":
+	if card.type == GlobalConstants.DefaultCard.ATTACK:
 		player.add_morale_attack(amount)
 	else:
 		player.add_morale_defense(amount)

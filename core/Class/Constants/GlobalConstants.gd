@@ -16,11 +16,12 @@ class DefaultArea:
 	const STAGE:StringName = &"stage"
 	const DISCARD:StringName = &"discard"
 
-const OP_PLAY_CARD: StringName = &"play_card"
-const OP_END_TURN: StringName = &"end_turn"
-const OP_USE_SKILL: StringName = &"use_skill"
-const OP_DISCARD: StringName = &"discard"
-const OP_CONFIRM: StringName = &"confirm"
+## 默认卡牌类型名称常量类
+class DefaultCard:
+	const NULL: StringName = &"null"
+	const ATTACK: StringName = &"attack"
+	const DEFENCE: StringName = &"defence"
+	const SPELL: StringName = &"spell"
 
 # 向动态常量集注册官方静态常量
 static func register_to(registry: GlobalRegistry) -> void:

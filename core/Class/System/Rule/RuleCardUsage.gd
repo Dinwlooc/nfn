@@ -30,14 +30,14 @@ class Validator:
 
 # ---------- 配置 ----------
 static var _card_rules: Dictionary = {
-	&"attack": {
+	GlobalConstants.DefaultCard.ATTACK: {
 		Validator.STACK_LIMIT: true,
 		Validator.SPEED_LIMIT: true,
 	},
-	&"defence": {
+	GlobalConstants.DefaultCard.DEFENCE: {
 		Validator.STACK_LIMIT: true,
 	},
-	&"spell": {},
+	GlobalConstants.DefaultCard.SPELL: {},
 }
 ## @param defense_area 需要检查堆栈限制的守区（攻击牌为目标守区，防御牌为自己守区，技能牌可为空）
 static func can_use_card_in_main(

@@ -42,19 +42,19 @@ enum ConsumeMode {
 
 ## 卡牌类型预设规则（键为卡牌类型 StringName）
 static var _card_rules: Dictionary = {
-	&"attack": {
+	GlobalConstants.DefaultCard.ATTACK: {
 		&"target_permission": TargetPermissionFlags.OTHER,
 		&"distance_check": true,
 		&"play_area_mode": PlayAreaMode.TARGET_DEFENSE,
 		&"consume_mode": ConsumeMode.CONSUME_CHECK,
 	},
-	&"spell": {
+	GlobalConstants.DefaultCard.SPELL: {
 		&"target_permission": TargetPermissionFlags.SELF | TargetPermissionFlags.OTHER,
 		&"distance_check": false,
 		&"play_area_mode": PlayAreaMode.CENTER,
 		&"consume_mode": ConsumeMode.CONSUME_CHECK,
 	},
-	&"defence": {
+	GlobalConstants.DefaultCard.DEFENCE: {
 		&"target_permission": TargetPermissionFlags.SELF,
 		&"distance_check": false,
 		&"play_area_mode": PlayAreaMode.TARGET_DEFENSE,

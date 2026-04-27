@@ -56,13 +56,13 @@ class CombatWillGrant:
 
 ## 预设规则字典（键为卡牌类型 StringName）
 static var _settle_rules: Dictionary = {
-	&"attack": {
+	GlobalConstants.DefaultCard.ATTACK: {
 		Validator.LIFE_DAMAGE_MODE: DamageMode.DECAY_ON_LOSE,
 		Validator.MENTAL_DAMAGE_MODE: DamageMode.DECAY_ON_WIN,
 		Validator.COMBAT_WILL_MODE: CombatWillFlag.ENABLE_BASE | CombatWillFlag.EXTRA_ON_SETTLE_WIN | CombatWillFlag.EXTRA_ON_OPPOSE_WIN,
 		Validator.ATTACK_ORIENTATION: AttackOrientation.DEFENDER,
 	},
-	&"defence": {
+	GlobalConstants.DefaultCard.DEFENCE: {
 		Validator.LIFE_DAMAGE_MODE: DamageMode.NONE,
 		Validator.MENTAL_DAMAGE_MODE: DamageMode.DECAY_ON_LOSE,
 		Validator.COMBAT_WILL_MODE: CombatWillFlag.ENABLE_BASE | CombatWillFlag.TYPE_IS_DEFENSE | CombatWillFlag.EXTRA_ON_SETTLE_WIN,
