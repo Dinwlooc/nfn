@@ -1,10 +1,7 @@
 extends NPCPeer
 class_name AutoNPCPeer
 
-var _has_attacked_in_main_this_round: bool = false
-var _current_thread: Thread = null
-
-## 决策数据快照（线程安全）
+## 决策数据快照（纯数据值对象，线程安全）
 class DecisionData:
 	var player_id: int
 	var hand_cards: Array[Dictionary]   # {id: int, type: StringName}
@@ -14,35 +11,32 @@ class DecisionData:
 	var defense_stage_owner_id: int
 	var is_responsive: bool
 	var other_player_ids: PackedInt32Array
-	# 主阶段决策所需额外数据
-	var self_speed: int                      # 自身速度
-	var other_players_settle_counts: Dictionary[int, int]  # 其他玩家守区已结算次数
+	var self_speed: int
+	var other_players_settle_counts: Dictionary[int, int]
+
+## 本回合主阶段是否已出手攻击
+var _has_attacked_in_main_this_round: bool = false
+## 最新决策请求的 ID，用于在回调中丢弃过期结果
+var _latest_request_id: int = 0
 
 func _init(game_state: GameState, player_id: int) -> void:
 	super._init(game_state, player_id)
 	_game_state.start_round.connect(_on_start_round)
 
-## 异步决策接口
+## 异步决策入口：立即提交新任务，旧任务的结果将被丢弃
 func request_decision_async(callback: Callable) -> void:
-	if _current_thread and _current_thread.is_started():
-		_current_thread.wait_to_finish()
-		_current_thread = null
+	_latest_request_id += 1
+	var request_id := _latest_request_id
 	var data: DecisionData = _get_decision_data()
+	# 捕获 request_id 到闭包中，用于过期检测
 	var handle_result: Callable = func(result: Dictionary):
+		if request_id != _latest_request_id:
+			return
 		var request: OperationRequest = _build_request_from_result(result)
 		callback.call(request)
-		if _current_thread:
-			_current_thread.wait_to_finish()
-			_current_thread = null
-	_current_thread = Thread.new()
-	_current_thread.start(_thread_decision.bind(data, handle_result))
+	WorkerThreadPool.add_task(_thread_decision.bind(data, handle_result))
 
-## 在线程中运行的静态函数
-static func _thread_decision(data: DecisionData, handle_result: Callable) -> void:
-	var result: Dictionary = _decision_task(data)
-	handle_result.call_deferred(result)
-
-## 获取决策数据快照（主线程）
+## 获取当前游戏状态的纯数据快照（主线程调用）
 func _get_decision_data() -> DecisionData:
 	var data: DecisionData = DecisionData.new()
 	data.player_id = _player_id
@@ -69,7 +63,6 @@ func _get_decision_data() -> DecisionData:
 			data.is_responsive = false
 	else:
 		data.is_responsive = true
-	# 收集其他玩家ID及守区结算次数
 	var others: PackedInt32Array = PackedInt32Array()
 	data.other_players_settle_counts.clear()
 	for p in _game_state.player_manager.players:
@@ -83,14 +76,18 @@ func _get_decision_data() -> DecisionData:
 	data.other_player_ids = others
 	return data
 
-## 静态决策函数（纯计算，线程安全）
+## 静态线程函数：执行决策计算，完成后将结果推回主线程
+static func _thread_decision(data: DecisionData, handle_result: Callable) -> void:
+	var result: Dictionary = _decision_task(data)
+	handle_result.call_deferred(result)
+
+## 核心决策树（纯函数，线程安全），返回决策字典
 static func _decision_task(data: DecisionData) -> Dictionary:
 	var result: Dictionary = {&"type": &"abandon", &"card_id": -1, &"target_id": -1}
 	match data.current_stage_name:
 		&"Discard":
 			result[&"type"] = &"abandon"
 		&"Main":
-			# 收集可用的攻击牌和防御牌
 			var attack_cards: Array[Dictionary] = []
 			var defense_cards: Array[Dictionary] = []
 			for card in data.hand_cards:
@@ -101,17 +98,14 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 						defense_cards.append(card)
 					_:
 						pass
-			# 优先考虑防御牌（如果守区为空且手牌中防御牌数量>2）
 			if data.defense_area_empty and defense_cards.size() > 2:
 				defense_cards.shuffle()
 				result[&"type"] = &"play_card"
 				result[&"card_id"] = defense_cards[0][&"id"]
 				result[&"target_id"] = data.player_id
 				return result
-			# 如果没有攻击过，且存在攻击牌，选择合适目标
 			if not data.has_attacked_in_main and not attack_cards.is_empty():
-				# 筛选可攻击的目标（守区结算次数 < 自身速度）
-				var valid_targets: Array[int]
+				var valid_targets: Array[int] = []
 				for pid in data.other_player_ids:
 					var settle: int = data.other_players_settle_counts.get(pid, 999)
 					if settle < data.self_speed:
@@ -124,15 +118,12 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 					result[&"card_id"] = attack_cards[0][&"id"]
 					result[&"target_id"] = target_id
 					return result
-			# 否则放弃
 			result[&"type"] = &"abandon"
 		&"DefenseBattle":
-			# 守区攻防阶段：有响应权时才能出牌
 			if not data.is_responsive:
 				result[&"type"] = &"abandon"
 				return result
 			if data.defense_stage_owner_id == data.player_id:
-				# 守方只能出防御牌
 				for card in data.hand_cards:
 					if card[&"type"] == GlobalConstants.DefaultCard.DEFENCE:
 						result[&"type"] = &"play_card"
@@ -140,7 +131,6 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 						result[&"target_id"] = data.player_id
 						return result
 			else:
-				# 攻方可出攻击或技能
 				for card in data.hand_cards:
 					if card[&"type"] == GlobalConstants.DefaultCard.ATTACK or card[&"type"] == &"skill":
 						result[&"type"] = &"play_card"
@@ -152,7 +142,7 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 			result[&"type"] = &"abandon"
 	return result
 
-## 实例方法：根据决策结果构建请求（主线程，可访问游戏状态）
+## 根据决策结果字典生成对应的 OperationRequest（主线程调用）
 func _build_request_from_result(result: Dictionary) -> OperationRequest:
 	match result[&"type"]:
 		&"abandon":
@@ -161,9 +151,9 @@ func _build_request_from_result(result: Dictionary) -> OperationRequest:
 			return OperationRequest.PlayCard.new(_player_id, result[&"card_id"], result[&"target_id"]).use_npc_peer_id()
 	return OperationRequest.AbandonResponse.new(_player_id).use_npc_peer_id()
 
-## 随机获取其他玩家ID（主线程）
+## 随机获取另一位玩家 ID（主线程调用）
 func _get_random_other_player_id() -> int:
-	var candidates: Array[int]
+	var candidates: Array[int] = []
 	for p in _game_state.player_manager.players:
 		if p.player_id != _player_id:
 			candidates.append(p.player_id)
@@ -179,18 +169,17 @@ func _get_defense_stage() -> StageDefense:
 	var cur_stage: Stage = _game_state.stage_manager.current_stage
 	return cur_stage as StageDefense if cur_stage is StageDefense else null
 
+## 等待 NPC 就绪（简单延时）
 func await_npc_ready() -> void:
 	var scene_tree: SceneTree = Engine.get_main_loop() as SceneTree
 	if scene_tree:
 		await scene_tree.create_timer(1.0).timeout
 
-## 清理资源，确保线程正确结束
+## 清理资源：由于任务已通过 ID 丢弃，无需等待线程结束
 func cleanup() -> void:
-	if _current_thread and _current_thread.is_started():
-		_current_thread.wait_to_finish()
-		_current_thread = null
+	pass
 
-## 回合开始时重置攻击标记
+## 新回合重置攻击标记
 func _on_start_round(player_id: int) -> void:
 	if player_id == _player_id:
 		_has_attacked_in_main_this_round = false

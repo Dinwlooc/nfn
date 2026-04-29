@@ -1,42 +1,66 @@
 extends Control
 
+## 垂直布局容器，用于显示命令建议
 @onready var vbox_container: VBoxContainer = $VBoxContainer
+## 日志面板（TextEdit）
 @onready var panel: TextEdit = $Panel
+## 命令输入行
 @onready var input_line_edit: LineEdit = $Input
 
-var settlement: Node
-var selection: Node
-var players_panel: Node
+## 结算节点引用（外部赋值）
+var settlement: Node = null
+## 选择节点引用
+var selection: Node = null
+## 玩家面板引用
+var players_panel: Node = null
+## 面板显示状态
 var panel_display: bool = false
-var start: Node
-var labels: Array
-var command_history: Array = []
+## 开始节点引用
+var start: Node = null
+## 命令建议标签数组
+var labels: Array[Node] = []
+## 命令历史记录
+var command_history: PackedStringArray = []
+## 当前历史导航索引，0 表示输入框为空
 var current_history_index: int = -1
+## 是否启用历史上下浏览
 var history_navigation_enabled: bool = false
+## 控制台原始位置
 var original_position: Vector2
+## 控制台展开后位置
 var display_position: Vector2
+## 建议列表当前页码
 var current_page: int = 0
+## 当前高亮建议索引
 var current_selection: int = -1
-var filtered: Array
+## 过滤后的建议列表
+var filtered: PackedStringArray = []
+## 所有可用命令名的缓存
 var command_suggestions: Array = GlobalConsole.command_list.keys()
+## 面板位置动画 Tween 引用
 var panel_tween: Tween
+## 文本变化事件标记，防止递归更新
 var _ignore_text_changed: bool = false
+## 命令历史最大容量
 const MAX_HISTORY: int = 20
+## 每页显示的建议数量
 const page_size: int = 9
-# ---------- 优化日志输出相关 ----------
-## 日志缓冲区，使用紧凑数组减少内存碎片
+
+# ---------- 日志优化相关 ----------
+## 日志追加缓冲区
 var _log_buffer: PackedStringArray = PackedStringArray()
-## 用于保护跨线程缓冲区操作的互斥锁
-var _flush_mutex: Mutex = Mutex.new()
-## 标记当前是否有刷新操作正在执行（避免重复触发）
+## 当前是否正在执行刷新协程
 var _is_flushing: bool = false
-## 工作线程引用，用于异步刷新
-var _flush_thread: Thread = null
-## 刷新定时器，定期将缓冲区内容刷新到面板
+## 定时器，定期触发刷新
 var _flush_timer: Timer = null
-const MAX_LINES: int = 100               # 最大保留行数
-const FLUSH_INTERVAL: float = 1.00      # 刷新间隔（秒）
-const BATCH_FLUSH_THRESHOLD: int = 20    # 缓冲区超过此数量立即刷新
+## 单帧最多追加行数，避免 UI 处理过重
+const FLUSH_CHUNK_SIZE: int = 5
+## 日志最大保留行数
+const MAX_LINES: int = 100
+## 定时刷新间隔（秒）
+const FLUSH_INTERVAL: float = 1.0
+## 缓冲区立即刷新阈值
+const BATCH_FLUSH_THRESHOLD: int = 20
 
 func _ready():
 	command_load()
@@ -45,16 +69,60 @@ func _ready():
 	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE, self)
 	_setup_log_optimization()
 
-## 初始化日志优化组件（禁用编辑、创建定时器）
+## 初始化日志优化组件：禁用编辑、启动定时刷新
 func _setup_log_optimization():
 	panel.editable = false
 	_flush_timer = Timer.new()
 	_flush_timer.wait_time = FLUSH_INTERVAL
 	_flush_timer.one_shot = false
-	_flush_timer.timeout.connect(_flush_log_buffer)
+	_flush_timer.timeout.connect(_on_flush_timer_timeout)
 	add_child(_flush_timer)
 	_flush_timer.start()
 
+## 定时器回调，触发分帧刷新
+func _on_flush_timer_timeout():
+	_flush_chunked()
+
+## 向日志缓冲区追加文本，超过阈值立即触发刷新
+func append_text(text: String):
+	_log_buffer.append(text)
+	if _log_buffer.size() >= BATCH_FLUSH_THRESHOLD:
+		_flush_chunked()
+
+## 启动协程分帧刷新（若未在刷新且缓冲区非空）
+func _flush_chunked():
+	if _is_flushing or _log_buffer.is_empty():
+		return
+	_is_flushing = true
+	_flush_async()
+
+## 异步协程：分帧将缓冲区内容写入面板
+func _flush_async() -> void:
+	while true:
+		if _log_buffer.is_empty():
+			break
+		var chunk_size: int = mini(_log_buffer.size(), FLUSH_CHUNK_SIZE)
+		var chunk: PackedStringArray = _log_buffer.slice(0, chunk_size)
+		_log_buffer = _log_buffer.slice(chunk_size)
+		if panel.text.is_empty():
+			panel.text = "\n".join(chunk)
+		else:
+			panel.text += "\n" + "\n".join(chunk)
+		await get_tree().process_frame
+		if not is_inside_tree():
+			break
+	_trim_log_lines()
+	_is_flushing = false
+
+## 修剪面板文本行数不超上限
+func _trim_log_lines():
+	var lines: PackedStringArray = panel.text.split("\n")
+	if lines.size() > MAX_LINES:
+		lines = lines.slice(lines.size() - MAX_LINES)
+		panel.text = "\n".join(lines)
+
+# ---------- 原有面板交互逻辑 ----------
+## 动画移动面板到目标位置
 func animate_panel_position(target_position: Vector2, duration: float = 0.3):
 	if panel_tween and panel_tween.is_running():
 		panel_tween.stop()
@@ -63,6 +131,7 @@ func animate_panel_position(target_position: Vector2, duration: float = 0.3):
 	panel_tween.set_ease(Tween.EASE_OUT)
 	panel_tween.tween_property(self, ^"position", target_position, duration)
 
+## 切换面板显示/隐藏
 func toggle_panel_display():
 	panel_display = !panel_display
 	if panel_display:
@@ -96,11 +165,9 @@ func suggestion_labels_load():
 		labels[i].focus_mode = Control.FOCUS_ALL
 		labels[i].visible = false
 		labels[i].connect(&"focus_entered", _on_suggestion_focused.bind(i))
-		labels[i].text_submitted.connect(_suggestion_submitted)
-		labels[i].gui_input.connect(_on_suggestion_clicked.bind(i))
+		labels[i].connect(&"text_submitted", _suggestion_submitted) if labels[i].has_signal(&"text_submitted") else labels[i].connect(&"gui_input", _on_suggestion_clicked.bind(i))
 		labels[i].mouse_entered.connect(labels[i].call_deferred.bind(&"grab_focus"))
 
-##### 信号触发函数 #####
 func _on_focus_entered():
 	history_navigation_enabled = true
 	current_history_index = -1
@@ -117,12 +184,10 @@ func _on_text_changed(new_text: String):
 		return
 	filtered = []
 	if new_text.length() > 2:
-		filtered = command_suggestions.filter(func(s):
-			return s.to_lower().begins_with(new_text.to_lower()))
+		filtered = command_suggestions.filter(func(s): return s.to_lower().begins_with(new_text.to_lower()))
 	else:
 		filtered = command_suggestions.duplicate()
-	var condition = filtered.is_empty()
-	toggle_suggestions(!condition)
+	toggle_suggestions(not filtered.is_empty())
 	filtered.append("...")
 	current_history_index = 0
 
@@ -134,7 +199,7 @@ func _suggestion_submitted(suggestion: String):
 	input_line_edit.text_changed.emit(input_line_edit.text)
 
 func _on_suggestion_clicked(event: InputEvent, index: int):
-	if event is InputEventMouseButton and event.pressed && event.button_mask == 1:
+	if event is InputEventMouseButton and event.pressed and event.button_mask == 1:
 		var suggestion = labels[index].text
 		if suggestion == "...":
 			current_page = 0
@@ -144,13 +209,13 @@ func _on_suggestion_clicked(event: InputEvent, index: int):
 
 func _on_suggestion_focused(index: int):
 	labels[index].select_all()
-	if labels[index].text == "..." || !labels[index].visible:
+	if labels[index].text == "..." or not labels[index].visible:
 		input_line_edit.call_deferred(&"grab_focus")
 		current_page = 0
 		return
-	if current_selection == 0 && index == 8 && current_page:
+	if current_selection == 0 and index == 8 and current_page:
 		current_page -= 1
-	if current_selection == 8 && index == 0:
+	if current_selection == 8 and index == 0:
 		current_page += 1
 	current_selection = index
 	update_page_display(current_page)
@@ -175,7 +240,7 @@ func _on_command_submitted(new_text: String):
 	GlobalConsole.command(command, args)
 	input_line_edit.text = ""
 
-##### 主要功能函数 #####
+## 更新建议列表显示指定页
 func update_page_display(page: int):
 	var start = page * page_size
 	var end = min(start + page_size, filtered.size())
@@ -238,63 +303,3 @@ func _input(event):
 					current_page = min(current_page + 1, max_page)
 					update_page_display(current_page)
 		return
-
-# ---------- 优化的全局打印系统 ----------
-## 向日志缓冲区追加一条文本，若达到刷新阈值则触发异步刷新
-func append_text(text: String):
-	_flush_mutex.lock()
-	_log_buffer.append(text)
-	var should_flush: bool = _log_buffer.size() >= BATCH_FLUSH_THRESHOLD
-	_flush_mutex.unlock()
-	if should_flush:
-		_flush_log_buffer()
-
-## 异步刷新日志缓冲区到面板
-func _flush_log_buffer():
-	_flush_mutex.lock()
-	if _is_flushing:
-		_flush_mutex.unlock()
-		return
-	if _log_buffer.is_empty():
-		_flush_mutex.unlock()
-		return
-	_is_flushing = true
-	# 取出当前缓冲区并清空（避免同时写入）
-	var buffer_copy: PackedStringArray = _log_buffer
-	_log_buffer = PackedStringArray()
-	_flush_mutex.unlock()
-	# 读取当前面板文本（主线程安全）
-	var current_text: String = panel.text
-	# 启动工作线程进行字符串处理
-	if _flush_thread and _flush_thread.is_started():
-		_flush_thread.wait_to_finish()
-	_flush_thread = Thread.new()
-	_flush_thread.start(_thread_process_flush.bind(current_text, buffer_copy))
-
-## 线程内执行的纯函数：将新增行拼接到当前文本并限制最大行数，返回最终文本（无状态）
-## @param current_text 面板当前的文本内容
-## @param new_lines   本次新增的日志行（PackedStringArray）
-## @return 处理后的完整文本
-static func _thread_process_flush(current_text: String, new_lines: PackedStringArray) -> String:
-	var combined: String = current_text
-	if not new_lines.is_empty():
-		combined += "\n" + "\n".join(new_lines)
-	var lines: PackedStringArray = combined.split("\n")
-	if lines.size() > MAX_LINES:
-		lines = lines.slice(lines.size() - MAX_LINES)
-		combined = "\n".join(lines)
-	return combined
-
-## 线程完成后的回调（主线程执行），更新面板并重置刷新状态
-func _on_flush_completed(final_text: String):
-	panel.text = final_text
-	_is_flushing = false
-
-## 在_process中轮询线程是否完成，调用回调（避免阻塞）
-func _process(_delta: float) -> void:
-	if _flush_thread and _flush_thread.is_started() and _flush_thread.is_alive():
-		return
-	if _flush_thread and _flush_thread.is_started():
-		var result: String = _flush_thread.wait_to_finish()
-		_flush_thread = null
-		_on_flush_completed(result)

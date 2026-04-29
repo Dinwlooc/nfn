@@ -7,6 +7,8 @@ var player:Player
 var id:int
 var area_name:StringName
 var attributeModifiers:AttributeModifiers = AttributeModifiers.new()
+## Buff管理器，负责该卡牌所有Buff的施加、移除及状态维护
+var buff_modifiers: BuffModifiers
 var last_pack: CardPack = null
 @export var modifiers: Array[Script]
 
@@ -49,3 +51,6 @@ func get_owner_id()->int:
 	if not player:
 		return -1
 	return player.player_id
+## 重置卡牌所有Buff：非固有Buff被移除，固有Buff恢复至固有层数
+func reset_buffs() -> void:
+	buff_modifiers.reset_buffs()

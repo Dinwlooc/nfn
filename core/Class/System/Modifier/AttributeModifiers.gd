@@ -13,7 +13,7 @@ var modifiers_dict:Dictionary[StringName,Dictionary] = {}
 # 设置属性的基础值（转换为基础加减修饰器）
 func set_base_value(attribute: StringName, base_value: int) -> void:
 	add_modifier(attribute, TYPE_BASE_ADD, &"base_value", float(base_value))
-# 添加修饰器（已简化）
+# 添加修饰器
 func add_modifier(attribute: StringName, type: int, modifier_name: StringName, value: float) -> void:
 	_ensure_attribute_exists(attribute)
 	var rounded_value: float = _round_value(type, value)
@@ -27,7 +27,7 @@ func add_modifier(attribute: StringName, type: int, modifier_name: StringName, v
 	else:
 		modifiers_of_type[modifier_name] = rounded_value
 		_apply_modifier(attribute, type, rounded_value)
-# 删除修饰器（已简化）
+# 删除修饰器
 func remove_modifier(attribute: StringName, type: int, modifier_name: StringName) -> void:
 	if not modifiers_dict.has(attribute):
 		return
@@ -41,14 +41,14 @@ func remove_modifier(attribute: StringName, type: int, modifier_name: StringName
 	modifiers_of_type.erase(modifier_name)
 	_revert_modifier(attribute, type, old_value)
 
-# 更新修饰器值（已简化）
+# 更新修饰器值
 func _update_modifier(attribute: StringName, type: int, modifier_name: StringName, old_value: float, new_value: float) -> void:
 	var modifiers_of_type = modifiers_dict[attribute][type]
 	if type == TYPE_FINAL_MULTIPLY:
 		modifiers_of_type[modifier_name] = new_value
 		_apply_modifier(attribute, type, new_value)  # 触发重算
 		return
-	var delta = new_value - old_value
+	var delta:float = new_value - old_value
 	if abs(delta) < 0.001:  # 忽略微小变化
 		return
 	modifiers_of_type[modifier_name] = new_value
@@ -56,7 +56,7 @@ func _update_modifier(attribute: StringName, type: int, modifier_name: StringNam
 		_apply_modifier(attribute, type, delta)
 	else:
 		_revert_modifier(attribute, type, -delta)
-# 应用修饰器影响（已整合最终乘算）
+# 应用修饰器影响
 func _apply_modifier(attribute: StringName, type: int, value: float) -> void:
 	var values: PackedFloat32Array = combined_values[attribute]
 	match type:
@@ -73,7 +73,7 @@ func _apply_modifier(attribute: StringName, type: int, value: float) -> void:
 			# 最终乘算需要完全重算
 			_recalculate_combined_type(attribute, type)
 			_recalculate_final(attribute)
-# 撤销修饰器影响（已整合最终乘算）
+# 撤销修饰器影响
 func _revert_modifier(attribute: StringName, type: int, value: float) -> void:
 	var values = combined_values[attribute]
 	match type:
@@ -112,13 +112,13 @@ func _recalculate_combined_type(attribute: StringName, type: int) -> void:
 		for value in type_dict.values():
 			combined += value
 	combined_values[attribute][type] = combined
-# 重新计算最终值
+## 重新计算最终值
 func _recalculate_final(attribute: StringName) -> void:
 	var vals = combined_values[attribute]
 	var base_val = vals[TYPE_BASE_ADD] * (1.0 + vals[TYPE_BASE_MULTIPLY])
 	var final_val = (base_val + vals[TYPE_FINAL_ADD]) * vals[TYPE_FINAL_MULTIPLY]
 	vals[FINAL_VALUE_INDEX] = final_val
-# 数值舍入处理
+## 数值舍入处理
 func _round_value(type: int, value: float) -> float:
 	match type:
 		TYPE_BASE_ADD, TYPE_FINAL_ADD:
