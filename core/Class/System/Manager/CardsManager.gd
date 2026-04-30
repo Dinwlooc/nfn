@@ -86,6 +86,7 @@ func load_all_cards() -> Array[Card]:
 			_add_card_to_array(card, next_id)
 			all_cards.append(card)
 			next_id += 1
+			card._init()
 	return all_cards
 ## 清除所有卡牌
 func clear_all_cards() -> void:

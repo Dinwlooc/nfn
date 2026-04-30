@@ -16,7 +16,8 @@ enum Suit {
 }
 
 func _init() -> void:
-	call_deferred(&"_init_attribute")
+	super._init()
+	_init_attribute()
 
 func _init_attribute()->void:
 	attributeModifiers.set_base_value(&"power", power)
