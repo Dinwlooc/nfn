@@ -1,8 +1,6 @@
-## 渲染请求发送规则工具类，统一处理区域可见性与网络分发逻辑
 extends RefCounted
 class_name RuleTrans
 
-## 发送数量变化请求（仅 ItemCountSet）
 static func send_count_change(
 	source_area: Area,
 	target_area: Area,
@@ -23,7 +21,6 @@ static func send_count_change(
 		request.set_custom_event_name(custom_event_name)
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 
-## 发送物品包（实体变化）
 static func send_items(
 	source_area: Area,
 	target_area: Area,
@@ -40,7 +37,6 @@ static func send_items(
 		source_area.player.player_id if source_area else target_area.player.player_id
 	)
 
-## 发送卡牌包（自动转换 Card -> ItemPack）
 static func send_cards(
 	source_area: Area,
 	target_area: Area,
@@ -87,7 +83,6 @@ static func send_player_delta_updates(
 		request.set_custom_event_name(custom_event_name)
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 
-## 直接发送已打包的玩家增量包（低级接口）
 static func send_player_delta_packs(
 	delta_packs: Array[ItemPack],
 	event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.UPDATE,
@@ -108,7 +103,6 @@ static func send_player_delta_packs(
 		request.set_custom_event_name(custom_event_name)
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 
-## 发送指定玩家数组的全量信息到特定对等体
 static func send_players_full_updates(players: Array[Player], peer_id: int) -> void:
 	var full_packs: Array[ItemPack] = []
 	for player: Player in players:
@@ -125,11 +119,49 @@ static func send_players_full_updates(players: Array[Player], peer_id: int) -> v
 	)
 	GlobalTransport.send_render_request(peer_id, request)
 
-## 从玩家管理器实例自动获取所有在座玩家并发送全量信息
 static func send_all_players_full_updates_from_manager(manager: PlayersManager, peer_id: int) -> void:
 	send_players_full_updates(manager.players, peer_id)
 
-## 分发实体变化请求：根据可见性组合，使用广播/负对等体/单播
+## 发送 Buff 修饰器更新（根据所有者类型和 ID 自动选择卡牌或玩家更新）
+static func send_buff_update(buff_modifiers: BuffModifiers, event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.UPDATE, custom_event_name: StringName = &"") -> void:
+	if buff_modifiers.owner_type == &"card":
+		var card: Card = _get_card_by_id(buff_modifiers.owner_id)
+		if not card:
+			push_error("RuleTrans.send_buff_update: Card not found with id ", buff_modifiers.owner_id)
+			return
+		var target_area: Area = _get_card_area(card)
+		if not target_area:
+			push_error("RuleTrans.send_buff_update: Cannot determine area for card ", card.id)
+			return
+		send_cards(null, target_area, [card], event_type, custom_event_name)
+	elif buff_modifiers.owner_type == &"player":
+		var player: Player = _get_player_by_id(buff_modifiers.owner_id)
+		if not player:
+			push_error("RuleTrans.send_buff_update: Player not found with id ", buff_modifiers.owner_id)
+			return
+		send_player_delta_updates([player], event_type, RenderRequest.PUBLIC_AREA_PLAYER_ID, custom_event_name)
+	else:
+		push_error("RuleTrans.send_buff_update: Unknown owner_type ", buff_modifiers.owner_type)
+
+## 根据卡牌获取其所在区域（需要实现全局区域管理）
+static func _get_card_area(card: Card) -> Area:
+	# TODO: 通过全局 GameState 或 AreaRegistry 根据 card.area_name 和 card.area_player_id 获取 Area 实例
+	# 示例访问方式（假设存在全局单例 GameState）：
+	# return GameState.area_registry.get_area(card.area_name, card.area_player_id)
+	return null
+
+## 根据卡牌 ID 获取卡牌实例（需要全局 CardsManager）
+static func _get_card_by_id(card_id: int) -> Card:
+	# TODO: 通过全局 GameState 或 CardsManager 获取
+	# return GameState.cardsmanager.get_card_by_id(card_id)
+	return null
+
+## 根据玩家 ID 获取玩家实例（需要全局 PlayersManager）
+static func _get_player_by_id(player_id: int) -> Player:
+	# TODO: 通过全局 GameState 或 PlayersManager 获取
+	# return GameState.player_manager.get_player_by_id(player_id)
+	return null
+
 static func _distribute_item_request(
 	source_area: Area,
 	target_area: Area,
@@ -188,3 +220,29 @@ static func _distribute_item_request(
 			make_item_count_set.call().send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 		_:
 			push_error("RuleTrans: unknown visibility combination")
+
+## 发送 BuffModifiers 的更新（根据所有者类型自动选择卡牌或玩家）
+static func send_buff_modifiers_update(
+	game_state: GameState,
+	buff_modifiers: BuffModifiers,
+	event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.UPDATE,
+	custom_event_name: StringName = &""
+) -> void:
+	if buff_modifiers.owner_type == &"card":
+		var card: Card = game_state.cardsmanager.get_card_by_id(buff_modifiers.owner_id)
+		if not card:
+			push_error("RuleTrans.send_buff_modifiers_update: 未找到卡牌 id ", buff_modifiers.owner_id)
+			return
+		var target_area: Area = game_state.area_registry.get_area(card.area_name, card.area_player_id)
+		if not target_area:
+			push_error("RuleTrans.send_buff_modifiers_update: 无法定位卡牌所在区域")
+			return
+		send_cards(null, target_area, [card], event_type, custom_event_name)
+	elif buff_modifiers.owner_type == &"player":
+		var player: Player = game_state.player_manager.get_player_by_id(buff_modifiers.owner_id)
+		if not player:
+			push_error("RuleTrans.send_buff_modifiers_update: 未找到玩家 id ", buff_modifiers.owner_id)
+			return
+		send_player_delta_updates([player], event_type, RenderRequest.PUBLIC_AREA_PLAYER_ID, custom_event_name)
+	else:
+		push_error("RuleTrans.send_buff_modifiers_update: 未知的所有者类型 ", buff_modifiers.owner_type)

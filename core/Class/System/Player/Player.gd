@@ -23,6 +23,11 @@ func _init() -> void:
 	morale_attack = 0
 	morale_defense = 0
 
+## 供 PlayersManager 在分配 ID 后调用，设置 BuffModifiers 所有者
+func set_player_id(new_id: int) -> void:
+	player_id = new_id
+	buff_modifiers.set_owner(&"player", player_id)
+
 func _init_attribute() -> void:
 	attributeModifiers.set_base_value(&"HP_max", 20)
 	attributeModifiers.set_base_value(&"MP_max", 20)

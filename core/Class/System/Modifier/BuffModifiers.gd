@@ -4,11 +4,19 @@ class_name BuffModifiers
 var attribute_modifiers: AttributeModifiers
 var command_modifiers: CommandModifiers
 var buffs: Dictionary[StringName, Buff] = {}
+var owner_type: StringName = &""
+var owner_id: int = -1
 
-func _init(p_attribute_modifiers: AttributeModifiers, p_command_modifiers: CommandModifiers) -> void:
+## 构造函数增加所有者参数
+func _init(p_attribute_modifiers: AttributeModifiers, p_command_modifiers: CommandModifiers, p_owner_type: StringName = &"", p_owner_id: int = -1) -> void:
 	attribute_modifiers = p_attribute_modifiers
 	command_modifiers = p_command_modifiers
-
+	owner_type = p_owner_type
+	owner_id = p_owner_id
+## 设置所有者（用于 ID 延迟绑定的场景）
+func set_owner(p_owner_type: StringName, p_owner_id: int) -> void:
+	owner_type = p_owner_type
+	owner_id = p_owner_id
 ## 施加Buff（外部入口）
 func add_or_stack_buff(buff: Buff, check_exist: bool = true) -> void:
 	var name: StringName = buff.buff_name

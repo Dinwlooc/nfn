@@ -1,6 +1,5 @@
-class_name SettleCommand
 extends BehaviorCommand
-
+class_name SettleCommand
 ## 结算上下文类
 class Context extends CommandContext:
 	enum Phase {
@@ -12,7 +11,7 @@ class Context extends CommandContext:
 		DONE           # 完成
 	}
 	var defensive_area: AreaDefence = null
-	var attacker:Player = null
+	var attacker: Player = null
 	var settle_card: Card = null       # 原 top_card -> 结算牌
 	var oppose_card: Card = null       # 原 second_card -> 对抗牌
 	var is_unilateral: bool = false
@@ -50,7 +49,7 @@ class Context extends CommandContext:
 		return cards
 
 ## 结算命令
-func _init(player_id: int,target_defensive_area: AreaDefence,attacker:Player, name_overriding: StringName = &"Settle", context_overriding: Context = Context.new()) -> void:
+func _init(player_id: int, target_defensive_area: AreaDefence, attacker: Player, name_overriding: StringName = &"Settle", context_overriding: Context = Context.new()) -> void:
 	super._init(player_id, name_overriding, context_overriding)
 	_context.defensive_area = target_defensive_area
 	_context.attacker = attacker
@@ -70,40 +69,47 @@ func execute(game_state: GameState) -> void:
 		Context.Phase.DONE:
 			_on_done_phase(game_state, _context)
 
-func _on_prepare_phase(game_state: GameState, _context: Context) -> void:
-	if not _context.defensive_area:
+func _on_prepare_phase(game_state: GameState, ctx: Context) -> void:
+	if not ctx.defensive_area:
 		push_error("防御区域未设置")
-		_context.phase = Context.Phase.DONE
+		ctx.phase = Context.Phase.DONE
 		return
-	_context.defensive_area.settle_defense_area()
-	_context.settle_card = _context.defensive_area.get_top_card()
-	if _context.defensive_area.get_second_card() and not _context.defensive_area.get_second_card().player == _context.get_settle_card().player:
-		_context.oppose_card = _context.defensive_area.get_second_card()
-	_context.is_unilateral = (_context.oppose_card == null)
-	_context.phase = Context.Phase.DUEL
+	ctx.defensive_area.settle_defense_area()
+	ctx.settle_card = ctx.defensive_area.get_top_card()
+	if ctx.defensive_area.get_second_card() and not ctx.defensive_area.get_second_card().player == ctx.get_settle_card().player:
+		ctx.oppose_card = ctx.defensive_area.get_second_card()
+	ctx.is_unilateral = (ctx.oppose_card == null)
+	# 连接区域变动信号，监听结算牌与对抗牌
+	if ctx.settle_card:
+		if not ctx.settle_card.area_changed.is_connected(_on_card_area_changed):
+			ctx.settle_card.area_changed.connect(_on_card_area_changed)
+	if ctx.oppose_card:
+		if not ctx.oppose_card.area_changed.is_connected(_on_card_area_changed):
+			ctx.oppose_card.area_changed.connect(_on_card_area_changed)
+	ctx.phase = Context.Phase.DUEL
 
-func _on_duel_phase(game_state: GameState, _context: Context) -> void:
-	if not _context.is_unilateral and not _context.get_oppose_card().player == _context.get_settle_card().player:
-		var duel: DuelCommand = DuelCommand.new(_context.player_id)
-		duel._context.set_cards(_context.settle_card, _context.oppose_card, &"Settle")
+func _on_duel_phase(game_state: GameState, ctx: Context) -> void:
+	if not ctx.is_unilateral and not ctx.get_oppose_card().player == ctx.get_settle_card().player:
+		var duel: DuelCommand = DuelCommand.new(ctx.player_id)
+		duel._context.set_cards(ctx.settle_card, ctx.oppose_card, &"Settle")
 		duel.duel_completed.connect(_on_duel_completed)
 		append_companion_command(duel)
-	_context.phase = Context.Phase.DAMAGE
+	ctx.phase = Context.Phase.DAMAGE
 
 ## 伤害阶段：调用 Rule 类计算伤害与战意，生成单个 DamageCommand
-func _on_damage_phase(game_state: GameState, _context: Context) -> void:
-	if not _context.settle_card:
-		_context.phase = Context.Phase.DONE
+func _on_damage_phase(game_state: GameState, ctx: Context) -> void:
+	if not ctx.settle_card:
+		ctx.phase = Context.Phase.DONE
 		return
-	var defender: Player = _context.defensive_area.player
-	var attacker: Player = _context.attacker
+	var defender: Player = ctx.defensive_area.player
+	var attacker: Player = ctx.attacker
 	# 调用纯函数计算结算结果
 	var result: RuleSettle.Result = RuleSettle.evaluate(
-		_context.settle_card,
-		_context.oppose_card,
-		_context.duel_result,
-		_context.duel_diff,
-		_context.is_unilateral,
+		ctx.settle_card,
+		ctx.oppose_card,
+		ctx.duel_result,
+		ctx.duel_diff,
+		ctx.is_unilateral,
 		attacker,
 		defender,
 		{}  # 暂不使用卡牌覆盖规则
@@ -112,7 +118,7 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 	# 确定伤害目标与数值
 	var damage_target: Player = result.target
 	if not damage_target:
-		_context.phase = Context.Phase.EFFECT
+		ctx.phase = Context.Phase.EFFECT
 		return
 	var health_val: int = result.health_damage_value
 	var mental_val: int = result.mental_damage_value
@@ -121,10 +127,11 @@ func _on_damage_phase(game_state: GameState, _context: Context) -> void:
 		health_val,
 		mental_val,
 		DamageCommand.SourceMechanism.GENERAL,
-		_context.settle_card.get_owner_id()
+		ctx.settle_card.get_owner_id()
 	)
 	append_companion_command(damage_cmd)
-	_context.phase = Context.Phase.EFFECT
+	ctx.phase = Context.Phase.EFFECT
+
 ## 应用战意授予条目（直接操作 Player 属性）
 static func _apply_combat_will_grants(grants: Array[RuleSettle.CombatWillGrant]) -> void:
 	for grant in grants:
@@ -139,23 +146,43 @@ static func _apply_combat_will_grants(grants: Array[RuleSettle.CombatWillGrant])
 			continue
 		player.morale_attack += total_value
 
-func _on_effect_phase(game_state: GameState, _context: Context) -> void:
-	_context.phase = Context.Phase.CLEAR
+func _on_effect_phase(game_state: GameState, ctx: Context) -> void:
+	ctx.phase = Context.Phase.CLEAR
 
-func _on_clear_phase(game_state: GameState, _context: Context) -> void:
-	var transfer_cmd := CardTransferCommand.new(_context.player_id,
-	_context.defensive_area,
-	game_state.area_discard,
-	CardTransferCommand.Context.MoveOutMode.TOP,
-	_context.defensive_area.card_count()
+func _on_clear_phase(game_state: GameState, ctx: Context) -> void:
+	var transfer_cmd := CardTransferCommand.new(ctx.player_id,
+		ctx.defensive_area,
+		game_state.area_discard,
+		CardTransferCommand.Context.MoveOutMode.TOP,
+		ctx.defensive_area.card_count()
 	)
 	game_state.queue_behavior(transfer_cmd)
-	_context.phase = Context.Phase.DONE
+	ctx.phase = Context.Phase.DONE
 
-func _on_done_phase(game_state: GameState, _context: Context) -> void:
+func _on_done_phase(_game_state: GameState, ctx: Context) -> void:
+	_disconnect_card_listeners(ctx)
 	complete()
 
 ## 拼点完成回调
 func _on_duel_completed(result: DuelCommand.Context.Result, diff: int) -> void:
 	_context.duel_result = result
 	_context.duel_diff = diff
+
+## 监听的卡牌区域变动回调，将对应上下文引用置空并断开信号
+func _on_card_area_changed(card: Card) -> void:
+	var ctx := _context as Context
+	if not ctx:
+		return
+	if card == ctx.settle_card:
+		ctx.settle_card = null
+		card.area_changed.disconnect(_on_card_area_changed)
+	elif card == ctx.oppose_card:
+		ctx.oppose_card = null
+		card.area_changed.disconnect(_on_card_area_changed)
+
+## 断开所有尚存的对卡牌区域变动的监听
+func _disconnect_card_listeners(ctx: Context) -> void:
+	if ctx.settle_card and ctx.settle_card.area_changed.is_connected(_on_card_area_changed):
+		ctx.settle_card.area_changed.disconnect(_on_card_area_changed)
+	if ctx.oppose_card and ctx.oppose_card.area_changed.is_connected(_on_card_area_changed):
+		ctx.oppose_card.area_changed.disconnect(_on_card_area_changed)

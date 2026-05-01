@@ -7,7 +7,7 @@ var card_instances: Array[Card] = []
 const SUITS = [HandCard.Suit.SPADE, HandCard.Suit.HEART, HandCard.Suit.DIAMOND, HandCard.Suit.CLUB]
 ## 内部方法：将卡牌添加到数组并分配ID
 func _add_card_to_array(card: Card, card_id: int) -> void:
-	card.id = card_id
+	card.set_card_id(card_id)
 	card_instances[card_id] = card
 ## 内部方法：批量添加卡牌到数组
 func _add_cards_to_array(cards: Array[Card], start_id: int) -> void:

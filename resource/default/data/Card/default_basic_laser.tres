@@ -1,15 +1,16 @@
-[gd_resource type="Resource" script_class="HandCard" load_steps=2 format=3 uid="uid://b58jaf3o1bkik"]
+[gd_resource type="Resource" script_class="HandCard" load_steps=3 format=3 uid="uid://b58jaf3o1bkik"]
 
 [ext_resource type="Script" uid="uid://dd70gbxq1gppb" path="res://core/Class/System/Card/HandCard.gd" id="1_4o0ak"]
+[ext_resource type="Script" uid="uid://cwc888s751r48" path="res://resource/default/data/CardModifier/laser_modifier.gd" id="1_okqxb"]
 
 [resource]
 script = ExtResource("1_4o0ak")
 power = 4
-cost = 1
+cost = 0
 suit = 4
 attack_range = 1
 settlement_damage_bonus = 0
 name = &"nfn:basic_laser"
 type = &"attack"
-modifiers = Array[Script]([])
+modifiers = Array[Script]([ExtResource("1_okqxb")])
 metadata/_custom_type_script = "uid://dd70gbxq1gppb"

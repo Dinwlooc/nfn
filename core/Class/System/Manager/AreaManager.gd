@@ -46,3 +46,11 @@ func get_defense_area(player_id: int) -> AreaDefence:
 ## 获取技能区域
 func get_ability_area(player_id: int) -> AreaAbility:
 	return _abilities.get(player_id)
+
+func get_area(area_name:StringName,player_id:int)->Area:
+	match area_name:
+		GlobalConstants.DefaultArea.HAND:
+			return get_hand_area(player_id)
+		GlobalConstants.DefaultArea.DEFENCE:
+			return get_defense_area(player_id)
+	return null

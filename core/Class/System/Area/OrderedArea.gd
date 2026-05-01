@@ -12,6 +12,7 @@ func cards_add(new_cardpool: Array[Card]) -> void:
 		var card:Card = new_cardpool[i]
 		_ordered_pool.set(start_index + i,card)
 		_card_id_to_index[card.id] = start_index + i
+		card.set_area(self)
 		area_card_added.emit(card,self)
 
 func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:

@@ -4,6 +4,7 @@ class_name BattleCommand
 class Context extends CommandContext:
 	enum Phase {
 		INIT,
+		PRE_DUEL,
 		CREATE_DUEL,
 		PROCESS_RESULT,
 		DONE
@@ -17,7 +18,8 @@ class Context extends CommandContext:
 		defensive_area = area
 		top_card = top
 		second_card = second
-
+	func get_primary_modifier_cards() -> Array[Card]:
+		return [top_card,second_card]
 const BASE_MORALE_GAIN: int = 1
 const MORALE_BONUS_WIN: int = 1
 
@@ -32,6 +34,8 @@ func execute(game_state: GameState) -> void:
 	match _context.phase:
 		Context.Phase.INIT:
 			_on_init_phase(game_state, _context)
+		Context.Phase.PRE_DUEL:
+			_on_pre_duel_phase(game_state, _context)
 		Context.Phase.CREATE_DUEL:
 			_on_create_duel_phase(game_state, _context)
 		Context.Phase.PROCESS_RESULT:
@@ -44,6 +48,11 @@ func _on_init_phase(game_state: GameState, _context: Context) -> void:
 	if _context.second_card.player == _context.top_card.player:
 		_context.phase = Context.Phase.DONE
 		return
+	_context.phase = Context.Phase.PRE_DUEL
+	# 压制修饰器在此阶段前（由系统自动调用）对 top_card 生效
+
+func _on_pre_duel_phase(_game_state: GameState, _context: Context) -> void:
+	# 空阶段，专供被压制修饰器触发（系统自动调用）
 	_context.phase = Context.Phase.CREATE_DUEL
 
 func _on_create_duel_phase(game_state: GameState, _context: Context) -> void:
