@@ -4,7 +4,7 @@ class_name PlayersManager
 
 var players: Array[Player] = []              ## 按座位顺序存储玩家实例
 var _players_by_id: Dictionary = {}          ## 内置ID映射字典（玩家ID->实例）
-var _next_player_id: int = 0                 ## 内置缓存：下一个可分配的玩家ID
+var _next_player_id: int = 2                 ## 内置缓存：下一个可分配的玩家ID
 const ai_peer_id: int = -1                   ## AI控制的玩家peer_id固定为-1
 signal player_added(player: Player)
 const PLAYER_AREA: StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
@@ -115,4 +115,4 @@ func get_player_full_pack(player_id: int) -> PlayerPack:
 ## 通过玩家ID获取座位索引，若玩家不存在则返回-1
 func get_seat_index_by_player_id(player_id: int) -> int:
 	var player: Player = _players_by_id.get(player_id)
-	return player.seat_index if player else -1
+	return player.seat_index if player else 0

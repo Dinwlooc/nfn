@@ -30,7 +30,7 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NU
 class PlayCard extends OperationRequest:
 	var _card_id: int
 	var _target_id: int
-	func _init(player_id:int = -1,card_id:int = -1,target_id:int =-1) -> void:
+	func _init(player_id:int = 0,card_id:int = -1,target_id:int = 0) -> void:
 		source_player_id = player_id
 		_card_id = card_id
 		_target_id = target_id
@@ -51,7 +51,7 @@ class PlayCard extends OperationRequest:
 class AbandonResponse extends OperationRequest:
 	static func get_class_name_static() -> StringName:
 		return &"abandon_response"
-	func _init(player_id:int = -1) -> void:
+	func _init(player_id:int = 0) -> void:
 		source_player_id = player_id
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> OperationRequest:
 		if pack == NULL_PACK:
@@ -62,7 +62,7 @@ class AbandonResponse extends OperationRequest:
 class DiscardCards extends OperationRequest:
 	var _card_ids: PackedInt32Array
 
-	func _init(player_id: int = -1, card_ids: PackedInt32Array = PackedInt32Array()) -> void:
+	func _init(player_id: int = 0, card_ids: PackedInt32Array = PackedInt32Array()) -> void:
 		source_player_id = player_id
 		_card_ids = card_ids
 

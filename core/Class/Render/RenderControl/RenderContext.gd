@@ -26,8 +26,8 @@ class DragState:
 	var card:RenderItem
 
 ##公共区域的玩家ID
-const PUBLIC_PLAYER_ID: int = -1
-var local_player_id:int = -1
+const PUBLIC_PLAYER_ID: int = 1
+var local_player_id:int = 0
 ##第一层为玩家ID，第二层为区域名到RenderArea的映射
 var _render_areas :Dictionary[int, Dictionary] = {}
 ##第一层为玩家ID，第二层为区域名到回调数组的映射
@@ -52,7 +52,7 @@ func _on_render_area_registered(area_name: StringName, area: RenderArea, player_
 
 # 获取实际的玩家ID用于字典访问
 func _get_actual_player_id(player_id: int) -> int:
-	if local_player_id == -1:
+	if local_player_id == 0:
 		return player_id
 	if player_id == local_player_id:
 		return PUBLIC_PLAYER_ID

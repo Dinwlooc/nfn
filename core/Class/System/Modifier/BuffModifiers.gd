@@ -5,7 +5,7 @@ var attribute_modifiers: AttributeModifiers
 var command_modifiers: CommandModifiers
 var buffs: Dictionary[StringName, Buff] = {}
 var owner_type: StringName = &""
-var owner_id: int = -1
+var owner_id: int = 0
 
 ## 构造函数增加所有者参数
 func _init(p_attribute_modifiers: AttributeModifiers, p_command_modifiers: CommandModifiers, p_owner_type: StringName = &"", p_owner_id: int = -1) -> void:
@@ -28,7 +28,6 @@ func add_or_stack_buff(buff: Buff, check_exist: bool = true) -> void:
 		return
 	buffs[name] = buff
 	buff.on_apply()
-
 ## 减少Buff层数（受锁定限制，除非强制）
 func remove_buff(buff_name: StringName, stack: int = 1, forced: bool = false) -> bool:
 	if not buffs.has(buff_name):

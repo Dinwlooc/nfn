@@ -83,7 +83,7 @@ static func _thread_decision(data: DecisionData, handle_result: Callable) -> voi
 
 ## 核心决策树（纯函数，线程安全），返回决策字典
 static func _decision_task(data: DecisionData) -> Dictionary:
-	var result: Dictionary = {&"type": &"abandon", &"card_id": -1, &"target_id": -1}
+	var result: Dictionary = {&"type": &"abandon", &"card_id": 0, &"target_id": 0}
 	match data.current_stage_name:
 		&"Discard":
 			result[&"type"] = &"abandon"
@@ -158,7 +158,7 @@ func _get_random_other_player_id() -> int:
 		if p.player_id != _player_id:
 			candidates.append(p.player_id)
 	if candidates.is_empty():
-		return -1
+		return 0
 	candidates.shuffle()
 	return candidates[0]
 

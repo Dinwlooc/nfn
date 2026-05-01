@@ -10,7 +10,7 @@ enum Phase {
 
 func _init() -> void:
 	_context = CommandContext.new()
-	super._init(-1,&"GameStart")
+	super._init(1,&"GameStart")
 	_context.phase = Phase.INIT_SETUP
 
 func execute(game_state: GameState) -> void:
@@ -40,10 +40,10 @@ func on_init_setup_phase(game_state: GameState) -> void:
 	_context.phase = Phase.START_DRAW
 
 func on_start_draw_phase(game_state: GameState) -> void:
-	var new_round_cmd = NewRoundCommand.new(0,0)
+	var new_round_cmd:= NewRoundCommand.new(0,2)
 	append_companion_command(new_round_cmd)
-	for i in range(game_state.player_manager.players.size()):
-		var draw_cmd = DrawCardsCommand.new(i, 4)
+	for player in game_state.player_manager.players:
+		var draw_cmd: = DrawCardsCommand.new(player.player_id, 4)
 		append_companion_command(draw_cmd)
 	_context.phase = Phase.DONE
 	complete()

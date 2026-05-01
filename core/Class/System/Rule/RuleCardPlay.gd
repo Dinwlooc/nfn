@@ -160,7 +160,7 @@ static func _validate_distance(card: Card, source: Player, target: Player, game_
 
 ## 构建出牌命令
 static func _build_command(source: Player, card: Card, target: Player, area_mode: PlayAreaMode, ap_source_player: Player = null) -> BehaviorCommand:
-	var target_player_id: int = target.player_id if target else -1
+	var target_player_id: int = target.player_id if target else 0
 	var target_area_type: int
 	match area_mode:
 		PlayAreaMode.CENTER:

@@ -56,7 +56,7 @@ static func init_from_player(player: Player) -> PlayerPack:
 
 # 初始化（调用父类初始化，使用标准态常量）
 func _init(
-	init_id: int = -1,
+	init_id: int = 0,
 	init_seat_index: int = STANDARD_SEAT_INDEX,
 	init_HP: int = STANDARD_HP,
 	init_MP: int = STANDARD_MP,

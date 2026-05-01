@@ -24,11 +24,8 @@ const BASE_MORALE_GAIN: int = 1
 const MORALE_BONUS_WIN: int = 1
 
 func _init(area: AreaDefence, top: Card, second: Card, name_overriding: StringName = &"Battle") -> void:
-	super._init(0, name_overriding, Context.new())
+	super._init(top.get_owner_id(), name_overriding, Context.new())
 	_context.set_battle_params(area, top, second)
-
-## 取消斗牌命令（不会执行任何效果）
-
 
 func execute(game_state: GameState) -> void:
 	match _context.phase:

@@ -5,7 +5,7 @@ class_name DestroyCardsCommand
 class Context extends CardMoveCommand.Context:
 	var source_player: Player = null       ## 实施摧毁的玩家（可为空）
 	var source_card: Card = null           ## 实施摧毁的卡牌（可为空）
-	var target_card_id: int = -1           ## 要摧毁的目标卡牌ID
+	var target_card_id: int = 0           ## 要摧毁的目标卡牌ID
 	var target_defense_area: AreaDefence = null  ## 目标守区
 
 	## 设置实施摧毁的玩家

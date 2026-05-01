@@ -6,7 +6,7 @@ const ENTER_TIME_LIMIT: float = 60.0
 const RESUME_TIME_LIMIT: float = 30.0
 
 # ========== 内部状态 ==========
-var _current_attacker_id: int = -1
+var _current_attacker_id: int = 0
 var _current_attacker: Player = null
 var last_timer_reset_time: int = 0
 

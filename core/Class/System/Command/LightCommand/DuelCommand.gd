@@ -35,7 +35,7 @@ class Context extends CommandContext:
 		var ids: PackedInt32Array = [player_id]
 		if card1 and card2:
 			var other_id = card2.get_owner_id() if card1.get_owner_id() == player_id else card1.get_owner_id()
-			if other_id != -1 and other_id != player_id:
+			if other_id != 0 and other_id != player_id:
 				ids.append(other_id)
 		return ids
 

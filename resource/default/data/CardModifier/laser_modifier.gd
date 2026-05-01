@@ -11,7 +11,6 @@ static func init(source: Object) -> void:
 			DestroyXModifier.get_component_name(),
 			4
 		)
-
 ## 修饰器处理入口，由上层系统自动调用。
 ## @param ctx:     当前命令上下文（通常为 BattleCommand.Context）
 ## @param state:   全局游戏状态
@@ -36,7 +35,7 @@ static func _apply_suppress(source_card: Card, target_card: Card, src_area: Area
 		return
 	var owner: Player = source_card.get_player()
 	var self_destroy_cmd := DestroyCardsCommand.new(
-		owner.player_id if owner else -1,
+		owner.player_id if owner else 0,
 		src_area,
 		source_card.id,
 		owner,

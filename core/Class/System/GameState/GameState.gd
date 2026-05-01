@@ -14,7 +14,7 @@ var _process_active := false
 var stage_manager: StageManager = StageManager.new()
 ## 区域注册表纯数据容器，由 [GameState] 内部创建
 var area_registry: AreaManager = AreaManager.new()
-
+const PUBLIC_PLAYER_ID:int = 1
 signal start_round(player_id: int)
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
 signal new_behavior(command: BehaviorCommand)

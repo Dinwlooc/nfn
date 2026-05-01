@@ -1,7 +1,7 @@
 extends TransPack
 class_name RenderRequest
 
-const PUBLIC_AREA_PLAYER_ID: int = -1
+const PUBLIC_AREA_PLAYER_ID: int = 1
 var target_area: StringName
 var target_area_player_id: int = PUBLIC_AREA_PLAYER_ID
 

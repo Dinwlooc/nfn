@@ -70,8 +70,8 @@ class Context extends CommandContext:
 			return []
 		var ids: PackedInt32Array = [player_id]
 		for card in moved_cards:
-			var owner_id = card.get_owner_id() if card else -1
-			if not owner_id == -1 and not owner_id == player_id and not owner_id in ids:
+			var owner_id = card.get_owner_id() if card else 0
+			if not owner_id == 0 and not owner_id == player_id and not owner_id in ids:
 				ids.append(owner_id)
 		return ids
 

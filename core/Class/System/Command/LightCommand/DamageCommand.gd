@@ -44,7 +44,7 @@ func _init(
 	health_dmg: int,
 	mental_dmg: int,
 	mechanism: int = SourceMechanism.GENERAL,
-	source_id: int = -1,
+	source_id: int = 0,
 	name_overriding = &"DamageCommand",
 	context_overriding:Context = Context.new()
 ) -> void:

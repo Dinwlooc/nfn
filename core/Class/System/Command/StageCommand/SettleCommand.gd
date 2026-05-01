@@ -31,11 +31,11 @@ class Context extends CommandContext:
 		var ids: PackedInt32Array = []
 		if settle_card:
 			var owner_id = settle_card.get_owner_id()
-			if owner_id != -1:
+			if owner_id != 0:
 				ids.append(owner_id)
 		if oppose_card:
 			var owner_id = oppose_card.get_owner_id()
-			if owner_id != -1 and owner_id != (ids[0] if ids.size() > 0 else -1):
+			if owner_id != 0 and owner_id != (ids[0] if ids.size() > 0 else -0):
 				ids.append(owner_id)
 		return ids
 

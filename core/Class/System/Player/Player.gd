@@ -1,8 +1,8 @@
 extends RefCounted
 class_name Player
 
-var peer_id: int = 0
-var player_id: int = -1
+var peer_id: int = -1
+var player_id: int = 1
 var seat_index: int = -1
 var HP: int
 var MP: int

@@ -13,7 +13,7 @@ var render_context:RenderContext
 var player_id:int
 const DefaultArea = GlobalConstants.DefaultArea
 
-func _init(new_player_id:int = -1) -> void:
+func _init(new_player_id:int = RenderContext.PUBLIC_PLAYER_ID) -> void:
 	player_id = new_player_id
 
 func _ready() -> void:

@@ -13,7 +13,7 @@ var defense_area: AreaDefence
 var attacker: Player
 var defender: Player
 var last_timer_reset_time: int = 0
-var current_responsive_player_id: int = -1
+var current_responsive_player_id: int = 0
 var total_time_used: Dictionary[int, float] = {}
 var dynamic_time_limit: Dictionary[int, float] = {}
 var _defense_area_signal_binding: Callable = Callable()
@@ -183,7 +183,7 @@ func _on_all_commands_completed_impl(game_state: GameState) -> void:
 # 计时与信号连接
 # ----------------------------------------------------------------------
 func _reset_timer_for_current_player() -> void:
-	if current_responsive_player_id == -1:
+	if current_responsive_player_id == 0:
 		return
 	var limit: float = DEFAULT_TIME_LIMIT
 	if dynamic_time_limit.has(current_responsive_player_id):

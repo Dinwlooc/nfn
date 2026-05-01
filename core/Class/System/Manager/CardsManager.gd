@@ -1,7 +1,7 @@
 extends RefCounted
 class_name CardsManager
 
-var next_id: int = 0  # 下一个可用的卡牌ID
+var next_id: int = 2  # 下一个可用的卡牌ID
 var card_instances: Array[Card] = []
 ## 预定义的花色列表，避免重复创建
 const SUITS = [HandCard.Suit.SPADE, HandCard.Suit.HEART, HandCard.Suit.DIAMOND, HandCard.Suit.CLUB]
