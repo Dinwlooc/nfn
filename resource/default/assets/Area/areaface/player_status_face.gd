@@ -12,7 +12,7 @@ enum Mode { AUTO, MANUAL }
 @onready var ap_container: Control = $APContainer
 @onready var ap_icon: Control = $APContainer/APIcon
 @onready var ap_label: Label = $APContainer/APLabel
-@onready var mp_label:Label = $MPLabel
+@onready var mp_label: Label = $MPLabel
 
 var _cached_hp_max: int = 0
 var _cached_hp_current: int = 0
@@ -25,20 +25,17 @@ var _mp_units: Array[Control] = []
 var _current_player: RenderItem = null
 var _cached_player_id: int = -1
 
-const COLOR_HP_CURRENT: Color = Color(0.99, 0.1, 0.0,0.7)
-const COLOR_HP_LOST: Color = Color(0.5, 0.5, 0.5,0.7)
-const COLOR_MP_CURRENT: Color = Color(0, 1.0, 1.0,0.7)
-const COLOR_MP_LOST: Color = Color(0.2, 0.2, 0.2,0.7)
-## HP单次颜色变化时长（半闪烁时长）
+const COLOR_HP_CURRENT: Color = Color(0.99, 0.1, 0.0, 0.7)
+const COLOR_HP_LOST: Color = Color(0.5, 0.5, 0.5, 0.7)
+const COLOR_MP_CURRENT: Color = Color(0, 1.0, 1.0, 0.7)
+const COLOR_MP_LOST: Color = Color(0.2, 0.2, 0.2, 0.7)
 const HP_BLINK_DURATION: float = 0.2
-## MP单次颜色变化时长（半闪烁时长）
 const MP_BLINK_DURATION: float = 0.2
-## HP块相对于背景的缩放比例（宽高均适用）
 const HP_BLOCK_SCALE: float = 0.8
-## 每个MP单元包含的MP点数
 const MP_DOTS_PER_UNIT: int = 4
-## MP点淡出动画时长
 const MP_DOT_FADE_OUT_DURATION: float = 0.2
+## 治疗时整体闪绿的时长
+const HEAL_FLASH_DURATION: float = 0.3
 
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
@@ -93,13 +90,14 @@ func _update_cached_stats(player_data: PlayerPack) -> void:
 	var old_mp_max: int = _cached_mp_max
 	var old_ap: int = _cached_ap_current
 	var old_init_ap: int = _cached_modified_init_ap
-
 	_cached_hp_max = player_data.modified_HP_max
 	_cached_hp_current = player_data.HP
 	_cached_mp_max = player_data.modified_MP_max
 	_cached_mp_current = player_data.MP
 	_cached_ap_current = player_data.AP
 	_cached_modified_init_ap = player_data.modified_init_AP
+	var hp_damage: int = old_hp - _cached_hp_current   # 注意：与原始命名保持一致，数值可正可负
+	var mp_damage: int = old_mp - _cached_mp_current
 	if _cached_hp_max != old_hp_max or _cached_hp_current != old_hp:
 		_apply_hp_animation(old_hp_max, old_hp, _cached_hp_max, _cached_hp_current)
 		hp_label.text = "%d / %d" % [_cached_hp_current, _cached_hp_max]
@@ -108,9 +106,8 @@ func _update_cached_stats(player_data: PlayerPack) -> void:
 		mp_label.text = "%d / %d" % [max(0, _cached_mp_current), max(0, _cached_mp_max)]
 	if _cached_ap_current != old_ap or _cached_modified_init_ap != old_init_ap:
 		_update_ap_display()
-	var hp_damage: int = max(0, old_hp - _cached_hp_current)
-	var mp_damage: int = max(0, old_mp - _cached_mp_current)
-	if hp_damage > 0 or mp_damage > 0:
+	# 发送事件，字段名仍然是 hp_damage / mp_damage，但值可以为负数
+	if hp_damage != 0 or mp_damage != 0:
 		_trigger_damage_event(hp_damage, mp_damage)
 
 func _clear_display() -> void:
@@ -123,11 +120,12 @@ func _clear_display() -> void:
 		unit.queue_free()
 	_mp_units.clear()
 	ap_label.text = "X 0"
-# ==================== HP 动画（修复负数索引问题）====================
+
+# ==================== HP 动画（不变）====================
 func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
-	_adjust_hp_bar_capacity(new_max, clamped_new_cur)  # 传入钳位后的当前值
+	_adjust_hp_bar_capacity(new_max, clamped_new_cur)
 	if new_max > old_max:
 		for i in range(old_max, new_max):
 			var block: Panel = _hp_blocks[i]
@@ -209,7 +207,7 @@ func _start_hp_block_special_blink(block: Panel, target_color: Color) -> void:
 	tween.tween_property(stylebox, ^"bg_color", transparent, HP_BLINK_DURATION)
 	tween.tween_property(stylebox, ^"bg_color", target_color, HP_BLINK_DURATION)
 
-# ==================== MP 动画（修复负数索引问题）====================
+# ==================== MP 动画（不变）====================
 func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
@@ -307,18 +305,20 @@ func _find_unit_of_dot(dot: ColorRect) -> Control:
 			return unit
 	return null
 
-# ==================== 伤害事件发送（保持不变）====================
+# ==================== 统一事件发送（带符号） ====================
 func _trigger_damage_event(hp_damage: int, mp_damage: int) -> void:
 	if _cached_player_id == -1:
+		return
+	if not render_context:
 		return
 	var area: RenderArea = render_context.get_render_area(RenderArea.DefaultArea.PLAYERS)
 	if area:
 		var event: RenderEvent = RenderEvent.new().set_type(RenderEvent.DefaultType.DAMAGED)
 		event.config[&"player_id"] = _cached_player_id
-		event.config[&"hp_damage"] = hp_damage
-		event.config[&"mp_damage"] = mp_damage
+		event.config[&"hp_damage"] = hp_damage   # 可为负
+		event.config[&"mp_damage"] = mp_damage   # 可为负
 		area.tween_update(event)
 
-# ==================== AP 更新（保持不变）====================
+# ==================== AP 更新（不变） ====================
 func _update_ap_display() -> void:
 	ap_label.text = "%d / %d" % [_cached_ap_current, _cached_modified_init_ap]

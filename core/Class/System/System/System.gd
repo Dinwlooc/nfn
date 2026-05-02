@@ -59,7 +59,7 @@ func _draw_cards_test() -> void:
 	command_processor.queue_behavior(draw_event)
 	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % game_state.stage_manager.current_player_id)
 
-func _damage(hp_damage: int = 1, mp_damage: int = 1, player_id: int = 0) -> void:
+func _damage(hp_damage: int = 1, mp_damage: int = 1, player_id: int = 2) -> void:
 	command_processor.queue_behavior(DamageCommand.new(game_state.player_manager.get_player_by_id(player_id), hp_damage, mp_damage))
 
 func signal_connect_test():

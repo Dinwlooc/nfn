@@ -233,7 +233,7 @@ static func send_buff_modifiers_update(
 		if not card:
 			push_error("RuleTrans.send_buff_modifiers_update: 未找到卡牌 id ", buff_modifiers.owner_id)
 			return
-		var target_area: Area = game_state.area_registry.get_area(card.area_name, card.area_player_id)
+		var target_area: Area = game_state.area_registry.get_area(card.area_player_id,card.area_name)
 		if not target_area:
 			push_error("RuleTrans.send_buff_modifiers_update: 无法定位卡牌所在区域")
 			return

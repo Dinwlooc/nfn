@@ -1,22 +1,18 @@
 extends Modifier
 
 static func process(context: CommandContext, state: GameState, creator: Object) -> void:
-	if creator is not Card:
+	if not (creator is Card):
 		return
-	if context is not SettleCommand.Context:
+	var card: Card = creator as Card
+	if not RuleModifierTiming.is_settle_effect(context, card):
 		return
-	creator = creator as Card
-	context = context as SettleCommand.Context
-	if not context.phase == SettleCommand.Context.Phase.EFFECT:
-		return
-	if not context.get_settle_card() == creator:
-		return
+	var sctx: SettleCommand.Context = context as SettleCommand.Context
 	## 创建转移命令，将 creator 从守区移回其拥有者的手牌
 	var transfer_cmd := CardTransferCommand.new(
-		creator.get_owner_id(),
-		context.defensive_area,
-		state.get_hand_area(creator.get_owner_id()),
+		card.get_owner_id(),
+		sctx.defensive_area,
+		state.get_hand_area(card.get_owner_id()),
 		CardTransferCommand.Context.MoveOutMode.BY_ID,
-		PackedInt32Array([creator.id])
+		PackedInt32Array([card.id])
 	)
 	state.queue_behavior(transfer_cmd)

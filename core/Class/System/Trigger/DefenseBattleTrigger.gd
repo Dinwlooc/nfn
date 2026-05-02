@@ -6,13 +6,17 @@ var _game_state:GameState
 ## 构造时接收 [GameState]，不持有长期引用。
 func _init(game_state: GameState) -> void:
 	_game_state = game_state
-	game_state.area_registry.defense_area_added.connect(_on_defense_area_created)
-	game_state.area_registry.defense_area_removed.connect(_on_defense_area_removed)
+	game_state.area_registry.area_added.connect(_on_defense_area_created)
+	game_state.area_registry.area_removed.connect(_on_defense_area_removed)
 
-func _on_defense_area_created(defense: AreaDefence, _pid: int) -> void:
+func _on_defense_area_created(defense: Area) -> void:
+	if defense is not AreaDefence:
+		return
 	_connect_defense(defense)
 
-func _on_defense_area_removed(defense: AreaDefence, _pid: int) -> void:
+func _on_defense_area_removed(defense: Area) -> void:
+	if defense is not AreaDefence:
+		return
 	_disconnect_defense(defense)
 
 func _connect_defense(defense: AreaDefence) -> void:

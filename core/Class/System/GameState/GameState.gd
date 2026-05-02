@@ -1,20 +1,18 @@
 ## 全局游戏状态，聚合所有逻辑层数据和子管理器。
-## 区域注册表 [member area_registry] 内建于此。
 extends RefCounted
 class_name GameState
 
-var area_center := AreaCenter.new()
-var area_drawing := AreaDrawing.new()
-var area_discard := AreaDiscard.new()
+# 移除原有的 area_center, area_drawing, area_discard 字段
 var cardsmanager := CardsManager.new()
 var player_manager := PlayersManager.new()
 var timer: GameTimer
 var users: Dictionary[int, User]
 var _process_active := false
 var stage_manager: StageManager = StageManager.new()
-## 区域注册表纯数据容器，由 [GameState] 内部创建
+## 区域注册表统一管理器
 var area_registry: AreaManager = AreaManager.new()
-const PUBLIC_PLAYER_ID:int = 1
+const PUBLIC_PLAYER_ID: int = 1
+
 signal start_round(player_id: int)
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
 signal new_behavior(command: BehaviorCommand)
@@ -23,8 +21,10 @@ signal all_commands_completed()
 
 ## 加载卡牌并将所有牌置入牌堆
 func load_cards() -> void:
-	area_drawing.cards_add(cardsmanager.load_all_cards())
-	area_drawing.shuffle_card_pool()
+	area_registry.init_public_areas()
+	var drawing: AreaDrawing = area_registry.get_drawing_area()
+	drawing.cards_add(cardsmanager.load_all_cards())
+	drawing.shuffle_card_pool()
 
 ## 开始新一轮
 func start_new_round(player_id: int) -> void:
@@ -100,3 +100,15 @@ func get_defense_area(player_id: int) -> AreaDefence:
 ## 获取指定玩家的技能区域（委托给 area_registry）
 func get_ability_area(player_id: int) -> AreaAbility:
 	return area_registry.get_ability_area(player_id)
+
+## 获取公共中央区（便捷方法）
+func get_center_area() -> AreaCenter:
+	return area_registry.get_center_area()
+
+## 获取公共牌堆区（便捷方法）
+func get_drawing_area() -> AreaDrawing:
+	return area_registry.get_drawing_area()
+
+## 获取公共弃牌堆区（便捷方法）
+func get_discard_area() -> AreaDiscard:
+	return area_registry.get_discard_area()

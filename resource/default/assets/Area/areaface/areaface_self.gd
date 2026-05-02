@@ -57,10 +57,10 @@ func _handle_damage_event(event: RenderEvent) -> void:
 		return
 	if area.local_player == null or player_id != area.local_player.get_id():
 		return
-	if hp_damage <= 0 and mp_damage <= 0:
-		return
+	var player_data:PlayerPack = area.render_context.get_render_item_by_id(PlayerPack.get_class_name_static(),player_id).data
+	var remaining_hp_ratio:float = float(player_data.HP) / float(player_data.modified_HP_max)
 	if character_container:
-		character_container.play_damage_animation(hp_damage, mp_damage)
+		character_container.play_damage_animation(hp_damage, mp_damage,remaining_hp_ratio)
 
 func card_move() -> void:
 	if area.items_pool.size() == 0:

@@ -30,7 +30,6 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = 
 		pack.target_area_player_id = PUBLIC_AREA_PLAYER_ID
 	return pack
 
-
 # ========== ItemSet ==========
 class ItemSet extends RenderRequest:
 	enum EventType {
@@ -38,7 +37,7 @@ class ItemSet extends RenderRequest:
 	}
 	var event_type: EventType
 	var event_source_player_id: int = PUBLIC_AREA_PLAYER_ID
-	var custom_event_name: StringName      # 不再在构造函数中设置，通过链式函数设置
+	var custom_event_name: StringName
 	var items: Array[ItemPack] = []
 	var source_area_name: StringName
 	var source_area_player_id: int

@@ -35,10 +35,10 @@ func _init_attribute() -> void:
 	attributeModifiers.set_base_value(&"draw_cards_count", 2)
 	attributeModifiers.set_base_value(&"speed", 1)
 
-func apply_health_damage(amount: int, _mechanism: int, _source_id: int, _modifiers: PackedInt32Array) -> void:
+func apply_health_damage(amount: int) -> void:
 	HP = HP - amount
 
-func apply_mental_damage(amount: int, _mechanism: int, _source_id: int, _modifiers: PackedInt32Array) -> void:
+func apply_mental_damage(amount: int) -> void:
 	MP = max(0, MP - amount)
 
 func get_attribute(attribute: StringName) -> int:

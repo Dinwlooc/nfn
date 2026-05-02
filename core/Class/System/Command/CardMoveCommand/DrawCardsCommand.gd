@@ -21,7 +21,7 @@ func _on_init_phase(game_state: GameState) -> void:
 		push_error("DrawCardsCommand: 上下文类型错误")
 		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
-	_context.source_area = game_state.area_drawing
+	_context.source_area = game_state.get_drawing_area()
 	_context.target_area = game_state.get_hand_area(_context.player_id)
 	var actual_draw_count = draw_context.get_actual_draw_count(_context.source_area)
 	if actual_draw_count <= 0:

@@ -96,7 +96,7 @@ func _flush_chunked():
 	_is_flushing = true
 	_flush_async()
 
-## 异步协程：分帧将缓冲区内容写入面板
+## 异步协程：分帧将缓冲区内容写入面板，并自动滚动到底部
 func _flush_async() -> void:
 	while true:
 		if _log_buffer.is_empty():
@@ -108,10 +108,14 @@ func _flush_async() -> void:
 			panel.text = "\n".join(chunk)
 		else:
 			panel.text += "\n" + "\n".join(chunk)
+		# 滚动到最后一行
+		panel.set_caret_line(panel.get_line_count() - 1)
 		await get_tree().process_frame
 		if not is_inside_tree():
 			break
 	_trim_log_lines()
+	# 修剪后再次滚动到底部（如果行数变化）
+	panel.set_caret_line(panel.get_line_count() - 1)
 	_is_flushing = false
 
 ## 修剪面板文本行数不超上限

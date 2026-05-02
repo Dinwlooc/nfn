@@ -68,6 +68,6 @@ func _on_init_phase(game_state: GameState) -> void:
 		return
 	# 设置源区域与移出模式
 	_context.source_area = ctx.target_defense_area
-	_context.target_area = game_state.area_discard
+	_context.target_area = game_state.get_discard_area()
 	_context.set_id_mode(PackedInt32Array([ctx.target_card_id]))
 	_context.phase = CardMoveCommand.Context.Phase.MOVE_OUT

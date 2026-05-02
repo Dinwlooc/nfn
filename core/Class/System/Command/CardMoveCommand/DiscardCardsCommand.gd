@@ -48,7 +48,7 @@ func _on_init_phase(game_state: GameState) -> void:
 		return
 	_context.source_area = game_state.get_hand_area(_context.source_player_id)
 	# 目标区域是弃牌堆
-	_context.target_area = game_state.area_discard
+	_context.target_area = game_state.get_discard_area()
 	# 设置移出模式为ID模式
 	_context.set_id_mode(_context.card_ids)
 	# 切换到MOVE_OUT阶段
