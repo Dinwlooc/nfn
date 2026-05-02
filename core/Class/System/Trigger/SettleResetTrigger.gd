@@ -2,8 +2,7 @@
 extends GameStateTrigger
 class_name SettleResetTrigger
 
-var _game_state:GameState
-## 构造时接收 [GameState]，不持有长期引用。
+## 构造时接收 [GameState]。
 func _init(game_state: GameState) -> void:
 	_game_state = game_state
 	game_state.stage_manager.stage_entered.connect(_on_stage_entered)

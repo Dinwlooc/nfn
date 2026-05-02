@@ -3,5 +3,7 @@
 extends RefCounted
 class_name GameStateTrigger
 
+var _game_state:GameState
+
 func _init(game_state: GameState) -> void:
-	pass
+	_game_state = game_state

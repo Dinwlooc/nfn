@@ -21,7 +21,6 @@ signal all_commands_completed()
 
 ## 加载卡牌并将所有牌置入牌堆
 func load_cards() -> void:
-	area_registry.init_public_areas()
 	var drawing: AreaDrawing = area_registry.get_drawing_area()
 	drawing.cards_add(cardsmanager.load_all_cards())
 	drawing.shuffle_card_pool()

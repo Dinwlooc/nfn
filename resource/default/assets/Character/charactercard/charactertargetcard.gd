@@ -44,9 +44,9 @@ var _was_selected: bool = false
 ## 当前选中动画tween引用
 var _current_tween: Tween = null
 
-## 缓存的HP值（用于检测损失）
+## 缓存的HP值（用于检测变化）
 var _cached_hp: int = 0
-## 缓存的MP值（用于检测损失）
+## 缓存的MP值（用于检测变化）
 var _cached_mp: int = 0
 ## 缓存的玩家ID（用于伤害事件）
 var _cached_player_id: int = 0
@@ -54,14 +54,12 @@ var _cached_player_id: int = 0
 var _cached_properties: Dictionary = {}
 
 func _ready() -> void:
-	# 记录原始状态
 	_icon_original_position = selected_icon.position
 	_container_original_size = character_container.size
 	_container_original_position = character_container.position
 	_properties_original_position = properties.position
 	_properties_original_scale = properties.scale
 	character.set_mirrored(true)
-	# 请求手牌区（手动模式，因为手牌表现是挂件，需要在场景中手动配置）
 	if area_hand:
 		area_hand.request_area(RenderArea.DefaultArea.HAND)
 
@@ -92,17 +90,15 @@ func data_update(new_item: RenderItem) -> void:
 	area_hand.request_area(RenderArea.DefaultArea.HAND, item.data.get_id())
 	area_hand.set_render_context(item.render_context)
 	item.set_item_size(size)
-	_init_cached_stats()  # 初始化缓存
+	_init_cached_stats()
 	call_deferred(&"_refresh_ui")
 
 ## 处理同一物品的数据更新（数值变化）
 func _handle_same_item_update(new_item: RenderItem) -> void:
-	# 计算HP/MP损失（正数为减少），注意属性大写
-	var hp_loss: int = _cached_hp - new_item.data.HP
-	var mp_loss: int = _cached_mp - new_item.data.MP
-	if hp_loss > 0 or mp_loss > 0:
-		_send_damage_event(hp_loss, mp_loss)
-	# 更新缓存
+	var hp_change: int = _cached_hp - new_item.data.HP
+	var mp_change: int = _cached_mp - new_item.data.MP
+	if hp_change != 0 or mp_change != 0:
+		_send_damage_event(hp_change, mp_change)
 	_cached_hp = new_item.data.HP
 	_cached_mp = new_item.data.MP
 
@@ -115,16 +111,16 @@ func _init_cached_stats() -> void:
 		return
 	_cached_hp = item.data.HP
 	_cached_mp = item.data.MP
-	_cached_player_id = item.data.get_id()  # 假设有 player_id 字段
+	_cached_player_id = item.data.get_id()
 	_cached_properties.clear()
 
 ## 生成伤害渲染事件并直接交给内部处理器
-func _send_damage_event(hp_damage: int, mp_damage: int) -> void:
+func _send_damage_event(hp_change: int, mp_change: int) -> void:
 	var event: RenderEvent = RenderEvent.new()
 	event.set_type(RenderEvent.DefaultType.DAMAGED)
 	event.config[&"player_id"] = _cached_player_id
-	event.config[&"hp_damage"] = hp_damage
-	event.config[&"mp_damage"] = mp_damage
+	event.config[&"hp_damage"] = hp_change   # 可为负（治疗）
+	event.config[&"mp_damage"] = mp_change   # 可为负（治疗）
 	_handle_damage_event(event)
 
 ## 刷新界面（根据数据重绘）
@@ -190,14 +186,18 @@ func _handle_damage_event(event: RenderEvent) -> void:
 	var player_id: int = event.config.get(&"player_id", 0)
 	var hp_damage: int = event.config.get(&"hp_damage", 0)
 	var mp_damage: int = event.config.get(&"mp_damage", 0)
-	if hp_damage <= 0 and mp_damage <= 0:
+	if hp_damage == 0 and mp_damage == 0:
 		return
 	if not item or not item.data:
 		return
 	if player_id != item.data.get_id():
 		return
 	if character:
-		character.play_damage_animation(hp_damage, mp_damage)
+		var data:PlayerPack = item.data as PlayerPack
+		var current_hp: int = data.HP
+		var max_hp = data.modified_HP_max
+		var remaining_ratio: float = float(current_hp) / float(max_hp) if max_hp > 0 else 1.0
+		character.play_damage_animation(hp_damage, mp_damage, remaining_ratio)
 
 ## 重置卡面（用于回收复用）
 func reset() -> void:
@@ -209,14 +209,12 @@ func reset() -> void:
 	if character and character.has_method(&"stop_damage_animation"):
 		character.stop_damage_animation()
 	_revert_selected_effects()
-	# 确保最终状态与原始一致（动画可能未完成）
 	character_container.position = _container_original_position
 	character_container.size = _container_original_size
 	properties.position = _properties_original_position
 	properties.scale = _properties_original_scale
 	selected_icon.visible = false
 	selected_icon.position = _icon_original_position
-	# 重置缓存变量
 	_cached_hp = 0
 	_cached_mp = 0
 	_cached_player_id = 0

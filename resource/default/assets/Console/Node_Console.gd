@@ -68,7 +68,6 @@ func _ready():
 	suggestion_labels_load()
 	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE, self)
 	_setup_log_optimization()
-
 ## 初始化日志优化组件：禁用编辑、启动定时刷新
 func _setup_log_optimization():
 	panel.editable = false
@@ -78,24 +77,20 @@ func _setup_log_optimization():
 	_flush_timer.timeout.connect(_on_flush_timer_timeout)
 	add_child(_flush_timer)
 	_flush_timer.start()
-
 ## 定时器回调，触发分帧刷新
 func _on_flush_timer_timeout():
 	_flush_chunked()
-
 ## 向日志缓冲区追加文本，超过阈值立即触发刷新
 func append_text(text: String):
 	_log_buffer.append(text)
 	if _log_buffer.size() >= BATCH_FLUSH_THRESHOLD:
 		_flush_chunked()
-
 ## 启动协程分帧刷新（若未在刷新且缓冲区非空）
 func _flush_chunked():
 	if _is_flushing or _log_buffer.is_empty():
 		return
 	_is_flushing = true
 	_flush_async()
-
 ## 异步协程：分帧将缓冲区内容写入面板，并自动滚动到底部
 func _flush_async() -> void:
 	while true:
@@ -117,15 +112,13 @@ func _flush_async() -> void:
 	# 修剪后再次滚动到底部（如果行数变化）
 	panel.set_caret_line(panel.get_line_count() - 1)
 	_is_flushing = false
-
 ## 修剪面板文本行数不超上限
 func _trim_log_lines():
 	var lines: PackedStringArray = panel.text.split("\n")
 	if lines.size() > MAX_LINES:
 		lines = lines.slice(lines.size() - MAX_LINES)
 		panel.text = "\n".join(lines)
-
-# ---------- 原有面板交互逻辑 ----------
+# ---------- 面板交互逻辑 ----------
 ## 动画移动面板到目标位置
 func animate_panel_position(target_position: Vector2, duration: float = 0.3):
 	if panel_tween and panel_tween.is_running():
@@ -134,7 +127,6 @@ func animate_panel_position(target_position: Vector2, duration: float = 0.3):
 	panel_tween.set_trans(Tween.TRANS_QUINT)
 	panel_tween.set_ease(Tween.EASE_OUT)
 	panel_tween.tween_property(self, ^"position", target_position, duration)
-
 ## 切换面板显示/隐藏
 func toggle_panel_display():
 	panel_display = !panel_display

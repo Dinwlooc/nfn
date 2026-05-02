@@ -11,7 +11,7 @@ enum ErrorCode {
 	WRONG_TURN,
 	INVALID_CARD_TYPE,
 	UNKNOWN_TOP_OWNER,
-	GROUP_ATTACK_IN_DEFENSE,
+	GROUP_ATTACK_IN_DEFENSE,    # 群体攻击禁止在守区攻防阶段使用
 }
 
 class UsageResult:
@@ -26,9 +26,8 @@ class UsageResult:
 class Validator:
 	const STACK_LIMIT := &"stack_limit"      # 守区堆栈限制
 	const SPEED_LIMIT := &"speed_limit"      # 速度限制
-	const DEFENSE_GROUP_ATTACK := &"defense_group_attack"
 
-# ---------- 配置 ----------
+# ---------- 默认配置 ----------
 static var _card_rules: Dictionary = {
 	GlobalConstants.DefaultCard.ATTACK: {
 		Validator.STACK_LIMIT: true,
@@ -37,8 +36,25 @@ static var _card_rules: Dictionary = {
 	GlobalConstants.DefaultCard.DEFENCE: {
 		Validator.STACK_LIMIT: true,
 	},
-	GlobalConstants.DefaultCard.SPELL: {},
+	GlobalConstants.DefaultCard.SPELL: {
+		Validator.STACK_LIMIT: true,
+	},
 }
+
+## 获取卡牌的规则配置（支持卡牌自身覆盖）
+static func _get_rule_config(card: Card) -> Dictionary:
+	var card_type: StringName = card.type
+	var base = _card_rules.get(card_type, {})
+	var overrides = card.get_rule_overrides()
+	if overrides.is_empty():
+		return base
+	var merged = base.duplicate()
+	for key in overrides:
+		if key == Validator.STACK_LIMIT or key == Validator.SPEED_LIMIT:
+			merged[key] = overrides[key]
+	return merged
+
+## 检查卡牌在主阶段（出牌阶段）的使用合法性
 ## @param defense_area 需要检查堆栈限制的守区（攻击牌为目标守区，防御牌为自己守区，技能牌可为空）
 static func can_use_card_in_main(
 	card: Card,
@@ -48,10 +64,7 @@ static func can_use_card_in_main(
 ) -> UsageResult:
 	if not card:
 		return UsageResult.new(false, ErrorCode.CARD_NULL, "卡牌实例为空")
-	var card_type:StringName = card.type
-	var rule_config:Dictionary = _card_rules.get(card_type)
-	if not rule_config:
-		return UsageResult.new(false, ErrorCode.UNKNOWN_CARD_TYPE, "未知卡牌类型: %s" % card_type)
+	var rule_config: Dictionary = _get_rule_config(card)
 	for validator_name in rule_config:
 		if not rule_config[validator_name]:
 			continue
@@ -82,7 +95,7 @@ static func _validate_speed_limit(defense_area: AreaDefence, source: Player, _ga
 		return UsageResult.new(false, ErrorCode.SETTLE_COUNT_EXCEED, "守区结算次数已达攻击者速度上限")
 	return UsageResult.new(true)
 
-# ---------- 防御阶段入口 ----------
+## 防御阶段入口：检查卡牌是否可以在守区攻防阶段使用
 static func can_use_card_in_defense(
 	card: Card,
 	source_player: Player,
@@ -93,29 +106,14 @@ static func can_use_card_in_defense(
 ) -> UsageResult:
 	if not card:
 		return UsageResult.new(false, ErrorCode.CARD_NULL, "卡牌实例为空")
-	var card_type:StringName = card.type
-	var rule_config:Dictionary = _card_rules.get(card_type)
-	if not rule_config:
-		return UsageResult.new(false, ErrorCode.UNKNOWN_CARD_TYPE, "未知卡牌类型: %s" % card_type)
-	for validator_name in rule_config:
-		if not rule_config[validator_name]:
-			continue
-		match validator_name:
-			Validator.STACK_LIMIT:
-				if defense_area:
-					var result = _validate_stack_limit(defense_area, source_player)
-					if not result.is_valid:
-						return result
-	return UsageResult.new(true)
-
-static func _validate_defense_group_attack(
-	card: Card,
-	_source: Player,
-	_defense_area: AreaDefence,
-	_attacker: Player,
-	_defender: Player,
-	_current_responsive_player_id: int
-) -> UsageResult:
-	if card.get_attribute(&"is_group_attack"):
+	# 检查群体攻击：若触发类型为 GROUP_ATTACK，禁止使用
+	var trigger_type = RuleCenterSkill.get_trigger_type(card)
+	if trigger_type == RuleCenterSkill.TriggerType.GROUP_ATTACK:
 		return UsageResult.new(false, ErrorCode.GROUP_ATTACK_IN_DEFENSE, "群体攻击技能禁止在守区攻防阶段使用")
+	# 普通防御阶段只检查堆栈限制（不检查速度限制）
+	var rule_config: Dictionary = _get_rule_config(card)
+	if rule_config.get(Validator.STACK_LIMIT, false):
+		var result = _validate_stack_limit(defense_area, source_player)
+		if not result.is_valid:
+			return result
 	return UsageResult.new(true)

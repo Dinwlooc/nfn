@@ -28,6 +28,7 @@ signal request_face(item:RenderItem)
 func _init(new_data:TransPack = TransPack.NULL_PACK) -> void:
 	name = &"RenderItem"
 	data = new_data
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 func _ready() -> void:
 	request_face.emit(self)

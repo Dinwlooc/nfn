@@ -82,7 +82,12 @@ static func check_and_create_command(
 	var base_rule_config = _card_rules.get(card_type)
 	if not base_rule_config:
 		return RuleResult.new(false, null, "不支持的卡牌类型: %s" % card_type)
-	var rule_config: Dictionary = _merge_rule_config(base_rule_config, override_rules)
+	var card_overrides: Dictionary = card.get_rule_overrides()
+	# 合并卡牌覆盖与参数覆盖，卡牌优先级最高
+	var merged_overrides = card_overrides.duplicate()
+	for key in override_rules:
+		merged_overrides[key] = override_rules[key]
+	var rule_config: Dictionary = _merge_rule_config(base_rule_config, merged_overrides)
 	var target_result: RuleResult = _validate_target_permission(
 		rule_config[Validator.TARGET_PERMISSION],
 		source_player,

@@ -1,8 +1,6 @@
 ## 守区攻防阶段触发器。当敌方卡牌进入守区时，自动启动 [StageDefense] 临时阶段。
 extends GameStateTrigger
 class_name DefenseBattleTrigger
-
-var _game_state:GameState
 ## 构造时接收 [GameState]，不持有长期引用。
 func _init(game_state: GameState) -> void:
 	_game_state = game_state

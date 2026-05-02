@@ -1,8 +1,5 @@
 extends OrderedArea
 class_name AreaAbility
 
-var ability_registry:Dictionary
-signal status_finsh
-
-func event_handlers():
-	pass
+func _init_expand() -> void:
+	area_name = GlobalConstants.DefaultArea.ABILITY

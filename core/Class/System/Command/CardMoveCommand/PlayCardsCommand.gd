@@ -71,7 +71,8 @@ func _on_init_phase(game_state: GameState) -> void:
 	_context.source_area = game_state.get_hand_area(_context.source_player_id)
 	match _context.target_area_type:
 		Context.TargetAreaType.CENTER:
-			_context.target_area = game_state.area_center
+			game_state.get_center_area().set_skill_targets([_context.target_player_id])
+			_context.target_area = game_state.get_center_area()
 		Context.TargetAreaType.PLAYER_DEF:
 			var target_player: Player = game_state.player_manager.get_player_by_id(_context.target_player_id)
 			if not target_player:

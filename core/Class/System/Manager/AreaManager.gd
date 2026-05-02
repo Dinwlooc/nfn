@@ -10,8 +10,11 @@ const PUBLIC_PLAYER_ID: int = GameState.PUBLIC_PLAYER_ID
 signal area_added(area: Area)
 signal area_removed(area: Area)
 
+func _init() -> void:
+	_init_public_areas()
+
 ## 初始化公共区域（应在 GameState 初始化时调用一次）
-func init_public_areas() -> void:
+func _init_public_areas() -> void:
 	_ensure_player_dict(PUBLIC_PLAYER_ID)
 	var public_areas: Dictionary = _areas[PUBLIC_PLAYER_ID]
 	# 中央区
@@ -23,7 +26,7 @@ func init_public_areas() -> void:
 	if not public_areas.has(GlobalConstants.DefaultArea.DRAWING):
 		var drawing := AreaDrawing.new()
 		public_areas[GlobalConstants.DefaultArea.DRAWING] = drawing
-		area_added.emit( drawing)
+		area_added.emit(drawing)
 	# 弃牌堆区
 	if not public_areas.has(GlobalConstants.DefaultArea.DISCARD):
 		var discard := AreaDiscard.new()

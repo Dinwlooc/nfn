@@ -34,6 +34,7 @@ offset_bottom = 293.0
 color = Color(0.977015, 0.823146, 0.738518, 0.486275)
 
 [node name="CharacterContainer" parent="BackgoundCharacter" instance=ExtResource("2_en3oj")]
+mouse_filter = 2
 
 [node name="BackgoundAbility" type="ColorRect" parent="."]
 texture_filter = 1

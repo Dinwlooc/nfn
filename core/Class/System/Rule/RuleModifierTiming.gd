@@ -78,3 +78,11 @@ static func is_play(ctx: CommandContext, card: Card) -> bool:
 	if not pctx.get_moved_cards().has(card):
 		return false
 	return true
+## 技能阶段：在技能命令的技能阶段，且当前卡牌为技能卡牌
+static func is_skill_phase(ctx: CommandContext, card: Card) -> bool:
+	if not (ctx is SkillCommand.Context):
+		return false
+	var sctx: SkillCommand.Context = ctx as SkillCommand.Context
+	if sctx.phase != SkillCommand.Context.Phase.SKILL:
+		return false
+	return sctx.skill_card == card

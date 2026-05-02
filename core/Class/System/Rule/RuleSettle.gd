@@ -83,9 +83,13 @@ static var _settle_rules: Dictionary = {
 static func evaluate(settle_card: Card, oppose_card: Card, duel_result: int, duel_diff: int, is_unilateral: bool, attacker: Player, defender: Player, override_rules: Dictionary = {}) -> Result:
 	if not settle_card:
 		return Result.new()
+	var card_overrides: Dictionary = settle_card.get_rule_overrides()
+	var merged_overrides = card_overrides.duplicate()
+	for key in override_rules:
+		merged_overrides[key] = override_rules[key]
 	var card_type: StringName = settle_card.type
 	var base_rules: Dictionary = _settle_rules.get(card_type, {})
-	var rules: Dictionary = _merge_rules(base_rules, override_rules)
+	var rules: Dictionary = _merge_rules(base_rules, merged_overrides)
 	var base_power: int = settle_card.get_attribute(&"power")
 	var oppose_power: int = oppose_card.get_attribute(&"power") if oppose_card else 0
 	# 计算伤害数值

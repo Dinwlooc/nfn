@@ -1,10 +1,9 @@
 extends BehaviorCommand
 class_name DamageCommand
 
-## 伤害标签掩码枚举（最低位表示存在自定义标签）
+## 伤害标签掩码枚举
 enum DamageTag {
-	CUSTOM = 1 << 0,   # 自定义标签（实际标签字符串存储在custom_damage_tags中）
-	# 以下为内置标签示例（可按需扩展，每个标签独占一个bit位）
+	CUSTOM = 1 << 0,
 	FIRE = 1 << 1,
 	ICE = 1 << 2,
 	LIGHTNING = 1 << 3,
@@ -14,45 +13,39 @@ enum DamageTag {
 	SHADOW = 1 << 7,
 }
 
-## 伤害来源机制枚举（增加自定义标识）
+## 伤害来源机制枚举
 enum SourceMechanism {
-	GENERAL = 0,         # 一般伤害
-	NEGATIVE_STATE = 1,  # 负面状态伤害
-	DRAIN = 2,           # 流失伤害
-	CUSTOM = 3,          # 自定义来源（需配合custom_source_name使用）
+	GENERAL = 0,
+	NEGATIVE_STATE = 1,
+	DRAIN = 2,
+	CUSTOM = 3,
 }
 
-## 伤害命令上下文（内部类）
 class Context extends CommandContext:
-	## 命令参数
 	var target_player: Player
-	var health_damage: int          # 可为负数（负数代表治疗）
-	var mental_damage: int          # 可为负数（负数代表治疗）
+	var health_damage: int          # 负数代表治疗
+	var mental_damage: int          # 负数代表治疗
 	var source_mechanism: int
 	var source_player_id: int
-	var source_custom_name: StringName          ## 自定义来源名称（仅当source_mechanism == CUSTOM时有效）
-	var damage_tags_mask: int = 0               ## 伤害标签掩码
-	var custom_damage_tags: PackedStringArray = PackedStringArray()   ## 自定义伤害标签字符串数组
-	## 缓存值（预先处理后的最终伤害/治疗数值）
+	var source_custom_name: StringName
+	var damage_tags_mask: int = 0
+	var custom_damage_tags: PackedStringArray = PackedStringArray()
 	var cached_health_damage: int
 	var cached_mental_damage: int
+	var ignore_cap: bool = false
 
-	## 修改生命伤害/治疗值（只能在阶段1调用，允许负数）
 	func modify_health_damage(new_value: int) -> void:
 		if phase == 1:
 			cached_health_damage = new_value
 
-	## 修改精神伤害/治疗值（只能在阶段1调用，允许负数）
 	func modify_mental_damage(new_value: int) -> void:
 		if phase == 1:
 			cached_mental_damage = new_value
 
-	## 添加伤害标签
 	func add_damage_tag(tag: DamageTag, custom_name: StringName = &"") -> void:
 		if tag == DamageTag.CUSTOM:
 			if custom_name.is_empty():
 				return
-			## 避免重复添加相同的自定义标签
 			var tag_str = String(custom_name)
 			if custom_damage_tags.has(tag_str):
 				return
@@ -61,7 +54,6 @@ class Context extends CommandContext:
 		else:
 			damage_tags_mask |= tag
 
-	## 移除伤害标签
 	func remove_damage_tag(tag: DamageTag, custom_name: StringName = &"") -> void:
 		if tag == DamageTag.CUSTOM:
 			if custom_name.is_empty():
@@ -75,7 +67,6 @@ class Context extends CommandContext:
 		else:
 			damage_tags_mask &= ~tag
 
-	## 清空所有伤害标签
 	func clear_damage_tags() -> void:
 		damage_tags_mask = 0
 		custom_damage_tags.clear()
@@ -89,40 +80,51 @@ func _init(
 	source_custom: StringName = &"",
 	damage_tags_mask: int = 0,
 	custom_tags: PackedStringArray = PackedStringArray(),
+	ignore_cap: bool = false,
 	name_overriding: StringName = &"DamageCommand",
 	context_overriding: Context = Context.new()
 ) -> void:
 	super._init(source_id, name_overriding, context_overriding)
 	_context.target_player = target_player
-	_context.health_damage = health_dmg            # 保留负数以支持治疗
+	_context.health_damage = health_dmg
 	_context.mental_damage = mental_dmg
 	_context.source_mechanism = mechanism
 	_context.source_player_id = source_id
 	_context.source_custom_name = source_custom
 	_context.damage_tags_mask = damage_tags_mask
 	_context.custom_damage_tags = custom_tags
+	_context.ignore_cap = ignore_cap
 
 func execute(game_state: GameState) -> void:
-	_context = _context as Context
-	match _context.phase:
+	var ctx = _context as Context
+	match ctx.phase:
 		0:
-			## 阶段0：缓存原始伤害/治疗值（不做钳位）
-			_context.cached_health_damage = _context.health_damage
-			_context.cached_mental_damage = _context.mental_damage
-			_context.phase = 1
+			ctx.cached_health_damage = ctx.health_damage
+			ctx.cached_mental_damage = ctx.mental_damage
+			ctx.phase = 1
 		1:
-			if not _context.target_player:
+			if not ctx.target_player:
 				complete()
 				return
-			## 应用生命伤害/治疗（负数代表治疗）
-			if _context.cached_health_damage != 0:
-				_context.target_player.apply_health_damage(
-					_context.cached_health_damage,
-				)
-			## 应用精神伤害/治疗（负数代表治疗）
-			if _context.cached_mental_damage != 0:
-				_context.target_player.apply_mental_damage(
-					_context.cached_mental_damage,
-				)
-			RuleTrans.send_player_delta_updates([_context.target_player], RenderRequest.ItemSet.EventType.ATTACK, _context.source_player_id)
+			if ctx.cached_health_damage != 0:
+				_apply_health_change(ctx.target_player, ctx.cached_health_damage, ctx.ignore_cap)
+			if ctx.cached_mental_damage != 0:
+				_apply_mental_change(ctx.target_player, ctx.cached_mental_damage, ctx.ignore_cap)
+			RuleTrans.send_player_delta_updates([ctx.target_player], RenderRequest.ItemSet.EventType.ATTACK, ctx.source_player_id)
 			complete()
+
+## 应用生命值变化（伤害或治疗）
+static func _apply_health_change(player: Player, delta: int, ignore_cap: bool) -> void:
+	var new_value: int = player.HP - delta
+	if delta <= 0 and not ignore_cap:  # 治疗且需钳位
+		new_value = min(new_value, player.get_attribute(&"HP_max"))
+	player.HP = new_value
+
+## 应用精神值变化（伤害或治疗）
+static func _apply_mental_change(player: Player, delta: int, ignore_cap: bool) -> void:
+	var new_value: int = player.MP - delta
+	if delta > 0:  # 伤害：不低于0
+		new_value = max(0, new_value)
+	elif not ignore_cap:  # 治疗且需钳位
+		new_value = min(new_value, player.get_attribute(&"MP_max"))
+	player.MP = new_value

@@ -16,7 +16,8 @@ var attributeModifiers: AttributeModifiers = AttributeModifiers.new()
 var last_pack: CardPack = null
 var command_modifiers: CommandModifiers = CommandModifiers.new()
 var buff_modifiers: BuffModifiers = BuffModifiers.new(attributeModifiers, command_modifiers)
-
+## 规则覆盖字典，用于覆盖各种规则类的默认行为（例如 center_skill_trigger）
+var rule_overrides: Dictionary = {}
 func _init() -> void:
 	_load_exported_modifiers()
 
@@ -85,3 +86,11 @@ func set_area(area: Area) -> void:
 func set_card_id(new_id: int) -> void:
 	id = new_id
 	buff_modifiers.set_owner(&"card", id)
+
+## 设置规则覆盖
+func set_rule_overrides(overrides: Dictionary) -> void:
+	rule_overrides = overrides
+
+## 获取规则覆盖
+func get_rule_overrides() -> Dictionary:
+	return rule_overrides

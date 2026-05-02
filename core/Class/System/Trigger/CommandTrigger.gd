@@ -7,14 +7,12 @@ var _system: System
 func _init(system: System) -> void:
 	super(system)
 	_system = system
-	_system.game_state.new_behavior.connect(_on_new_behavior)
+	_system.game_state.new_behavior.connect(_system.command_processor.queue_behavior)
 	_system.game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
 	_system.command_processor.enable_processing.connect(_on_enable_processing)
 	_system.command_processor.all_completed.connect(_on_all_completed)
 	_system.command_processor.command_processing.connect(_on_command_processing)
 
-func _on_new_behavior(event: BehaviorCommand) -> void:
-	_system.command_processor.queue_behavior(event)
 
 func _on_new_behavior_with_callback(command: BehaviorCommand, callback: Callable) -> void:
 	_system.command_processor.all_completed.connect(callback, CONNECT_ONE_SHOT)
