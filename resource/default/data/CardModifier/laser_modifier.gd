@@ -4,13 +4,7 @@ extends Modifier
 
 ## 初始化：为源卡牌设置组件层数「DestroyX」= 4
 static func init(source: Object) -> void:
-	if source is Card:
-		var card: Card = source as Card
-		SimpleAttributeBuffBuilder.set_component_stack(
-			card.attributeModifiers,
-			DestroyXModifier.get_component_name(),
-			4
-		)
+	pass
 
 ## 修饰器处理入口，由上层系统自动调用。
 ## @param ctx:     当前命令上下文
@@ -27,7 +21,7 @@ static func process(ctx: CommandContext, state: GameState, creator: Object) -> v
 
 ## 执行压制效果：摧毁目标牌，然后摧毁自身
 static func _apply_suppress(source_card: Card, target_card: Card, src_area: AreaDefence, state: GameState) -> void:
-	var x: int = int(source_card.attributeModifiers.get_final_value(DestroyXModifier.get_component_name()))
+	var x: int = 4
 	if x <= 0:
 		return
 	var owner: Player = source_card.get_player()

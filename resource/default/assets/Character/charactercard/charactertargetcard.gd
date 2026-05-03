@@ -87,6 +87,7 @@ func data_update(new_item: RenderItem) -> void:
 	properties.set_render_context(item.render_context)
 	area_defence.request_area(RenderArea.DefaultArea.DEFENCE, item.data.get_id())
 	area_defence.set_render_context(item.render_context)
+	area_defence.set_player(item)
 	area_hand.request_area(RenderArea.DefaultArea.HAND, item.data.get_id())
 	area_hand.set_render_context(item.render_context)
 	item.set_item_size(size)
@@ -175,12 +176,10 @@ func _revert_selected_effects() -> void:
 func _physics_process(_delta: float) -> void:
 	if selected_icon.visible:
 		_update_floating_icon()
-
 ## 更新选中图标的浮动效果
 func _update_floating_icon() -> void:
 	var offset: float = FLOAT_AMPLITUDE * sin(Time.get_ticks_msec() * FLOAT_FREQUENCY)
 	selected_icon.position = _icon_original_position + Vector2(0, offset)
-
 ## 处理受击事件（转发给 CharacterFace）
 func _handle_damage_event(event: RenderEvent) -> void:
 	var player_id: int = event.config.get(&"player_id", 0)
@@ -198,7 +197,6 @@ func _handle_damage_event(event: RenderEvent) -> void:
 		var max_hp = data.modified_HP_max
 		var remaining_ratio: float = float(current_hp) / float(max_hp) if max_hp > 0 else 1.0
 		character.play_damage_animation(hp_damage, mp_damage, remaining_ratio)
-
 ## 重置卡面（用于回收复用）
 func reset() -> void:
 	super.reset()

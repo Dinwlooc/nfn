@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="HandCard" load_steps=3 format=3 uid="uid://n6ph1dkt47d0"]
 
-[ext_resource type="Script" uid="uid://cnspfa3uji6jw" path="res://resource/default/data/CardModifier/HealModifier.gd" id="1_4mn0u"]
+[ext_resource type="Script" uid="uid://cnspfa3uji6jw" path="res://resource/default/data/CardModifier/repair_modifier.gd" id="1_4mn0u"]
 [ext_resource type="Script" uid="uid://dd70gbxq1gppb" path="res://core/Class/System/Card/HandCard.gd" id="1_mop4j"]
 
 [resource]

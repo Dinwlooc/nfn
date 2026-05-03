@@ -35,10 +35,5 @@ func _create_card_pack() -> HandCardPack:
 func get_settlement_damage(damage_base:int = -1) -> int:
 	if damage_base == -1:
 		damage_base = attributeModifiers.get_final_value(&"power")
-	attributeModifiers.add_modifier(&"settlement_damage_bonus",
-		AttributeModifiers.TYPE_BASE_ADD, &"standard_settlement_damage",
-		float(damage_base))
-	var settlement_damage = attributeModifiers.get_final_value(&"settlement_damage_bonus")
-	attributeModifiers.remove_modifier(&"settlement_damage_bonus",
-		AttributeModifiers.TYPE_BASE_ADD, &"standard_settlement_damage")
+	var settlement_damage:int = attributeModifiers.compute_with_temporary_bonus(&"settlement_damage_bonus",damage_base)
 	return settlement_damage

@@ -134,3 +134,18 @@ func recalculate_all() -> void:
 			if modifiers_dict[attribute].has(type):
 				_recalculate_combined_type(attribute, type)
 		_recalculate_final(attribute)
+## 快速计算添加临时基础加成后的最终值，不修改实际属性状态。
+## @param attribute 属性名
+## @param bonus 临时加成值（将参与基础加法合并）
+## @return 应用临时加成后的最终整数值
+func compute_with_temporary_bonus(attribute: StringName, bonus: float) -> int:
+	_ensure_attribute_exists(attribute)
+	var vals: PackedFloat32Array = combined_values[attribute]
+	# 复制一份当前合并值
+	var temp_vals: PackedFloat32Array = vals.duplicate()
+	# 临时基础加成加到 TYPE_BASE_ADD 上
+	temp_vals[TYPE_BASE_ADD] += bonus
+	# 重新计算最终值（公式同 _recalculate_final）
+	var base_val: float = temp_vals[TYPE_BASE_ADD] * (1.0 + temp_vals[TYPE_BASE_MULTIPLY])
+	var final_val: float = (base_val + temp_vals[TYPE_FINAL_ADD]) * temp_vals[TYPE_FINAL_MULTIPLY]
+	return int(round(final_val))

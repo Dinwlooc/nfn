@@ -4,7 +4,7 @@ class_name DestroyXModifier
 ## 返回组件名称（同时用作属性修饰器名）
 static func get_component_name() -> StringName:
 	return &"DestroyX"
-
+const  buff_name: StringName = &"DestroyX_Debuff"
 ## 生成「摧毁 x」效果的命令。
 ## 若 x >= 目标牌威力，返回一个 DestroyCardsCommand；否则返回一个 BuffCommand。
 ## @return 命令数组（每次只有一条命令，便于统一处理）
@@ -27,7 +27,7 @@ static func generate_command(
 			)
 
 	else:
-		var buff_name: StringName = &"DestroyX_Debuff"
+
 		var buff := SimpleAttributeBuffBuilder.create_attribute_buff(
 			buff_name,
 			target_card.attributeModifiers,
@@ -41,7 +41,7 @@ static func generate_command(
 			target_card.buff_modifiers,
 			buff,
 			BuffCommand.Context.BuffMode.APPLY,
-			1,
+			source_card.attributeModifiers.compute_with_temporary_bonus(buff_name,x),
 			source_card,
 			source_player
 		)

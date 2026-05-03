@@ -47,10 +47,8 @@ func _on_item_added(render_item: RenderItem) -> void:
 	var start_global_pos: Vector2 = render_item.global_position
 	var viewport_rect: Rect2 = get_viewport().get_visible_rect()
 	# 目标右上角位置（最终位置）
-	var target_global_pos: Vector2 = Vector2(
-		viewport_rect.end.x + TARGET_OFFSET.x,
-		viewport_rect.position.y + TARGET_OFFSET.y
-	)
+	var target_global_pos: Vector2 = Vector2(viewport_rect.end.x + TARGET_OFFSET.x,
+	viewport_rect.position.y + TARGET_OFFSET.y)
 	# ----- 第一阶段：缩放恢复与移动到中间点 -----
 	# 计算中间矩形（屏幕中心区域，缩放 CENTER_RECT_SCALE 倍）
 	var center_rect: Rect2 = Rect2(
