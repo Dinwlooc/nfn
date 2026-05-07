@@ -10,8 +10,6 @@ var area_target_position: Vector2
 var area_target_size: Vector2
 ## 当前卡牌群组动画的 Tween 实例
 var current_card_tween: Tween = null
-## 预览模式的专用 Tween（避免与群组动画冲突）
-var preview_tween: Tween = null
 ## 卡牌缩放因子
 var total_scale_factor: float = 1.0
 ## 常规补间动画时长
@@ -45,6 +43,9 @@ const PREVIEW_HORIZONTAL_LINE_Y_OFFSET: float = -20.0
 ## 预览水平线的长度缩放比（相对屏幕宽度）
 const PREVIEW_HORIZONTAL_LINE_SCALE: float = 0.2
 
+# 标记是否已通过 RenderContext 连接玩家区域（仅用于防止重复连接）
+var _players_area_connection_active: bool = false
+
 # ==================== 生命周期与初始化 ====================
 
 func _ready() -> void:
@@ -55,7 +56,6 @@ func _ready() -> void:
 	area_target_position = original_position
 	area_target_size = original_size
 	_update_total_scale_factor()
-	# 自动模式下尝试关联本地玩家
 	if mode == Mode.AUTO:
 		call_deferred("_try_auto_connect_local_player")
 
@@ -68,11 +68,12 @@ func _connect_to_area(target_area: RenderArea) -> void:
 		_try_auto_connect_local_player()
 
 func _exit_tree() -> void:
+	_cleanup_preview_connections()
 	if render_context and _area_requested:
 		render_context.disconnect_renderarea(_requested_area_name, self._connect_to_area, _requested_player_id)
 	_disconnect_from_current_area()
 
-## 更新渲染目标位置（基于当前卡牌数量计算每个卡牌应在的局部坐标）
+## 更新渲染目标位置
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type: StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
@@ -84,11 +85,8 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	)
 	tween_update(render_event)
 
-## 触发卡牌移动动画，预览模式下会先刷新预览卡牌
+## 触发卡牌移动动画
 func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	_sync_preview_mode()
-	if _preview_mode:
-		_refresh_preview()
 	card_move(render_event)
 
 func _into_area() -> void:
@@ -97,175 +95,147 @@ func _into_area() -> void:
 func _outto_area() -> void:
 	super._outto_area()
 
-# ==================== 动画调度 ====================
+# ==================== 动画调度（单次遍历） ====================
 
-## 核心动画调度函数，创建主 Tween 并添加基础移动和重置动画
+## 核心动画：一次遍历完成所有卡牌的位置（局部/全局）、缩放、旋转
 func card_move(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	if area.items_pool.is_empty() or target_position.is_empty():
+	if not area or area.items_pool.is_empty() or target_position.is_empty():
 		return
-	if _preview_mode and area.items_pool.size()<=2:
-		return
+	var pool_size :int= area.items_pool.size()
 	var master_tween: Tween = create_tween()
 	master_tween.set_parallel(true)
-	_add_base_movement_tweens(master_tween)
-	master_tween.chain()
-	_add_reset_tweens(master_tween)
+	for i in pool_size:
+		var card: RenderItem = area.items_pool[i]
+		if card.dragged:
+			continue
+		var card_local_target: Vector2 = target_position[i]
+		var anim_time: float = TWEEN_TIME
+		var scale_target: Vector2 = Vector2(total_scale_factor, total_scale_factor)
+		var is_preview_top: bool = _preview_mode and (i == pool_size - 1)
+		var is_preview_second: bool = _preview_mode and (i == pool_size - 2)
+		if is_preview_top or is_preview_second:
+			anim_time = PREVIEW_ANIM_TIME
+			scale_target = Vector2.ONE * (PREVIEW_TOP_SCALE if is_preview_top else PREVIEW_SECOND_SCALE)
+			var global_target: Vector2 = _get_preview_global_target(is_preview_top)
+			if card.global_position != global_target:
+				master_tween.tween_property(card, ^"global_position", global_target, anim_time) \
+					.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		else:
+			if card.selected:
+				card_local_target.y += SELECTED_Y_OFFSET
+			if card.position != card_local_target:
+				master_tween.tween_property(card, ^"position", card_local_target, anim_time) \
+					.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		if card.scale != scale_target:
+			master_tween.tween_property(card, ^"scale", scale_target, anim_time) \
+				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		master_tween.tween_property(card, ^"rotation", ROTATION_NEUTRAL, RESET_TIME) \
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if current_card_tween:
 		current_card_tween.kill()
 	current_card_tween = master_tween
 
-## 为所有非拖拽卡牌添加基础位置移动动画（含总数缩放动画）
-func _add_base_movement_tweens(master_tween: Tween) -> void:
-	for i in area.items_pool.size():
-		var card: RenderItem = area.items_pool[i]
-		if card.dragged:
-			continue
-		# 预览模式下跳过顶层和次顶层
-		if _preview_mode and _is_preview_card(card):
-			continue
-		var card_target_pos: Vector2 = target_position[i]
-		if card.selected:
-			card_target_pos.y += SELECTED_Y_OFFSET
-		if card.position != card_target_pos:
-			master_tween.tween_property(card, ^"position", card_target_pos, TWEEN_TIME) \
-				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
-		var target_scale: Vector2 = Vector2(total_scale_factor, total_scale_factor)
-		if card.scale != target_scale:
-			master_tween.tween_property(card, ^"scale", target_scale, TWEEN_TIME) \
-				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
-
-## 恢复所有卡牌的默认旋转和缩放（恢复到总数因子）
-func _add_reset_tweens(master_tween: Tween) -> void:
-	for card in area.items_pool:
-		if card.dragged:
-			continue
-		# 预览模式下跳过顶层和次顶层
-		if _preview_mode and _is_preview_card(card):
-			continue
-		master_tween.tween_property(card, ^"rotation", ROTATION_NEUTRAL, RESET_TIME) \
-			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		var target_scale: Vector2 = Vector2(total_scale_factor, total_scale_factor)
-		master_tween.tween_property(card, ^"scale", target_scale, RESET_TIME) \
-			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-
-# ==================== 预览功能：关联玩家与模式 ====================
-
-## 设置关联的玩家（手动模式调用）
-## @param player 玩家 RenderItem 实例
-func set_player(player: RenderItem) -> void:
-	if associated_player == player:
-		return
-	if associated_player and associated_player.request_select.is_connected(_on_associated_player_selected):
-		associated_player.request_select.disconnect(_on_associated_player_selected)
-	associated_player = player
-	if associated_player:
-		if not associated_player.request_select.is_connected(_on_associated_player_selected):
-			associated_player.request_select.connect(_on_associated_player_selected)
-		if associated_player.selected:
-			_enter_preview_mode()
-
-## 自动模式：尝试从玩家区域获取本地玩家并关联
-func _try_auto_connect_local_player() -> void:
-	if not render_context:
-		return
-	var players_area: RenderArea = render_context.get_render_area(RenderAreaPlayers.get_area_name_static(), RenderContext.PUBLIC_PLAYER_ID)
-	if not players_area:
-		return
-	if players_area is RenderAreaPlayers:
-		var pa: RenderAreaPlayers = players_area as RenderAreaPlayers
-		if pa.local_player:
-			set_player(pa.local_player)
-		elif not pa.local_player_received.is_connected(_on_local_player_received):
-			pa.local_player_received.connect(_on_local_player_received)
-
-## 本地玩家就绪回调
-func _on_local_player_received(player: RenderItem) -> void:
-	set_player(player)
-
-## 关联玩家选中状态变化时触发（即时开启/关闭预览）
-func _on_associated_player_selected(player: RenderItem) -> void:
-	if player.selected:
-		_enter_preview_mode()
-	else:
-		_exit_preview_mode()
-
-## 同步预览模式与玩家选中状态（每次渲染更新时调用）
-func _sync_preview_mode() -> void:
-	if not associated_player:
-		if _preview_mode:
-			_exit_preview_mode()
-		return
-	if associated_player.selected and not _preview_mode:
-		_enter_preview_mode()
-	elif not associated_player.selected and _preview_mode:
-		_exit_preview_mode()
-
-# ==================== 预览模式核心 ====================
-
-## 进入预览模式：设置标志并立即刷新动画
-func _enter_preview_mode() -> void:
-	if _preview_mode:
-		return
-	if not area or area.items_pool.size() < 2:
-		return
-	_preview_mode = true
-	# 清理已有的动画，避免冲突
-	if preview_tween:
-		preview_tween.kill()
-	if current_card_tween:
-		current_card_tween.kill()
-	_refresh_preview()
-
-## 退出预览模式：重置标志，清理预览 Tween，并触发正常布局
-func _exit_preview_mode() -> void:
-	if not _preview_mode:
-		return
-	_preview_mode = false
-	if preview_tween:
-		preview_tween.kill()
-		preview_tween = null
-	# 触发整个区域的补间更新，所有卡牌回到正确位置
-	if area:
-		area.tween_update(RenderEvent.NULL_EVENT)
-
-## 刷新预览卡牌的位置与缩放动画（从池中动态获取顶层/次顶层）
-func _refresh_preview() -> void:
-	if not area or area.items_pool.is_empty():
-		_exit_preview_mode()
-		return
-	var pool_size: int = area.items_pool.size()
-	if pool_size < 2:
-		_exit_preview_mode()
-		return
-	var top_card: RenderItem = area.items_pool[pool_size - 1]
-	var second_card: RenderItem = area.items_pool[pool_size - 2]
-	if preview_tween:
-		preview_tween.kill()
-	preview_tween = create_tween()
-	preview_tween.set_parallel(true)
-	_preview_animate_card(preview_tween, top_card, PREVIEW_TOP_SCALE, PREVIEW_ANIM_TIME, true)
-	_preview_animate_card(preview_tween, second_card, PREVIEW_SECOND_SCALE, PREVIEW_ANIM_TIME, false)
-
-## 为指定卡牌添加预览补间属性
-func _preview_animate_card(tween: Tween, card: RenderItem, scale_mult: float, duration: float, is_top: bool) -> void:
+## 返回预览卡牌的全局目标坐标（基于视口中心）
+func _get_preview_global_target(is_top: bool) -> Vector2:
 	var viewport: Viewport = get_viewport()
+	if not viewport:
+		return Vector2.ZERO
 	var rect: Rect2 = viewport.get_visible_rect()
 	var center: Vector2 = rect.size / 2.0
 	var line_y: float = center.y + PREVIEW_HORIZONTAL_LINE_Y_OFFSET
 	var half_line: float = rect.size.x * PREVIEW_HORIZONTAL_LINE_SCALE * 0.5
 	var target_x: float = center.x + half_line if is_top else center.x - half_line
-	var target_global: Vector2 = Vector2(target_x, line_y)
-	tween.tween_property(card, ^"global_position", target_global, duration) \
-		.set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
-	tween.tween_property(card, ^"scale", Vector2.ONE * scale_mult, duration) \
-		.set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	return Vector2(target_x, line_y)
 
-## 判断一张卡是否为预览模式下的顶层或次顶层卡
-func _is_preview_card(card: RenderItem) -> bool:
-	if not area or area.items_pool.is_empty():
-		return false
-	var pool_size: int = area.items_pool.size()
-	return card.pool_id == pool_size - 1 or (pool_size >= 2 and card.pool_id == pool_size - 2)
+# ==================== 预览功能：回调连接接口（不持有区域引用） ====================
+
+## 自动模式：通过 RenderContext.connect_renderarea 监听玩家区域（仅用于建立信号连接）
+func _try_auto_connect_local_player() -> void:
+	if not render_context or _players_area_connection_active:
+		return
+	_players_area_connection_active = true
+	render_context.connect_renderarea(RenderAreaPlayers.get_area_name_static(), _on_players_area_connected, RenderContext.PUBLIC_PLAYER_ID)
+
+## 当玩家区域注册或已存在时调用，仅建立信号连接，不持有区域引用
+func _on_players_area_connected(area: RenderArea) -> void:
+	if not area is RenderAreaPlayers:
+		return
+	var pa: RenderAreaPlayers = area as RenderAreaPlayers
+	# 监听选择上限变化
+	if not pa.select_limit_changed.is_connected(_on_player_area_limit_changed):
+		pa.select_limit_changed.connect(_on_player_area_limit_changed)
+	# 尝试获取本地玩家并关联
+	if pa.local_player:
+		set_player(pa.local_player)
+	elif not pa.local_player_received.is_connected(_on_local_player_received):
+		pa.local_player_received.connect(_on_local_player_received, CONNECT_ONE_SHOT)
+
+## 本地玩家就绪回调（一次性连接）
+func _on_local_player_received(player: RenderItem) -> void:
+	set_player(player)
+
+## 手动设置关联玩家（或由自动流程调用）
+func set_player(player: RenderItem) -> void:
+	if associated_player == player:
+		return
+	_disconnect_player_selection_signal()
+	associated_player = player
+	_connect_player_selection_signal()
+	_check_preview_condition()
+
+## 关联玩家选中状态变化回调
+func _on_player_selection_changed(selected: bool) -> void:
+	_check_preview_condition()
+
+## 玩家区域选择上限变化回调
+func _on_player_area_limit_changed(new_limit: int) -> void:
+	_check_preview_condition()
+
+## 统一预览条件判断：实时获取玩家区域检查选择上限
+func _check_preview_condition() -> void:
+	var should_preview: bool = false
+	if associated_player and associated_player.selected and render_context:
+		var players_area: RenderArea = render_context.get_render_area(RenderAreaPlayers.get_area_name_static(), RenderContext.PUBLIC_PLAYER_ID)
+		if players_area:
+			should_preview = players_area.select_limit == 1
+	if should_preview and not _preview_mode:
+		_preview_mode = true
+	elif not should_preview and _preview_mode:
+		_preview_mode = false
+	card_move()
+
+# ==================== 内部信号管理与清理 ====================
+
+## 连接 associated_player 的 selected_changed 信号
+func _connect_player_selection_signal() -> void:
+	if not associated_player:
+		return
+	if not associated_player.selected_changed.is_connected(_on_player_selection_changed):
+		associated_player.selected_changed.connect(_on_player_selection_changed)
+
+## 断开 associated_player 的 selected_changed 信号
+func _disconnect_player_selection_signal() -> void:
+	if associated_player and associated_player.selected_changed.is_connected(_on_player_selection_changed):
+		associated_player.selected_changed.disconnect(_on_player_selection_changed)
+
+## 清理所有预览相关的信号连接（退出树时调用）
+func _cleanup_preview_connections() -> void:
+	_disconnect_player_selection_signal()
+	# 断开与玩家区域的 select_limit_changed 连接（如果区域仍存在）
+	if render_context:
+		var players_area: RenderArea = render_context.get_render_area(RenderAreaPlayers.get_area_name_static(), RenderContext.PUBLIC_PLAYER_ID)
+		if players_area:
+			if players_area.select_limit_changed.is_connected(_on_player_area_limit_changed):
+				players_area.select_limit_changed.disconnect(_on_player_area_limit_changed)
+			if players_area is RenderAreaPlayers:
+				var pa: RenderAreaPlayers = players_area as RenderAreaPlayers
+				if pa.local_player_received.is_connected(_on_local_player_received):
+					pa.local_player_received.disconnect(_on_local_player_received)
+		# 移除 RenderContext 回调连接
+		render_context.disconnect_renderarea(RenderAreaPlayers.get_area_name_static(), _on_players_area_connected, RenderContext.PUBLIC_PLAYER_ID)
+	_players_area_connection_active = false
+
+# ==================== 缩放更新 ====================
 
 ## 根据区域大小、卡牌数量和第一张卡牌尺寸更新缩放因子
 func _update_total_scale_factor() -> void:

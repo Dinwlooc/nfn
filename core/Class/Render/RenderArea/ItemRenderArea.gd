@@ -52,9 +52,7 @@ func _disconnect_item_from_area(item: RenderItem) -> void:
 		item.request_select.disconnect(on_select)
 	if item.request_cancel_dragged.is_connected(on_cancel_drag):
 		item.request_cancel_dragged.disconnect(on_cancel_drag)
-
 # ==================== 核心逻辑处理 ====================
-
 ## 处理[param item_set]中的渲染项更新，从上下文获取或创建[RenderItem]，
 ## 并根据其所属区域进行添加、移除或数据更新。
 func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
@@ -74,25 +72,20 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 			if current_area:
 				current_area.remove_item(render_item)
 			add_item(render_item)
-
 # ==================== 选择操作 ====================
-
 ## 处理[param item]的选中/取消选中逻辑，维护选中列表，并触发选择变化事件。
 func on_select(item: RenderItem) -> void:
 	if item.selected:
-		item.selected = false
-		item.render_update()
+		item.set_selected(false)
 		if item.dragged:
 			render_context.remove_card_on_drag()
 		selected_items.erase(item)
 	else:
 		if selected_items.size() >= select_limit:
-			selected_items[0].selected = false
-			selected_items[0].render_update()
+			selected_items[0].set_selected(false)
 			selected_items.remove_at(0)
-		item.selected = true
+		item.set_selected(true)
 		selected_items.append(item)
-	item.render_update()
 	tween_update(RenderEvent.new().set_type(RenderEvent.DefaultType.CARD_SELECTION_CHANGED))
 	selected.emit(item)
 

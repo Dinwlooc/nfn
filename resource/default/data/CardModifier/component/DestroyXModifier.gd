@@ -25,9 +25,7 @@ static func generate_command(
 				source_player,
 				source_card
 			)
-
 	else:
-
 		var buff := SimpleAttributeBuffBuilder.create_attribute_buff(
 			buff_name,
 			target_card.attributeModifiers,

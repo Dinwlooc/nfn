@@ -8,6 +8,7 @@ signal items_added(item:RenderItem)
 signal items_removed(item:RenderItem)
 signal context_ready()
 signal item_created_for_removing(item: RenderItem)
+signal select_limit_changed(new_limit: int)
 var select_limit:int = 1
 var render_context:RenderContext
 var player_id:int
@@ -75,6 +76,11 @@ func add_item(_item:RenderItem, _index:int = -1) -> void:
 ##更新ItemPack数据
 func _update_item_data(render_item: RenderItem, item_pack: ItemPack) -> void:
 	render_item.apply_pack(item_pack)
+	tween_update(RenderEvent.new(RenderEvent.DefaultType.CARD_UPDATE))
+
+func change_select_limit(new_limit)->void:
+	select_limit = new_limit
+	select_limit_changed.emit(select_limit)
 
 func remove_item(_item:RenderItem) -> void:
 	push_error("remove_item must be implemented in subclass")

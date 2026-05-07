@@ -72,7 +72,6 @@ func connect_renderarea(area_name: StringName, callback: Callable, player_id: in
 # 移除回调
 func disconnect_renderarea(area_name: StringName, callback: Callable, player_id: int = PUBLIC_PLAYER_ID) -> void:
 	var actual_player_id: int = _get_actual_player_id(player_id)
-
 	if _callback_map.has(actual_player_id) and _callback_map[actual_player_id].has(area_name):
 		_callback_map[actual_player_id][area_name].erase(callback)
 		if _callback_map[actual_player_id][area_name].is_empty():

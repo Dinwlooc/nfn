@@ -2,10 +2,7 @@
 class_name LaserModifier
 extends Modifier
 
-## 初始化：为源卡牌设置组件层数「DestroyX」= 4
-static func init(source: Object) -> void:
-	pass
-
+const destroy_x:int = 4
 ## 修饰器处理入口，由上层系统自动调用。
 ## @param ctx:     当前命令上下文
 ## @param state:   全局游戏状态
@@ -18,12 +15,8 @@ static func process(ctx: CommandContext, state: GameState, creator: Object) -> v
 		return
 	var bctx: BattleCommand.Context = ctx as BattleCommand.Context
 	_apply_suppress(source_card, bctx.second_card, bctx.defensive_area, state)
-
 ## 执行压制效果：摧毁目标牌，然后摧毁自身
 static func _apply_suppress(source_card: Card, target_card: Card, src_area: AreaDefence, state: GameState) -> void:
-	var x: int = 4
-	if x <= 0:
-		return
 	var owner: Player = source_card.get_player()
 	var self_destroy_cmd := DestroyCardsCommand.new(
 		owner.player_id if owner else 0,
@@ -33,5 +26,5 @@ static func _apply_suppress(source_card: Card, target_card: Card, src_area: Area
 		source_card
 	)
 	state.queue_behavior(self_destroy_cmd)
-	var cmd: BehaviorCommand = DestroyXModifier.generate_command(owner, source_card, target_card, src_area, x, state)
+	var cmd: BehaviorCommand = DestroyXModifier.generate_command(owner, source_card, target_card, src_area, destroy_x, state)
 	state.queue_behavior(cmd)

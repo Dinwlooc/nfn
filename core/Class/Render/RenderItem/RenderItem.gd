@@ -24,6 +24,8 @@ signal request_select(item:RenderItem)
 signal request_drag(item:RenderItem)
 signal request_cancel_dragged(item:RenderItem)
 signal request_face(item:RenderItem)
+## 选择状态变化信号，参数为新状态
+signal selected_changed(selected: bool)
 
 func _init(new_data:TransPack = TransPack.NULL_PACK) -> void:
 	name = &"RenderItem"
@@ -38,6 +40,7 @@ func data_update(new_card_data:TransPack,render_event:RenderEvent = RenderEvent.
 	data = new_card_data
 	if is_inside_tree():
 		data_requested.emit(self,render_event)
+		render_update(render_event)
 	else :
 		request_ready()
 
@@ -48,6 +51,7 @@ func apply_pack(pack: ItemPack) -> void:
 	if data and data is ItemPack:
 		data.merge(pack)
 		data_requested.emit(self)
+		render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_UPDATE))
 	else:
 		data_update(pack)
 
@@ -78,9 +82,15 @@ func set_hovering(new_hovering: bool) -> void:
 	hovering = new_hovering
 	render_update()
 
+func set_selected(new_selected: bool) -> void:
+	if selected == new_selected:
+		return
+	selected = new_selected
+	selected_changed.emit(selected)
+	render_update()
+
 func request_selecting():
 	request_select.emit(self)
-	pass
 
 func request_dragging():
 	match dragging:

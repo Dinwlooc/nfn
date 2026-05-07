@@ -15,6 +15,7 @@ class DefaultType:
 	const CARD_SELECTION_CHANGED = &"card_selection_changed"
 	const CARD_START_DRAGGING = &"card_start_dragging"
 	const CARD_CANCEL_DRAGGING = &"card_cancel_dragging"
+	const CARD_UPDATE = &"card_update"
 	const OPERATION_PLAY_CARD = &"operation_play_card"
 	const OPERATION_DISCARD_CARDS = &"operation_discard_cards"
 	const OPERATION_ABANDON_RESPONSE = &"operation_abandon_response"
