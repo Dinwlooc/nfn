@@ -17,7 +17,7 @@ const TWEEN_TIME: float = 0.2
 ## 重置动画时长（通常为 TWEEN_TIME 的一半）
 const RESET_TIME: float = TWEEN_TIME / 2.0
 ## 选中卡牌的 Y 轴偏移量（向上抬起）
-const SELECTED_Y_OFFSET: float = -5.0
+const SELECTED_Y_OFFSET: float = -15.0
 ## 中性缩放值
 const SCALE_NEUTRAL: float = 1.0
 ## 中性旋转值
@@ -39,7 +39,7 @@ const PREVIEW_TOP_SCALE: float = 1.0
 ## 预览时次顶层卡牌的缩放倍数
 const PREVIEW_SECOND_SCALE: float = 1.0
 ## 预览水平线的竖直偏移（向下为正）
-const PREVIEW_HORIZONTAL_LINE_Y_OFFSET: float = -20.0
+const PREVIEW_HORIZONTAL_LINE_Y_OFFSET: float = -40.0
 ## 预览水平线的长度缩放比（相对屏幕宽度）
 const PREVIEW_HORIZONTAL_LINE_SCALE: float = 0.2
 
@@ -108,15 +108,15 @@ func card_move(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 		var card: RenderItem = area.items_pool[i]
 		if card.dragged:
 			continue
-		var card_local_target: Vector2 = target_position[i]
 		var anim_time: float = TWEEN_TIME
 		var scale_target: Vector2 = Vector2(total_scale_factor, total_scale_factor)
+		var card_local_target: Vector2 = target_position[i] + card.get_centered_offset(scale_target)
 		var is_preview_top: bool = _preview_mode and (i == pool_size - 1)
 		var is_preview_second: bool = _preview_mode and (i == pool_size - 2)
 		if is_preview_top or is_preview_second:
 			anim_time = PREVIEW_ANIM_TIME
 			scale_target = Vector2.ONE * (PREVIEW_TOP_SCALE if is_preview_top else PREVIEW_SECOND_SCALE)
-			var global_target: Vector2 = _get_preview_global_target(is_preview_top)
+			var global_target: Vector2 = _get_preview_global_target(is_preview_top) + card.get_centered_offset(scale_target)
 			if card.global_position != global_target:
 				master_tween.tween_property(card, ^"global_position", global_target, anim_time) \
 					.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

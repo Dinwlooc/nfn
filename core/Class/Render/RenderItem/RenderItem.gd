@@ -71,7 +71,10 @@ func reset() -> void:
 	reset_requested.emit(self)
 
 func get_item_size()->Vector2:
-	return size
+	return Vector2(size.x * scale.x,size.y * scale.y)
+
+func get_centered_offset(scale_overriding:Vector2 = scale)->Vector2:
+	return - Vector2(size.x * scale_overriding.x,size.y * scale_overriding.y)/2
 
 func set_item_size(new_size:Vector2):
 	size = new_size

@@ -20,12 +20,9 @@ corner_radius_bottom_left = 5
 [node name="RealCardFace" type="Control"]
 custom_minimum_size = Vector2(145, 220)
 layout_mode = 3
-anchor_right = 0.09
-anchor_bottom = 0.244
-offset_right = 1.0
-offset_bottom = 0.399994
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
+offset_right = 145.0
+offset_bottom = 220.0
 pivot_offset = Vector2(72.5, 110)
 focus_mode = 1
 mouse_filter = 2

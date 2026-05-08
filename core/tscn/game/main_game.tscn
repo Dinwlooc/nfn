@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Class/Render/RenderArea/RenderAreaStage.gd" id="4_8dpeo"]
 [ext_resource type="Script" uid="uid://b3knkkllshowq" path="res://core/Class/Render/RenderControl/RenderControl.gd" id="4_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://resource/default/assets/Area/areaface/backgound.tscn" id="5_2w2we"]
-[ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://resource/default/assets/Area/areaface/Node_arrow.gd" id="5_4k47o"]
+[ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://resource/default/assets/Area/areaface/RenderArrow/render_arrow.gd" id="5_4k47o"]
 [ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Class/Render/RenderArea/RenderAreaHand.gd" id="7_jjejj"]
 [ext_resource type="Script" uid="uid://c6oyqsx5j42c5" path="res://core/tscn/game/RenderTimer.gd" id="8_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://resource/default/assets/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
@@ -56,7 +56,7 @@ offset_bottom = 42.0
 scale = Vector2(4, 4)
 script = ExtResource("8_ppvbj")
 
-[node name="Arrow" type="Control" parent="Control/AreaStage" node_paths=PackedStringArray("control")]
+[node name="Arrow" type="Control" parent="Control/AreaStage" node_paths=PackedStringArray("render_control")]
 layout_mode = 1
 anchor_left = 1.025
 anchor_top = -2.175
@@ -66,7 +66,7 @@ offset_left = -40.0
 offset_top = 87.9999
 offset_bottom = 128.0
 script = ExtResource("5_4k47o")
-control = NodePath("../..")
+render_control = NodePath("../..")
 metadata/_edit_use_anchors_ = true
 
 [node name="AreaPlayers" type="Control" parent="Control"]
@@ -74,14 +74,17 @@ anchors_preset = 0
 script = ExtResource("14_a6oxl")
 
 [node name="AreaFaceTargets" parent="Control/AreaPlayers" instance=ExtResource("14_8v20q")]
-offset_top = -157.0
-offset_right = 1378.0
-offset_bottom = 165.0
+offset_top = -5.0
+offset_right = 1605.0
+offset_bottom = 249.0
 mouse_filter = 1
 
 [node name="AreaFaceSelf" parent="Control/AreaPlayers" instance=ExtResource("11_4k47o")]
-offset_top = 458.0
-offset_bottom = 820.0
+layout_mode = 1
+offset_left = 1404.0
+offset_top = 464.0
+offset_right = 1603.0
+offset_bottom = 826.0
 
 [node name="AreaFaceSelf_Properties" parent="Control/AreaPlayers" instance=ExtResource("12_f8lnr")]
 layout_mode = 1
@@ -104,9 +107,9 @@ layout_mode = 1
 anchor_left = 0.177
 anchor_top = 0.782
 offset_left = 11.499
-offset_top = 5.72595
+offset_top = 65.726
 offset_right = 10.6
-offset_bottom = 3.974
+offset_bottom = 51.974
 mouse_filter = 1
 
 [node name="AreaDiscard" type="Control" parent="Control"]
@@ -137,5 +140,6 @@ offset_left = 7.0
 offset_top = -38.0
 offset_right = 184.0
 offset_bottom = 84.0
+mode = null
 
 [node name="Console" parent="Control" instance=ExtResource("15_vjhr3")]

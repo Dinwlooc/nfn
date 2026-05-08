@@ -34,8 +34,11 @@ func _update_character_pivot() -> void:
 
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
-	if target_area is RenderAreaPlayers:
-		target_area.local_player_received.connect(_on_local_player_received)
+	if target_area is not RenderAreaPlayers:
+		return
+	if target_area.local_player:
+		_on_local_player_received(target_area.local_player)
+	target_area.local_player_received.connect(_on_local_player_received)
 
 func _on_local_player_received(local_player: RenderItem) -> void:
 	local_player.set_item_size(background.size)

@@ -13,7 +13,6 @@ func _init() -> void:
 func connect_to_item(item: RenderItem) -> void:
 	item.request_face.connect(create_item_face)
 	item.reset_requested.connect(_on_item_reset_requested)
-
 # 创建ItemFace（使用回收池）
 func create_item_face(item: RenderItem) -> void:
 	if not item or not item.data:
@@ -29,8 +28,9 @@ func create_item_face(item: RenderItem) -> void:
 			if itemface:
 				itemface.item_type = type_name
 	if itemface:
-		_init_item_face(item, itemface)
 		item.add_child(itemface)
+		_init_item_face(item, itemface)
+		itemface.position = Vector2.ZERO
 
 # 从回收池获取ItemFace
 func _get_from_pool(type_name: StringName) -> ItemFace:
@@ -70,6 +70,7 @@ func _cleanup_item_face(itemface: ItemFace) -> void:
 # 初始化ItemFace
 func _init_item_face(item: RenderItem, itemface: ItemFace) -> void:
 	itemface.item_type = item.data.get_class_name()
+	itemface.data_update(item)
 	_connect_item_face_signals(item, itemface)
 
 # 连接ItemFace信号

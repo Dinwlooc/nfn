@@ -45,9 +45,11 @@ func _ready() -> void:
 ## 更新卡片数据（由外部调用，当 item 或其数据变化时）
 func data_update(new_item: RenderItem) -> void:
 	if item == new_item:
+		item.set_item_size(size)
 		call_deferred(&"_refresh_ui")
 		return
 	item = new_item
+	item.set_item_size(size)
 	call_deferred(&"_refresh_ui")
 
 ## 刷新界面（根据当前 item 的数据重绘）
@@ -57,7 +59,6 @@ func _refresh_ui() -> void:
 	var data: HandCardPack = item.data
 	_current_type = data.get_card_type()
 	texture_rect.texture = get_item_main_icon(data.name)
-	item.set_item_size(size)
 	match _current_type:
 		GlobalConstants.DefaultCard.DEFENCE:
 			cost_label.text = "/"

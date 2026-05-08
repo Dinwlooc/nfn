@@ -44,7 +44,7 @@ func card_move()-> void:
 		if player.data.peer_id == multiplayer.get_unique_id():
 			skipped_local_players_count += 1
 			continue
-		var _target_position = target_position[i - skipped_local_players_count]
+		var _target_position = target_position[i - skipped_local_players_count] + player.get_centered_offset()
 		if player.position == _target_position:
 			continue
 		UIAnimationUtils.tween_animations(player,{^"position":_target_position},TWEEN_TIME)

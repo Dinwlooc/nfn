@@ -9,10 +9,13 @@
 [ext_resource type="Texture2D" uid="uid://caivq3rbvlms4" path="res://resource/default/assets/Character/charactercard/character_selected_icon.png" id="5_ct3wd"]
 
 [node name="CharacterTargetCard" type="Control"]
+custom_minimum_size = Vector2(236, 236)
 layout_mode = 3
 anchors_preset = 0
 offset_right = 236.0
-offset_bottom = 230.0
+offset_bottom = 236.0
+rotation = -6.28319
+pivot_offset = Vector2(118, 118)
 mouse_filter = 2
 script = ExtResource("1_1lsym")
 metadata/_custom_type_script = "uid://onljydwdxj4o"
@@ -69,8 +72,8 @@ texture_filter = 1
 layout_mode = 2
 offset_left = -11.0
 offset_top = -11.0
-offset_right = 385.0
-offset_bottom = 341.0
+offset_right = 225.0
+offset_bottom = 225.0
 color = Color(0.309804, 0.152941, 0.0509804, 0.486275)
 
 [node name="Anchor" type="Control" parent="CharacterPanel"]
@@ -81,8 +84,8 @@ anchor_right = 0.5
 anchor_bottom = 0.906
 offset_left = -53.0
 offset_top = -41.84
-offset_right = -13.0
-offset_bottom = -91.43
+offset_right = -11.0
+offset_bottom = -90.43
 scale = Vector2(0.9, 0.9)
 
 [node name="CharacterContainer" parent="CharacterPanel/Anchor" instance=ExtResource("4_ct3wd")]

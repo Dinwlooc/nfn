@@ -248,7 +248,7 @@ func _add_base_movement_tweens(master_tween: Tween) -> void:
 		var card: RenderItem = area.items_pool[i]
 		if card.dragged:
 			continue
-		var card_target_pos: Vector2 = target_position[i]
+		var card_target_pos: Vector2 = target_position[i] + card.get_centered_offset()
 		if card.selected:
 			card_target_pos.y += SELECTED_Y_OFFSET
 		if card.position != card_target_pos:
