@@ -179,7 +179,7 @@ func card_move_expand() -> void:
 
 ## 拖拽卡牌的动画处理
 func dragging_move(card: RenderItem) -> void:
-	var _target_position: Vector2 = get_global_mouse_position()
+	var _target_position: Vector2 = get_global_mouse_position() + card.get_centered_offset()
 	var dx: float = card.position.x - _target_position.x
 	var target_rot: float = _compute_rotation_from_dx(dx)
 	var target_scale_x: float = _compute_scale_from_dx(dx)  # 动态收缩，不乘总数因子

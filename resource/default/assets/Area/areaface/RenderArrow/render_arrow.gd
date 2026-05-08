@@ -162,7 +162,7 @@ func _point_hand_arrow_to(card: RenderItem) -> void:
 	var dir: Vector2 = Vector2.DOWN
 	if _cached_hand_target == target_pos and _cached_hand_dir == dir and _hand_arrow.state != ArrowNode.State.HIDDEN:
 		return
-	_hand_arrow.point_to(target_pos, dir)
+	_hand_arrow.point_to_target(target_pos, dir)
 	_cached_hand_target = target_pos
 	_cached_hand_dir = dir
 	_line_curve_valid = false
@@ -203,7 +203,7 @@ func _apply_player_arrow(player_selected: Array[RenderItem], players_area: Rende
 		direction = Vector2.UP
 	if _cached_player_target == target_pos and _cached_player_dir == direction:
 		return
-	_player_arrow.point_to(target_pos, direction)
+	_player_arrow.point_to_target(target_pos, direction)
 	_cached_player_target = target_pos
 	_cached_player_dir = direction
 	_line_curve_valid = false
@@ -269,24 +269,22 @@ func _drawing_process() -> void:
 	# 两箭头稳定且线已进入稳定状态，结束本轮绘制
 	if _line.state == ArrowLine.State.STABLE:
 		_to_idle()
-
 # ==================== 连线管理 ====================
-
 func _build_line() -> void:
 	_line_curve_valid = true
 	_line.kill_animation()
 	var start: Vector2 = _hand_arrow.get_tail_global()
 	var end: Vector2 = _player_arrow.get_tail_global()
-	var start_is_top: bool = true
-	var end_is_top: bool = _is_local_target
-	var curve: Curve2D = ArrowLine.create_smooth_curve(start, end, start_is_top, end_is_top)
+	# 曲线从箭尾延伸，切线方向与箭头方向相反
+	var start_tangent_up: bool = not _hand_arrow.direction.is_equal_approx(Vector2.UP)
+	var end_tangent_up: bool = not _player_arrow.direction.is_equal_approx(Vector2.UP)
+	var curve: Curve2D = ArrowLine.create_smooth_curve(start, end, start_tangent_up, end_tangent_up)
 	_line.points = curve.tessellate(CURVE_TESSELLATE_PRECISION)
 	var offset: Vector2 = global_position
 	for i: int in _line.points.size():
 		_line.points[i] -= offset
 	_line.start_animation(self)
 	_needs_redraw = true
-
 ## 仅停止线动画并请求重绘（保留曲线点集）
 func _remove_line_only() -> void:
 	_line.kill_animation()

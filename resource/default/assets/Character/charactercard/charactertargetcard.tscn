@@ -12,7 +12,7 @@
 custom_minimum_size = Vector2(236, 236)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 236.0
+offset_right = 238.0
 offset_bottom = 236.0
 rotation = -6.28319
 pivot_offset = Vector2(118, 118)

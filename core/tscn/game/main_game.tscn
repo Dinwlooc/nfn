@@ -107,9 +107,9 @@ layout_mode = 1
 anchor_left = 0.177
 anchor_top = 0.782
 offset_left = 11.499
-offset_top = 65.726
+offset_top = 16.726
 offset_right = 10.6
-offset_bottom = 51.974
+offset_bottom = 2.974
 mouse_filter = 1
 
 [node name="AreaDiscard" type="Control" parent="Control"]
@@ -140,6 +140,5 @@ offset_left = 7.0
 offset_top = -38.0
 offset_right = 184.0
 offset_bottom = 84.0
-mode = null
 
 [node name="Console" parent="Control" instance=ExtResource("15_vjhr3")]

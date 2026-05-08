@@ -3,14 +3,25 @@ extends Control
 class_name ArrowNode
 
 enum State { HIDDEN, TRANSITION, STABLE }
+
+## 隐藏时被移到的屏幕外坐标
+const HIDDEN_POSITION: Vector2 = Vector2(-100.0, -100.0)
+## 显示过渡动画时长（秒）
+const SHOW_DURATION: float = 0.35
+## 隐藏过渡动画时长（秒）
+const HIDE_DURATION: float = 0.4
+## 指向目标时反方向预留的默认余量（像素）
+const DEFAULT_MARGIN: float = 10.0
+
+## 箭头颜色
+@export var arrow_color: Color = Color.AQUA
+
 ## 当前状态
 var state: State = State.HIDDEN
 ## 当前箭头朝向（从尾部指向尖端的单位向量），用于外部查询，绘制不再依赖
 var direction: Vector2 = Vector2.UP
 ## 当前 Tween
 var current_tween: Tween = null
-## 箭头颜色
-@export var arrow_color: Color = Color.AQUA
 
 const WING_WIDTH: float = 20.0
 const WING_HEIGHT: float = 6.0
@@ -20,7 +31,7 @@ const TAIL_HEIGHT: float = 8.0
 const TAIL_WIDTH_FACTOR: float = 1.0 / 3.0
 
 func _ready() -> void:
-	global_position = Vector2(-100, -100)
+	global_position = HIDDEN_POSITION
 	state = State.HIDDEN
 	rotation = 0.0
 
@@ -33,22 +44,22 @@ func reset() -> void:
 
 ## 设置箭头尖端到目标点，并指定朝向（从尾部指向尖端）
 func point_to(target: Vector2, dir: Vector2) -> void:
-	var new_dir: Vector2 = dir.normalized()
+	direction = dir.normalized()
 	if current_tween and current_tween.is_valid():
 		current_tween.kill()
 	state = State.TRANSITION
 	current_tween = create_tween()
 	current_tween.set_parallel(true)
-	current_tween.tween_property(self, ^"global_position", target, 0.35).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
-	if new_dir != direction:
-		direction = new_dir
-		current_tween.tween_property(self, ^"rotation", new_dir.angle()+PI/2, 0.7).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	current_tween.tween_property(self, ^"global_position", target, SHOW_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	current_tween.tween_property(self, ^"rotation", direction.angle() + PI / 2, SHOW_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	current_tween.chain()
 	current_tween.tween_callback(_on_stable)
 
-## 便捷方法，内部调用 point_to
-func point_to_target(target: Vector2, dir: Vector2) -> void:
-	point_to(target, dir)
+## 便捷方法，在目标点反方向预留余量，避免箭头直接戳到物体
+func point_to_target(target: Vector2, dir: Vector2, margin: float = DEFAULT_MARGIN) -> void:
+	var norm_dir: Vector2 = dir.normalized()
+	var offset_target: Vector2 = target - norm_dir * margin
+	point_to(offset_target, dir)
 
 ## 返回尾部在局部坐标系中的位置（矩形远端边中心，基于固定向上方向）
 func get_tail_local() -> Vector2:
@@ -66,7 +77,7 @@ func hide_arrow() -> void:
 		current_tween.kill()
 	state = State.TRANSITION
 	current_tween = create_tween().set_parallel(true)
-	current_tween.tween_property(self, ^"global_position", Vector2(-100, -100), 0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	current_tween.tween_property(self, ^"global_position", HIDDEN_POSITION, HIDE_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	current_tween.chain()
 	current_tween.tween_callback(_on_hidden)
 
@@ -78,26 +89,21 @@ func _on_stable() -> void:
 
 func _draw() -> void:
 	const UP: Vector2 = Vector2.UP
-	var perp: Vector2 = Vector2(-UP.y, UP.x)  # 垂直于 UP
-	# --- 三角形底边中心（即矩形近端边中心） ---
+	var perp: Vector2 = Vector2(-UP.y, UP.x)
 	var base_center: Vector2 = -UP * ARROW_HEIGHT
 	var base_width: float = ARROW_HALF_WIDTH * 2.0
 	var base_half: float = base_width * 0.5
 	var base_left: Vector2 = base_center - perp * base_half
 	var base_right: Vector2 = base_center + perp * base_half
 	var tip: Vector2 = Vector2.ZERO
-	# --- 矩形参数（远端边中心在 get_tail_local 位置） ---
-	var tail_pos: Vector2 = get_tail_local()  # 基于 UP，返回 -UP*(ARROW_HEIGHT+TAIL_HEIGHT)
+	var tail_pos: Vector2 = get_tail_local()
 	var rect_width: float = base_width * TAIL_WIDTH_FACTOR
 	var rect_half_width: float = rect_width * 0.5
-	# 矩形四个顶点
 	var far_left: Vector2 = tail_pos - perp * rect_half_width
 	var far_right: Vector2 = tail_pos + perp * rect_half_width
 	var near_left: Vector2 = base_center - perp * rect_half_width
 	var near_right: Vector2 = base_center + perp * rect_half_width
-	# 绘制尾部矩形（凸四边形）
 	draw_colored_polygon(PackedVector2Array([far_left, far_right, near_right, near_left]), arrow_color)
-	# 绘制箭头三角形
 	draw_colored_polygon(PackedVector2Array([base_right, base_left, tip]), arrow_color)
 
 # ==================== 静态工具函数 ====================
@@ -105,9 +111,9 @@ func _draw() -> void:
 ## 计算卡片顶部中心全局坐标
 static func get_card_top_center_global(card: RenderItem) -> Vector2:
 	var card_size: Vector2 = card.get_item_size()
-	return card.global_position + Vector2(card_size.x / 2 ,0)
+	return card.global_position + Vector2(card_size.x / 2, 0)
 
 ## 计算卡片底部中心全局坐标
 static func get_card_bottom_center_global(card: RenderItem) -> Vector2:
 	var card_size: Vector2 = card.get_item_size()
-	return card.global_position + Vector2(card_size.x / 2 ,card_size.y)
+	return card.global_position + Vector2(card_size.x / 2, card_size.y)

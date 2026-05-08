@@ -156,7 +156,7 @@ func _apply_selected_effects() -> void:
 	_current_tween.set_ease(SELECT_ANIMATION_EASE)
 	_current_tween.set_trans(SELECT_ANIMATION_TRANS)
 	_current_tween.parallel().tween_property(character_container, ^"position", Vector2.ZERO, SELECT_ANIMATION_DURATION)
-	_current_tween.parallel().tween_property(character_container, ^"size", size , SELECT_ANIMATION_DURATION)
+	_current_tween.parallel().tween_property(character_container, ^"size", size*0.95 , SELECT_ANIMATION_DURATION)
 	_current_tween.parallel().tween_property(properties, ^"position", _properties_original_position + Vector2(PROPERTIES_SHIFT_X, 0), SELECT_ANIMATION_DURATION)
 	_current_tween.parallel().tween_property(properties, ^"scale", _properties_original_scale * PROPERTIES_SCALE, SELECT_ANIMATION_DURATION)
 	selected_icon.visible = true

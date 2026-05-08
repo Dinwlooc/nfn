@@ -76,21 +76,23 @@ func _on_animation_finished() -> void:
 
 # ==================== 纯函数 ====================
 
-## 生成连接两点的平滑曲线（纯函数）
-static func create_smooth_curve(start: Vector2, end: Vector2, start_is_top: bool, end_is_top: bool) -> Curve2D:
+## 生成连接两点的平滑曲线。
+## [param start_tangent_up]: true 表示起点处切线向上，false 表示切线向下。
+## [param end_tangent_up]: true 表示终点处切线向上，false 表示切线向下。
+static func create_smooth_curve(start: Vector2, end: Vector2, start_tangent_up: bool, end_tangent_up: bool) -> Curve2D:
 	const TANGENT_FACTOR: float = 200.0
 	const MIN_TANGENT_LENGTH: float = 100.0
 	const MAX_TANGENT_LENGTH: float = 400.0
-
 	var horizontal_dist: float = abs(start.x - end.x)
 	var vertical_dist: float = abs(start.y - end.y)
 	var offset_multiplier: float = clamp(TANGENT_FACTOR / max(horizontal_dist, 1.0), 1.0, 1.5)
 	var base_offset: float = vertical_dist * 0.5 * offset_multiplier
-	var is_same_direction: bool = (start_is_top == end_is_top)
+	var is_same_direction: bool = (start_tangent_up == end_tangent_up)
 	var start_out: Vector2
 	var end_in: Vector2
 	if is_same_direction:
-		var sign: float = -1.0 if start_is_top else 1.0
+		# 切线向上时 sign=-1，向下时 sign=1
+		var sign: float = -1.0 if start_tangent_up else 1.0
 		var dy: float = end.y - start.y
 		var abs_dy: float = abs(dy)
 		var min_dist: float
@@ -112,8 +114,8 @@ static func create_smooth_curve(start: Vector2, end: Vector2, start_is_top: bool
 		end_in = Vector2(0.0, sign * d_e)
 	else:
 		var vertical_offset: float = base_offset
-		start_out = Vector2(0.0, -vertical_offset) if start_is_top else Vector2(0.0, vertical_offset)
-		end_in = Vector2(0.0, -vertical_offset) if end_is_top else Vector2(0.0, vertical_offset)
+		start_out = Vector2(0.0, -vertical_offset) if start_tangent_up else Vector2(0.0, vertical_offset)
+		end_in = Vector2(0.0, -vertical_offset) if end_tangent_up else Vector2(0.0, vertical_offset)
 	var curve := Curve2D.new()
 	curve.add_point(start, Vector2.ZERO, start_out)
 	curve.add_point(end, end_in, Vector2.ZERO)
