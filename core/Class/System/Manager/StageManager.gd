@@ -110,7 +110,7 @@ func end_round(game_state: GameState) -> void:
 	current_player_id = 0
 	current_stage = null
 	current_main_stage_index = -1
-	GlobalConsole._print(["StageManager:回合结束。"])
+	#GlobalConsole._print(["StageManager:回合结束。"])
 	round_ended.emit()
 	round_completed.emit()
 
@@ -168,7 +168,7 @@ func _rollback_to_previous_stage(game_state: GameState) -> void:
 func _advance_to_next_main_stage(game_state: GameState) -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= main_stages.size():
-		GlobalConsole._print(["StageManager:自动推进回合。"])
+		#GlobalConsole._print(["StageManager:自动推进回合。"])
 		game_state.queue_behavior(NewRoundCommand.new(current_player_id))
 		return
 	_transition_to(main_stages[current_main_stage_index], game_state)
@@ -181,10 +181,10 @@ func _on_stage_ended(ended_stage: Stage, game_state: GameState) -> void:
 	stage_completed.emit(ended_stage)
 	if ended_stage.is_temporary:
 		game_state.queue_behavior(RollbackStageCommand.new(current_player_id, ended_stage))
-		GlobalConsole._print(["StageManager:自动回退阶段。"])
+		#GlobalConsole._print(["StageManager:自动回退阶段。"])
 	else:
 		game_state.queue_behavior(SwitchMainStageCommand.new(current_player_id))
-		GlobalConsole._print(["StageManager:自动推进阶段。"])
+		#GlobalConsole._print(["StageManager:自动推进阶段。"])
 
 ## 由外部调用的超时处理（System 需连接 timer.timeout 到此方法，并绑定 game_state）
 func on_timer_timeout(game_state: GameState) -> void:

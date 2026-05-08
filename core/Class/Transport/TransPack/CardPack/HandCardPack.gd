@@ -1,16 +1,14 @@
 extends CardPack
 class_name HandCardPack
 
-# 子类专属枚举（从父类END开始）
 enum Property {
-	POWER = CardPack.MainProperty.END,  # 自动继承父类偏移
+	POWER = CardPack.MainProperty.END,
 	COST,
 	SUIT,
 	MODIFIED_POWER,
 	MODIFIED_COST
-	# 扩展时直接添加新属性
 }
-# 标准态常量
+
 const STANDARD_POWER: int = 3
 const STANDARD_MODIFIED_POWER: int = 3
 const STANDARD_SUIT: int = 0
@@ -37,7 +35,6 @@ static func init_from_card(card: Card) -> HandCardPack:
 		)
 	return null
 
-# 初始化（使用标准态常量）
 func _init(
 	init_id: int = 0,
 	init_name: StringName = &"",
@@ -54,7 +51,6 @@ func _init(
 	suit = init_suit
 	modified_power = init_modified_power
 	modified_cost = init_modified_cost
-	# 初始化时设置掩码（基于与标准值的差异）
 	if power != STANDARD_POWER: merge_mask |= 1 << Property.POWER
 	if cost != STANDARD_COST: merge_mask |= 1 << Property.COST
 	if suit != STANDARD_SUIT: merge_mask |= 1 << Property.SUIT
@@ -72,7 +68,6 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 static func get_class_name_static() -> StringName:
 	return &"HandCardPack"
 
-# 统一反序列化
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> CardPack:
 	if pack == NULL_PACK:
 		pack = HandCardPack.new()
@@ -89,7 +84,6 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = 
 		pack.modified_cost = SerializationUtil.read(buffer, TYPE_INT)
 	return pack
 
-# 统一合并方法
 func merge(update_pack: ItemPack) -> void:
 	super.merge(update_pack)
 	if not update_pack is HandCardPack:
@@ -100,6 +94,15 @@ func merge(update_pack: ItemPack) -> void:
 	if hm.merge_mask & (1 << Property.SUIT): suit = hm.suit
 	if hm.merge_mask & (1 << Property.MODIFIED_POWER): modified_power = hm.modified_power
 	if hm.merge_mask & (1 << Property.MODIFIED_COST): modified_cost = hm.modified_cost
+
+## 重置所有手牌属性为标准态（包括父类属性）
+func reset_to_standard() -> void:
+	super.reset_to_standard()
+	power = STANDARD_POWER
+	cost = STANDARD_COST
+	suit = STANDARD_SUIT
+	modified_power = STANDARD_MODIFIED_POWER
+	modified_cost = STANDARD_MODIFIED_COST
 
 func calculate_delta_mask(old_pack: CardPack) -> int:
 	if not (old_pack is HandCardPack):

@@ -1,5 +1,5 @@
 extends RenderArea
-class_name RenderAreaStage
+class_name RenderAreaCenter
 
 static func get_area_name_static()->StringName:
-	return DefaultArea.STAGE
+	return DefaultArea.CENTER

@@ -67,7 +67,7 @@ static func send_player_delta_updates(
 	var delta_packs: Array[ItemPack] = []
 	for player: Player in players:
 		var pack: PlayerPack = player.get_pack()
-		if pack and pack.merge_mask != 0:
+		if pack:
 			delta_packs.append(pack)
 	if delta_packs.is_empty():
 		return
@@ -121,46 +121,6 @@ static func send_players_full_updates(players: Array[Player], peer_id: int) -> v
 
 static func send_all_players_full_updates_from_manager(manager: PlayersManager, peer_id: int) -> void:
 	send_players_full_updates(manager.players, peer_id)
-
-## 发送 Buff 修饰器更新（根据所有者类型和 ID 自动选择卡牌或玩家更新）
-static func send_buff_update(buff_modifiers: BuffModifiers, event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.UPDATE, custom_event_name: StringName = &"") -> void:
-	if buff_modifiers.owner_type == &"card":
-		var card: Card = _get_card_by_id(buff_modifiers.owner_id)
-		if not card:
-			push_error("RuleTrans.send_buff_update: Card not found with id ", buff_modifiers.owner_id)
-			return
-		var target_area: Area = _get_card_area(card)
-		if not target_area:
-			push_error("RuleTrans.send_buff_update: Cannot determine area for card ", card.id)
-			return
-		send_cards(null, target_area, [card], event_type, custom_event_name)
-	elif buff_modifiers.owner_type == &"player":
-		var player: Player = _get_player_by_id(buff_modifiers.owner_id)
-		if not player:
-			push_error("RuleTrans.send_buff_update: Player not found with id ", buff_modifiers.owner_id)
-			return
-		send_player_delta_updates([player], event_type, RenderRequest.PUBLIC_AREA_PLAYER_ID, custom_event_name)
-	else:
-		push_error("RuleTrans.send_buff_update: Unknown owner_type ", buff_modifiers.owner_type)
-
-## 根据卡牌获取其所在区域（需要实现全局区域管理）
-static func _get_card_area(card: Card) -> Area:
-	# TODO: 通过全局 GameState 或 AreaRegistry 根据 card.area_name 和 card.area_player_id 获取 Area 实例
-	# 示例访问方式（假设存在全局单例 GameState）：
-	# return GameState.area_registry.get_area(card.area_name, card.area_player_id)
-	return null
-
-## 根据卡牌 ID 获取卡牌实例（需要全局 CardsManager）
-static func _get_card_by_id(card_id: int) -> Card:
-	# TODO: 通过全局 GameState 或 CardsManager 获取
-	# return GameState.cardsmanager.get_card_by_id(card_id)
-	return null
-
-## 根据玩家 ID 获取玩家实例（需要全局 PlayersManager）
-static func _get_player_by_id(player_id: int) -> Player:
-	# TODO: 通过全局 GameState 或 PlayersManager 获取
-	# return GameState.player_manager.get_player_by_id(player_id)
-	return null
 
 static func _distribute_item_request(
 	source_area: Area,

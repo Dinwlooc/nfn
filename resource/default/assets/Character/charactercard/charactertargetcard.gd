@@ -64,7 +64,7 @@ func _ready() -> void:
 		area_hand.request_area(RenderArea.DefaultArea.HAND)
 
 ## 更新卡片数据（由外部调用）
-func data_update(new_item: RenderItem) -> void:
+func data_update(new_item: RenderItem,render_item:RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	if not new_item:
 		return
 	var button: Button = get_node(^"Button")

@@ -50,7 +50,7 @@ const SCALE_NEUTRAL: float = 1.0
 ## 中性旋转值（无旋转）
 const ROTATION_NEUTRAL: float = 0.0
 ## 展开动画中区域移动的位移长度
-const EXPAND_MOVE_LENGTH: float = 240.0
+const EXPAND_MOVE_LENGTH: float = 180.0
 ## 旋转比例上限（最大 100%）
 const MAX_ROTATION_RATIO: float = 1.0
 ## 缩放计算中的基础系数

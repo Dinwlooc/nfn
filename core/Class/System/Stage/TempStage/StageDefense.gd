@@ -1,6 +1,4 @@
-# ============================================================
-# StageDefense - 守区攻防阶段（管理斗牌命令的生成与取消）
-# ============================================================
+## 守区攻防阶段（管理斗牌命令的生成与取消）
 extends Stage
 class_name StageDefense
 
@@ -53,7 +51,6 @@ func pause(game_state: GameState) -> void:
 func end_stage_effect(game_state: GameState) -> void:
 	_disconnect_defense_area_signals()
 	_pending_stage_end = false
-	# 清理斗牌命令引用
 	_current_battle_command = null
 	super.end_stage_effect(game_state)
 
@@ -77,12 +74,14 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["守区攻防阶段：卡牌或玩家实例获取失败"])
 		request.cancel()
 		return
-	var rule_result = RuleCardPlay.check_and_create_command(card, source_player, target_player, game_state)
+	# 出牌基础规则（目标、距离、消耗等）
+	var rule_result: RuleCardPlay.RuleResult = RuleCardPlay.check_and_create_command(card, source_player, target_player, game_state)
 	if not rule_result.is_valid:
 		GlobalConsole._print(["守区攻防阶段：", rule_result.message])
 		request.cancel()
 		return
-	var usage_result = _check_defense_battle_restrictions(card, source_player, game_state)
+	# 防御阶段特殊限制（堆栈、速度、目标限定等）
+	var usage_result: RuleCardUsage.UsageResult = _check_defense_battle_restrictions(card, source_player, target_player, game_state)
 	if not usage_result.is_valid:
 		GlobalConsole._print(["守区攻防阶段：", usage_result.message])
 		request.cancel()
@@ -106,19 +105,25 @@ func timeout(game_state: GameState) -> void:
 	process_operation_request(abandon_request, game_state)
 
 func _process_settle_request(request: OperationRequest, game_state: GameState) -> void:
-	var settle_cmd = SettleCommand.new(current_responsive_player_id, defense_area,attacker)
+	var settle_cmd := SettleCommand.new(current_responsive_player_id, defense_area, attacker)
 	game_state.queue_behavior(settle_cmd)
 	_pending_stage_end = true
 	request.complete()
 
-func _check_defense_battle_restrictions(card: Card, source_player: Player, game_state: GameState) -> RuleCardUsage.UsageResult:
+func _check_defense_battle_restrictions(
+	card: Card,
+	source_player: Player,
+	target_player: Player,
+	game_state: GameState
+) -> RuleCardUsage.UsageResult:
 	return RuleCardUsage.can_use_card_in_defense(
 		card,
 		source_player,
+		target_player,
 		defense_area,
 		attacker,
 		defender,
-		current_responsive_player_id
+		game_state
 	)
 
 func _update_responsive_player(game_state: GameState) -> void:
@@ -130,38 +135,30 @@ func _update_responsive_player(game_state: GameState) -> void:
 	game_state.set_responsive_players(PackedInt32Array([current_responsive_player_id]))
 	GlobalConsole._print(["守区攻防阶段：更新响应权为玩家", current_responsive_player_id])
 
-# ----------------------------------------------------------------------
-# 斗牌命令管理（新增/修改）
-# ----------------------------------------------------------------------
-## 生成并入队一个新的斗牌命令（可选保存引用）
-## 返回生成的命令，如果没有满足条件则返回 null
 func _generate_and_queue_battle_command(game_state: GameState, save_reference: bool = false) -> BattleCommand:
 	if not defense_area.check_battle_formation():
 		return null
 	var top_card: Card = defense_area.get_top_card()
 	var second_card: Card = defense_area.get_second_card()
-	var battle_command = BattleCommand.new(defense_area, top_card, second_card)
+	var battle_command := BattleCommand.new(defense_area, top_card, second_card)
 	game_state.queue_behavior(battle_command)
 	if save_reference:
 		_current_battle_command = battle_command
 	GlobalConsole._print(["守区攻防阶段：生成并排队斗牌命令"])
 	return battle_command
 
-## 取消当前活跃的斗牌命令（如果存在）
 func _cancel_current_battle_command() -> void:
 	if _current_battle_command and not _current_battle_command._is_completed:
 		_current_battle_command.cancel()
 		_current_battle_command = null
 		GlobalConsole._print(["守区攻防阶段：取消当前斗牌命令"])
 
-## 守区变化时的回调（卡牌增减）
 func _on_defense_area_changed(_card: Card, _area: Area, game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
 	_cancel_current_battle_command()
 	_need_regenerate_battle_command = true
 
-## 命令全部完成后的回调（重写父类方法）
 func _on_all_commands_completed_impl(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
@@ -170,8 +167,7 @@ func _on_all_commands_completed_impl(game_state: GameState) -> void:
 		return
 	if _need_regenerate_battle_command:
 		_need_regenerate_battle_command = false
-		# 尝试生成新斗牌命令并保存引用
-		var new_cmd:BattleCommand = _generate_and_queue_battle_command(game_state, true)
+		var new_cmd: BattleCommand = _generate_and_queue_battle_command(game_state, true)
 		if new_cmd:
 			GlobalConsole._print(["守区攻防阶段：重新生成斗牌命令，跳过响应权更新"])
 			return
@@ -179,9 +175,6 @@ func _on_all_commands_completed_impl(game_state: GameState) -> void:
 	_reset_timer_for_current_player()
 	GlobalConsole._print(["守区攻防阶段：命令全部完成，已更新玩家响应权"])
 
-# ----------------------------------------------------------------------
-# 计时与信号连接
-# ----------------------------------------------------------------------
 func _reset_timer_for_current_player() -> void:
 	if current_responsive_player_id == 0:
 		return

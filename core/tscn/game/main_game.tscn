@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System/System.gd" id="2_gpy5h"]
-[ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Class/Render/RenderArea/RenderAreaStage.gd" id="4_8dpeo"]
+[ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Class/Render/RenderArea/RenderAreaCenter.gd" id="4_8dpeo"]
 [ext_resource type="Script" uid="uid://b3knkkllshowq" path="res://core/Class/Render/RenderControl/RenderControl.gd" id="4_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://resource/default/assets/Area/areaface/backgound.tscn" id="5_2w2we"]
 [ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://resource/default/assets/Area/areaface/RenderArrow/render_arrow.gd" id="5_4k47o"]
@@ -39,15 +39,15 @@ offset_bottom = 900.0
 focus_mode = 1
 script = ExtResource("4_ppvbj")
 
-[node name="AreaStage" type="Control" parent="Control"]
+[node name="AreaCenter" type="Control" parent="Control"]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("4_8dpeo")
 
-[node name="Backgound" parent="Control/AreaStage" instance=ExtResource("5_2w2we")]
+[node name="Backgound" parent="Control/AreaCenter" instance=ExtResource("5_2w2we")]
 
-[node name="RenderTimer" type="Label" parent="Control/AreaStage"]
+[node name="RenderTimer" type="Label" parent="Control/AreaCenter"]
 layout_mode = 0
 offset_left = 58.0
 offset_top = 12.0
@@ -56,7 +56,7 @@ offset_bottom = 42.0
 scale = Vector2(4, 4)
 script = ExtResource("8_ppvbj")
 
-[node name="Arrow" type="Control" parent="Control/AreaStage" node_paths=PackedStringArray("render_control")]
+[node name="Arrow" type="Control" parent="Control/AreaCenter" node_paths=PackedStringArray("render_control")]
 layout_mode = 1
 anchor_left = 1.025
 anchor_top = -2.175
@@ -106,10 +106,11 @@ metadata/_custom_type_script = "uid://b5f71t7ikic0w"
 layout_mode = 1
 anchor_left = 0.177
 anchor_top = 0.782
+anchor_bottom = 0.782
 offset_left = 11.499
-offset_top = 16.726
-offset_right = 10.6
-offset_bottom = 2.974
+offset_top = 9.72601
+offset_right = 1083.27
+offset_bottom = 307.726
 mouse_filter = 1
 
 [node name="AreaDiscard" type="Control" parent="Control"]
