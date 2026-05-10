@@ -73,21 +73,21 @@ func send_players_delta_updates(
 	target_players: Array[Player] = [],
 	event_type: int = RenderRequest.ItemSet.EventType.UPDATE,
 	source_player_id: int = RenderRequest.PUBLIC_AREA_PLAYER_ID,
-	custom_event_name: StringName = &""
+	custom_event: Dictionary[StringName,Variant] = {}
 ) -> void:
 	var players_to_send: Array[Player] = target_players
 	if players_to_send.is_empty():
 		players_to_send = players
-	RuleTrans.send_player_delta_updates(players_to_send, event_type, source_player_id, custom_event_name)
+	RuleTrans.send_player_delta_updates(players_to_send, event_type, source_player_id, custom_event)
 
 ## 发送单个玩家的增量更新（便捷方法）
 func send_single_player_delta_update(
 	player: Player,
 	event_type: int = RenderRequest.ItemSet.EventType.UPDATE,
 	source_player_id: int = RenderRequest.PUBLIC_AREA_PLAYER_ID,
-	custom_event_name: StringName = &""
+	custom_event: Dictionary[StringName,Variant] = {}
 ) -> void:
-	RuleTrans.send_player_delta_updates([player], event_type, source_player_id, custom_event_name)
+	RuleTrans.send_player_delta_updates([player], event_type, source_player_id, custom_event)
 
 ## 发送所有玩家的全量信息到指定对等体（内部调用RuleTrans）
 func send_all_players_full_updates(peer_id: int) -> void:

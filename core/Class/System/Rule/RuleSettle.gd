@@ -4,55 +4,58 @@ class_name RuleSettle
 
 ## 验证器名称常量
 class Validator:
-	const LIFE_DAMAGE_MODE: StringName = &"life_damage_mode"          ## 结算生命伤害模式
-	const MENTAL_DAMAGE_MODE: StringName = &"mental_damage_mode"      ## 结算精神伤害模式
-	const COMBAT_WILL_MODE: StringName = &"combat_will_mode"          ## 结算战意模式
-	const ATTACK_ORIENTATION: StringName = &"attack_orientation"      ## 攻击朝向
+	const LIFE_DAMAGE_MODE: StringName = &"life_damage_mode"
+	const MENTAL_DAMAGE_MODE: StringName = &"mental_damage_mode"
+	const COMBAT_WILL_MODE: StringName = &"combat_will_mode"
+	const ATTACK_ORIENTATION: StringName = &"attack_orientation"
 
 ## 伤害模式枚举
 enum DamageMode {
-	NONE = 0,           ## 不造成此类型伤害
-	NO_DECAY = 1,       ## 造成且不受结算衰减
-	DECAY_ON_WIN = 2,   ## 在拼点成功（不失败）时衰减对方威力，失败时衰减对方威力+差值
-	DECAY_ON_LOSE = 3,  ## 在拼点失败时仅衰减差值
+	NONE = 0,
+	NO_DECAY = 1,
+	DECAY_ON_WIN = 2,
+	DECAY_ON_LOSE = 3,
 }
 
 ## 攻击朝向枚举
 enum AttackOrientation {
-	DEFENDER = 0,       ## 对防守方（守区玩家）造成伤害
-	ATTACKER = 1,       ## 对攻击方（出牌玩家）造成伤害
+	DEFENDER = 0,
+	ATTACKER = 1,
 }
 
 ## 战意掩码标志位
 enum CombatWillFlag {
-	ENABLE_BASE = 1 << 0,        ## 是否获得基础战意（数值为结算牌威力）
-	TYPE_IS_DEFENSE = 1 << 1,    ## 战意类型：0=攻击，1=防御
-	EXTRA_ON_SETTLE_WIN = 1 << 2, ## 结算牌拼点胜利（A_WIN）时，获得差值额外战意
-	EXTRA_ON_OPPOSE_WIN = 1 << 3, ## 对抗牌拼点胜利（B_WIN）时，获得差值额外战意
+	ENABLE_BASE = 1 << 0,
+	TYPE_IS_DEFENSE = 1 << 1,
+	EXTRA_ON_SETTLE_WIN = 1 << 2,
+	EXTRA_ON_OPPOSE_WIN = 1 << 3,
 }
 
 ## 结算结果类（纯数据容器）
 class Result:
-	var target: Player           ## 伤害目标玩家
-	var health_damage_value: int               ## 生命伤害数值
-	var mental_damage_value: int               ## 精神伤害数值
-	var combat_will_grants: Array[CombatWillGrant]  ## 战意授予信息列表
-	func _init() -> void:
+	var target: Player
+	var health_damage_value: int
+	var mental_damage_value: int
+	var combat_will_grants: Array[CombatWillGrant]
+
+	func _init(p_target: Player = null, p_health: int = 0, p_mental: int = 0) -> void:
+		target = p_target
+		health_damage_value = p_health
+		mental_damage_value = p_mental
 		combat_will_grants = []
 
-	## 战意授予条目
+## 战意授予条目
 class CombatWillGrant:
-	var target_player: Player   ## 获得战意的玩家
-	var is_defense: bool        ## 是否为防御战意
-	var base_value: int         ## 基础战意值
-	var extra_value: int        ## 额外战意值（差值）
+	var target_player: Player
+	var is_defense: bool
+	var base_value: int
+	var extra_value: int
+
 	func _init(p_target: Player, p_is_defense: bool, p_base: int, p_extra: int) -> void:
 		target_player = p_target
 		is_defense = p_is_defense
 		base_value = p_base
 		extra_value = p_extra
-
-
 
 ## 预设规则字典（键为卡牌类型 StringName）
 static var _settle_rules: Dictionary = {
@@ -70,46 +73,91 @@ static var _settle_rules: Dictionary = {
 	},
 }
 
-## 计算结算结果（纯函数）
-## @param settle_card 结算牌实例
-## @param oppose_card 对抗牌实例（可为 null）
-## @param duel_result 拼点结果枚举
-## @param duel_diff 拼点差值（非负整数）
-## @param is_unilateral 是否单方面结算（无对抗牌）
-## @param attacker 攻击方玩家（出牌者）
-## @param defender 防守方玩家（守区玩家）
-## @param override_rules 覆盖规则字典
-## @return SettleResult 结算结果容器
-static func evaluate(settle_card: Card, oppose_card: Card, duel_result: int, duel_diff: int, is_unilateral: bool, attacker: Player, defender: Player, override_rules: Dictionary = {}) -> Result:
+## 获取初始结算信息（纯函数）
+## @param settle_card 结算牌
+## @param oppose_card 对抗牌（可为 null）
+## @param is_unilateral 是否单方面
+## @param attacker 攻击方玩家
+## @param defender 防守方玩家
+## @param override_rules 覆盖规则
+## @return Result 未衰减的结算结果（target 已确定，health/mental 为初始值）
+static func get_initial_info(settle_card: Card, oppose_card: Card, is_unilateral: bool, attacker: Player, defender: Player, override_rules: Dictionary = {}) -> Result:
 	if not settle_card:
 		return Result.new()
-	var card_overrides: Dictionary = settle_card.get_rule_overrides()
-	var merged_overrides = card_overrides.duplicate()
-	for key in override_rules:
-		merged_overrides[key] = override_rules[key]
-	var card_type: StringName = settle_card.type
-	var base_rules: Dictionary = _settle_rules.get(card_type, {})
-	var rules: Dictionary = _merge_rules(base_rules, merged_overrides)
+	var rules: Dictionary = _get_merged_rules(settle_card, override_rules)
 	var base_power: int = settle_card.get_attribute(&"power")
-	var oppose_power: int = oppose_card.get_attribute(&"power") if oppose_card else 0
-	# 计算伤害数值
 	var health_mode: DamageMode = rules.get(Validator.LIFE_DAMAGE_MODE, DamageMode.NONE)
 	var mental_mode: DamageMode = rules.get(Validator.MENTAL_DAMAGE_MODE, DamageMode.NONE)
-	var health_dmg: int = _calc_damage(base_power, health_mode, duel_result, duel_diff, oppose_power, is_unilateral)
-	var mental_dmg: int = _calc_damage(base_power, mental_mode, duel_result, duel_diff, oppose_power, is_unilateral)
-	# 确定伤害目标
 	var orientation: AttackOrientation = rules.get(Validator.ATTACK_ORIENTATION, AttackOrientation.DEFENDER)
 	var target: Player = _get_player_by_orientation(orientation, attacker, defender)
-	# 构建结果对象
-	var result: Result = Result.new()
-	result.target = target
-	result.health_damage_value = health_dmg
-	result.mental_damage_value = mental_dmg
-	# 生成战意授予信息
-	_generate_combat_will_grants(settle_card, oppose_card, duel_result, duel_diff, is_unilateral, rules.get(Validator.COMBAT_WILL_MODE, 0), attacker, defender, result.combat_will_grants)
+	# 自伤保护
+	if attacker == defender:
+		return Result.new(target, 0, 0)
+	var health_init: int = base_power if health_mode != DamageMode.NONE else 0
+	var mental_init: int = base_power if mental_mode != DamageMode.NONE else 0
+	return Result.new(target, health_init, mental_init)
+
+## 应用拼点衰减（纯函数）
+## @param initial 初始结果（未衰减）
+## @param is_unilateral 是否单方面
+## @param duel_result 拼点结果枚举
+## @param duel_diff 拼点差值
+## @param oppose_power 对抗牌威力
+## @param health_mode 生命伤害衰减模式
+## @param mental_mode 精神伤害衰减模式
+## @return Result 应用衰减后的新结果（原 initial 不受影响）
+static func apply_decay(initial: Result, is_unilateral: bool, duel_result: int, duel_diff: int, oppose_power: int, health_mode: DamageMode, mental_mode: DamageMode) -> Result:
+	var result: Result = Result.new(initial.target, initial.health_damage_value, initial.mental_damage_value)
+	if is_unilateral:
+		return result
+	result.health_damage_value = _apply_single_decay(initial.health_damage_value, health_mode, duel_result, duel_diff, oppose_power)
+	result.mental_damage_value = _apply_single_decay(initial.mental_damage_value, mental_mode, duel_result, duel_diff, oppose_power)
 	return result
 
-## 合并基础规则与覆盖规则
+## 生成战意授予条目列表（纯函数）
+static func generate_combat_will_grants(settle_card: Card, oppose_card: Card, duel_result: int, duel_diff: int, is_unilateral: bool, mask: int, attacker: Player, defender: Player) -> Array:
+	var out_grants: Array = []
+	if mask == 0 or not settle_card:
+		return out_grants
+	var settle_owner: Player = settle_card.player
+	var oppose_owner: Player = oppose_card.player if oppose_card else null
+	if not settle_owner:
+		return out_grants
+	var is_defense: bool = (mask & CombatWillFlag.TYPE_IS_DEFENSE) != 0
+	if mask & CombatWillFlag.ENABLE_BASE:
+		var base_val: int = settle_card.get_attribute(&"power")
+		if base_val > 0:
+			out_grants.append(CombatWillGrant.new(settle_owner, is_defense, base_val, 0))
+	if not is_unilateral and duel_result == DuelCommand.Context.Result.A_WIN and (mask & CombatWillFlag.EXTRA_ON_SETTLE_WIN) and duel_diff > 0:
+		out_grants.append(CombatWillGrant.new(settle_owner, is_defense, 0, duel_diff))
+	if not is_unilateral and duel_result == DuelCommand.Context.Result.B_WIN and oppose_owner and (mask & CombatWillFlag.EXTRA_ON_OPPOSE_WIN) and duel_diff > 0:
+		out_grants.append(CombatWillGrant.new(oppose_owner, is_defense, 0, duel_diff))
+	return out_grants
+
+# --- 内部辅助函数 ---
+
+static func _apply_single_decay(base: int, mode: DamageMode, duel_result: int, duel_diff: int, oppose_power: int) -> int:
+	if base <= 0 or mode == DamageMode.NONE or mode == DamageMode.NO_DECAY:
+		return base
+	match mode:
+		DamageMode.DECAY_ON_WIN:
+			if duel_result == DuelCommand.Context.Result.B_WIN:
+				return max(0, base - (oppose_power + duel_diff))
+			return max(0, base - oppose_power)
+		DamageMode.DECAY_ON_LOSE:
+			if duel_result == DuelCommand.Context.Result.B_WIN:
+				return max(0, base - duel_diff)
+			return base
+	return base
+
+static func _get_merged_rules(settle_card: Card, override_rules: Dictionary) -> Dictionary:
+	var card_overrides: Dictionary = settle_card.get_rule_overrides()
+	var merged := card_overrides.duplicate()
+	for key in override_rules:
+		merged[key] = override_rules[key]
+	var base_rules: Dictionary = _settle_rules.get(settle_card.type, {})
+	return _merge_rules(base_rules, merged)
+
 static func _merge_rules(base: Dictionary, overrides: Dictionary) -> Dictionary:
 	var has_override := false
 	for key in overrides:
@@ -124,7 +172,6 @@ static func _merge_rules(base: Dictionary, overrides: Dictionary) -> Dictionary:
 			merged[key] = overrides[key]
 	return merged
 
-## 根据朝向返回对应玩家
 static func _get_player_by_orientation(orientation: AttackOrientation, attacker: Player, defender: Player) -> Player:
 	match orientation:
 		AttackOrientation.DEFENDER:
@@ -132,47 +179,3 @@ static func _get_player_by_orientation(orientation: AttackOrientation, attacker:
 		AttackOrientation.ATTACKER:
 			return attacker
 	return null
-
-## 计算最终伤害值（纯函数）
-## @param base 基础伤害
-## @param mode 伤害衰减模式
-## @param duel_result 拼点结果
-## @param duel_diff 拼点差值
-## @param oppose_power 对抗牌威力
-## @param is_unilateral 是否单方面
-static func _calc_damage(base: int, mode: DamageMode, duel_result: int, duel_diff: int, oppose_power: int, is_unilateral: bool) -> int:
-	if base <= 0 or mode == DamageMode.NONE:
-		return 0
-	if is_unilateral or mode == DamageMode.NO_DECAY:
-		return base
-	match mode:
-		DamageMode.DECAY_ON_WIN:
-			if duel_result == DuelCommand.Context.Result.B_WIN:
-				return max(0, base - (oppose_power + duel_diff))
-			return max(0, base - oppose_power)
-		DamageMode.DECAY_ON_LOSE:
-			if duel_result == DuelCommand.Context.Result.B_WIN:
-				return max(0, base - duel_diff)
-			return base
-	return base
-
-## 生成战意授予条目列表（无副作用）
-static func _generate_combat_will_grants(settle_card: Card, oppose_card: Card, duel_result: int, duel_diff: int, is_unilateral: bool, mask: int, attacker: Player, defender: Player, out_grants: Array) -> void:
-	if mask == 0:
-		return
-	var settle_owner: Player = settle_card.player if settle_card else null
-	var oppose_owner: Player = oppose_card.player if oppose_card else null
-	if not settle_owner:
-		return
-	var is_defense: bool = (mask & CombatWillFlag.TYPE_IS_DEFENSE) != 0
-	# 基础战意
-	if mask & CombatWillFlag.ENABLE_BASE:
-		var base_val: int = settle_card.get_attribute(&"power")
-		if base_val > 0:
-			out_grants.append(CombatWillGrant.new(settle_owner, is_defense, base_val, 0))
-	# 结算牌胜利额外战意
-	if not is_unilateral and duel_result == DuelCommand.Context.Result.A_WIN and (mask & CombatWillFlag.EXTRA_ON_SETTLE_WIN) and duel_diff > 0:
-		out_grants.append(CombatWillGrant.new(settle_owner, is_defense, 0, duel_diff))
-	# 对抗牌胜利额外战意
-	if not is_unilateral and duel_result == DuelCommand.Context.Result.B_WIN and oppose_owner and (mask & CombatWillFlag.EXTRA_ON_OPPOSE_WIN) and duel_diff > 0:
-		out_grants.append(CombatWillGrant.new(oppose_owner, is_defense, 0, duel_diff))

@@ -8,5 +8,4 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("1_pci54")
-mode = null
 metadata/_custom_type_script = "uid://btwt7f8flx66t"

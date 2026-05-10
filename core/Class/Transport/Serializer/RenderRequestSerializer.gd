@@ -5,6 +5,7 @@ class_name RenderRequestSerializer
 static var render_request_classes: Array[Script] = [
 	RenderRequest.ItemSet,
 	RenderRequest.ItemCountSet,
+	RenderRequest.StageNotifyRequest
 ]
 
 # 构建注册表（类 -> 索引）

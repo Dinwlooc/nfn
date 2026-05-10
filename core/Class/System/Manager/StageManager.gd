@@ -5,13 +5,11 @@ var main_stages: Array[Stage] = []
 var pending_temp_stage_stack: Array[Stage] = []
 var timer: GameTimer
 var current_main_stage_index: int = -1
-
 # 原 StageContext 成员
 var current_stage: Stage = null
 var temp_stage_stack: Array[Stage] = []
 var current_main_stage_name: StringName = &""
 var current_player_id: int = 0
-
 # 信号
 signal stage_completed(stage: Stage)
 signal stage_rolled_back(old_stage: Stage, new_stage: Stage)
@@ -57,7 +55,6 @@ func _disconnect_stage_signals(stage: Stage, game_state: GameState) -> void:
 
 func set_timer(_timer: GameTimer) -> void:
 	timer = _timer
-	# 不再自动连接 timeout 信号，由外部（System）负责连接并传入 game_state
 
 func handle_validated_request(request: OperationRequest, game_state: GameState) -> void:
 	if not current_stage:

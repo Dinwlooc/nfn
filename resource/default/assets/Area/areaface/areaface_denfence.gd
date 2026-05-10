@@ -22,11 +22,9 @@ const SELECTED_Y_OFFSET: float = -15.0
 const SCALE_NEUTRAL: float = 1.0
 ## 中性旋转值
 const ROTATION_NEUTRAL: float = 0.0
-
 enum Mode { AUTO, MANUAL }
 ## 区域连接模式，AUTO自动请求守区，MANUAL手动
 @export var mode: Mode = Mode.AUTO
-
 # ==================== 预览功能相关变量 ====================
 ## 关联的玩家 RenderItem（当该玩家被选中时触发守区预览）
 var associated_player: RenderItem = null
@@ -42,7 +40,10 @@ const PREVIEW_SECOND_SCALE: float = 1.0
 const PREVIEW_HORIZONTAL_LINE_Y_OFFSET: float = -40.0
 ## 预览水平线的长度缩放比（相对屏幕宽度）
 const PREVIEW_HORIZONTAL_LINE_SCALE: float = 0.2
-
+## 延迟预览的等待时长（毫秒）
+const PREVIEW_DELAY_MS: int = 500
+## 延迟预览的开始时间戳（毫秒），由 _process 进行比较
+var _preview_delay_start_ms: int = 0
 # 标记是否已通过 RenderContext 连接玩家区域（仅用于防止重复连接）
 var _players_area_connection_active: bool = false
 
@@ -57,7 +58,7 @@ func _ready() -> void:
 	area_target_size = original_size
 	_update_total_scale_factor()
 	if mode == Mode.AUTO:
-		call_deferred("_try_auto_connect_local_player")
+		call_deferred(&"_try_auto_connect_local_player")
 
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
@@ -73,6 +74,13 @@ func _exit_tree() -> void:
 		render_context.disconnect_renderarea(_requested_area_name, self._connect_to_area, _requested_player_id)
 	_disconnect_from_current_area()
 
+func _process(_delta: float) -> void:
+	if Time.get_ticks_msec() - _preview_delay_start_ms >= PREVIEW_DELAY_MS:
+		set_process(false)
+		if _should_preview() and not _preview_mode:
+			_preview_mode = true
+			card_move()
+
 ## 更新渲染目标位置
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type: StringName = render_event.get_type()
@@ -83,6 +91,8 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 		area_target_size,
 		area.items_pool.size()
 	)
+	if event_type == RenderEvent.DefaultType.CARD_ADD and area.items_pool.size() == 1:
+		_delay_preview_entry()
 	tween_update(render_event)
 
 ## 触发卡牌移动动画
@@ -191,18 +201,39 @@ func _on_player_selection_changed(selected: bool) -> void:
 func _on_player_area_limit_changed(new_limit: int) -> void:
 	_check_preview_condition()
 
-## 统一预览条件判断：实时获取玩家区域检查选择上限
+## 判断当前是否满足预览模式的条件（选中玩家且选择上限为1）
+func _should_preview() -> bool:
+	if not associated_player or not associated_player.selected or not render_context:
+		return false
+	var players_area: RenderArea = render_context.get_render_area(RenderAreaPlayers.get_area_name_static(), RenderContext.PUBLIC_PLAYER_ID)
+	if not players_area:
+		return false
+	return players_area.select_limit == 1
+
+## 统一预览条件判断：适时开启/关闭预览并清理延迟等待
 func _check_preview_condition() -> void:
-	var should_preview: bool = false
-	if associated_player and associated_player.selected and render_context:
-		var players_area: RenderArea = render_context.get_render_area(RenderAreaPlayers.get_area_name_static(), RenderContext.PUBLIC_PLAYER_ID)
-		if players_area:
-			should_preview = players_area.select_limit == 1
+	var should_preview: bool = _should_preview()
 	if should_preview and not _preview_mode:
-		_preview_mode = true
+		# 没有延迟等待进程时直接进入预览
+		if not is_processing():
+			_preview_mode = true
+			card_move()
 	elif not should_preview and _preview_mode:
+		# 退出预览并立即停止可能正在进行的延迟等待
 		_preview_mode = false
+		set_process(false)
+		card_move()
+
+## 延迟进入预览模式：先展示守区动画，再过渡到预览位置（时间戳比较）
+func _delay_preview_entry() -> void:
+	if not _should_preview():
+		return
+	# 先以非预览状态播放入场动画
+	_preview_mode = false
 	card_move()
+	# 记录当前时间戳并启用 _process（重复调用会覆盖之前的延迟）
+	_preview_delay_start_ms = Time.get_ticks_msec()
+	set_process(true)
 
 # ==================== 内部信号管理与清理 ====================
 
@@ -218,9 +249,10 @@ func _disconnect_player_selection_signal() -> void:
 	if associated_player and associated_player.selected_changed.is_connected(_on_player_selection_changed):
 		associated_player.selected_changed.disconnect(_on_player_selection_changed)
 
-## 清理所有预览相关的信号连接（退出树时调用）
+## 清理所有预览相关的信号连接和延迟进程（退出树时调用）
 func _cleanup_preview_connections() -> void:
 	_disconnect_player_selection_signal()
+	set_process(false)
 	# 断开与玩家区域的 select_limit_changed 连接（如果区域仍存在）
 	if render_context:
 		var players_area: RenderArea = render_context.get_render_area(RenderAreaPlayers.get_area_name_static(), RenderContext.PUBLIC_PLAYER_ID)

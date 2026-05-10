@@ -4,21 +4,25 @@ class_name RenderRequest
 const PUBLIC_AREA_PLAYER_ID: int = 1
 var target_area: StringName
 var target_area_player_id: int = PUBLIC_AREA_PLAYER_ID
+## 自定义参数字典（所有子类通用）
+var custom_params: Dictionary[StringName,Variant]= {}
 
 func send_to_player(peer_id: int) -> void:
 	GlobalTransport.send_render_request(peer_id, self)
 
-# 序列化（标准态差异：target_area始终传输，target_area_player_id仅非默认值传输）
+## 设置自定义参数字典（基类默认实现，不限制事件类型）
+func set_custom_params(params: Dictionary[StringName,Variant]) -> void:
+	custom_params = params
+
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, target_area)
 	var mask: int = 0
 	if target_area_player_id != PUBLIC_AREA_PLAYER_ID:
-		mask |= 1  # bit0 表示 player_id 存在
+		mask |= 1
 	SerializationUtil.write(buffer, mask)
 	if mask & 1:
 		SerializationUtil.write(buffer, target_area_player_id)
 
-# 反序列化
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> RenderRequest:
 	if pack == NULL_PACK:
 		pack = RenderRequest.new()
@@ -37,7 +41,6 @@ class ItemSet extends RenderRequest:
 	}
 	var event_type: EventType
 	var event_source_player_id: int = PUBLIC_AREA_PLAYER_ID
-	var custom_event_name: StringName
 	var items: Array[ItemPack] = []
 	var source_area_name: StringName
 	var source_area_player_id: int
@@ -48,7 +51,6 @@ class ItemSet extends RenderRequest:
 		PLAYER_ID = 1 << 1,
 	}
 
-	# 构造函数：补全原区域参数，移除 custom_name
 	func _init(
 		target_area_name: StringName = &"",
 		event_type_val: EventType = EventType.CUSTOM,
@@ -59,26 +61,18 @@ class ItemSet extends RenderRequest:
 	) -> void:
 		target_area = target_area_name
 		event_type = event_type_val
-		event_source_player_id = source_area_player_id   # 默认事件源就是原区域玩家
+		event_source_player_id = source_area_player_id
 		items = items_array
 		target_area_player_id = area_player_id
 		source_area_name = override_source_area_name
 		source_area_player_id = override_source_area_player_id
-
-	# 链式设置自定义事件名称（仅在类型为 CUSTOM 时可用）
-	func set_custom_event_name(name: StringName) -> ItemSet:
-		if event_type == EventType.CUSTOM:
-			custom_event_name = name
-		else:
-			push_error("Cannot set custom event name when event_type is not CUSTOM")
-		return self
 
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)
 		SerializationUtil.write(buffer, event_type)
 		SerializationUtil.write(buffer, event_source_player_id)
 		if event_type == EventType.CUSTOM:
-			SerializationUtil.write(buffer, custom_event_name)
+			SerializationUtil.write(buffer, JSON.stringify(custom_params))
 		ItemSerializer.serialize_array(items, buffer)
 		_mask = SourceMask.NONE
 		if source_area_name != target_area:
@@ -100,7 +94,9 @@ class ItemSet extends RenderRequest:
 			item_set.event_type = SerializationUtil.read(buffer, TYPE_INT)
 			item_set.event_source_player_id = SerializationUtil.read(buffer, TYPE_INT)
 			if item_set.event_type == EventType.CUSTOM:
-				item_set.custom_event_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+				var json_str: String = SerializationUtil.read(buffer, TYPE_STRING)
+				if not json_str.is_empty():
+					item_set.custom_params = JSON.parse_string(json_str)
 			item_set.items = ItemSerializer.deserialize_array(buffer)
 			var mask: int = SerializationUtil.read(buffer, TYPE_INT)
 			if mask & SourceMask.AREA_NAME:
@@ -122,7 +118,6 @@ class ItemCountSet extends RenderRequest:
 	var total_count: int = 0
 	var event_type: ItemSet.EventType = ItemSet.EventType.CUSTOM
 	var event_source_player_id: int = PUBLIC_AREA_PLAYER_ID
-	var custom_event_name: StringName
 	var source_area_name: StringName
 	var source_area_player_id: int
 	var _mask: int = 0
@@ -132,7 +127,6 @@ class ItemCountSet extends RenderRequest:
 		PLAYER_ID = 1 << 1,
 	}
 
-	# 构造函数：补全原区域参数，移除 custom_name
 	func _init(
 		target_area_name: StringName = &"",
 		count: int = 0,
@@ -149,22 +143,13 @@ class ItemCountSet extends RenderRequest:
 		source_area_name = override_source_area_name
 		source_area_player_id = override_source_area_player_id
 
-	# 链式设置自定义事件名称（仅在类型为 CUSTOM 时可用）
-	func set_custom_event_name(name: StringName) -> ItemCountSet:
-		if event_type == ItemSet.EventType.CUSTOM:
-			custom_event_name = name
-		else:
-			push_error("Cannot set custom event name when event_type is not CUSTOM")
-		return self
-
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)
 		SerializationUtil.write(buffer, total_count)
 		SerializationUtil.write(buffer, event_type)
 		SerializationUtil.write(buffer, event_source_player_id)
 		if event_type == ItemSet.EventType.CUSTOM:
-			SerializationUtil.write(buffer, custom_event_name)
-
+			SerializationUtil.write(buffer, JSON.stringify(custom_params))
 		_mask = SourceMask.NONE
 		if source_area_name != target_area:
 			_mask |= SourceMask.AREA_NAME
@@ -186,8 +171,9 @@ class ItemCountSet extends RenderRequest:
 			count_set.event_type = SerializationUtil.read(buffer, TYPE_INT)
 			count_set.event_source_player_id = SerializationUtil.read(buffer, TYPE_INT)
 			if count_set.event_type == ItemSet.EventType.CUSTOM:
-				count_set.custom_event_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-
+				var json_str: String = SerializationUtil.read(buffer, TYPE_STRING)
+				if not json_str.is_empty():
+					count_set.custom_params = JSON.parse_string(json_str)
 			var mask: int = SerializationUtil.read(buffer, TYPE_INT)
 			if mask & SourceMask.AREA_NAME:
 				count_set.source_area_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
@@ -201,3 +187,36 @@ class ItemCountSet extends RenderRequest:
 
 	static func get_class_name_static() -> StringName:
 		return &"ItemCountSet"
+
+
+# ========== StageNotifyRequest ==========
+class StageNotifyRequest extends RenderRequest:
+	var current_player_id: int
+	var stage_name: StringName
+
+	func _init(player_id: int, stage: StringName, params: Dictionary[StringName,Variant] = {}) -> void:
+		target_area = GlobalConstants.DefaultArea.CENTER
+		target_area_player_id = PUBLIC_AREA_PLAYER_ID
+		current_player_id = player_id
+		stage_name = stage
+		custom_params = params
+
+	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
+		super.serialize_to_buffer(buffer)
+		SerializationUtil.write(buffer, current_player_id)
+		SerializationUtil.write(buffer, stage_name)
+		SerializationUtil.write(buffer, custom_params)
+
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> RenderRequest:
+		if pack == NULL_PACK:
+			pack = StageNotifyRequest.new(0, &"")
+		super.deserialize_from_buffer(buffer, pack)
+		var req = pack as StageNotifyRequest
+		if req:
+			req.current_player_id = SerializationUtil.read(buffer, TYPE_INT)
+			req.stage_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+			req.custom_params = SerializationUtil.read(buffer, TYPE_DICTIONARY)
+		return pack
+
+	static func get_class_name_static() -> StringName:
+		return &"StageNotifyRequest"
