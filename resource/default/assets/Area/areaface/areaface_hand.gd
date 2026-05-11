@@ -124,11 +124,15 @@ func _physics_process(delta: float) -> void:
 
 ## 更新渲染目标位置
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	var event_type:StringName = render_event.get_type()
+	var event_type: StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
 		_update_total_scale_factor()
-		_order_dirty_counter += 1   # 卡牌增删，有序性计数器 +1
-	target_position = UIAnimationUtils.generate_coordinates(area_target_position, area_target_size, area.items_pool.size())
+		_order_dirty_counter += 1
+	if area.items_pool.size()>0:
+		var scaled_card_size: Vector2 = Vector2(area.items_pool[0].size.x * total_scale_factor,area.items_pool[0].size.y * total_scale_factor)
+		var virtual_pos: Vector2 = area_target_position - scaled_card_size / 2.0
+		var virtual_size: Vector2 = area_target_size
+		target_position = UIAnimationUtils.generate_coordinates(virtual_pos, virtual_size, area.items_pool.size())
 	tween_update(render_event)
 
 ## 触发卡牌移动动画
@@ -248,13 +252,13 @@ func _add_base_movement_tweens(master_tween: Tween) -> void:
 		var card: RenderItem = area.items_pool[i]
 		if card.dragged:
 			continue
-		var card_target_pos: Vector2 = target_position[i] + card.get_centered_offset()
+		var target_scale: Vector2 = Vector2(total_scale_factor, total_scale_factor)
+		var card_target_pos: Vector2 = target_position[i]
 		if card.selected:
 			card_target_pos.y += SELECTED_Y_OFFSET
 		if card.position != card_target_pos:
 			master_tween.tween_property(card, ^"position", card_target_pos, TWEEN_TIME) \
 				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
-		var target_scale: Vector2 = Vector2(total_scale_factor, total_scale_factor)
 		if card.scale != target_scale:
 			master_tween.tween_property(card, ^"scale", target_scale, TWEEN_TIME) \
 				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)

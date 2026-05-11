@@ -75,9 +75,9 @@ anchors_preset = 0
 script = ExtResource("14_a6oxl")
 
 [node name="AreaFaceTargets" parent="Control/AreaPlayers" instance=ExtResource("14_8v20q")]
-offset_top = -5.0
+offset_top = 30.0
 offset_right = 1605.0
-offset_bottom = 249.0
+offset_bottom = 286.0
 mouse_filter = 1
 
 [node name="AreaFaceSelf" parent="Control/AreaPlayers" instance=ExtResource("11_4k47o")]

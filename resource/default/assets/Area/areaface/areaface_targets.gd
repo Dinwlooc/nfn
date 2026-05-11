@@ -21,7 +21,10 @@ func _on_render_area_registered(area:RenderArea)->void:
 	area.selected.connect(quickly_select)
 
 func render_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT):
-	target_position = UIAnimationUtils.generate_coordinates(area_target_position,area_target_size,area.items_pool.size() - 1)
+	if area.items_pool.size() > 0:
+		var item_size: Vector2 = area.items_pool[0].get_item_size()
+		var virtual_pos: Vector2 = area_target_position - item_size / 2.0
+		target_position = UIAnimationUtils.generate_coordinates(virtual_pos, area_target_size, area.items_pool.size() - 1)
 	tween_update()
 
 func tween_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT):
@@ -44,7 +47,7 @@ func card_move()-> void:
 		if player.data.peer_id == multiplayer.get_unique_id():
 			skipped_local_players_count += 1
 			continue
-		var _target_position = target_position[i - skipped_local_players_count] + player.get_centered_offset()
+		var _target_position = target_position[i - skipped_local_players_count]
 		if player.position == _target_position:
 			continue
 		UIAnimationUtils.tween_animations(player,{^"position":_target_position},TWEEN_TIME)
