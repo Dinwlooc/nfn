@@ -9,6 +9,7 @@ signal items_removed(item:RenderItem)
 signal context_ready()
 signal item_created_for_removing(item: RenderItem)
 signal select_limit_changed(new_limit: int)
+
 var select_limit:int = 1
 var render_context:RenderContext
 var player_id:int

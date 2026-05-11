@@ -35,8 +35,8 @@ func _ready() -> void:
 			render_context.register_render_area(child)
 			_initialize_render_area(child)
 	GlobalConsole.c_play_selected_card.connect(_on_play_a_card)
-	render_context._item_pool.item_created.connect(face_manager.connect_to_item)
-	render_context.area_created.connect(_on_render_context_area_created)
+	render_context.item_manager.item_created.connect(face_manager.connect_to_item)
+	render_context.area_manager.area_created.connect(_on_render_context_area_created)
 
 func _process(_delta: float) -> void:
 	_request_queue.process_one()

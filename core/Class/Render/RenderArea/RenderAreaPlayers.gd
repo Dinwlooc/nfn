@@ -13,7 +13,7 @@ func _on_player_added(new_player:RenderItem)->void:
 	if new_player.data.peer_id == multiplayer.get_unique_id():
 		local_player = new_player
 		new_player.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		render_context.local_player_id = local_player.data.get_id()
+		render_context.area_manager.local_player_id = local_player.data.get_id()
 		local_player_received.emit(local_player)
 		return
 	var hand_area:RenderAreaHand = render_context.create_render_area(DefaultArea.HAND,new_player.data.get_id())

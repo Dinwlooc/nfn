@@ -183,7 +183,7 @@ func card_move_expand() -> void:
 
 ## 拖拽卡牌的动画处理
 func dragging_move(card: RenderItem) -> void:
-	var _target_position: Vector2 = get_global_mouse_position() + card.get_centered_offset()
+	var _target_position: Vector2 = get_global_mouse_position()
 	var dx: float = card.position.x - _target_position.x
 	var target_rot: float = _compute_rotation_from_dx(dx)
 	var target_scale_x: float = _compute_scale_from_dx(dx)  # 动态收缩，不乘总数因子
@@ -192,7 +192,7 @@ func dragging_move(card: RenderItem) -> void:
 		current_drag_tween.kill()
 	current_drag_tween = create_tween()
 	current_drag_tween.set_parallel(true)
-	current_drag_tween.tween_property(card, ^"position", _target_position, DRAG_TWEEN_TIME) \
+	current_drag_tween.tween_property(card, ^"center_position", _target_position, DRAG_TWEEN_TIME) \
 		.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT_IN)
 	current_drag_tween.tween_property(card, ^"rotation", target_rot, DRAG_TWEEN_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

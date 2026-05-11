@@ -46,7 +46,7 @@ func upload_play_card() -> RenderEvent:
 		return _build_play_card_event(card_ids[0], 0, RequestStatus.FAIL_NO_TARGET_SELECTED)
 	var card_id: int = card_ids[0]
 	var target_id: int = target_ids[0]
-	var request := OperationRequest.PlayCard.new(_context.local_player_id,card_id, target_id)
+	var request := OperationRequest.PlayCard.new(_context.area_manager.local_player_id,card_id, target_id)
 	_send_operation_request(request)
 	_last_request_time = now
 	return _build_play_card_event(card_id, target_id, RequestStatus.SUCCESS)
@@ -70,7 +70,7 @@ func upload_discard_cards() -> RenderEvent:
 	var selected_ids: PackedInt32Array = hand_area.get_selected_ids()
 	if selected_ids.is_empty():
 		return _build_discard_cards_event(PackedInt32Array(), RequestStatus.FAIL_NO_CARD_SELECTED)
-	var request := OperationRequest.DiscardCards.new(_context.local_player_id, selected_ids)
+	var request := OperationRequest.DiscardCards.new(_context.area_manager.local_player_id, selected_ids)
 	_send_operation_request(request)
 	_last_request_time = now
 	return _build_discard_cards_event(selected_ids, RequestStatus.SUCCESS)
@@ -79,7 +79,7 @@ func upload_abandon_response() -> RenderEvent:
 	var now: int = Time.get_ticks_msec()
 	if now - _last_request_time < COOLDOWN_MS:
 		return _build_abandon_response_event(RequestStatus.FAIL_COOLDOWN)
-	var request := OperationRequest.AbandonResponse.new(_context.local_player_id)
+	var request := OperationRequest.AbandonResponse.new(_context.area_manager.local_player_id)
 	_send_operation_request(request)
 	_last_request_time = now
 	return _build_abandon_response_event(RequestStatus.SUCCESS)

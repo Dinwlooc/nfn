@@ -17,6 +17,13 @@ var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
 var data:TransPack
+## 视觉中心坐标。
+## Get 返回当前 position + size*scale/2，Set 调整 position 使中心落在给定值。
+var center_position: Vector2:
+	get():
+		return position - get_centered_offset()
+	set(value):
+		position = value + get_centered_offset()
 signal render_requested(render_event:RenderEvent)
 signal reset_requested(item:RenderItem)
 signal data_requested(item:RenderItem,render_event:RenderEvent)
