@@ -10,7 +10,6 @@ const MIN_TIME_LIMIT: float = 5.0
 const TIME_PENALTY_STEP: float = 10.0
 ## 每步惩罚减少的时长（秒）
 const TIME_PENALTY_DECREMENT: float = 5.0
-
 ## 目标守区
 var defense_area: AreaDefence
 ## 进攻方玩家
@@ -36,7 +35,7 @@ var _need_regenerate_battle_command: bool = false
 
 func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	super._init()
-	is_temporary = true
+	temporary_stage_player_id = defender.player_id
 	self.defense_area = defense_area
 	self.attacker = attacker
 	self.defender = defense_area.player

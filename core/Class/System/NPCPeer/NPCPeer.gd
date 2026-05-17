@@ -12,7 +12,6 @@ func _init(game_state: GameState, player_id: int) -> void:
 ## NPC在行动前的趣味性互动（可重写）
 func await_npc_ready():
 	pass
-
 ## 异步决策接口：子类必须实现此方法，决策完成后调用 callback，传入 OperationRequest 或 null
 ## @param callback: Callable 接受一个参数（OperationRequest 或 null）
 func request_decision_async(callback: Callable) -> void:

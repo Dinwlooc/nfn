@@ -15,7 +15,6 @@ var last_pack: PlayerPack = null
 var morale_attack: int = 0
 var morale_defense: int = 0
 static var NULL_PLAYER: Player = Player.new()
-
 func _init() -> void:
 	command_modifiers = CommandModifiers.new()
 	buff_modifiers = BuffModifiers.new(attributeModifiers, command_modifiers)

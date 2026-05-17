@@ -47,7 +47,7 @@ func get_temp_stage() -> Array[Stage]:
 	for stage in stage_manager.temp_stage_stack:
 		stages.append(stage)
 	var cur = stage_manager.current_stage
-	if cur and cur.is_temporary:
+	if cur and cur.is_temporary():
 		stages.append(cur)
 	return stages
 

@@ -6,7 +6,6 @@ extends Control
 @onready var panel: TextEdit = $Panel
 ## 命令输入行
 @onready var input_line_edit: LineEdit = $Input
-
 ## 结算节点引用（外部赋值）
 var settlement: Node = null
 ## 选择节点引用

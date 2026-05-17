@@ -187,24 +187,26 @@ class ItemCountSet extends RenderRequest:
 
 	static func get_class_name_static() -> StringName:
 		return &"ItemCountSet"
-
-
 # ========== StageNotifyRequest ==========
 class StageNotifyRequest extends RenderRequest:
 	var current_player_id: int
 	var stage_name: StringName
+	## 临时阶段归属玩家 ID（0 表示主阶段，非 0 表示临时阶段并属于该玩家）
+	var temporary_stage_player_id: int
 
-	func _init(player_id: int, stage: StringName, params: Dictionary[StringName,Variant] = {}) -> void:
+	func _init(player_id: int, stage: StringName, temp_owner_id: int = 0, params: Dictionary[StringName,Variant] = {}) -> void:
 		target_area = GlobalConstants.DefaultArea.CENTER
 		target_area_player_id = PUBLIC_AREA_PLAYER_ID
 		current_player_id = player_id
 		stage_name = stage
+		temporary_stage_player_id = temp_owner_id
 		custom_params = params
 
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)
 		SerializationUtil.write(buffer, current_player_id)
 		SerializationUtil.write(buffer, stage_name)
+		SerializationUtil.write(buffer, temporary_stage_player_id)
 		SerializationUtil.write(buffer, custom_params)
 
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> RenderRequest:
@@ -215,6 +217,7 @@ class StageNotifyRequest extends RenderRequest:
 		if req:
 			req.current_player_id = SerializationUtil.read(buffer, TYPE_INT)
 			req.stage_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+			req.temporary_stage_player_id = SerializationUtil.read(buffer, TYPE_INT)
 			req.custom_params = SerializationUtil.read(buffer, TYPE_DICTIONARY)
 		return pack
 

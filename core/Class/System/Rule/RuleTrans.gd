@@ -206,5 +206,6 @@ static func send_stage_switch_notify(game_state: GameState, custom_params: Dicti
 		return
 	var player_id: int = game_state.stage_manager.current_player_id
 	var stage_name: StringName = cur_stage.stage_name
-	var request: RenderRequest.StageNotifyRequest = RenderRequest.StageNotifyRequest.new(player_id, stage_name, custom_params)
+	var temp_owner_id: int = cur_stage.temporary_stage_player_id
+	var request: RenderRequest.StageNotifyRequest = RenderRequest.StageNotifyRequest.new(player_id, stage_name, temp_owner_id, custom_params)
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)

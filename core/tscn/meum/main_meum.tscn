@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3 uid="uid://c624f44o3dyxc"]
 
 [ext_resource type="Script" uid="uid://bsycek868a820" path="res://core/tscn/meum/Node_MeumControl.gd" id="1_x1yqv"]
-[ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://resource/default/assets/Area/areaface/Node_Backgound.gd" id="2_0deb0"]
+[ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://resource/default/assets/Area/areaface/backgound.gd" id="2_0deb0"]
 [ext_resource type="Shader" uid="uid://doci3osgosgmd" path="res://resource/default/shader/bloom.gdshader" id="3_3ffcx"]
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/rgb_shift_distortion.gdshader" id="3_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://resource/default/assets/Backgound/backgound6.png" id="4_j0cbf"]

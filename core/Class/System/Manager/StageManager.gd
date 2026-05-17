@@ -11,6 +11,7 @@ var temp_stage_stack: Array[Stage] = []
 var current_main_stage_name: StringName = &""
 var current_player_id: int = 0
 # 信号
+
 signal stage_completed(stage: Stage)
 signal stage_rolled_back(old_stage: Stage, new_stage: Stage)
 signal temp_stages_cleared()
@@ -85,7 +86,8 @@ func _start_immediate(temp_stage: Stage, game_state: GameState) -> void:
 	var cur = current_stage
 	if cur:
 		cur.pause(game_state)
-	temp_stage.is_temporary = true
+	if not temp_stage.is_temporary():
+		temp_stage.temporary_stage_player_id = Stage.PUBLIC_PLAYER_ID
 	connect_stage_to_manager(temp_stage, game_state)
 	temp_stage_stack.append(cur)
 	_transition_to(temp_stage, game_state)
@@ -130,7 +132,7 @@ func _transition_to(new_stage: Stage, game_state: GameState) -> void:
 	if old_stage:
 		_disconnect_stage_signals(old_stage, game_state)
 	current_stage = new_stage
-	if not new_stage.is_temporary:
+	if not new_stage.is_temporary():
 		current_main_stage_name = new_stage.stage_name
 		complete_all_temp_stages(game_state)
 	# 计时器启动延迟到 _start_stage，此处不再启动
@@ -176,7 +178,7 @@ func _on_stage_ended(ended_stage: Stage, game_state: GameState) -> void:
 	if timer:
 		timer.stop()
 	stage_completed.emit(ended_stage)
-	if ended_stage.is_temporary:
+	if ended_stage.is_temporary():
 		game_state.queue_behavior(RollbackStageCommand.new(current_player_id, ended_stage))
 		#GlobalConsole._print(["StageManager:自动回退阶段。"])
 	else:

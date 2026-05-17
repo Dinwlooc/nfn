@@ -3,19 +3,21 @@ class_name Stage
 
 var stage_name: StringName = &"Null"
 var time_limit: float = 0.0
-var is_temporary: bool = false
+## 临时阶段归属玩家 ID（0 表示主阶段，非 0 表示临时阶段并属于该玩家）
+var temporary_stage_player_id: int = 0
 var is_ended: bool = false
 var is_paused: bool = false
-
+var _all_commands_completed_binding: Callable = Callable()
+const PUBLIC_PLAYER_ID := 1
 signal stage_ended(stage: Stage)
 signal request_reset_timer(new_time_limit: float)
-
 # 存储命令完成信号的绑定回调，用于安全断开
-var _all_commands_completed_binding: Callable = Callable()
 
 func _init() -> void:
 	pass
-
+## 返回当前阶段是否为临时阶段
+func is_temporary() -> bool:
+	return temporary_stage_player_id != 0
 ## 进入阶段（由管理器调用）
 func enter(game_state: GameState) -> void:
 	is_ended = false

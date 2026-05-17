@@ -42,7 +42,7 @@ func execute(game_state: GameState) -> void:
 ## 预备阶段：获取当前主阶段实例，对应“主阶段结束时”修饰点
 func _on_prepare_phase(game_state: GameState, ctx: Context) -> void:
 	var cur_stage = game_state.stage_manager.current_stage
-	if not cur_stage or cur_stage.is_temporary:
+	if not cur_stage or cur_stage.is_temporary():
 		push_error("SwitchMainStageCommand: 当前阶段不是主阶段，无法切换")
 		complete()
 		return
