@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=20 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System/System.gd" id="2_gpy5h"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://b3knkkllshowq" path="res://core/Class/Render/RenderControl/RenderControl.gd" id="4_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://resource/default/assets/Area/areaface/backgound.tscn" id="5_2w2we"]
 [ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://resource/default/assets/Area/areaface/RenderArrow/render_arrow.gd" id="5_4k47o"]
+[ext_resource type="Script" uid="uid://ilpalorndt2y" path="res://resource/default/assets/Area/areaface/stages_face.gd" id="6_t5eyl"]
 [ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Class/Render/RenderArea/RenderAreaHand.gd" id="7_jjejj"]
 [ext_resource type="Script" uid="uid://c6oyqsx5j42c5" path="res://core/tscn/game/RenderTimer.gd" id="8_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://resource/default/assets/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
@@ -46,6 +47,16 @@ offset_bottom = 40.0
 script = ExtResource("4_8dpeo")
 
 [node name="Backgound" parent="Control/AreaCenter" instance=ExtResource("5_2w2we")]
+
+[node name="StageFace" type="Control" parent="Control/AreaCenter" node_paths=PackedStringArray("render_control")]
+anchors_preset = 0
+offset_left = 72.0
+offset_top = 184.0
+offset_right = 257.0
+offset_bottom = 275.0
+script = ExtResource("6_t5eyl")
+render_control = NodePath("../..")
+metadata/_custom_type_script = "uid://btwt7f8flx66t"
 
 [node name="RenderTimer" type="Label" parent="Control/AreaCenter"]
 layout_mode = 0

@@ -35,10 +35,10 @@ var _need_regenerate_battle_command: bool = false
 
 func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	super._init()
-	temporary_stage_player_id = defender.player_id
 	self.defense_area = defense_area
 	self.attacker = attacker
 	self.defender = defense_area.player
+	temporary_stage_player_id = defender.player_id
 	stage_name = &"DefenseBattle"
 	time_limit = DEFAULT_TIME_LIMIT
 

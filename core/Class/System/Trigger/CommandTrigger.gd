@@ -13,7 +13,6 @@ func _init(system: System) -> void:
 	_system.command_processor.all_completed.connect(_on_all_completed)
 	_system.command_processor.command_processing.connect(_on_command_processing)
 
-
 func _on_new_behavior_with_callback(command: BehaviorCommand, callback: Callable) -> void:
 	_system.command_processor.all_completed.connect(callback, CONNECT_ONE_SHOT)
 	_system.command_processor.queue_behavior(command)

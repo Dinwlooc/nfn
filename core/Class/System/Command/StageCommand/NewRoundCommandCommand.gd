@@ -27,5 +27,4 @@ func execute(game_state: GameState) -> void:
 			return
 		target_id = next_player.player_id
 	game_state.start_new_round(target_id)
-	RuleTrans.send_stage_switch_notify(game_state)
 	complete()

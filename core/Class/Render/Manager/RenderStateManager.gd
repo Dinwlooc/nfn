@@ -5,7 +5,7 @@ class_name RenderStateManager
 class DragState:
 	var area: RenderArea
 	var card: RenderItem
-const PUBLIC_PLAYER_ID: int = RenderContext.PUBLIC_PLAYER_ID
+const PUBLIC_PLAYER_ID: int = GlobalConstants.PUBLIC_PLAYER_ID
 var card_on_drag: DragState = null
 var current_stage_name: StringName = &""
 var current_stage_player_id: int = PUBLIC_PLAYER_ID

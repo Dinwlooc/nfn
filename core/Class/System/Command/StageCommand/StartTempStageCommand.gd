@@ -26,5 +26,4 @@ func _on_init_phase(_game_state: GameState, ctx: Context) -> void:
 func _on_done_phase(game_state: GameState, ctx: Context) -> void:
 	if ctx.stage:
 		game_state.stage_manager.start_temp_stage(ctx.stage, game_state)
-	RuleTrans.send_stage_switch_notify(game_state)
 	complete()

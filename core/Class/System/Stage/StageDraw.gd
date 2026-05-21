@@ -1,6 +1,10 @@
 extends Stage
 class_name StageDraw
 
+func _init() -> void:
+	super._init()
+	stage_name = &"Draw"
+
 ## 进入抽牌阶段，先恢复行动点至初始值，再抽牌
 func enter(game_state: GameState) -> void:
 	super.enter(game_state)

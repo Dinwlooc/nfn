@@ -62,7 +62,6 @@ func _on_transition_phase(game_state: GameState, ctx: Context) -> void:
 
 ## 完成阶段：对应“主阶段开始后”修饰点
 func _on_done_phase(_game_state: GameState, _ctx: Context) -> void:
-	RuleTrans.send_stage_switch_notify(_game_state)
 	complete()
 
 func _calculate_skip_counts()->int:
