@@ -6,7 +6,7 @@ const PUBLIC_PLAYER_ID: int = 1
 var area_manager: RenderAreaManager
 var item_manager: RenderItemManager
 var state_manager: RenderStateManager
-## 操作管理器（保持不变）
+## 操作管理器
 var operation_manager: OperationManager
 
 func _init() -> void:
@@ -14,7 +14,28 @@ func _init() -> void:
 	item_manager = RenderItemManager.new()
 	state_manager = RenderStateManager.new()
 
-## 以下为委托方法，保留原函数名以最小化外部改动
+# ================= 新增主/临时阶段通知接口 =================
+func notify_main_stage(stage_name: StringName, player_id: int, params: Dictionary = {}) -> void:
+	state_manager.notify_main_stage(stage_name, player_id, params)
+
+func notify_temp_stage(stage_name: StringName, turn_player_id: int, stage_owner_id: int, params: Dictionary = {}) -> void:
+	state_manager.notify_temp_stage(stage_name, turn_player_id, stage_owner_id, params)
+
+# 保留旧接口，内部不再使用（仅兼容）
+func notify_stage(stage_name: StringName, current_player_id: int, params: Dictionary = {}) -> void:
+	state_manager.notify_stage(stage_name, current_player_id, params)
+
+## 获取当前阶段名称（临时阶段优先）
+func get_current_stage_name() -> StringName:
+	return state_manager.current_stage_name if not state_manager.current_stage_name.is_empty() else state_manager.main_stage_name
+
+## 获取当前阶段所属玩家 ID（临时阶段优先）
+func get_current_stage_player_id() -> int:
+	if not state_manager.temp_stage_name.is_empty():
+		return state_manager.temp_stage_owner_id
+	return state_manager.main_stage_player_id
+
+# ================= 区域管理委托 =================
 func connect_renderarea(area_name: StringName, callback: Callable, player_id: int = PUBLIC_PLAYER_ID) -> void:
 	area_manager.connect_renderarea(area_name, callback, player_id)
 
@@ -39,9 +60,7 @@ func get_player_areas(player_id: int = PUBLIC_PLAYER_ID) -> Dictionary[StringNam
 func create_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> RenderArea:
 	return area_manager.create_render_area(area_name, player_id)
 
-## 区域销毁包含额外的 item 清理和拖拽检查，保留在 RenderContext
 func delete_render_area(area: RenderArea) -> void:
-	# 检查拖拽状态
 	if state_manager.card_on_drag:
 		if state_manager.card_on_drag.area == area:
 			state_manager.remove_card_on_drag()
@@ -49,7 +68,6 @@ func delete_render_area(area: RenderArea) -> void:
 			var dragged_card = state_manager.card_on_drag.card
 			if dragged_card and dragged_card.get_parent() == area:
 				state_manager.remove_card_on_drag()
-	# 回收所有子 RenderItem
 	for child in area.get_children():
 		if child is not RenderItem:
 			continue
@@ -69,14 +87,13 @@ func remove_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID
 	unregister_render_area(area_name, player_id)
 	delete_render_area(area)
 
-## RenderItem 管理委托
+# ================= RenderItem 管理委托 =================
 func get_or_create_item(item_pack: ItemPack) -> RenderItem:
 	return item_manager.get_or_create_item(item_pack, self)
 
 func get_item(item_pack: ItemPack) -> RenderItem:
 	return item_manager.get_item(item_pack)
 
-## 延迟回收物品（接口完全保持原样）
 func request_recycle_item(item: RenderItem) -> void:
 	call_deferred(&"_recycle_item_deferred", item)
 
@@ -104,7 +121,7 @@ func unregister_render_item(item_type: StringName, item_id: int) -> void:
 func get_render_item_by_id(item_type: StringName, item_id: int) -> RenderItem:
 	return item_manager.get_render_item_by_id(item_type, item_id)
 
-## 拖拽与状态管理委托
+# ================= 拖拽与状态管理委托 =================
 func set_card_on_drag(area: RenderArea, realcard: RenderItem) -> void:
 	state_manager.set_card_on_drag(area, realcard)
 
@@ -117,16 +134,7 @@ func get_dragged_area() -> RenderArea:
 func get_dragged_card() -> RenderItem:
 	return state_manager.get_dragged_card()
 
-func notify_stage(stage_name: StringName, current_player_id: int, params: Dictionary = {}) -> void:
-	state_manager.notify_stage(stage_name, current_player_id, params)
-
-func get_current_stage_name() -> StringName:
-	return state_manager.get_current_stage_name()
-
-func get_current_stage_player_id() -> int:
-	return state_manager.get_current_stage_player_id()
-
-## 其他
+# ================= 其他 =================
 func set_operation_manager(manager: OperationManager) -> void:
 	operation_manager = manager
 

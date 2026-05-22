@@ -1,40 +1,50 @@
-## StageFace 负责在阶段切换时，以冲击性滑动动画更新主/次显示标签。
-## 标签文本包含阶段名称与回合所属玩家 ID，通过 RenderStateManager 信号驱动。
+## StageFace 负责在阶段切换时，以冲击性滑动动画分别更新主阶段与临时阶段显示。
+## 主阶段文本居于中心，临时阶段文本位于其下方；两者各自独立拥有消息队列与动画。
+## 主阶段切换时，临时阶段立即全部清除；主阶段间为顶开-延迟-上升回拉；
+## 临时阶段间为顶开-延迟-下降回拉，不干扰主阶段。
+## 只有最后进入的阶段（每行独立）放大显示；队列空时稳定消息加粗。
 extends Control
 
 # ==================== 常量 ====================
-## 主标签正常位置（相对于控件原点）
-const MAIN_POS: Vector2 = Vector2(0, 0)
-## 次标签相对于主标签的偏移量
-const SECONDARY_OFFSET: Vector2 = Vector2(160, 0)
-## 新阶段滑入动画持续时间（秒）
-const SLIDE_IN_DURATION: float = 0.3
-## 旧阶段被顶开后，在滑出前的延迟时间（秒）
-const DELAY_DURATION: float = 0.5
-## 旧阶段滑出屏幕的持续时间（秒）
-const SLIDE_OUT_DURATION: float = 0.3
-## 阶段文本初始滑入时的额外左边距（防止紧贴边缘）
-const SLIDE_IN_MARGIN: float = 30.0
+const MAIN_CENTER_POS := Vector2(0, 0)
+const SLIDE_IN_DURATION := 0.3
+const DELAY_DURATION := 0.5
+const VERTICAL_DURATION := 0.15
+const PULL_BACK_DURATION := 0.3
+const SLIDE_IN_MARGIN := 30.0
+const RIGHT_SPACING := 20.0
+const FONT_SIZE_NORMAL := 14
+const FONT_SIZE_EMPHASIZED := 28
+const MAIN_TO_TEMP_GAP := 8.0
 
 # ==================== 导出变量 ====================
-## 用于获取上下文的渲染控制节点（由场景配置）
 @export var render_control: RenderControl = null
 
+# ==================== 内部枚举 ====================
+enum StageLine { MAIN = 0, TEMP = 1 }
+
+class StageMessage:
+	var text: String
+	var display_player_id: int
+	func _init(p_text: String, p_id: int) -> void:
+		text = p_text
+		display_player_id = p_id
+
 # ==================== 内部变量 ====================
-## 主显示标签
-var _main_label: Label = null
-## 次显示标签（用于暂时持有旧阶段文本）
-var _secondary_label: Label = null
-## 动画 Tween 实例
-var _tween: Tween = null
-## 当前是否正在进行过渡动画
-var _is_transitioning: bool = false
-## 缓存的主标签位置
-var _cached_main_pos: Vector2 = MAIN_POS
-## 缓存的次标签位置
-var _cached_secondary_pos: Vector2 = MAIN_POS + SECONDARY_OFFSET
-## 当前显示的玩家 ID（用于文本格式化）
-var _current_player_id: int = RenderContext.PUBLIC_PLAYER_ID
+var _labels: Array[Label] = []
+var _label_state: Array[StringName] = []
+var _label_tweens: Array[Tween] = [null, null, null, null, null, null]
+var _label_line: Array[int] = []
+
+var _main_center_idx: int = -1
+var _main_right_idx: int = -1
+var _main_queue: Array[StageMessage] = []
+
+var _temp_center_idx: int = -1
+var _temp_right_idx: int = -1
+var _temp_queue: Array[StageMessage] = []
+
+var _temp_vertical_base: float = 0.0
 
 # ==================== 生命周期 ====================
 func _ready() -> void:
@@ -44,81 +54,257 @@ func _ready() -> void:
 	var ctx: RenderContext = render_control.render_context
 	if not ctx or not ctx.state_manager:
 		return
-	# 连接阶段变更信号
-	ctx.state_manager.stage_notified.connect(_on_stage_notified)
-	# 立即设置当前阶段文本（若已存在）
-	var initial_stage: StringName = ctx.state_manager.current_stage_name
+	ctx.state_manager.main_stage_notified.connect(_on_main_stage_notified)
+	ctx.state_manager.temp_stage_notified.connect(_on_temp_stage_notified)
+	var initial_stage: StringName = ctx.state_manager.main_stage_name
 	if not initial_stage.is_empty():
-		_current_player_id = ctx.state_manager.current_stage_player_id
-		_main_label.text = _format_stage_text(initial_stage, _current_player_id)
+		var pid: int = ctx.state_manager.main_stage_player_id
+		_show_initial_main(_format_stage_text(initial_stage, pid))
 
-## 动态创建并配置两个标签子节点
 func _setup_labels() -> void:
-	_main_label = Label.new()
-	_main_label.name = &"MainLabel"
-	_main_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_main_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	add_child(_main_label)
-	_secondary_label = Label.new()
-	_secondary_label.name = &"SecondaryLabel"
-	_secondary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_secondary_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_secondary_label.visible = false
-	add_child(_secondary_label)
-	# 初始位置
-	_main_label.position = _cached_main_pos
-	_secondary_label.position = _cached_secondary_pos
+	for i in 6:
+		var label := Label.new()
+		label.name = &"StageLabel%d" % i
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.visible = false
+		add_child(label)
+		_labels.append(label)
+		_label_state.append(&"idle")
+		_label_line.append(-1)
+	_label_tweens.resize(6)
+	_label_tweens.fill(null)
+
+func _set_label_emphasized(label: Label, flag: bool) -> void:
+	if not label: return
+	if flag:
+		label.add_theme_font_size_override(&"font_size", FONT_SIZE_EMPHASIZED)
+	else:
+		label.remove_theme_font_size_override(&"font_size")
+	label.reset_size()
+
+func _show_initial_main(text: String) -> void:
+	var idx := _get_idle_label_index()
+	if idx == -1: return
+	_assign_label(idx, StageLine.MAIN, &"main_center")
+	_labels[idx].text = text
+	_set_label_emphasized(_labels[idx], true)
+	_labels[idx].reset_size()
+	_labels[idx].position = MAIN_CENTER_POS
+	_labels[idx].visible = true
+	_main_center_idx = idx
 
 # ==================== 信号回调 ====================
-## 当阶段状态通知抵达时，生成包含玩家 ID 的显示文本并启动过渡动画
-func _on_stage_notified(stage_name: StringName, current_player_id: int, _params: Dictionary) -> void:
-	_current_player_id = current_player_id
-	var display_text: String = _format_stage_text(stage_name, current_player_id)
-	_start_transition(display_text)
+func _on_main_stage_notified(stage_name: StringName, player_id: int, _params: Dictionary) -> void:
+	var formatted := _format_stage_text(stage_name, player_id)
+	_clear_temp_with_pull()
+	if _main_center_idx != -1 and _labels[_main_center_idx].text == formatted:
+		return
+	var msg :StageMessage= StageMessage.new(formatted, player_id)
+	_main_queue.append(msg)
+	_process_main_queue()
 
-# ==================== 格式化 ====================
-## 将阶段名称与玩家 ID 组合为显示文本
+func _on_temp_stage_notified(stage_name: StringName, _turn_id: int, owner_id: int, _params: Dictionary) -> void:
+	var msg := StageMessage.new(_format_stage_text(stage_name, owner_id), owner_id)
+	_temp_queue.append(msg)
+	_process_temp_queue()
+
 func _format_stage_text(stage_name: StringName, player_id: int) -> String:
 	return "%s [P%d]" % [stage_name, player_id]
 
-# ==================== 过渡逻辑 ====================
-## 启动阶段文本的滑入-顶出-延迟滑出动画，并处理快速切换的中断
-func _start_transition(new_text: String) -> void:
-	# 若已有动画进行中，立刻中断，以体现冲击感
-	if _tween and _tween.is_valid():
-		_tween.kill()
-	_reset_to_idle_visuals()
-	# 首次直接设置文本，无需动画
-	if _main_label.text.is_empty():
-		_main_label.text = new_text
+# ==================== 队列处理 ====================
+func _process_main_queue() -> void:
+	while not _main_queue.is_empty() and _get_idle_label_index() != -1:
+		var msg := _main_queue.pop_front() as StageMessage
+		var stable := _main_queue.is_empty()
+		_start_main_animation(msg.text, stable)
+
+func _process_temp_queue() -> void:
+	while not _temp_queue.is_empty() and _get_idle_label_index() != -1:
+		var msg := _temp_queue.pop_front() as StageMessage
+		var stable := _temp_queue.is_empty()
+		_start_temp_animation(msg.text, stable)
+
+# ==================== 主阶段动画 ====================
+func _start_main_animation(new_text: String, is_stable: bool) -> void:
+	if _main_center_idx == -1:
+		_show_initial_main(new_text)
 		return
-	# 保存旧文本，准备顶出
-	var old_text: String = _main_label.text
-	_main_label.text = new_text
-	_secondary_label.text = old_text
-	_secondary_label.visible = true
-	# 计算滑入起始位置（标签在左侧屏幕外）
-	_main_label.reset_size()  # 确保尺寸已更新
-	var label_width: float = _main_label.size.x
-	var start_main: Vector2 = Vector2(-label_width - SLIDE_IN_MARGIN, _cached_main_pos.y)
-	# 创建动画
-	_tween = create_tween()
-	_tween.set_parallel(true)
-	_tween.tween_property(_main_label, ^"position", _cached_main_pos, SLIDE_IN_DURATION).from(start_main)
-	_tween.tween_property(_secondary_label, ^"position", _cached_secondary_pos, SLIDE_IN_DURATION).from(_cached_main_pos)
-	_tween.set_parallel(false)
-	_tween.tween_interval(DELAY_DURATION)
-	_tween.tween_property(_secondary_label, ^"position:x", -label_width - SLIDE_IN_MARGIN, SLIDE_OUT_DURATION)
-	_tween.tween_callback(_on_slide_out_complete)
-	_is_transitioning = true
+	var new_idx := _get_idle_label_index()
+	if new_idx == -1: return
+	if _main_right_idx != -1:
+		_interrupt_and_pull(_main_right_idx, StageLine.MAIN, true)
+		_main_right_idx = -1
 
-## 动画完全结束后的清理
-func _on_slide_out_complete() -> void:
-	_secondary_label.visible = false
-	_is_transitioning = false
+	var old_idx := _main_center_idx
+	_label_state[old_idx] = &"main_right"
+	_label_line[old_idx] = StageLine.MAIN
+	_main_right_idx = old_idx
+	_main_center_idx = new_idx
+	_set_label_emphasized(_labels[old_idx], false)
 
-## 将标签瞬间恢复到待命位置（隐藏次标签）
-func _reset_to_idle_visuals() -> void:
-	_main_label.position = _cached_main_pos
-	_secondary_label.position = _cached_secondary_pos
-	_secondary_label.visible = false
+	var new_label := _labels[new_idx]
+	new_label.text = new_text
+	_set_label_emphasized(new_label, is_stable)
+	new_label.reset_size()
+	var w := new_label.get_combined_minimum_size().x
+	new_label.position = Vector2(-w - SLIDE_IN_MARGIN, MAIN_CENTER_POS.y)
+	new_label.visible = true
+	_assign_label(new_idx, StageLine.MAIN, &"main_center")
+
+	var right_pos := MAIN_CENTER_POS + Vector2(w + RIGHT_SPACING, 0)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(new_label, ^"position", MAIN_CENTER_POS, SLIDE_IN_DURATION)
+	tween.tween_property(_labels[old_idx], ^"position", right_pos, SLIDE_IN_DURATION)
+	tween.set_parallel(false)
+
+	var delay := create_tween()
+	_label_tweens[old_idx] = delay
+	delay.tween_interval(DELAY_DURATION)
+	delay.tween_callback(_start_main_pull_back.bind(old_idx))
+
+func _start_main_pull_back(index: int) -> void:
+	if index < 0 or index >= _labels.size(): return
+	var label := _labels[index]
+	if not label.visible: return
+	_label_state[index] = &"main_pulling"
+	var h := label.get_combined_minimum_size().y
+	if h <= 0: h = 30
+	var up_pos := label.position + Vector2(0, -h)
+	var w := label.get_combined_minimum_size().x
+	var final_pos := Vector2(-w - SLIDE_IN_MARGIN, up_pos.y)
+
+	var tw := create_tween()
+	_label_tweens[index] = tw
+	tw.tween_property(label, ^"position", up_pos, VERTICAL_DURATION)
+	tw.tween_property(label, ^"position", final_pos, PULL_BACK_DURATION)
+	tw.tween_callback(_on_pull_complete.bind(index, StageLine.MAIN))
+
+# ==================== 临时阶段动画 ====================
+func _start_temp_animation(new_text: String, is_stable: bool) -> void:
+	var base_y := MAIN_CENTER_POS.y
+	if _main_center_idx != -1:
+		var main_label := _labels[_main_center_idx]
+		base_y = main_label.position.y + main_label.get_combined_minimum_size().y + MAIN_TO_TEMP_GAP
+	_temp_vertical_base = base_y
+	var temp_center := Vector2(MAIN_CENTER_POS.x, base_y)
+
+	if _temp_center_idx == -1:
+		var idx := _get_idle_label_index()
+		if idx == -1: return
+		var label := _labels[idx]
+		label.text = new_text
+		_set_label_emphasized(label, is_stable)
+		label.reset_size()
+		var w := label.get_combined_minimum_size().x
+		label.position = Vector2(-w - SLIDE_IN_MARGIN, temp_center.y)
+		label.visible = true
+		_assign_label(idx, StageLine.TEMP, &"temp_center")
+		_temp_center_idx = idx
+		var tw := create_tween()
+		_label_tweens[idx] = tw
+		tw.tween_property(label, ^"position", temp_center, SLIDE_IN_DURATION)
+		tw.tween_callback(_process_temp_queue)
+		return
+
+	var new_idx := _get_idle_label_index()
+	if new_idx == -1: return
+	if _temp_right_idx != -1:
+		_interrupt_and_pull(_temp_right_idx, StageLine.TEMP, false)
+		_temp_right_idx = -1
+
+	var old_idx := _temp_center_idx
+	_label_state[old_idx] = &"temp_right"
+	_label_line[old_idx] = StageLine.TEMP
+	_temp_right_idx = old_idx
+	_temp_center_idx = new_idx
+	_set_label_emphasized(_labels[old_idx], false)
+
+	var new_label := _labels[new_idx]
+	new_label.text = new_text
+	_set_label_emphasized(new_label, is_stable)
+	new_label.reset_size()
+	var w := new_label.get_combined_minimum_size().x
+	new_label.position = Vector2(-w - SLIDE_IN_MARGIN, temp_center.y)
+	new_label.visible = true
+	_assign_label(new_idx, StageLine.TEMP, &"temp_center")
+
+	var right_pos := temp_center + Vector2(w + RIGHT_SPACING, 0)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(new_label, ^"position", temp_center, SLIDE_IN_DURATION)
+	tween.tween_property(_labels[old_idx], ^"position", right_pos, SLIDE_IN_DURATION)
+	tween.set_parallel(false)
+
+	var delay := create_tween()
+	_label_tweens[old_idx] = delay
+	delay.tween_interval(DELAY_DURATION)
+	delay.tween_callback(_start_temp_pull_back.bind(old_idx))
+
+func _start_temp_pull_back(index: int) -> void:
+	if index < 0 or index >= _labels.size(): return
+	var label := _labels[index]
+	if not label.visible: return
+	_label_state[index] = &"temp_pulling"
+	var h := label.get_combined_minimum_size().y
+	if h <= 0: h = 30
+	var down_pos := label.position + Vector2(0, h)
+	var w := label.get_combined_minimum_size().x
+	var final_pos := Vector2(-w - SLIDE_IN_MARGIN, down_pos.y)
+
+	var tw := create_tween()
+	_label_tweens[index] = tw
+	tw.tween_property(label, ^"position", down_pos, VERTICAL_DURATION)
+	tw.tween_property(label, ^"position", final_pos, PULL_BACK_DURATION)
+	tw.tween_callback(_on_pull_complete.bind(index, StageLine.TEMP))
+
+# ==================== 通用清理 ====================
+func _interrupt_and_pull(index: int, line: StageLine, is_main: bool) -> void:
+	_kill_tween(index)
+	if is_main:
+		_start_main_pull_back(index)
+	else:
+		_start_temp_pull_back(index)
+
+func _on_pull_complete(index: int, line: StageLine) -> void:
+	_labels[index].visible = false
+	_label_state[index] = &"idle"
+	_label_line[index] = -1
+	_label_tweens[index] = null
+	if line == StageLine.MAIN and _main_right_idx == index:
+		_main_right_idx = -1
+	elif line == StageLine.TEMP and _temp_right_idx == index:
+		_temp_right_idx = -1
+	if line == StageLine.MAIN:
+		_process_main_queue()
+	else:
+		_process_temp_queue()
+
+## 清除所有临时阶段（带动画回拉）
+func _clear_temp_with_pull() -> void:
+	_temp_queue.clear()
+	# 启动 center 和 right 的回拉动画
+	if _temp_center_idx != -1:
+		_interrupt_and_pull(_temp_center_idx, StageLine.TEMP, false)
+		_temp_center_idx = -1
+	if _temp_right_idx != -1:
+		_interrupt_and_pull(_temp_right_idx, StageLine.TEMP, false)
+		_temp_right_idx = -1
+
+# ==================== 辅助 ====================
+func _get_idle_label_index() -> int:
+	for i in _labels.size():
+		if _label_state[i] == &"idle":
+			return i
+	return -1
+
+func _assign_label(idx: int, line: StageLine, state: StringName) -> void:
+	_label_line[idx] = line
+	_label_state[idx] = state
+
+func _kill_tween(index: int) -> void:
+	var tw := _label_tweens[index]
+	if tw and tw.is_valid():
+		tw.kill()
+	_label_tweens[index] = null
