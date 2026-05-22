@@ -66,7 +66,7 @@ func reset() -> void:
 	dragged = false
 	dragging = DraggingState.READY
 	hovering = false
-	data = TransPack.NULL_PACK
+	data = null
 	area_name = &""
 	render_context = null
 	pool_id = -1

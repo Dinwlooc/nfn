@@ -11,8 +11,8 @@ class Context extends CardMoveCommand.Context:
 			return 0
 		return min(draw_count, source_area.card_count())
 
-func _init(init_player_index: int, draw_count: int, name_overriding:StringName = &"DrawCards",context_overriding:Context = Context.new()) -> void:
-	super._init(init_player_index,name_overriding,context_overriding)
+func _init(init_player_index: int, draw_count: int, name_overriding: StringName = &"DrawCards", context_overriding: Context = Context.new()) -> void:
+	super._init(init_player_index, name_overriding, context_overriding)
 	_context.set_draw_count(draw_count)
 
 func _on_init_phase(game_state: GameState) -> void:
@@ -23,9 +23,12 @@ func _on_init_phase(game_state: GameState) -> void:
 		return
 	_context.source_area = game_state.get_drawing_area()
 	_context.target_area = game_state.get_hand_area(_context.player_id)
-	var actual_draw_count = draw_context.get_actual_draw_count(_context.source_area)
-	if actual_draw_count <= 0:
+	# 抽牌不足时伴生洗牌命令（仅发射，不改变后续流程）
+	if _context.source_area.card_count() < draw_context.draw_count:
+		append_companion_command(ShuffleCommand.new())
+	var actual: int = draw_context.get_actual_draw_count(_context.source_area)
+	if actual <= 0:
 		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
-	draw_context.set_top_mode(actual_draw_count)
+	draw_context.set_top_mode(actual)
 	_context.phase = CardMoveCommand.Context.Phase.MOVE_OUT

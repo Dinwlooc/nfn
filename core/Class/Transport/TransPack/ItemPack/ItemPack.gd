@@ -31,7 +31,7 @@ func merge(update_pack: ItemPack) -> void:
 	if update_pack.version != version + 1 and update_pack.version != 0 and merge_mask != -1:
 		print("发现版本错误：id:%d,version:%d" % [id, version])
 		return
-	if update_pack.version == 0 and not version == 0 :
+	if update_pack.version == 0:
 		reset_to_standard()
 	version = update_pack.version
 

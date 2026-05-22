@@ -1,8 +1,9 @@
-[gd_scene load_steps=20 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene load_steps=21 format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System/System.gd" id="2_gpy5h"]
 [ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Class/Render/RenderArea/RenderAreaCenter.gd" id="4_8dpeo"]
+[ext_resource type="Script" uid="uid://drlnwp8p3nn5a" path="res://core/Class/Render/RenderArea/RenderAreaDraw.gd" id="4_662gx"]
 [ext_resource type="Script" uid="uid://b3knkkllshowq" path="res://core/Class/Render/RenderControl/RenderControl.gd" id="4_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://resource/default/assets/Area/areaface/backgound.tscn" id="5_2w2we"]
 [ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://resource/default/assets/Area/areaface/RenderArrow/render_arrow.gd" id="5_4k47o"]
@@ -39,6 +40,14 @@ offset_right = 1600.0
 offset_bottom = 900.0
 focus_mode = 1
 script = ExtResource("4_ppvbj")
+
+[node name="AreaDraw" type="Control" parent="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("4_662gx")
+metadata/_custom_type_script = "uid://drlnwp8p3nn5a"
 
 [node name="AreaCenter" type="Control" parent="Control"]
 anchors_preset = 0

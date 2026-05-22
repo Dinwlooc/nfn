@@ -96,11 +96,11 @@ func _show_initial_main(text: String) -> void:
 
 # ==================== 信号回调 ====================
 func _on_main_stage_notified(stage_name: StringName, player_id: int, _params: Dictionary) -> void:
-	var formatted := _format_stage_text(stage_name, player_id)
+	var formatted :String = _format_stage_text(stage_name, player_id)
 	_clear_temp_with_pull()
 	if _main_center_idx != -1 and _labels[_main_center_idx].text == formatted:
 		return
-	var msg :StageMessage= StageMessage.new(formatted, player_id)
+	var msg :StageMessage = StageMessage.new(formatted, player_id)
 	_main_queue.append(msg)
 	_process_main_queue()
 
