@@ -1,6 +1,5 @@
 extends Control
 class_name RenderControl
-
 ## 渲染请求队列处理器（先进先出，每帧处理一个）
 class RenderRequestQueue:
 	extends RefCounted

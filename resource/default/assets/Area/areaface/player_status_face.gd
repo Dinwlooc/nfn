@@ -14,6 +14,12 @@ enum Mode { AUTO, MANUAL }
 @onready var ap_label: Label = $APContainer/APLabel
 @onready var mp_label: Label = $MPLabel
 
+@onready var morale_level_label: Label = $MoraleBar/MoraleLevelLabel
+@onready var morale_value_label: RichTextLabel = $MoraleBar/MoraleValueLabel
+@onready var morale_bar: Control = $MoraleBar
+@onready var morale_fill_background: Panel = $MoraleBar/MoraleFillBackground
+@onready var morale_fill_template: Panel = $MoraleBar/MoraleFillBackground/MoraleFillTemplate
+
 var _cached_hp_max: int = 0
 var _cached_hp_current: int = 0
 var _cached_mp_max: int = 0
@@ -24,6 +30,12 @@ var _hp_blocks: Array[Panel] = []
 var _mp_units: Array[Control] = []
 var _current_player: RenderItem = null
 var _cached_player_id: int = -1
+var _cached_morale_attack: int = 0
+var _cached_morale_defense: int = 0
+var _cached_morale_level: int = 0
+var _cached_required_total: int = 0
+var _morale_blocks: Array[Panel] = []
+var _initialized: bool = false
 
 const COLOR_HP_CURRENT: Color = Color(0.99, 0.1, 0.0, 0.7)
 const COLOR_HP_LOST: Color = Color(0.5, 0.5, 0.5, 0.7)
@@ -34,14 +46,22 @@ const MP_BLINK_DURATION: float = 0.2
 const HP_BLOCK_SCALE: float = 0.8
 const MP_DOTS_PER_UNIT: int = 4
 const MP_DOT_FADE_OUT_DURATION: float = 0.2
-## 治疗时整体闪绿的时长
 const HEAL_FLASH_DURATION: float = 0.3
+
+const UPGRADE_REQUIREMENTS: Array[int] = [7, 12, 15, 18]
+const COLOR_MORALE_ATTACK: Color = Color(0.8, 0.2, 0.8, 0.8)
+const COLOR_MORALE_DEFENSE: Color = Color(0.2, 0.4, 0.8, 0.8)
+const COLOR_MORALE_FULL: Color = Color(0.7, 0.3, 1.0, 0.85)
+const MORALE_BLOCK_SCALE: float = 0.8
+const MORALE_BLINK_DURATION: float = 0.15
 
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
 	hp_fill_template.visible = false
 	if mp_unit_template:
 		mp_unit_template.visible = false
+	if morale_fill_template:
+		morale_fill_template.visible = false
 
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
@@ -71,13 +91,6 @@ func set_player(player: RenderItem) -> void:
 		_update_cached_stats(_current_player.data)
 	else:
 		_clear_display()
-		_cached_hp_max = 0
-		_cached_hp_current = 0
-		_cached_mp_max = 0
-		_cached_mp_current = 0
-		_cached_ap_current = 0
-		_cached_modified_init_ap = 0
-		_cached_player_id = 0
 
 func _on_player_data_requested(player: RenderItem) -> void:
 	if player == _current_player and player and player.data is PlayerPack:
@@ -90,38 +103,184 @@ func _update_cached_stats(player_data: PlayerPack) -> void:
 	var old_mp_max: int = _cached_mp_max
 	var old_ap: int = _cached_ap_current
 	var old_init_ap: int = _cached_modified_init_ap
-	_cached_hp_max = player_data.modified_HP_max
-	_cached_hp_current = player_data.HP
-	_cached_mp_max = player_data.modified_MP_max
-	_cached_mp_current = player_data.MP
-	_cached_ap_current = player_data.AP
-	_cached_modified_init_ap = player_data.modified_init_AP
-	var hp_damage: int = old_hp - _cached_hp_current   # 注意：与原始命名保持一致，数值可正可负
-	var mp_damage: int = old_mp - _cached_mp_current
-	if _cached_hp_max != old_hp_max or _cached_hp_current != old_hp:
-		_apply_hp_animation(old_hp_max, old_hp, _cached_hp_max, _cached_hp_current)
-		hp_label.text = "%d / %d" % [_cached_hp_current, _cached_hp_max]
-	if _cached_mp_max != old_mp_max or _cached_mp_current != old_mp:
-		_apply_mp_animation(old_mp_max, old_mp, _cached_mp_max, _cached_mp_current)
-		mp_label.text = "%d / %d" % [max(0, _cached_mp_current), max(0, _cached_mp_max)]
-	if _cached_ap_current != old_ap or _cached_modified_init_ap != old_init_ap:
-		_update_ap_display()
-	# 发送事件，字段名仍然是 hp_damage / mp_damage，但值可以为负数
+	var new_hp_max: int = player_data.modified_HP_max
+	var new_hp_cur: int = player_data.HP
+	var new_mp_max: int = player_data.modified_MP_max
+	var new_mp_cur: int = player_data.MP
+	var new_ap: int = player_data.AP
+	var new_init_ap: int = player_data.modified_init_AP
+	if not _initialized:
+		_initialized = true
+		_cached_hp_max = new_hp_max
+		_cached_hp_current = new_hp_cur
+		_cached_mp_max = new_mp_max
+		_cached_mp_current = new_mp_cur
+		_cached_ap_current = new_ap
+		_cached_modified_init_ap = new_init_ap
+		_apply_hp_animation(0, 0, new_hp_max, new_hp_cur)
+		_update_hp_label(new_hp_cur, new_hp_max)
+		_apply_mp_animation(0, 0, new_mp_max, new_mp_cur)
+		_update_mp_label(max(0, new_mp_cur), max(0, new_mp_max))
+		_update_ap_display(new_ap, new_init_ap)
+		# 战意首次初始化（无动画）
+		_cached_morale_level = player_data.morale_level
+		_cached_morale_attack = player_data.morale_attack
+		_cached_morale_defense = player_data.morale_defense
+		var new_required: int = _get_morale_required(player_data.morale_level)
+		_cached_required_total = new_required
+		_update_morale_level(player_data.morale_level)
+		_update_morale_value_text(player_data.morale_attack, player_data.morale_defense, new_required)
+		_adjust_morale_bar_capacity(new_required)
+		_fill_morale_blocks(player_data.morale_attack, player_data.morale_defense, new_required)
+		return
+	var hp_damage: int = old_hp - new_hp_cur
+	var mp_damage: int = old_mp - new_mp_cur
+	if new_hp_max != old_hp_max or new_hp_cur != old_hp:
+		_apply_hp_animation(old_hp_max, old_hp, new_hp_max, new_hp_cur)
+		_update_hp_label(new_hp_cur, new_hp_max)
+		_cached_hp_max = new_hp_max
+		_cached_hp_current = new_hp_cur
+	if new_mp_max != old_mp_max or new_mp_cur != old_mp:
+		_apply_mp_animation(old_mp_max, old_mp, new_mp_max, new_mp_cur)
+		_update_mp_label(max(0, new_mp_cur), max(0, new_mp_max))
+		_cached_mp_max = new_mp_max
+		_cached_mp_current = new_mp_cur
+	if new_ap != old_ap or new_init_ap != old_init_ap:
+		_cached_ap_current = new_ap
+		_cached_modified_init_ap = new_init_ap
+		_update_ap_display(new_ap, new_init_ap)
 	if hp_damage != 0 or mp_damage != 0:
 		_trigger_damage_event(hp_damage, mp_damage)
+	# 战意增量更新（带动画）
+	var old_level: int = _cached_morale_level
+	var old_attack: int = _cached_morale_attack
+	var old_defense: int = _cached_morale_defense
+	var old_required: int = _cached_required_total
+	var new_level: int = player_data.morale_level
+	var new_attack: int = player_data.morale_attack
+	var new_defense: int = player_data.morale_defense
+	var new_required: int = _get_morale_required(new_level)
+	var level_changed: bool = old_level != new_level
+	var value_changed: bool = old_attack != new_attack or old_defense != new_defense or old_required != new_required
+	if level_changed:
+		_cached_morale_level = new_level
+		_update_morale_level(new_level)
+	if value_changed:
+		_cached_morale_attack = new_attack
+		_cached_morale_defense = new_defense
+		_cached_required_total = new_required
+		_apply_morale_animation(old_attack, old_defense, old_required, new_attack, new_defense, new_required)
+		_update_morale_value_text(new_attack, new_defense, new_required)
 
 func _clear_display() -> void:
-	hp_label.text = "0 / 0"
-	mp_label.text = "0 / 0"
+	_update_hp_label(0, 0)
+	_update_mp_label(0, 0)
 	for block in _hp_blocks:
 		block.queue_free()
 	_hp_blocks.clear()
 	for unit in _mp_units:
 		unit.queue_free()
 	_mp_units.clear()
-	ap_label.text = "X 0"
+	_initialized = false
+	_update_morale_level(0)
+	_update_morale_value_text(0, 0, UPGRADE_REQUIREMENTS[0])
+	_clear_morale_blocks()
 
-# ==================== HP 动画（不变）====================
+# ==================== 战意更新方法（无文本动画） ====================
+func _update_morale_level(new_level: int) -> void:
+	morale_level_label.text = "Lv.%d" % new_level
+
+func _update_morale_value_text(attack: int, defense: int, required: int) -> void:
+	var total: int = attack + defense
+	var text: String = "[color=#CC33CC]%d[/color]+[color=#3366CC]%d[/color]=[color=#AA66FF]%d[/color]/[color=#AA66FF]%d[/color]" % [attack, defense, total, required]
+	morale_value_label.text = text
+	morale_value_label.bbcode_enabled = true
+
+func _get_morale_required(level: int) -> int:
+	if level < UPGRADE_REQUIREMENTS.size():
+		return UPGRADE_REQUIREMENTS[level]
+	return 0
+
+## 战意进度条动画（模仿 HP 条）
+func _apply_morale_animation(old_attack: int, old_defense: int, old_required: int, new_attack: int, new_defense: int, new_required: int) -> void:
+	# 先调整容量，新格子初始透明，移除多余格子
+	_adjust_morale_bar_capacity(new_required)
+	# 遍历当前所有格子，对颜色变化的格子播放闪烁
+	for i in range(new_required):
+		var block: Panel = _morale_blocks[i]
+		var new_color: Color = _get_morale_block_color(i, new_attack, new_defense, new_required)
+		var old_color: Color = Color.TRANSPARENT
+		if i < old_required:
+			old_color = _get_morale_block_color(i, old_attack, old_defense, old_required)
+		if old_color != new_color:
+			_start_morale_block_blink(block, old_color, new_color)
+
+func _get_morale_block_color(index: int, attack: int, defense: int, required: int) -> Color:
+	if required <= 0:
+		return Color.TRANSPARENT
+	var total := attack + defense
+	if total >= required:
+		var is_filled := index < attack or index >= required - defense
+		return COLOR_MORALE_FULL if is_filled else Color.TRANSPARENT
+	if index < attack:
+		return COLOR_MORALE_ATTACK
+	if index >= required - defense:
+		return COLOR_MORALE_DEFENSE
+	return Color.TRANSPARENT
+
+## 战意格子闪烁
+func _start_morale_block_blink(block: Panel, from_color: Color, to_color: Color) -> void:
+	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
+	stylebox.bg_color = from_color
+	UIAnimationUtils.blink_stylebox_bg_color(block, from_color, to_color, MORALE_BLINK_DURATION)
+
+func _clear_morale_blocks() -> void:
+	for block in _morale_blocks:
+		block.queue_free()
+	_morale_blocks.clear()
+
+func _adjust_morale_bar_capacity(target_max: int) -> void:
+	if target_max <= 0:
+		_clear_morale_blocks()
+		return
+	if morale_fill_background.size.x <= 0:
+		call_deferred(&"_adjust_morale_bar_capacity", target_max)
+		return
+	var current: int = _morale_blocks.size()
+	if target_max > current:
+		for i in range(current, target_max):
+			var block: Panel = morale_fill_template.duplicate() as Panel
+			block.visible = true
+			var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel").duplicate() as StyleBoxFlat
+			block.add_theme_stylebox_override(&"panel", stylebox)
+			morale_fill_background.add_child(block)
+			_morale_blocks.append(block)
+			stylebox.bg_color = Color.TRANSPARENT
+		_relayout_morale_blocks()
+	elif target_max < current:
+		for i in range(target_max, current):
+			var block: Panel = _morale_blocks.pop_back()
+			block.queue_free()
+		_relayout_morale_blocks()
+
+func _relayout_morale_blocks() -> void:
+	if _cached_required_total <= 0:
+		return
+	var block_width: float = morale_fill_background.size.x / _cached_required_total
+	for i in range(_morale_blocks.size()):
+		var block: Panel = _morale_blocks[i]
+		block.size = Vector2(block_width * MORALE_BLOCK_SCALE, morale_fill_background.size.y * MORALE_BLOCK_SCALE)
+		block.position = Vector2(i * block_width, 0)
+
+func _fill_morale_blocks(attack: int, defense: int, required: int) -> void:
+	if required <= 0:
+		return
+	for i in range(required):
+		var block: Panel = _morale_blocks[i]
+		var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
+		stylebox.bg_color = _get_morale_block_color(i, attack, defense, required)
+
+# ==================== HP 动画（已修复布局问题） ====================
 func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
@@ -176,17 +335,17 @@ func _adjust_hp_bar_capacity(target_max: int, new_cur: int) -> void:
 			var target_color: Color = COLOR_HP_CURRENT if i < new_cur else COLOR_HP_LOST
 			target_color.a = 0.0
 			stylebox.bg_color = target_color
-		_relayout_hp_blocks()
+		_relayout_hp_blocks(target_max)
 	elif target_max < current:
 		for i in range(target_max, current):
 			var block: Panel = _hp_blocks.pop_back()
 			block.queue_free()
-		_relayout_hp_blocks()
+		_relayout_hp_blocks(target_max)
 
-func _relayout_hp_blocks() -> void:
-	if _cached_hp_max <= 0:
+func _relayout_hp_blocks(total_blocks: int) -> void:
+	if total_blocks <= 0:
 		return
-	var block_width: float = hp_fill_background.size.x / _cached_hp_max
+	var block_width: float = hp_fill_background.size.x / total_blocks
 	for i in range(_hp_blocks.size()):
 		var block: Panel = _hp_blocks[i]
 		block.size = Vector2(block_width * HP_BLOCK_SCALE, hp_fill_background.size.y * HP_BLOCK_SCALE)
@@ -207,7 +366,7 @@ func _start_hp_block_special_blink(block: Panel, target_color: Color) -> void:
 	tween.tween_property(stylebox, ^"bg_color", transparent, HP_BLINK_DURATION)
 	tween.tween_property(stylebox, ^"bg_color", target_color, HP_BLINK_DURATION)
 
-# ==================== MP 动画（不变）====================
+# ==================== MP 动画 ====================
 func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
@@ -305,7 +464,6 @@ func _find_unit_of_dot(dot: ColorRect) -> Control:
 			return unit
 	return null
 
-# ==================== 统一事件发送（带符号） ====================
 func _trigger_damage_event(hp_damage: int, mp_damage: int) -> void:
 	if _cached_player_id == -1:
 		return
@@ -315,10 +473,15 @@ func _trigger_damage_event(hp_damage: int, mp_damage: int) -> void:
 	if area:
 		var event: RenderEvent = RenderEvent.new().set_type(RenderEvent.DefaultType.DAMAGED)
 		event.config[&"player_id"] = _cached_player_id
-		event.config[&"hp_damage"] = hp_damage   # 可为负
-		event.config[&"mp_damage"] = mp_damage   # 可为负
+		event.config[&"hp_damage"] = hp_damage
+		event.config[&"mp_damage"] = mp_damage
 		area.tween_update(event)
 
-# ==================== AP 更新（不变） ====================
-func _update_ap_display() -> void:
-	ap_label.text = "%d / %d" % [_cached_ap_current, _cached_modified_init_ap]
+func _update_hp_label(current: int, max_hp: int) -> void:
+	hp_label.text = "%d / %d" % [current, max_hp]
+
+func _update_mp_label(current: int, max_mp: int) -> void:
+	mp_label.text = "%d / %d" % [current, max_mp]
+
+func _update_ap_display(current: int, init_ap: int) -> void:
+	ap_label.text = "%d / %d" % [current, init_ap]

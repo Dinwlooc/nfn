@@ -115,8 +115,8 @@ static func apply_decay(initial: Result, is_unilateral: bool, duel_result: int, 
 	return result
 
 ## 生成战意授予条目列表（纯函数）
-static func generate_combat_will_grants(settle_card: Card, oppose_card: Card, duel_result: int, duel_diff: int, is_unilateral: bool, mask: int, attacker: Player, defender: Player) -> Array:
-	var out_grants: Array = []
+static func generate_combat_will_grants(settle_card: Card, oppose_card: Card, duel_result: int, duel_diff: int, is_unilateral: bool, mask: int, attacker: Player, defender: Player) -> Array[CombatWillGrant]:
+	var out_grants: Array[CombatWillGrant] = []
 	if mask == 0 or not settle_card:
 		return out_grants
 	var settle_owner: Player = settle_card.player

@@ -65,29 +65,46 @@ func _on_process_result_phase(game_state: GameState, _context: Context) -> void:
 	if not player_top or not player_second:
 		_context.phase = Context.Phase.DONE
 		return
-	# 双方各获得1点基础战意
-	_add_morale_by_card(player_top, _context.top_card, BASE_MORALE_GAIN)
-	_add_morale_by_card(player_second, _context.second_card, BASE_MORALE_GAIN)
-	# 胜利方额外获得1点战意
+	# 计算双方的基础战意增量
+	var attack_delta_top: int = 0
+	var defense_delta_top: int = 0
+	var attack_delta_second: int = 0
+	var defense_delta_second: int = 0
+	if _context.top_card.type == GlobalConstants.DefaultCard.ATTACK:
+		attack_delta_top = BASE_MORALE_GAIN
+	else:
+		defense_delta_top = BASE_MORALE_GAIN
+	if _context.second_card.type == GlobalConstants.DefaultCard.ATTACK:
+		attack_delta_second = BASE_MORALE_GAIN
+	else:
+		defense_delta_second = BASE_MORALE_GAIN
+	# 胜利方额外获得战意
 	match _context.duel_result:
 		DuelCommand.Context.Result.A_WIN:
-			_add_morale_by_card(player_top, _context.top_card, MORALE_BONUS_WIN)
+			if _context.top_card.type == GlobalConstants.DefaultCard.ATTACK:
+				attack_delta_top += MORALE_BONUS_WIN
+			else:
+				defense_delta_top += MORALE_BONUS_WIN
 		DuelCommand.Context.Result.B_WIN:
-			_add_morale_by_card(player_second, _context.second_card, MORALE_BONUS_WIN)
+			if _context.second_card.type == GlobalConstants.DefaultCard.ATTACK:
+				attack_delta_second += MORALE_BONUS_WIN
+			else:
+				defense_delta_second += MORALE_BONUS_WIN
 		DuelCommand.Context.Result.TIE:
 			pass
+	# 为双方分别创建战意命令
+	if attack_delta_top != 0 or defense_delta_top != 0:
+		var morale_cmd := MoraleCommand.new(player_top, attack_delta_top, defense_delta_top, player_top.player_id, &"BattleCommand")
+		append_companion_command(morale_cmd)
+	if attack_delta_second != 0 or defense_delta_second != 0:
+		var morale_cmd := MoraleCommand.new(player_second, attack_delta_second, defense_delta_second, player_second.player_id, &"BattleCommand")
+		append_companion_command(morale_cmd)
 	GlobalConsole._print(["斗牌结束，玩家", player_top.player_id, "战意：攻击", player_top.morale_attack, "防御", player_top.morale_defense,
 		"，玩家", player_second.player_id, "战意：攻击", player_second.morale_attack, "防御", player_second.morale_defense])
 	_context.phase = Context.Phase.DONE
 
 func _on_done_phase(game_state: GameState, _context: Context) -> void:
 	complete()
-
-func _add_morale_by_card(player: Player, card: Card, amount: int) -> void:
-	if card.type == GlobalConstants.DefaultCard.ATTACK:
-		player.add_morale_attack(amount)
-	else:
-		player.add_morale_defense(amount)
 
 func _on_duel_completed(result: int, diff: int) -> void:
 	_context.duel_result = result

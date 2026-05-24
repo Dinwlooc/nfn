@@ -16,7 +16,7 @@ static var gamestate_trigger_classes: Array[Script] = [
 	SettleResetTrigger,
 	CenterSkillTrigger,
 	SyncTrigger,
-	ShuffleWhenEmptyTrigger
+	ShuffleWhenEmptyTrigger,
 ]
 
 ## 初始化所有触发器。传入的 [param system] 仅用于构造触发器实例，不会长期持有。

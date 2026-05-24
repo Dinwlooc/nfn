@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://ld25ivvpfrx8"]
+[gd_scene load_steps=14 format=3 uid="uid://ld25ivvpfrx8"]
 
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/rgb_shift_distortion.gdshader" id="1_dri28"]
 [ext_resource type="Script" uid="uid://d1u5il71urrcj" path="res://resource/default/assets/Area/areaface/player_status_face.gd" id="1_dvwbm"]
@@ -67,6 +67,22 @@ corner_radius_bottom_left = 15
 shadow_color = Color(1, 1, 0, 0.905882)
 shadow_size = 5
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m8l5k"]
+bg_color = Color(0.211765, 0, 0.67451, 0.780392)
+border_color = Color(0.992157, 0.113725, 0, 1)
+corner_detail = 1
+shadow_color = Color(1, 1, 1, 0.458824)
+shadow_size = 2
+anti_aliasing = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2skah"]
+resource_local_to_scene = true
+bg_color = Color(0.368627, 0.168627, 1, 1)
+border_color = Color(0.992157, 0.113725, 0, 1)
+corner_detail = 1
+shadow_color = Color(0, 0, 0, 0.482)
+anti_aliasing = false
+
 [node name="AreaFaceSelf_Properties" type="Control"]
 material = SubResource("ShaderMaterial_ggemd")
 layout_mode = 3
@@ -85,19 +101,19 @@ script = ExtResource("1_dvwbm")
 layout_mode = 2
 offset_left = 6.0
 offset_top = 5.0
-offset_right = 108.0
+offset_right = 113.0
 offset_bottom = 223.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ggemd")
 
 [node name="MPLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 53.0
+offset_left = 36.0
 offset_top = 178.0
-offset_right = 513.0
+offset_right = 496.0
 offset_bottom = 438.0
 scale = Vector2(0.1, 0.1)
 theme_override_colors/font_color = Color(0, 1, 1, 1)
-theme_override_font_sizes/font_size = 120
+theme_override_font_sizes/font_size = 80
 text = "-"
 horizontal_alignment = 1
 
@@ -136,15 +152,15 @@ offset_bottom = 247.0
 rotation = 1.5708
 scale = Vector2(0.1, 0.1)
 theme_override_colors/font_color = Color(0.613625, 1.19124e-06, 4.81307e-07, 1)
-theme_override_font_sizes/font_size = 120
+theme_override_font_sizes/font_size = 80
 text = "-"
 horizontal_alignment = 1
 
 [node name="MPContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 63.0
+offset_left = 45.0
 offset_top = 168.0
-offset_right = 260.0
+offset_right = 242.0
 offset_bottom = 188.0
 rotation = -1.5708
 
@@ -224,3 +240,55 @@ theme_override_colors/font_shadow_color = Color(1, 1, 0.341176, 0.478431)
 theme_override_constants/shadow_outline_size = 17
 theme_override_font_sizes/font_size = 120
 text = "3 / 3"
+
+[node name="MoraleBar" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -7.0
+offset_top = 203.0
+offset_right = -7.0
+offset_bottom = 203.0
+rotation = -1.5708
+mouse_filter = 2
+
+[node name="MoraleFillBackground" type="Panel" parent="MoraleBar"]
+use_parent_material = true
+layout_mode = 0
+offset_left = 25.9997
+offset_top = 94.0001
+offset_right = 187.0
+offset_bottom = 115.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_m8l5k")
+
+[node name="MoraleFillTemplate" type="Panel" parent="MoraleBar/MoraleFillBackground"]
+material = SubResource("ShaderMaterial_dri28")
+use_parent_material = true
+layout_mode = 0
+offset_right = 2.0
+offset_bottom = 17.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_2skah")
+
+[node name="MoraleLevelLabel" type="Label" parent="MoraleBar"]
+layout_mode = 0
+offset_left = 26.9997
+offset_top = 77.0001
+offset_right = 1622.0
+offset_bottom = 248.0
+scale = Vector2(0.1, 0.1)
+theme_override_colors/font_color = Color(0.49145, 0.00316546, 0.908895, 1)
+theme_override_font_sizes/font_size = 120
+text = "-"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MoraleValueLabel" type="RichTextLabel" parent="MoraleBar"]
+visible = false
+layout_mode = 0
+offset_left = 25.0
+offset_top = 114.0
+offset_right = 1653.0
+offset_bottom = 401.0
+scale = Vector2(0.1, 0.1)
+theme_override_font_sizes/normal_font_size = 120
+text = "-"
+horizontal_alignment = 1

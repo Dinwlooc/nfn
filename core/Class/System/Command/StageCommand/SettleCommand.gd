@@ -155,7 +155,7 @@ func _on_damage_phase(game_state: GameState, ctx: Context) -> void:
 		return
 	var rules: Dictionary = RuleSettle._get_merged_rules(ctx.settle_card, {})
 	var mask: int = rules.get(RuleSettle.Validator.COMBAT_WILL_MODE, 0)
-	var grants: Array = RuleSettle.generate_combat_will_grants(
+	var grants: Array[RuleSettle.CombatWillGrant] = RuleSettle.generate_combat_will_grants(
 		ctx.settle_card,
 		ctx.oppose_card,
 		ctx.duel_result,
@@ -165,7 +165,8 @@ func _on_damage_phase(game_state: GameState, ctx: Context) -> void:
 		ctx.attacker,
 		ctx.defensive_area.player
 	)
-	_apply_combat_will_grants(grants)
+	# 不再直接应用，而是收集后创建 MoraleCommand
+	_apply_combat_will_grants_with_command(grants)
 	if not ctx.settle_result.target:
 		ctx.phase = Context.Phase.EFFECT
 		return
@@ -179,7 +180,9 @@ func _on_damage_phase(game_state: GameState, ctx: Context) -> void:
 	append_companion_command(damage_cmd)
 	ctx.phase = Context.Phase.EFFECT
 
-static func _apply_combat_will_grants(grants: Array) -> void:
+## 将战意授予列表转换为每个玩家的战意命令
+func _apply_combat_will_grants_with_command(grants: Array[RuleSettle.CombatWillGrant]) -> void:
+	var player_deltas: Dictionary = {}  # key: Player, value: {attack: int, defense: int}
 	for grant in grants:
 		var player: Player = grant.target_player
 		if not player:
@@ -187,10 +190,22 @@ static func _apply_combat_will_grants(grants: Array) -> void:
 		var total_value: int = grant.base_value + grant.extra_value
 		if total_value <= 0:
 			continue
+		if not player_deltas.has(player):
+			player_deltas[player] = {&"attack": 0, &"defense": 0}
 		if grant.is_defense:
-			player.morale_defense += total_value
+			player_deltas[player][&"defense"] += total_value
 		else:
-			player.morale_attack += total_value
+			player_deltas[player][&"attack"] += total_value
+	for player: Player in player_deltas:
+		var attack_delta: int = player_deltas[player][&"attack"]
+		var defense_delta: int = player_deltas[player][&"defense"]
+		if attack_delta == 0 and defense_delta == 0:
+			continue
+		var source_id: int = 0
+		if _context.settle_card:
+			source_id = _context.settle_card.get_owner_id()
+		var morale_cmd := MoraleCommand.new(player, attack_delta, defense_delta, source_id, &"SettleCommand")
+		append_companion_command(morale_cmd)
 
 func _on_effect_phase(game_state: GameState, ctx: Context) -> void:
 	ctx.phase = Context.Phase.CLEAR
