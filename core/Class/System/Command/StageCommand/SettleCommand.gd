@@ -217,7 +217,7 @@ func _on_clear_phase(game_state: GameState, ctx: Context) -> void:
 		CardTransferCommand.Context.MoveOutMode.TOP,
 		ctx.defensive_area.card_count()
 	)
-	game_state.queue_behavior(transfer_cmd)
+	append_companion_command(transfer_cmd)
 	ctx.phase = Context.Phase.DONE
 
 func _on_done_phase(_game_state: GameState, ctx: Context) -> void:

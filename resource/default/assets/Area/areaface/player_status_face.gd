@@ -2,7 +2,6 @@ extends AreaFace
 
 enum Mode { AUTO, MANUAL }
 @export var mode: Mode = Mode.AUTO
-
 @onready var hp_bar: Control = $HPBar
 @onready var hp_fill_background: Panel = $HPBar/HPFillBackGound
 @onready var hp_fill_template: Panel = $HPBar/HPFillBackGound/HPFill
@@ -13,7 +12,6 @@ enum Mode { AUTO, MANUAL }
 @onready var ap_icon: Control = $APContainer/APIcon
 @onready var ap_label: Label = $APContainer/APLabel
 @onready var mp_label: Label = $MPLabel
-
 @onready var morale_level_label: Label = $MoraleBar/MoraleLevelLabel
 @onready var morale_value_label: RichTextLabel = $MoraleBar/MoraleValueLabel
 @onready var morale_bar: Control = $MoraleBar
@@ -218,16 +216,15 @@ func _apply_morale_animation(old_attack: int, old_defense: int, old_required: in
 func _get_morale_block_color(index: int, attack: int, defense: int, required: int) -> Color:
 	if required <= 0:
 		return Color.TRANSPARENT
-	var total := attack + defense
+	var total :int = attack + defense
 	if total >= required:
-		var is_filled := index < attack or index >= required - defense
+		var is_filled :bool = index < attack or index >= required - defense
 		return COLOR_MORALE_FULL if is_filled else Color.TRANSPARENT
 	if index < attack:
 		return COLOR_MORALE_ATTACK
 	if index >= required - defense:
 		return COLOR_MORALE_DEFENSE
 	return Color.TRANSPARENT
-
 ## 战意格子闪烁
 func _start_morale_block_blink(block: Panel, from_color: Color, to_color: Color) -> void:
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
@@ -279,7 +276,6 @@ func _fill_morale_blocks(attack: int, defense: int, required: int) -> void:
 		var block: Panel = _morale_blocks[i]
 		var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 		stylebox.bg_color = _get_morale_block_color(i, attack, defense, required)
-
 # ==================== HP 动画（已修复布局问题） ====================
 func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)

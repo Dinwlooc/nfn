@@ -36,7 +36,7 @@ func on_init_setup_phase(game_state: GameState) -> void:
 	else:
 		game_state.player_manager.add_player(1)
 	game_state.player_manager.ensure_min_players(2)
-	game_state.player_manager.send_players_delta_updates()
+	RuleTrans.send_player_delta_updates(game_state.player_manager.get_seated_players())
 	_context.phase = Phase.START_DRAW
 
 func on_start_draw_phase(game_state: GameState) -> void:

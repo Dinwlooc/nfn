@@ -3,7 +3,7 @@ extends RefCounted
 class_name PlayersManager
 
 var players: Array[Player] = []              ## 按座位顺序存储玩家实例
-var _players_by_id: Dictionary = {}          ## 内置ID映射字典（玩家ID->实例）
+var _players_by_id: Dictionary[int, Player] = {}          ## 内置ID映射字典（玩家ID->实例）
 var _next_player_id: int = 2                 ## 内置缓存：下一个可分配的玩家ID
 const ai_peer_id: int = -1                   ## AI控制的玩家peer_id固定为-1
 signal player_added(player: Player)
@@ -22,7 +22,7 @@ func add_player(peer_id: int) -> Player:
 	_next_player_id += 1
 	return player
 
-## 移除指定座位的玩家并调整后方玩家的座位
+## 通过座位索引移除玩家（被移除玩家保留在映射表中，后方玩家座位前移）
 func remove_player_from_seat(seat_index: int) -> Player:
 	if seat_index < 0 or seat_index >= players.size():
 		return null
@@ -30,6 +30,35 @@ func remove_player_from_seat(seat_index: int) -> Player:
 	for i: int in range(seat_index, players.size()):
 		players[i].seat_index = i
 	return removed_player
+
+## 通过玩家ID移除座位上的玩家（若玩家当前在座），保留映射并调整后方座位
+func remove_player_by_id(player_id: int) -> Player:
+	var player: Player = _players_by_id.get(player_id)
+	if player == null:
+		return null
+	var seat_idx: int = player.seat_index
+	if seat_idx < 0 or seat_idx >= players.size() or players[seat_idx] != player:
+		return null
+	return remove_player_from_seat(seat_idx)
+
+## 将已有玩家插入到指定座位，原座位及之后玩家向后移位
+func insert_player_at_seat(player: Player, seat_index: int) -> bool:
+	if player == null:
+		return false
+	if seat_index < 0 or seat_index > players.size():
+		return false
+	# 如果玩家已经在座位数组中（即已在座），不允许重复插入
+	if players.has(player):
+		return false
+	# 确保玩家在映射表中（若尚未加入则加入）
+	if not _players_by_id.has(player.player_id):
+		_players_by_id[player.player_id] = player
+	# 插入座位：将 seat_index 及之后的玩家向后移动一位
+	players.insert(seat_index, player)
+	# 更新从 seat_index 开始的所有玩家的 seat_index
+	for i: int in range(seat_index, players.size()):
+		players[i].seat_index = i
+	return true
 
 ## 确保至少有min_players个玩家（不够时用AI补齐）
 func ensure_min_players(min_players: int) -> void:
@@ -39,6 +68,10 @@ func ensure_min_players(min_players: int) -> void:
 ## 获取当前在座位上的玩家数量
 func get_player_count() -> int:
 	return players.size()
+
+## 获取当前所有在座玩家（直接返回内部数组引用）
+func get_seated_players() -> Array[Player]:
+	return players
 
 ## 通过座位索引获取玩家（无效索引返回null）
 func get_player_by_seat(seat_index: int) -> Player:
@@ -68,31 +101,6 @@ func _get_player_delta_pack(player: Player) -> PlayerPack:
 	var pack: PlayerPack = player.get_pack()
 	return pack if pack.merge_mask != 0 else null
 
-## 发送指定玩家列表的增量更新（若列表为空则发送所有玩家）
-func send_players_delta_updates(
-	target_players: Array[Player] = [],
-	event_type: int = RenderRequest.ItemSet.EventType.UPDATE,
-	source_player_id: int = RenderRequest.PUBLIC_AREA_PLAYER_ID,
-	custom_event: Dictionary[StringName,Variant] = {}
-) -> void:
-	var players_to_send: Array[Player] = target_players
-	if players_to_send.is_empty():
-		players_to_send = players
-	RuleTrans.send_player_delta_updates(players_to_send, event_type, source_player_id, custom_event)
-
-## 发送单个玩家的增量更新（便捷方法）
-func send_single_player_delta_update(
-	player: Player,
-	event_type: int = RenderRequest.ItemSet.EventType.UPDATE,
-	source_player_id: int = RenderRequest.PUBLIC_AREA_PLAYER_ID,
-	custom_event: Dictionary[StringName,Variant] = {}
-) -> void:
-	RuleTrans.send_player_delta_updates([player], event_type, source_player_id, custom_event)
-
-## 发送所有玩家的全量信息到指定对等体（内部调用RuleTrans）
-func send_all_players_full_updates(peer_id: int) -> void:
-	RuleTrans.send_all_players_full_updates_from_manager(self, peer_id)
-
 ## 清除所有玩家的增量包缓存
 func clear_all_players_cache() -> void:
 	for player: Player in players:
@@ -115,4 +123,4 @@ func get_player_full_pack(player_id: int) -> PlayerPack:
 ## 通过玩家ID获取座位索引，若玩家不存在则返回-1
 func get_seat_index_by_player_id(player_id: int) -> int:
 	var player: Player = _players_by_id.get(player_id)
-	return player.seat_index if player else 0
+	return player.seat_index if player else -1

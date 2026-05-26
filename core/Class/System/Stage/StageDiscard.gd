@@ -25,7 +25,6 @@ func enter(game_state: GameState) -> void:
 	if responsive_players.is_empty():
 		end_stage(game_state)
 		return
-	# 设置响应玩家并启动计时
 	game_state.set_responsive_players(responsive_players)
 	_reset_timer()
 	_connect_all_commands_completed_signal(game_state)
@@ -72,7 +71,7 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "不在弃牌列表中"])
 		request.complete()
 		return
-	var need_count: int = _players_to_discard[player_id]  # 还需弃置的数量
+	var need_count: int = _players_to_discard[player_id]
 	var hand_area: AreaHand = game_state.get_hand_area(player_id)
 	if not hand_area:
 		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "的手牌区"])
@@ -83,7 +82,6 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "提交空弃牌列表"])
 		request.cancel()
 		return
-	# 自动剔除无效ID（不在手牌中的、重复的）
 	var valid_ids: PackedInt32Array = []
 	var seen: Dictionary = {}
 	for id in submitted_ids:
@@ -127,9 +125,7 @@ func _process_abandon_response(request: OperationRequest.AbandonResponse, game_s
 	if hand_card_ids.size() < need_count:
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "手牌不足", need_count, "张，将弃置所有手牌"])
 		need_count = hand_card_ids.size()
-	var selected: PackedInt32Array = []
-	if need_count > 0:
-		selected = _random_select(hand_card_ids, need_count)
+	var selected: PackedInt32Array = _random_select(hand_area, need_count)
 	var discard_command := DiscardCardsCommand.new(player_id, selected)
 	game_state.queue_behavior(discard_command)
 	_players_to_discard.erase(player_id)
@@ -151,23 +147,27 @@ func _force_discard_for_all(game_state: GameState) -> void:
 	for player_id in _players_to_discard.keys():
 		var need_count: int = _players_to_discard[player_id]
 		var hand_area: AreaHand = game_state.get_hand_area(player_id)
-		var hand_card_ids: PackedInt32Array = hand_area.get_card_ids()
-		if hand_card_ids.size() < need_count:
-			need_count = hand_card_ids.size()
-		var selected: PackedInt32Array = _random_select(hand_card_ids, need_count)
+		if hand_area.is_empty():
+			_players_to_discard.erase(player_id)
+			continue
+		var selected: PackedInt32Array = _random_select(hand_area, need_count)
 		var discard_command := DiscardCardsCommand.new(player_id, selected)
 		game_state.queue_behavior(discard_command)
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "超时，随机弃牌完成"])
 	_players_to_discard.clear()
 
-## 从数组中随机选择 count 个元素（不重复）
-func _random_select(source: PackedInt32Array, count: int) -> PackedInt32Array:
-	if count <= 0 or source.is_empty():
+## 从手牌区随机选择 count 张卡牌（不重复），利用 UnorderedArea 的随机能力
+func _random_select(hand_area: AreaHand, count: int) -> PackedInt32Array:
+	if count <= 0 or hand_area.is_empty():
 		return PackedInt32Array()
-	var will_shuffled:Array = Array(source)
-	will_shuffled.shuffle()
-	var shuffled: PackedInt32Array = PackedInt32Array(will_shuffled)
-	return shuffled.slice(0, count)
+	var temp_area := UnorderedArea.new()
+	var cards: Array[Card] = hand_area.get_all_cards()
+	temp_area.cards_add(cards)
+	var selected_cards: Array[Card] = temp_area.get_top_cards(count)
+	var result: PackedInt32Array = []
+	for card in selected_cards:
+		result.append(card.id)
+	return result
 
 ## 重置计时器（固定时长）
 func _reset_timer() -> void:
@@ -188,4 +188,3 @@ func _disconnect_all_commands_completed_signal(game_state: GameState) -> void:
 func _on_all_commands_completed(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
-	# 此处可添加后续逻辑，当前留空

@@ -1,4 +1,4 @@
-## 玩家触发器：处理玩家添加、战意升级、特殊牌充能（预留）。
+## 玩家触发器：处理玩家添加、战意升级、特殊牌充能、死亡轮询。
 extends SystemTrigger
 class_name PlayerTrigger
 
@@ -13,6 +13,7 @@ func _init(system: System) -> void:
 	system.game_state.player_manager.player_added.connect(_on_player_added)
 	system.game_state.player_manager.player_added.connect(system.game_state.area_registry.create_areas_for_player)
 	system.game_state.stage_manager.round_ended.connect(_on_round_ended)
+	system.game_state.all_commands_completed.connect(_on_all_commands_completed)
 
 func _on_player_added(player: Player) -> void:
 	GlobalConsole._print(["System: 新玩家加入,id:", player.player_id, "，peer_id:", player.peer_id])
@@ -71,3 +72,37 @@ func _charge_special_cards(player: Player, morale_type: StringName, base_amount:
 	var charge_amount: int = player.get_charge_amount(base_amount)
 	# TODO: 获取玩家拥有的特殊牌列表，筛选类型匹配的牌，调用其充能方法。
 	pass
+## 所有命令完成后的回调：检查并进入濒死阶段
+func _on_all_commands_completed() -> void:
+	var game_state: GameState = _system.game_state
+	# 避免在濒死阶段内重复触发
+	if _is_in_dying_stage(game_state):
+		return
+	var start_seat: int = _get_current_player_seat_index(game_state)
+	if start_seat == -1:
+		return
+	var players: Array[Player] = game_state.player_manager.get_seated_players()
+	var n: int = players.size()
+	if n == 0:
+		return
+	for i in range(n):
+		var idx: int = (start_seat + i) % n
+		var player: Player = players[idx]
+		if player.HP <= 0:
+			_enter_dying_stage(game_state, player)
+			return
+## 检查当前阶段是否为濒死阶段
+func _is_in_dying_stage(game_state: GameState) -> bool:
+	var stage: Stage = game_state.stage_manager.current_stage
+	return stage != null and stage.stage_name == &"Dying"
+## 获取当前回合玩家的座位索引
+func _get_current_player_seat_index(game_state: GameState) -> int:
+	var cur_player_id: int = game_state.stage_manager.current_player_id
+	if cur_player_id == 0:
+		return -1
+	var player: Player = game_state.player_manager.get_player_by_id(cur_player_id)
+	return player.seat_index if player else -1
+## 进入濒死阶段
+func _enter_dying_stage(game_state: GameState, dying_player: Player) -> void:
+	var dying_stage := StageDying.new(dying_player)
+	game_state.stage_manager.start_temp_stage(dying_stage, game_state)

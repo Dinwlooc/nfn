@@ -7,16 +7,13 @@ static var render_request_classes: Array[Script] = [
 	RenderRequest.ItemCountSet,
 	RenderRequest.StageNotifyRequest
 ]
-
 # 构建注册表（类 -> 索引）
 static var _registry: Dictionary = build_registry(render_request_classes)
-
 # 序列化RenderRequest对象
 static func serialize(obj: RenderRequest) -> PackedByteArray:
 	var buffer = StreamPeerBuffer.new()
 	serialize_with_registry(buffer, obj, _registry)
 	return buffer.data_array
-
 # 反序列化数据
 static func deserialize(serialized_data: PackedByteArray) -> RenderRequest:
 	var buffer = StreamPeerBuffer.new()

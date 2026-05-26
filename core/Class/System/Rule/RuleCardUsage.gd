@@ -10,7 +10,6 @@ enum ErrorCode {
 	UNKNOWN_CARD_TYPE,
 	WRONG_TURN,
 	INVALID_CARD_TYPE,
-	UNKNOWN_TOP_OWNER,
 	INVALID_DEFENSE_TARGET,
 }
 
@@ -28,6 +27,7 @@ class Validator:
 	const STACK_LIMIT := &"stack_limit"
 	const SPEED_LIMIT := &"speed_limit"
 	const DEFENSE_TARGET := &"defense_target"
+	const DYING_AVAILABLE := &"dying_available"
 
 ## 每种卡牌类型启用的验证器（其余类型无限制）
 static var _card_rules: Dictionary = {
@@ -41,7 +41,6 @@ static var _card_rules: Dictionary = {
 		Validator.DEFENSE_TARGET: true,
 	},
 	GlobalConstants.DefaultCard.SPELL: {
-		Validator.STACK_LIMIT: true,
 	},
 }
 
@@ -117,6 +116,17 @@ static func can_use_card_in_defense(
 				if not res.is_valid:
 					return res
 	return UsageResult.new(true)
+
+## 检查卡牌是否可以在濒死阶段使用
+static func can_use_card_in_dying_stage(card: Card) -> UsageResult:
+	if not card:
+		return UsageResult.new(false, ErrorCode.CARD_NULL, "卡牌实例为空")
+	var rule_config: Dictionary = _get_rule_config(card)
+	var available = rule_config.get(Validator.DYING_AVAILABLE, false)
+	if not available:
+		return UsageResult.new(false, ErrorCode.INVALID_CARD_TYPE, "此卡牌不能在濒死阶段使用")
+	return UsageResult.new(true)
+
 
 ## 堆栈限制验证：守区顶部不能有自己的牌
 static func _validate_stack_limit(defense_area: AreaDefence, source: Player) -> UsageResult:
