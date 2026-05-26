@@ -10,7 +10,7 @@ class Context extends StartTempStageCommand.Context:
 func _init(dying_player: Player) -> void:
 	var ctx = Context.new()
 	ctx.dying_player = dying_player
-	super._init(dying_player.player_id, &"StartDyingStage")
+	super._init(dying_player.get_id(), &"StartDyingStage")
 	_context = ctx
 
 ## 初始化阶段：创建 StageDying 实例

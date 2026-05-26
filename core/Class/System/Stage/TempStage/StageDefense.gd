@@ -38,13 +38,13 @@ func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	self.defense_area = defense_area
 	self.attacker = attacker
 	self.defender = defense_area.player
-	temporary_stage_player_id = defender.player_id
+	temporary_stage_player_id = defender.get_id()
 	stage_name = &"DefenseBattle"
 	time_limit = DEFAULT_TIME_LIMIT
 
 ## 阶段进入：初始化各玩家时间数据，更新响应权，启动计时并生成首个斗牌命令
 func enter(game_state: GameState) -> void:
-	for p in [attacker.player_id, defender.player_id]:
+	for p in [attacker.get_id(), defender.get_id()]:
 		total_time_used[p] = 0.0
 		dynamic_time_limit[p] = DEFAULT_TIME_LIMIT
 	_update_responsive_player(game_state)
@@ -153,9 +153,9 @@ func _check_defense_battle_restrictions(
 func _update_responsive_player(game_state: GameState) -> void:
 	var top: Card = defense_area.get_top_card()
 	if top:
-		current_responsive_player_id = attacker.player_id if top.player == defender else defender.player_id
+		current_responsive_player_id = attacker.get_id() if top.player == defender else defender.get_id()
 	else:
-		current_responsive_player_id = attacker.player_id
+		current_responsive_player_id = attacker.get_id()
 	game_state.set_responsive_players(PackedInt32Array([current_responsive_player_id]))
 	GlobalConsole._print(["守区攻防阶段：更新响应权为玩家", current_responsive_player_id])
 

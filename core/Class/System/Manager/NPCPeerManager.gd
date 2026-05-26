@@ -17,7 +17,7 @@ func _init(game_state: GameState) -> void:
 func _on_player_added(player: Player) -> void:
 	if player.peer_id != PlayersManager.ai_peer_id:
 		return
-	var player_id = player.player_id
+	var player_id = player.get_id()
 	if _npc_peers.has(player_id):
 		return
 	var npc = AutoNPCPeer.new(_game_state, player_id)

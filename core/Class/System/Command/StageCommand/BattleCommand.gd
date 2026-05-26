@@ -94,13 +94,13 @@ func _on_process_result_phase(game_state: GameState, _context: Context) -> void:
 			pass
 	# 为双方分别创建战意命令
 	if attack_delta_top != 0 or defense_delta_top != 0:
-		var morale_cmd := MoraleCommand.new(player_top, attack_delta_top, defense_delta_top, player_top.player_id, &"BattleCommand")
+		var morale_cmd := MoraleCommand.new(player_top, attack_delta_top, defense_delta_top, player_top.get_id(), &"BattleCommand")
 		append_companion_command(morale_cmd)
 	if attack_delta_second != 0 or defense_delta_second != 0:
-		var morale_cmd := MoraleCommand.new(player_second, attack_delta_second, defense_delta_second, player_second.player_id, &"BattleCommand")
+		var morale_cmd := MoraleCommand.new(player_second, attack_delta_second, defense_delta_second, player_second.get_id(), &"BattleCommand")
 		append_companion_command(morale_cmd)
-	GlobalConsole._print(["斗牌结束，玩家", player_top.player_id, "战意：攻击", player_top.morale_attack, "防御", player_top.morale_defense,
-		"，玩家", player_second.player_id, "战意：攻击", player_second.morale_attack, "防御", player_second.morale_defense])
+	GlobalConsole._print(["斗牌结束，玩家", player_top.get_id(), "战意：攻击", player_top.morale_attack, "防御", player_top.morale_defense,
+		"，玩家", player_second.get_id(), "战意：攻击", player_second.morale_attack, "防御", player_second.morale_defense])
 	_context.phase = Context.Phase.DONE
 
 func _on_done_phase(game_state: GameState, _context: Context) -> void:

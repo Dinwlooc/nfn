@@ -144,6 +144,6 @@ static func _validate_speed_limit(defense_area: AreaDefence, source: Player, _ga
 
 ## 防御阶段目标限定：攻击/防御牌只能以守区拥有者为目标
 static func _validate_defense_target(source: Player, target: Player, defender: Player) -> UsageResult:
-	if not target or target.player_id != defender.player_id:
+	if not target or target.get_id() != defender.get_id():
 		return UsageResult.new(false, ErrorCode.INVALID_DEFENSE_TARGET, "此卡牌在守区攻防阶段只能以当前守区拥有者为目标")
 	return UsageResult.new(true)

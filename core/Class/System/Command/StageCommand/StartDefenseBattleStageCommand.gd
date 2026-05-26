@@ -9,7 +9,7 @@ func _init(defense_area: AreaDefence, attacker: Player, name_overriding: StringN
 	var ctx = Context.new()
 	ctx.defense_area = defense_area
 	ctx.attacker = attacker
-	super._init(attacker.player_id, name_overriding)
+	super._init(attacker.get_id(), name_overriding)
 	_context = ctx
 
 func _on_init_phase(game_state: GameState, _context: StartTempStageCommand.Context) -> void:

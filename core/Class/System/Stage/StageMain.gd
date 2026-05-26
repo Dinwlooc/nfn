@@ -18,14 +18,14 @@ func _init() -> void:
 
 func enter(game_state: GameState) -> void:
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
-	_current_attacker_id = _current_attacker.player_id
+	_current_attacker_id = _current_attacker.get_id()
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT)
 	super.enter(game_state)
 
 func resume(game_state: GameState) -> void:
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
-	_current_attacker_id = _current_attacker.player_id
+	_current_attacker_id = _current_attacker.get_id()
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT / 2)
 	super.resume(game_state)

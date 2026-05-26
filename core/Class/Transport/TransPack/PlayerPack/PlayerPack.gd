@@ -62,7 +62,7 @@ var morale_level: int
 ## @return 填充了玩家当前所有数据的 PlayerPack
 static func init_from_player(player: Player) -> PlayerPack:
 	return PlayerPack.new(
-		player.player_id,
+		player.get_id(),
 		player.seat_index,
 		player.HP,
 		player.MP,

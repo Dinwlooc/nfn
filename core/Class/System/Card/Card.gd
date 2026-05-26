@@ -70,12 +70,14 @@ func clear_player() -> void:
 func get_owner_id() -> int:
 	if not player:
 		return 0
-	return player.player_id
+	return player.get_id()
 
+func get_id() -> int:
+	return id
 ## 设置卡牌所在区域，仅当区域数据发生真实变化时才更新并发射 area_changed 信号
 func set_area(area: Area) -> void:
 	var new_area_name: StringName = area.area_name
-	var new_area_player_id: int = area.get_player().player_id
+	var new_area_player_id: int = area.get_player().get_id()
 	if area_name == new_area_name and area_player_id == new_area_player_id:
 		return
 	area_name = new_area_name

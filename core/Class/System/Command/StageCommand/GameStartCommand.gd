@@ -43,7 +43,7 @@ func on_start_draw_phase(game_state: GameState) -> void:
 	var new_round_cmd:= NewRoundCommand.new(0,2)
 	append_companion_command(new_round_cmd)
 	for player in game_state.player_manager.players:
-		var draw_cmd: = DrawCardsCommand.new(player.player_id, 4)
+		var draw_cmd: = DrawCardsCommand.new(player.get_id(), 4)
 		append_companion_command(draw_cmd)
 	_context.phase = Phase.DONE
 	complete()

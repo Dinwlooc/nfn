@@ -16,8 +16,8 @@ func _init(system: System) -> void:
 	system.game_state.all_commands_completed.connect(_on_all_commands_completed)
 
 func _on_player_added(player: Player) -> void:
-	GlobalConsole._print(["System: 新玩家加入,id:", player.player_id, "，peer_id:", player.peer_id])
-	_operation_handler.update_verification_mapping(player.peer_id, player.player_id)
+	GlobalConsole._print(["System: 新玩家加入,id:", player.get_id(), "，peer_id:", player.peer_id])
+	_operation_handler.update_verification_mapping(player.peer_id, player.get_id())
 	player.morale_attack_increased.connect(_on_morale_attack_increased.bind(player))
 	player.morale_defense_increased.connect(_on_morale_defense_increased.bind(player))
 
@@ -55,7 +55,7 @@ func _apply_morale_bonus(player: Player, level: int) -> void:
 			pass
 
 func _draw_one_card(player: Player) -> void:
-	var draw_cmd := DrawCardsCommand.new(player.player_id, 1)
+	var draw_cmd := DrawCardsCommand.new(player.get_id(), 1)
 	_system.game_state.queue_behavior(draw_cmd)
 
 func _handle_ability_selection(_player: Player, _new_level: int) -> void:

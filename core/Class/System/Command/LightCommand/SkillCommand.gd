@@ -17,7 +17,7 @@ class Context extends CommandContext:
 	func get_primary_modifier_player_ids() -> PackedInt32Array:
 		var ids: PackedInt32Array = []
 		if skill_card and skill_card.player:
-			ids.append(skill_card.player.player_id)
+			ids.append(skill_card.player.get_id())
 		for pid in target_player_ids:
 			if pid != 0 and not ids.has(pid):
 				ids.append(pid)

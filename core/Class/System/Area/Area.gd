@@ -29,7 +29,7 @@ func _init_expand() -> void:
 func is_visible_to(peer_id: int) -> bool:
 	match visibility:
 		Visibility.PUBLIC:
-			if player.player_id == RenderRequest.PUBLIC_AREA_PLAYER_ID and visibility == Visibility.PRIVATE:
+			if player.get_id() == RenderRequest.PUBLIC_AREA_PLAYER_ID and visibility == Visibility.PRIVATE:
 				return false
 			return true
 		Visibility.PRIVATE:

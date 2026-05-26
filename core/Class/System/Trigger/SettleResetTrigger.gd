@@ -11,6 +11,6 @@ func _on_stage_entered(new_stage: Stage) -> void:
 	if not new_stage is StageMain:
 		return
 	for player in _game_state.player_manager.players:
-		var defense := _game_state.area_registry.get_defense_area(player.player_id)
+		var defense := _game_state.area_registry.get_defense_area(player.get_id())
 		if defense:
 			defense.reset_settle_count()

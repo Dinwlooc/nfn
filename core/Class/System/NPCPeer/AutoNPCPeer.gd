@@ -57,7 +57,7 @@ func _get_decision_data() -> DecisionData:
 	if data.current_stage_name == &"DefenseBattle":
 		var defense_stage: StageDefense = _get_defense_stage()
 		if defense_stage:
-			data.defense_stage_owner_id = defense_stage.defender.player_id
+			data.defense_stage_owner_id = defense_stage.defender.get_id()
 			data.is_responsive = (defense_stage.current_responsive_player_id == _player_id)
 		else:
 			data.is_responsive = false
@@ -66,13 +66,13 @@ func _get_decision_data() -> DecisionData:
 	var others: PackedInt32Array = PackedInt32Array()
 	data.other_players_settle_counts.clear()
 	for p in _game_state.player_manager.players:
-		if p.player_id != _player_id:
-			others.append(p.player_id)
+		if p.get_id() != _player_id:
+			others.append(p.get_id())
 			var settle_count: int = 0
-			var def_area: AreaDefence = _game_state.get_defense_area(p.player_id)
+			var def_area: AreaDefence = _game_state.get_defense_area(p.get_id())
 			if def_area:
 				settle_count = def_area.settle_count
-			data.other_players_settle_counts[p.player_id] = settle_count
+			data.other_players_settle_counts[p.get_id()] = settle_count
 	data.other_player_ids = others
 	return data
 
@@ -155,8 +155,8 @@ func _build_request_from_result(result: Dictionary) -> OperationRequest:
 func _get_random_other_player_id() -> int:
 	var candidates: Array[int] = []
 	for p in _game_state.player_manager.players:
-		if p.player_id != _player_id:
-			candidates.append(p.player_id)
+		if p.get_id() != _player_id:
+			candidates.append(p.get_id())
 	if candidates.is_empty():
 		return 0
 	candidates.shuffle()

@@ -39,7 +39,7 @@ class Context extends CommandContext:
 	func get_primary_modifier_player_ids() -> PackedInt32Array:
 		if not target_player:
 			return PackedInt32Array()
-		return PackedInt32Array([target_player.player_id])
+		return PackedInt32Array([target_player.get_id()])
 
 ## 构造函数
 ## @param target_player 被影响的玩家
@@ -62,7 +62,7 @@ func _init(
 	context_overriding.set_defense_delta(p_defense_delta)
 	context_overriding.set_source_player_id(p_source_player_id)
 	context_overriding.set_event_name(p_event_name)
-	super._init(p_target_player.player_id, name_overriding, context_overriding)
+	super._init(p_target_player.get_id(), name_overriding, context_overriding)
 
 ## 执行命令
 func execute(game_state: GameState) -> void:

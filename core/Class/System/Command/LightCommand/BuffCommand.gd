@@ -52,7 +52,7 @@ func _init(
 	name_overriding: StringName = &"Buff",
 	context_overriding: Context = Context.new()
 ) -> void:
-	super._init(source_player.player_id, name_overriding, context_overriding)
+	super._init(source_player.get_id(), name_overriding, context_overriding)
 	_context.set_buff_modifiers(modifiers)
 	_context.set_buff(buff)
 	_context.set_mode(mode)

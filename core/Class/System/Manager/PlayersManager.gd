@@ -13,7 +13,7 @@ const PLAYER_AREA: StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaT
 func add_player(peer_id: int) -> Player:
 	var player: Player = Player.new()
 	player.peer_id = peer_id
-	player.set_player_id(_next_player_id)
+	player.set_id(_next_player_id)
 	player.seat_index = players.size()
 	player.recover_to_full()
 	players.append(player)

@@ -14,14 +14,14 @@ func enter(game_state: GameState) -> void:
 	super.enter(game_state)
 	var responsive_players: PackedInt32Array = []
 	for player in game_state.player_manager.players:
-		var hand_area: AreaHand = game_state.get_hand_area(player.player_id)
+		var hand_area: AreaHand = game_state.get_hand_area(player.get_id())
 		var hand_count: int = hand_area.get_all_cards().size() if hand_area else 0
 		var hand_limit: int = player.get_hand_limit()
 		if hand_count > hand_limit:
 			var need_discard: int = hand_count - hand_limit
-			_players_to_discard[player.player_id] = need_discard
-			responsive_players.append(player.player_id)
-			GlobalConsole._print(["玩家", player.player_id, "需要弃置", need_discard, "张牌（手牌", hand_count, "，上限", hand_limit, "）"])
+			_players_to_discard[player.get_id()] = need_discard
+			responsive_players.append(player.get_id())
+			GlobalConsole._print(["玩家", player.get_id(), "需要弃置", need_discard, "张牌（手牌", hand_count, "，上限", hand_limit, "）"])
 	if responsive_players.is_empty():
 		end_stage(game_state)
 		return

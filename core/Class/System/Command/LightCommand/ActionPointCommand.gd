@@ -47,7 +47,7 @@ class Context extends CommandContext:
 	func get_primary_modifier_player_ids() -> PackedInt32Array:
 		if not player:
 			return PackedInt32Array()
-		return PackedInt32Array([player.player_id])
+		return PackedInt32Array([player.get_id()])
 
 ## 构造函数
 func _init(p_player: Player, p_amount: int, p_operation: Context.Operation, p_event_name: StringName = &"", name_overriding: StringName = &"ActionPointChange", context_overriding: Context = Context.new()) -> void:
@@ -60,7 +60,7 @@ func _init(p_player: Player, p_amount: int, p_operation: Context.Operation, p_ev
 		Context.Operation.SET:
 			context_overriding.set_set(p_amount)
 	context_overriding.set_event_name(p_event_name)
-	super._init(p_player.player_id, name_overriding, context_overriding)
+	super._init(p_player.get_id(), name_overriding, context_overriding)
 
 ## 执行命令
 func execute(game_state: GameState) -> void:

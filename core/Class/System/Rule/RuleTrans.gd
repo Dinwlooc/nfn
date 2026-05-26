@@ -11,12 +11,12 @@ static func send_count_change(
 	event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.UPDATE,
 	custom_params: Dictionary[StringName, Variant] = {}
 ) -> void:
-	var source_player_id: int = source_area.player.player_id if source_area else RenderRequest.PUBLIC_AREA_PLAYER_ID
+	var source_player_id: int = source_area.player.get_id() if source_area else RenderRequest.PUBLIC_AREA_PLAYER_ID
 	var request: RenderRequest.ItemCountSet = RenderRequest.ItemCountSet.new(
 		target_area.area_name,
 		new_total_count,
 		event_type,
-		target_area.player.player_id,
+		target_area.player.get_id(),
 		source_area.area_name if source_area else target_area.area_name,
 		source_player_id
 	)
@@ -34,10 +34,10 @@ static func send_items(
 	_distribute_item_request(
 		source_area, target_area, new_items,
 		target_area.area_name, event_type,
-		target_area.player.player_id,
+		target_area.player.get_id(),
 		custom_params,
 		source_area.area_name if source_area else target_area.area_name,
-		source_area.player.player_id if source_area else target_area.player.player_id
+		source_area.player.get_id() if source_area else target_area.player.get_id()
 	)
 
 ## 发送卡牌列表到客户端，根据区域可见性决定使用的包类型。
@@ -58,9 +58,9 @@ static func send_cards(
 			target_area.area_name,
 			new_cards.size(),
 			event_type,
-			target_area.player.player_id,
+			target_area.player.get_id(),
 			source_area.area_name,
-			source_area.player.player_id
+			source_area.player.get_id()
 		)
 		req.set_custom_params(custom_params)
 		req.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)

@@ -25,6 +25,6 @@ func execute(game_state: GameState) -> void:
 		if next_player == null:
 			complete()
 			return
-		target_id = next_player.player_id
+		target_id = next_player.get_id()
 	game_state.start_new_round(target_id)
 	complete()

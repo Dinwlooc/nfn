@@ -40,7 +40,7 @@ func _ensure_player_dict(player_id: int) -> void:
 
 ## 为新玩家创建所有私有区域实例
 func create_areas_for_player(player: Player) -> void:
-	var pid: int = player.player_id
+	var pid: int = player.get_id()
 	_ensure_player_dict(pid)
 	var player_areas: Dictionary = _areas[pid]
 	if not player_areas.has(GlobalConstants.DefaultArea.HAND):

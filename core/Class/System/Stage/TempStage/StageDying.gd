@@ -20,7 +20,7 @@ var _pending_stage_end: bool = false
 func _init(p_dying_player: Player) -> void:
 	super._init()
 	dying_player = p_dying_player
-	temporary_stage_player_id = dying_player.player_id
+	temporary_stage_player_id = dying_player.get_id()
 	stage_name = &"Dying"
 	time_limit = DEFAULT_TIME_LIMIT
 	_current_time_limit = DEFAULT_TIME_LIMIT
@@ -114,7 +114,7 @@ func _on_all_commands_completed_impl(game_state: GameState) -> void:
 func _grant_response_permission_to_all_players(game_state: GameState) -> void:
 	var all_player_ids: PackedInt32Array = []
 	for player in game_state.player_manager.players:
-		all_player_ids.append(player.player_id)
+		all_player_ids.append(player.get_id())
 	game_state.set_responsive_players(all_player_ids)
 ## 撤销所有玩家的响应权（用于锁定或暂停）
 func _revoke_response_permission(game_state: GameState) -> void:
@@ -143,4 +143,4 @@ func _stop_timer() -> void:
 func _generate_player_death_command(game_state: GameState) -> void:
 	var death_cmd := PlayerDeathCommand.new(dying_player)
 	game_state.queue_behavior(death_cmd)
-	GlobalConsole._print(["濒死阶段：玩家", dying_player.player_id, "死亡，已生成死亡命令"])
+	GlobalConsole._print(["濒死阶段：玩家", dying_player.get_id(), "死亡，已生成死亡命令"])

@@ -8,7 +8,6 @@ class RuleResult:
 	var command: BehaviorCommand
 	var message: String
 
-	## 初始化结果
 	func _init(p_is_valid: bool, p_command: BehaviorCommand = null, p_message: String = "") -> void:
 		is_valid = p_is_valid
 		command = p_command
@@ -16,10 +15,11 @@ class RuleResult:
 
 ## 验证器名称常量
 class Validator:
-	const TARGET_PERMISSION := &"target_permission"   ## 目标许可验证器
-	const DISTANCE_PERMISSION := &"distance_permission" ## 距离许可验证器
-	const PLAY_AREA_MODE := &"play_area_mode"         ## 出牌区域模式验证器
-	const CONSUME_MODE := &"consume_mode"             ## 消耗模式验证器
+	const TARGET_PERMISSION := &"target_permission"      # 目标许可验证器
+	const DISTANCE_PERMISSION := &"distance_permission"  # 距离许可验证器
+	const PLAY_AREA_MODE := &"play_area_mode"            # 出牌区域模式验证器
+	const CONSUME_MODE := &"consume_mode"                # 消耗模式验证器
+	const TARGET_SEATED := &"target_seated"              # 目标必须在座验证器
 
 ## 目标许可掩码枚举
 enum TargetPermissionFlags {
@@ -35,9 +35,9 @@ enum PlayAreaMode {
 
 ## 消耗模式枚举
 enum ConsumeMode {
-	CONSUME_CHECK,   ## 消耗且检查（默认）
-	NO_COST,         ## 无消耗
-	CONSUME_NO_CHECK ## 消耗但不检查
+	CONSUME_CHECK,   # 消耗且检查（默认）
+	NO_COST,         # 无消耗
+	CONSUME_NO_CHECK # 消耗但不检查
 }
 
 ## 卡牌类型预设规则（键为卡牌类型 StringName）
@@ -47,18 +47,21 @@ static var _card_rules: Dictionary = {
 		&"distance_check": true,
 		&"play_area_mode": PlayAreaMode.TARGET_DEFENSE,
 		&"consume_mode": ConsumeMode.CONSUME_CHECK,
+		&"target_seated": true,
 	},
 	GlobalConstants.DefaultCard.SPELL: {
 		&"target_permission": TargetPermissionFlags.SELF | TargetPermissionFlags.OTHER,
 		&"distance_check": false,
 		&"play_area_mode": PlayAreaMode.CENTER,
 		&"consume_mode": ConsumeMode.CONSUME_CHECK,
+		&"target_seated": true,
 	},
 	GlobalConstants.DefaultCard.DEFENCE: {
 		&"target_permission": TargetPermissionFlags.SELF,
 		&"distance_check": false,
 		&"play_area_mode": PlayAreaMode.TARGET_DEFENSE,
 		&"consume_mode": ConsumeMode.NO_COST,
+		&"target_seated": true,
 	}
 }
 
@@ -75,7 +78,7 @@ static func check_and_create_command(
 		return RuleResult.new(false, null, "卡牌实例为空")
 	if not source_player:
 		return RuleResult.new(false, null, "源玩家实例为空")
-	var hand_area: AreaHand = game_state.get_hand_area(source_player.player_id)
+	var hand_area: AreaHand = game_state.get_hand_area(source_player.get_id())
 	if not hand_area or not hand_area.get_card_by_id(card.id):
 		return RuleResult.new(false, null, "玩家不拥有该卡牌")
 	var card_type: StringName = card.type
@@ -88,6 +91,7 @@ static func check_and_create_command(
 	for key in override_rules:
 		merged_overrides[key] = override_rules[key]
 	var rule_config: Dictionary = _merge_rule_config(base_rule_config, merged_overrides)
+	# 验证目标许可
 	var target_result: RuleResult = _validate_target_permission(
 		rule_config[Validator.TARGET_PERMISSION],
 		source_player,
@@ -96,10 +100,17 @@ static func check_and_create_command(
 	)
 	if not target_result.is_valid:
 		return target_result
+	# 验证目标必须在座位（如果存在目标玩家且卡牌要求目标在座）
+	if target_player != null and rule_config.get(Validator.TARGET_SEATED, true):
+		var seat_idx: int = game_state.player_manager.get_seat_index_by_player_id(target_player.get_id())
+		if seat_idx == -1:
+			return RuleResult.new(false, null, "目标玩家已不在座位上，无法对其使用卡牌")
+	# 距离验证
 	if rule_config.get(&"distance_check", false):
 		var distance_result: RuleResult = _validate_distance(card, source_player, target_player, game_state)
 		if not distance_result.is_valid:
 			return distance_result
+	# 消耗验证
 	var consume_mode: int = rule_config.get(Validator.CONSUME_MODE, ConsumeMode.CONSUME_CHECK)
 	if consume_mode == ConsumeMode.CONSUME_CHECK:
 		var total_cost: int = _calculate_total_cost(card, source_player)
@@ -113,18 +124,18 @@ static func check_and_create_command(
 static func _calculate_total_cost(card: Card, _source_player: Player) -> int:
 	return card.get_attribute(&"cost")
 
-## 合并基础规则与覆盖规则（仅在存在有效覆盖时创建副本）
+## 合并基础规则与覆盖规则（仅处理已知验证器）
 static func _merge_rule_config(base: Dictionary, overrides: Dictionary) -> Dictionary:
 	var has_override := false
 	for key in overrides:
-		if key == Validator.TARGET_PERMISSION or key == Validator.DISTANCE_PERMISSION or key == Validator.PLAY_AREA_MODE or key == Validator.CONSUME_MODE:
+		if key in [Validator.TARGET_PERMISSION, Validator.DISTANCE_PERMISSION, Validator.PLAY_AREA_MODE, Validator.CONSUME_MODE, Validator.TARGET_SEATED]:
 			has_override = true
 			break
 	if not has_override:
 		return base
 	var merged: Dictionary = base.duplicate()
 	for key in overrides:
-		if key == Validator.TARGET_PERMISSION or key == Validator.DISTANCE_PERMISSION or key == Validator.PLAY_AREA_MODE or key == Validator.CONSUME_MODE:
+		if key in [Validator.TARGET_PERMISSION, Validator.DISTANCE_PERMISSION, Validator.PLAY_AREA_MODE, Validator.CONSUME_MODE, Validator.TARGET_SEATED]:
 			merged[key] = overrides[key]
 	return merged
 
@@ -139,7 +150,7 @@ static func _validate_target_permission(
 		return RuleResult.new(true)
 	if area_mode != PlayAreaMode.CENTER and target == null:
 		return RuleResult.new(false, null, "此卡牌需要指定一个目标玩家")
-	var is_self :bool= (target.player_id == source.player_id)
+	var is_self :bool= (target.get_id() == source.get_id())
 	if is_self:
 		if not (permission_mask & TargetPermissionFlags.SELF):
 			return RuleResult.new(false, null, "此卡牌不能对自己使用")
@@ -150,7 +161,7 @@ static func _validate_target_permission(
 
 ## 验证距离限制
 static func _validate_distance(card: Card, source: Player, target: Player, game_state: GameState) -> RuleResult:
-	if target == null or target.player_id == source.player_id:
+	if target == null or target.get_id() == source.get_id():
 		return RuleResult.new(true)
 	var card_range: int = card.get_attribute(&"attack_range")
 	if card_range < 0:
@@ -165,7 +176,7 @@ static func _validate_distance(card: Card, source: Player, target: Player, game_
 
 ## 构建出牌命令
 static func _build_command(source: Player, card: Card, target: Player, area_mode: PlayAreaMode, ap_source_player: Player = null) -> BehaviorCommand:
-	var target_player_id: int = target.player_id if target else 0
+	var target_player_id: int = target.get_id() if target else 0
 	var target_area_type: int
 	match area_mode:
 		PlayAreaMode.CENTER:
@@ -173,7 +184,7 @@ static func _build_command(source: Player, card: Card, target: Player, area_mode
 		PlayAreaMode.TARGET_DEFENSE:
 			target_area_type = PlayCardsCommand.Context.TargetAreaType.PLAYER_DEF
 	return PlayCardsCommand.new(
-		source.player_id,
+		source.get_id(),
 		PackedInt32Array([card.id]),
 		target_player_id,
 		target_area_type,
