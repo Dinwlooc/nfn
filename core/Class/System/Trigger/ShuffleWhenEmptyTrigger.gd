@@ -7,7 +7,7 @@ func _init(game_state: GameState) -> void:
 	if game_state:
 		game_state.all_commands_completed.connect(_on_idle)
 
-func _on_idle() -> void:
+func _on_idle(game_state:GameState) -> void:
 	if not _game_state:
 		return
 	var drawing: AreaDrawing = _game_state.get_drawing_area()

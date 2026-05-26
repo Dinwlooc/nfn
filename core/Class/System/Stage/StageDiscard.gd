@@ -173,18 +173,6 @@ func _random_select(hand_area: AreaHand, count: int) -> PackedInt32Array:
 func _reset_timer() -> void:
 	request_reset_timer.emit(TIME_LIMIT)
 
-# ========== 信号管理 ==========
-func _connect_all_commands_completed_signal(game_state: GameState) -> void:
-	_disconnect_all_commands_completed_signal(game_state)
-	_all_commands_completed_binding = _on_all_commands_completed.bind(game_state)
-	game_state.all_commands_completed.connect(_all_commands_completed_binding)
-
-func _disconnect_all_commands_completed_signal(game_state: GameState) -> void:
-	if _all_commands_completed_binding != Callable():
-		if game_state and game_state.all_commands_completed.is_connected(_all_commands_completed_binding):
-			game_state.all_commands_completed.disconnect(_all_commands_completed_binding)
-	_all_commands_completed_binding = Callable()
-
 func _on_all_commands_completed(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return

@@ -45,7 +45,7 @@ func get_top_cards(count: int) -> Array[Card]:
 		return get_all_cards()
 	var ids: PackedInt32Array = get_card_ids()
 	# 随机打乱 ID 顺序
-	var id_list: Array[int] = Array(ids)
+	var id_list: Array = Array(ids)
 	id_list.shuffle()
 	var selected_ids: PackedInt32Array = PackedInt32Array(id_list.slice(0, count))
 	return get_cards_by_ids(selected_ids)
@@ -62,7 +62,7 @@ func remove_top_cards(count: int) -> Array[Card]:
 		return remove_cards_by_ids(all_ids)
 	# 随机选择 count 张卡牌移除
 	var ids: PackedInt32Array = get_card_ids()
-	var id_list: Array[int] = Array(ids)
+	var id_list: Array = Array(ids)
 	id_list.shuffle()
 	var selected_ids: PackedInt32Array = PackedInt32Array(id_list.slice(0, count))
 	return remove_cards_by_ids(selected_ids)

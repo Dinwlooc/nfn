@@ -17,7 +17,7 @@ signal start_round(player_id: int)
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
 signal new_behavior(command: BehaviorCommand)
 signal request_set_responsive_players(player_ids: PackedInt32Array)
-signal all_commands_completed()
+signal all_commands_completed(game_state:GameState)
 
 ## 加载卡牌并将所有牌置入牌堆
 func load_cards() -> void:

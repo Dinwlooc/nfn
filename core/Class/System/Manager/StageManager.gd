@@ -109,7 +109,6 @@ func end_round(game_state: GameState) -> void:
 	current_player_id = 0
 	current_stage = null
 	current_main_stage_index = -1
-	#GlobalConsole._print(["StageManager:回合结束。"])
 	round_ended.emit()
 	round_completed.emit()
 
@@ -144,7 +143,7 @@ func _transition_to(new_stage: Stage, game_state: GameState) -> void:
 		# 使用一次性信号连接，在命令完成后启动阶段
 		var stage_to_start = new_stage
 		game_state.all_commands_completed.connect(
-			func():
+			func(game_state:GameState):
 			if current_stage == stage_to_start:
 				_start_stage(stage_to_start, game_state)
 			, CONNECT_ONE_SHOT

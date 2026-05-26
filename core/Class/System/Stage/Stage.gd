@@ -7,12 +7,9 @@ var time_limit: float = 0.0
 var temporary_stage_player_id: int = 0
 var is_ended: bool = false
 var is_paused: bool = false
-var _all_commands_completed_binding: Callable = Callable()
 const PUBLIC_PLAYER_ID := 1
 signal stage_ended(stage: Stage)
 signal request_reset_timer(new_time_limit: float)
-# 存储命令完成信号的绑定回调，用于安全断开
-
 func _init() -> void:
 	pass
 ## 返回当前阶段是否为临时阶段
@@ -67,16 +64,12 @@ func _connect_all_commands_completed_signal(game_state: GameState) -> void:
 	_disconnect_all_commands_completed_signal(game_state)
 	if not game_state:
 		return
-	_all_commands_completed_binding = _on_all_commands_completed_impl.bind(game_state)
-	game_state.all_commands_completed.connect(_all_commands_completed_binding)
+	game_state.all_commands_completed.connect(_on_all_commands_completed_impl)
 
 ## 断开命令完成信号连接
 func _disconnect_all_commands_completed_signal(game_state: GameState) -> void:
-	if _all_commands_completed_binding == Callable():
-		return
-	if game_state and game_state.all_commands_completed.is_connected(_all_commands_completed_binding):
-		game_state.all_commands_completed.disconnect(_all_commands_completed_binding)
-	_all_commands_completed_binding = Callable()
+	if game_state and game_state.all_commands_completed.is_connected(_on_all_commands_completed_impl):
+		game_state.all_commands_completed.disconnect(_on_all_commands_completed_impl)
 
 ## 抽象方法：子类必须实现，定义命令全部完成后的恢复响应权行为
 func _on_all_commands_completed_impl(_game_state: GameState) -> void:

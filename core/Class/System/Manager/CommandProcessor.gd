@@ -19,7 +19,7 @@ func process() -> void:
 			is_empty = true
 			enable_processing.emit(false)
 			all_completed.emit()
-			game_state.all_commands_completed.emit()
+			game_state.all_commands_completed.emit(game_state)
 		return
 	var current_behavior: BehaviorCommand = behavior_stack.back()
 	if current_behavior._is_completed:
