@@ -10,6 +10,9 @@ const VERSION_MAX: int = 65535
 func _init(init_id: int = 0) -> void:
 	id = init_id
 
+static func init_from_item(item: Item) -> ItemPack:
+	return null
+
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, id)
 	SerializationUtil.write(buffer, version)

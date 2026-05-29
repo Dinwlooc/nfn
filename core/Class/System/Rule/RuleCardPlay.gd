@@ -164,8 +164,8 @@ static func _validate_distance(card: Card, source: Player, target: Player, game_
 	if target == null or target.get_id() == source.get_id():
 		return RuleResult.new(true)
 	var card_range: int = card.get_attribute(&"attack_range")
-	if card_range < 0:
-		return RuleResult.new(true)
+	if card_range <= 1:
+		card_range = 1
 	var distance: int = game_state.player_manager.calculate_distance(
 		source.seat_index,
 		target.seat_index

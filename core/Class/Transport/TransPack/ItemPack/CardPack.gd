@@ -17,8 +17,15 @@ var type: int
 const ItemType = GlobalConstants.KEY_ITEM_TYPE
 const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
 
+## 根据物品实例创建全量数据包（统一工厂方法）
+static func init_from_item(item: Item) -> CardPack:
+	var card := item as Card
+	if card == null:
+		return null
+	return init_from_card(card)
+
 static func init_from_card(card: Card) -> CardPack:
-	return CardPack.new(card.id, card.name, card.type)
+	return CardPack.new(card.id, card.get_name(), card.type)
 
 func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL) -> void:
 	super._init(init_id)
@@ -71,9 +78,9 @@ func update_merge_mask() -> void:
 func _update_and_calculate_delta(card: Card) -> void:
 	var new_type := GlobalRegistry.get_constant_index(ItemType, card.type)
 	merge_mask = 0
-	if name != card.name:
+	if name != card.get_name():
 		merge_mask |= 1 << MainProperty.NAME
-		name = card.name
+		name = card.get_name()
 	if type != new_type:
 		merge_mask |= 1 << MainProperty.TYPE
 		type = new_type

@@ -21,17 +21,24 @@ var suit: int
 var modified_power: int
 var modified_cost: int
 
+## 根据物品实例创建全量数据包（统一工厂方法）
+static func init_from_item(item: Item) -> HandCardPack:
+	var card := item as Card
+	if card == null:
+		return null
+	return init_from_card(card)
+
 static func init_from_card(card: Card) -> HandCardPack:
-	if card is HandCard:
+	if card is Card:
 		return HandCardPack.new(
 			card.id,
-			card.name,
+			card.get_name(),
 			card.type,
-			card.power,
-			card.cost,
+			card.get_base_power(),
+			card.get_base_cost(),
 			card.suit,
-			card.get_attribute(&"power"),
-			card.get_attribute(&"cost")
+			card.get_power(),
+			card.get_cost()
 		)
 	return null
 
@@ -128,19 +135,19 @@ func update_merge_mask() -> void:
 
 func _update_and_calculate_delta(card: Card) -> void:
 	super._update_and_calculate_delta(card)
-	if card is not HandCard:
+	if card is not Card:
 		return
-	if power != card.power:
+	if power != card.get_base_power():
 		merge_mask |= 1 << Property.POWER
-		power = card.power
-	if cost != card.cost:
+		power = card.get_base_power()
+	if cost != card.get_base_cost():
 		merge_mask |= 1 << Property.COST
-		cost = card.cost
+		cost = card.get_base_cost()
 	if suit != card.suit:
 		merge_mask |= 1 << Property.SUIT
 		suit = card.suit
-	var new_modified_power: int = card.get_attribute(&"power")
-	var new_modified_cost: int = card.get_attribute(&"cost")
+	var new_modified_power: int = card.get_power()
+	var new_modified_cost: int = card.get_cost()
 	if modified_power != new_modified_power:
 		merge_mask |= 1 << Property.MODIFIED_POWER
 		modified_power = new_modified_power

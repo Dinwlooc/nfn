@@ -11,8 +11,8 @@ class Context extends CommandContext:
 		DONE            # 完成
 	}
 
-	var card1: HandCard
-	var card2: HandCard
+	var card1: Card
+	var card2: Card
 	var event_name: StringName
 	var cached_power1: float = 0.0
 	var cached_power2: float = 0.0
@@ -26,7 +26,7 @@ class Context extends CommandContext:
 		TIE
 	}
 	## 工具方法：设置拼点卡片
-	func set_cards(card_a: HandCard, card_b: HandCard, source_event_name: StringName) -> void:
+	func set_cards(card_a: Card, card_b: Card, source_event_name: StringName) -> void:
 		card1 = card_a
 		card2 = card_b
 		event_name = source_event_name

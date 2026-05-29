@@ -26,5 +26,5 @@ static func _apply_suppress(source_card: Card, target_card: Card, src_area: Area
 		source_card
 	)
 	state.queue_behavior(self_destroy_cmd)
-	var cmd: BehaviorCommand = DestroyXModifier.generate_command(owner, source_card, target_card, src_area, destroy_x, state)
+	var cmd: BehaviorCommand = ComponentDestroyX.generate_command(owner, source_card, target_card, src_area, destroy_x, state)
 	state.queue_behavior(cmd)

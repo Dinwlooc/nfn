@@ -11,7 +11,7 @@ func data_update(item:RenderItem,render_event:RenderEvent = RenderEvent.NULL_EVE
 func render_update(_render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	pass
 
-func get_suit(suit:HandCard.Suit) ->int:
+func get_suit(suit:Card.Suit) ->int:
 	return suit
 
 func get_item_main_icon(item_name:StringName) -> Texture:

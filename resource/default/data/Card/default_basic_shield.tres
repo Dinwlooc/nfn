@@ -1,14 +1,22 @@
-[gd_resource type="Resource" script_class="HandCard" load_steps=2 format=3 uid="uid://eugf8ukhmudx"]
+[gd_resource type="Resource" script_class="CardData" load_steps=5 format=3 uid="uid://eugf8ukhmudx"]
 
-[ext_resource type="Script" uid="uid://dd70gbxq1gppb" path="res://core/Class/System/Card/HandCard.gd" id="1_p7ck0"]
+[ext_resource type="Script" uid="uid://chndppyj08lvd" path="res://core/Class/System/Item/AttributeData.gd" id="1_8utbd"]
+[ext_resource type="Script" uid="uid://xwa2xhc857ep" path="res://core/Class/Transport/TransPack/ItemPack/HandCardPack.gd" id="2_ahaay"]
+[ext_resource type="Script" uid="uid://b04wnl4nfxsn2" path="res://core/Class/System/Item/CardData.gd" id="3_ivra0"]
+
+[sub_resource type="Resource" id="Resource_b323l"]
+script = ExtResource("1_8utbd")
+attribute = &"power"
+value = 3.0
+arithmetic_type = 0
+modifier_name = &"base_value"
 
 [resource]
-script = ExtResource("1_p7ck0")
-power = 3
-cost = 1
-suit = 4
-attack_range = 1
-settlement_damage_bonus = 0
+script = ExtResource("3_ivra0")
 name = &"nfn:basic_shield"
 type = &"defence"
-metadata/_custom_type_script = "uid://dd70gbxq1gppb"
+attribute_defaults = Array[ExtResource("1_8utbd")]([SubResource("Resource_b323l")])
+modifiers = Array[Script]([])
+rule_overrides = {}
+pack_class = ExtResource("2_ahaay")
+_reset_to_defaults = false

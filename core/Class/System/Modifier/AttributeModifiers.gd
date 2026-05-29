@@ -149,3 +149,8 @@ func compute_with_temporary_bonus(attribute: StringName, bonus: float) -> int:
 	var base_val: float = temp_vals[TYPE_BASE_ADD] * (1.0 + temp_vals[TYPE_BASE_MULTIPLY])
 	var final_val: float = (base_val + temp_vals[TYPE_FINAL_ADD]) * temp_vals[TYPE_FINAL_MULTIPLY]
 	return int(round(final_val))
+
+## 清除所有属性修饰器，重置到空白状态
+func clear() -> void:
+	modifiers_dict.clear()
+	combined_values.clear()

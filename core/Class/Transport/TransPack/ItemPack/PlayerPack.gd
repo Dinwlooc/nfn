@@ -58,9 +58,12 @@ var morale_attack: int
 var morale_defense: int
 var morale_level: int
 ## 根据玩家实例创建全量数据包。
-## @param player 玩家实例
-## @return 填充了玩家当前所有数据的 PlayerPack
-static func init_from_player(player: Player) -> PlayerPack:
+## @param player 玩家实例（必须是 Player 类型）
+## @return 填充了玩家当前所有数据的 PlayerPack，若类型不匹配返回 null
+static func init_from_item(item: Item) -> PlayerPack:
+	var player := item as Player
+	if not player:
+		return null
 	return PlayerPack.new(
 		player.get_id(),
 		player.seat_index,

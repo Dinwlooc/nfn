@@ -8,4 +8,4 @@ func _init_expand()->void:
 
 func _on_area_card_added(card:Card,_area:Area)->void:
 	card.clear_player()
-	card.reset_card()
+	card.reset_item()
