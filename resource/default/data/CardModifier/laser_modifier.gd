@@ -1,8 +1,8 @@
 ## 激光修饰器：压制时对被压制牌造成「摧毁4」并摧毁自身。
-class_name LaserModifier
 extends Modifier
 
-const ComponentDestroyX:Script = preload("res://resource/default/data/CardModifier/component/ComponentDestroyX.gd")
+const CONST_NFN:Script = preload("res://resource/default/const_config.gd")
+const ComponentDestroyX:Script = CONST_NFN.ComponentDestroyX
 const destroy_x:int = 4
 ## 修饰器处理入口，由上层系统自动调用。
 ## @param ctx:     当前命令上下文
