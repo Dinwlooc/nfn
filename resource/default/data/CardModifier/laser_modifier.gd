@@ -2,12 +2,13 @@
 class_name LaserModifier
 extends Modifier
 
+const ComponentDestroyX:Script = preload("res://resource/default/data/CardModifier/component/ComponentDestroyX.gd")
 const destroy_x:int = 4
 ## 修饰器处理入口，由上层系统自动调用。
 ## @param ctx:     当前命令上下文
 ## @param state:   全局游戏状态
 ## @param creator: 修饰器附着的主体对象（Card 实例）
-static func process(ctx: CommandContext, state: GameState, creator: Object) -> void:
+static func process(ctx: CommandContext, state: GameState, creator: Item) -> void:
 	if not (creator is Card):
 		return
 	var source_card: Card = creator as Card

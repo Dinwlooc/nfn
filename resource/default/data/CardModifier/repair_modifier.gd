@@ -5,7 +5,7 @@ extends Modifier
 ## @param ctx     当前命令上下文（应为 SkillCommand.Context）
 ## @param state   全局游戏状态
 ## @param creator 附着此修饰器的卡牌实例
-static func process(ctx: CommandContext, state: GameState, creator: Object) -> void:
+static func process(ctx: CommandContext, state: GameState, creator: Item) -> void:
 	# 仅处理技能命令的技能阶段，并且是当前卡牌发动的技能
 	if not RuleModifierTiming.is_skill_phase(ctx, creator):
 		return

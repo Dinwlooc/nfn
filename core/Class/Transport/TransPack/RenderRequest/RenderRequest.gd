@@ -22,6 +22,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, mask)
 	if mask & 1:
 		SerializationUtil.write(buffer, target_area_player_id)
+	SerializationUtil.write(buffer, custom_params)
 
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> RenderRequest:
 	if pack == NULL_PACK:
@@ -32,7 +33,9 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = 
 		pack.target_area_player_id = SerializationUtil.read(buffer, TYPE_INT)
 	else:
 		pack.target_area_player_id = PUBLIC_AREA_PLAYER_ID
+	pack.custom_params = SerializationUtil.read(buffer, TYPE_DICTIONARY)
 	return pack
+
 
 # ========== ItemSet ==========
 class ItemSet extends RenderRequest:
@@ -71,8 +74,6 @@ class ItemSet extends RenderRequest:
 		super.serialize_to_buffer(buffer)
 		SerializationUtil.write(buffer, event_type)
 		SerializationUtil.write(buffer, event_source_player_id)
-		if event_type == EventType.CUSTOM:
-			SerializationUtil.write(buffer, JSON.stringify(custom_params))
 		ItemSerializer.serialize_array(items, buffer)
 		_mask = SourceMask.NONE
 		if source_area_name != target_area:
@@ -93,10 +94,6 @@ class ItemSet extends RenderRequest:
 		if item_set:
 			item_set.event_type = SerializationUtil.read(buffer, TYPE_INT)
 			item_set.event_source_player_id = SerializationUtil.read(buffer, TYPE_INT)
-			if item_set.event_type == EventType.CUSTOM:
-				var json_str: String = SerializationUtil.read(buffer, TYPE_STRING)
-				if not json_str.is_empty():
-					item_set.custom_params = JSON.parse_string(json_str)
 			item_set.items = ItemSerializer.deserialize_array(buffer)
 			var mask: int = SerializationUtil.read(buffer, TYPE_INT)
 			if mask & SourceMask.AREA_NAME:
@@ -148,8 +145,7 @@ class ItemCountSet extends RenderRequest:
 		SerializationUtil.write(buffer, total_count)
 		SerializationUtil.write(buffer, event_type)
 		SerializationUtil.write(buffer, event_source_player_id)
-		if event_type == ItemSet.EventType.CUSTOM:
-			SerializationUtil.write(buffer, JSON.stringify(custom_params))
+		# 删除了原来的 JSON.stringify(custom_params)，基类已处理
 		_mask = SourceMask.NONE
 		if source_area_name != target_area:
 			_mask |= SourceMask.AREA_NAME
@@ -170,10 +166,7 @@ class ItemCountSet extends RenderRequest:
 			count_set.total_count = SerializationUtil.read(buffer, TYPE_INT)
 			count_set.event_type = SerializationUtil.read(buffer, TYPE_INT)
 			count_set.event_source_player_id = SerializationUtil.read(buffer, TYPE_INT)
-			if count_set.event_type == ItemSet.EventType.CUSTOM:
-				var json_str: String = SerializationUtil.read(buffer, TYPE_STRING)
-				if not json_str.is_empty():
-					count_set.custom_params = JSON.parse_string(json_str)
+			# 删除了原来的 JSON.parse_string，基类已读取 custom_params
 			var mask: int = SerializationUtil.read(buffer, TYPE_INT)
 			if mask & SourceMask.AREA_NAME:
 				count_set.source_area_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
@@ -187,6 +180,8 @@ class ItemCountSet extends RenderRequest:
 
 	static func get_class_name_static() -> StringName:
 		return &"ItemCountSet"
+
+
 # ========== StageNotifyRequest ==========
 class StageNotifyRequest extends RenderRequest:
 	var current_player_id: int
@@ -203,22 +198,20 @@ class StageNotifyRequest extends RenderRequest:
 		custom_params = params
 
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
-		super.serialize_to_buffer(buffer)
+		super.serialize_to_buffer(buffer)   # 基类已写入 custom_params
 		SerializationUtil.write(buffer, current_player_id)
 		SerializationUtil.write(buffer, stage_name)
 		SerializationUtil.write(buffer, temporary_stage_player_id)
-		SerializationUtil.write(buffer, custom_params)
 
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> RenderRequest:
 		if pack == NULL_PACK:
 			pack = StageNotifyRequest.new(0, &"")
-		super.deserialize_from_buffer(buffer, pack)
+		super.deserialize_from_buffer(buffer, pack)   # 基类已读取 custom_params
 		var req = pack as StageNotifyRequest
 		if req:
 			req.current_player_id = SerializationUtil.read(buffer, TYPE_INT)
 			req.stage_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 			req.temporary_stage_player_id = SerializationUtil.read(buffer, TYPE_INT)
-			req.custom_params = SerializationUtil.read(buffer, TYPE_DICTIONARY)
 		return pack
 
 	static func get_class_name_static() -> StringName:

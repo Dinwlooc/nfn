@@ -6,5 +6,5 @@ class_name Modifier
 static func init(source: Object) -> void:
 	pass
 ## 主处理方法，用于应用修饰器效果。
-static func process(context: CommandContext, state: GameState, creator: Object) -> void:
+static func process(context: CommandContext, state: GameState, creator: Item) -> void:
 	pass

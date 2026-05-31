@@ -1,5 +1,5 @@
 ## 摧毁-x 修饰器组件：返回命令实例而非直接执行。
-class_name ComponentDestroyX
+extends RefCounted
 
 ## 返回组件名称（同时用作属性修饰器名）
 static func get_component_name() -> StringName:
