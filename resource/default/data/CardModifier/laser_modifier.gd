@@ -1,8 +1,7 @@
 ## 激光修饰器：压制时对被压制牌造成「摧毁4」并摧毁自身。
 extends Modifier
 
-const CONST_NFN:Script = preload("res://resource/default/const_config.gd")
-const ComponentDestroyX:Script = CONST_NFN.ComponentDestroyX
+const ComponentDestroyX:Script = preload("res://resource/default/data/Component/ComponentDestroyX.gd")
 const destroy_x:int = 4
 ## 修饰器处理入口，由上层系统自动调用。
 ## @param ctx:     当前命令上下文
@@ -27,5 +26,7 @@ static func _apply_suppress(source_card: Card, target_card: Card, src_area: Area
 		source_card
 	)
 	state.queue_behavior(self_destroy_cmd)
+	if not ComponentDestroyX:
+		return
 	var cmd: BehaviorCommand = ComponentDestroyX.generate_command(owner, source_card, target_card, src_area, destroy_x, state)
 	state.queue_behavior(cmd)
