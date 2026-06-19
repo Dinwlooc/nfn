@@ -9,7 +9,8 @@ static var system_trigger_classes: Array[Script] = [
 	PlayerTrigger,
 	CommandTrigger,
 	OperationTrigger,
-	TimerTimeoutTrigger
+	TimerTimeoutTrigger,
+	StageTrigger,
 ]
 static var gamestate_trigger_classes: Array[Script] = [
 	DefenseBattleTrigger,

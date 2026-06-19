@@ -2,12 +2,11 @@
 extends RefCounted
 class_name RenderAreaManager
 
-## 公共区域固定玩家ID（实际应为全局常量，此处引用 RenderContext 的常量）
+## 公共区域固定玩家ID
 const PUBLIC_PLAYER_ID: int = RenderContext.PUBLIC_PLAYER_ID
-
 ## 渲染区域注册表：player_id -> { area_name -> RenderArea }
 var render_areas: Dictionary[int, Dictionary] = {}
-## 区域创建回调表：player_id -> { area_name -> Array[Callable] }
+## 区域创建回调表：player_id -> { area_name -> Dictionary[Callable, bool] }（使用字典模拟HashSet）
 var callback_map: Dictionary[int, Dictionary] = {}
 
 ## 当区域注册成功时发出
@@ -24,9 +23,15 @@ func _init(p_local_player_id: int = 0) -> void:
 	render_area_registered.connect(_on_area_registered)
 
 func _on_area_registered(area_name: StringName, area: RenderArea, player_id: int) -> void:
-	if callback_map.has(player_id) and callback_map[player_id].has(area_name):
-		for callback in callback_map[player_id][area_name]:
-			callback.call(area)
+	var player_callbacks: Dictionary = callback_map.get(player_id,{})
+	if not player_callbacks:
+		return
+	var area_callbacks: Dictionary = player_callbacks.get(area_name,{})
+	if not area_callbacks:
+		return
+	var callbacks = area_callbacks.keys()
+	for cb in callbacks:
+		cb.call(area)
 
 func _get_actual_player_id(player_id: int) -> int:
 	if local_player_id == 0:
@@ -34,7 +39,6 @@ func _get_actual_player_id(player_id: int) -> int:
 	if player_id == local_player_id:
 		return PUBLIC_PLAYER_ID
 	return player_id
-
 ## 注册区域创建回调
 func connect_renderarea(area_name: StringName, callback: Callable, player_id: int = PUBLIC_PLAYER_ID) -> void:
 	var actual_id = _get_actual_player_id(player_id)
@@ -42,20 +46,26 @@ func connect_renderarea(area_name: StringName, callback: Callable, player_id: in
 		callback.call(render_areas[actual_id][area_name])
 	if not callback_map.has(actual_id):
 		callback_map[actual_id] = {}
-	if not callback_map[actual_id].has(area_name):
-		callback_map[actual_id][area_name] = []
-	if not callback_map[actual_id][area_name].has(callback):
-		callback_map[actual_id][area_name].append(callback)
+	var player_dict: Dictionary = callback_map[actual_id]
+	if not player_dict.has(area_name):
+		player_dict[area_name] = {}
+	var area_dict: Dictionary = player_dict[area_name]
+	area_dict[callback] = true
 
 ## 移除回调
 func disconnect_renderarea(area_name: StringName, callback: Callable, player_id: int = PUBLIC_PLAYER_ID) -> void:
 	var actual_id = _get_actual_player_id(player_id)
-	if callback_map.has(actual_id) and callback_map[actual_id].has(area_name):
-		callback_map[actual_id][area_name].erase(callback)
-		if callback_map[actual_id][area_name].is_empty():
-			callback_map[actual_id].erase(area_name)
-			if callback_map[actual_id].is_empty():
-				callback_map.erase(actual_id)
+	if not callback_map.has(actual_id):
+		return
+	var player_dict: Dictionary = callback_map[actual_id]
+	if not player_dict.has(area_name):
+		return
+	var area_dict: Dictionary = player_dict[area_name]
+	area_dict.erase(callback)
+	if area_dict.is_empty():
+		player_dict.erase(area_name)
+		if player_dict.is_empty():
+			callback_map.erase(actual_id)
 
 ## 注册区域实例
 func register_render_area(area: RenderArea, player_id: int = PUBLIC_PLAYER_ID) -> void:

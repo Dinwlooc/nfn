@@ -9,7 +9,6 @@ var custom_params: Dictionary[StringName,Variant]= {}
 
 func send_to_player(peer_id: int) -> void:
 	GlobalTransport.send_render_request(peer_id, self)
-
 ## 设置自定义参数字典（基类默认实现，不限制事件类型）
 func set_custom_params(params: Dictionary[StringName,Variant]) -> void:
 	custom_params = params

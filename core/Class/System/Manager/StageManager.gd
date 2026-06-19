@@ -11,7 +11,6 @@ var temp_stage_stack: Array[Stage] = []
 var current_main_stage_name: StringName = &""
 var current_player_id: int = 0
 # 信号
-
 signal stage_completed(stage: Stage)
 signal stage_rolled_back(old_stage: Stage, new_stage: Stage)
 signal temp_stages_cleared()
@@ -20,6 +19,8 @@ signal stage_changed(old_stage: Stage, new_stage: Stage)
 signal temp_stage_started(temp_stage: Stage)
 signal round_completed()
 signal stage_entered(stage: Stage)
+## 请求开始新一轮（用于通知触发器生成 NewRoundCommand）
+signal request_new_round(player_id: int)
 
 static var MAIN_STAGE_NAMES: PackedStringArray = [
 	&"Start",
@@ -28,7 +29,6 @@ static var MAIN_STAGE_NAMES: PackedStringArray = [
 	&"Discard",
 	&"End"
 ]
-
 static var MAIN_STAGES_SCRIPTS: Array[Script] = [
 	StageStart,
 	StageDraw,
@@ -134,13 +134,9 @@ func _transition_to(new_stage: Stage, game_state: GameState) -> void:
 	if not new_stage.is_temporary():
 		current_main_stage_name = new_stage.stage_name
 		complete_all_temp_stages(game_state)
-	# 计时器启动延迟到 _start_stage，此处不再启动
 	connect_stage_to_manager(new_stage, game_state)
-	# 发出阶段变更信号（阶段引用已更新）
 	stage_changed.emit(old_stage, new_stage)
-	# 检查是否还有命令未完成，决定立即启动或延迟启动
 	if game_state._process_active:
-		# 使用一次性信号连接，在命令完成后启动阶段
 		var stage_to_start = new_stage
 		game_state.all_commands_completed.connect(
 			func(game_state:GameState):
@@ -166,8 +162,7 @@ func _rollback_to_previous_stage(game_state: GameState) -> void:
 func _advance_to_next_main_stage(game_state: GameState) -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= main_stages.size():
-		#GlobalConsole._print(["StageManager:自动推进回合。"])
-		game_state.queue_behavior(NewRoundCommand.new(current_player_id))
+		request_new_round.emit(current_player_id)
 		return
 	_transition_to(main_stages[current_main_stage_index], game_state)
 
@@ -177,14 +172,7 @@ func _on_stage_ended(ended_stage: Stage, game_state: GameState) -> void:
 	if timer:
 		timer.stop()
 	stage_completed.emit(ended_stage)
-	if ended_stage.is_temporary():
-		game_state.queue_behavior(RollbackStageCommand.new(current_player_id, ended_stage))
-		#GlobalConsole._print(["StageManager:自动回退阶段。"])
-	else:
-		game_state.queue_behavior(SwitchMainStageCommand.new(current_player_id))
-		#GlobalConsole._print(["StageManager:自动推进阶段。"])
 
-## 由外部调用的超时处理（System 需连接 timer.timeout 到此方法，并绑定 game_state）
 func on_timer_timeout(game_state: GameState) -> void:
 	if current_stage and not current_stage.is_ended:
 		current_stage.timeout(game_state)
