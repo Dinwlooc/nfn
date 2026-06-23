@@ -1,4 +1,3 @@
-# file: Node_AreaFaceHand.gd
 extends AreaFace
 
 ## 原始位置（未展开时的锚点）
@@ -77,8 +76,11 @@ var _global_phase_index: int = 0
 var is_sorting: bool = false
 ## 当前卡牌总数决定的缩放因子（16张以下为1.0，32张时为0.75）
 var total_scale_factor: float = 1.0
-## 有序性计数器：手动交换、卡牌增删时 +1；排序完成后归零
+## 有序性计数器：手动交换、卡牌增加时 +1；排序完成后归零。
+## 牌减少时不改变此值，保持无序度不变。
 var _order_dirty_counter: int = 10
+## 是否有缓存的排序请求（在动画/排序进行期间产生的请求最多缓存一次）
+var _pending_sort_request: bool = false
 
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.HAND)
@@ -87,9 +89,9 @@ func _ready() -> void:
 	area_target_position = original_position
 	area_target_size = original_size
 	quick_sort_button.pressed.connect(_on_quick_sort_button_pressed)
-	ui_container.hide()  # 初始隐藏
+	ui_container.hide()
 	_generate_sine_table()
-	_update_total_scale_factor()  # 初始化缩放因子
+	_update_total_scale_factor()
 	last_swap_time_ms = -SWAP_COOLDOWN_DURATION_MS
 	play_card_button.pressed.connect(_on_play_card_button_pressed)
 	play_card_ui.visible = false
@@ -119,17 +121,21 @@ func _physics_process(delta: float) -> void:
 	elif Engine.get_process_frames() % 2 == 0:
 		card_move_expand()
 	if pending_swap && can_swap_immediately(Time.get_ticks_msec()):
-		try_dragging_move()      # 基类方法，重新判断拖拽卡牌方位和悬停
+		try_dragging_move()
 		pending_swap = false
 
 ## 更新渲染目标位置
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type: StringName = render_event.get_type()
-	if event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
-		_update_total_scale_factor()
+	if event_type == RenderEvent.DefaultType.CARD_ADD:
 		_order_dirty_counter += 1
-	if area.items_pool.size()>0:
-		var scaled_card_size: Vector2 = Vector2(area.items_pool[0].size.x * total_scale_factor,area.items_pool[0].size.y * total_scale_factor)
+		_update_total_scale_factor()
+		if _order_dirty_counter == 1:
+			_request_sort()
+	elif event_type == RenderEvent.DefaultType.CARD_REMOVE:
+		_update_total_scale_factor()
+	if area.items_pool.size() > 0:
+		var scaled_card_size: Vector2 = Vector2(area.items_pool[0].size.x * total_scale_factor, area.items_pool[0].size.y * total_scale_factor)
 		var virtual_pos: Vector2 = area_target_position - scaled_card_size / 2.0
 		var virtual_size: Vector2 = area_target_size
 		target_position = UIAnimationUtils.generate_coordinates(virtual_pos, virtual_size, area.items_pool.size())
@@ -137,9 +143,9 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 
 ## 触发卡牌移动动画
 func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	var event_type:StringName = render_event.get_type()
+	var event_type: StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.SWAP_CARD:
-		_order_dirty_counter += 1   # 手动交换（通过 swap_cards 触发），计数器 +1
+		_order_dirty_counter += 1
 	if event_type == RenderEvent.DefaultType.CARD_SELECTION_CHANGED:
 		var has_selection: bool = not area.get_selected_items().is_empty()
 		play_card_ui.visible = has_selection
@@ -186,8 +192,8 @@ func dragging_move(card: RenderItem) -> void:
 	var _target_position: Vector2 = get_global_mouse_position()
 	var dx: float = card.position.x - _target_position.x
 	var target_rot: float = _compute_rotation_from_dx(dx)
-	var target_scale_x: float = _compute_scale_from_dx(dx)  # 动态收缩，不乘总数因子
-	var target_scale_y: float = SCALE_NEUTRAL               # 恢复原始比例
+	var target_scale_x: float = _compute_scale_from_dx(dx)
+	var target_scale_y: float = SCALE_NEUTRAL
 	if current_drag_tween:
 		current_drag_tween.kill()
 	current_drag_tween = create_tween()
@@ -229,7 +235,6 @@ func swap_cards(drag_card: RenderItem) -> void:
 	area.move_item_to_index(drag_card.pool_id, hovering_card.pool_id, RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
 	hovering_card = null
 	last_swap_time_ms = current_time_ms
-
 
 ## 核心动画调度函数（已拆分辅助函数）
 func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
@@ -302,77 +307,70 @@ func _compute_scale_from_dx(dx: float) -> float:
 	var rotation_ratio: float = min(abs_dx / max_distance, MAX_ROTATION_RATIO)
 	return BASE_SCALE_FACTOR - rotation_ratio * MAX_SHRINK_FACTOR
 
-# 按钮按下时的处理（设置冷却）
-func _on_quick_sort_button_pressed() -> void:
-	if _order_dirty_counter == 0:      # 计数器为0时无需排序
-		return
+## 请求一次排序（自动或手动）。若正在排序中，则缓存请求（最多一次）；否则立即开始排序。
+func _request_sort() -> void:
 	if is_sorting:
+		if not _pending_sort_request:
+			_pending_sort_request = true
 		return
+	_start_sort()
+
+## 开始排序流程（设置状态、执行排序、完成后处理缓存请求）
+func _start_sort() -> void:
 	is_sorting = true
 	quick_sort_button.disabled = true
 	await _quick_sort_cards()
 	is_sorting = false
 	quick_sort_button.disabled = false
+	if _pending_sort_request:
+		_pending_sort_request = false
+		_start_sort()
 
-## 执行两步重排：先按类型分区，再在各类内部按 ID 排序。
+## 单次排序：按类型分组，组内按 ID 排序，然后一次性重排。
 func _quick_sort_cards() -> void:
 	var pool: Array[RenderItem] = area.items_pool
 	if pool.is_empty():
 		return
-	var card_type: StringName = pool[0].data.get_class_name()
-	var classification: Dictionary = _classify_pool_ids(pool)
-	var atk_ids: PackedInt32Array = classification[GlobalConstants.DefaultCard.ATTACK]
-	var def_ids: PackedInt32Array = classification[GlobalConstants.DefaultCard.DEFENCE]
-	var spl_ids: PackedInt32Array = classification[GlobalConstants.DefaultCard.SPELL]
-	var partitioned_ids: PackedInt32Array = _concat_arrays(atk_ids, def_ids, spl_ids)
-	area.rearrange_items(partitioned_ids, card_type)
-	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
-	await get_tree().create_timer(TWEEN_TIME).timeout
-	atk_ids.sort()
-	def_ids.sort()
-	spl_ids.sort()
-	var sorted_ids: PackedInt32Array = _concat_arrays(atk_ids, def_ids, spl_ids)
-	area.rearrange_items(sorted_ids, card_type)
+	# 按类型分组
+	var type_map: Dictionary = {}
+	for item in pool:
+		var type: StringName = item.data.get_card_type()
+		if not type_map.has(type):
+			type_map[type] = PackedInt32Array()
+		type_map[type].append(item.data.id)
+	# 定义类型顺序（攻击、防御、法术）
+	var type_order: Array[StringName] = [
+		GlobalConstants.DefaultCard.ATTACK,
+		GlobalConstants.DefaultCard.DEFENCE,
+		GlobalConstants.DefaultCard.SPELL
+	]
+	var sorted_ids: PackedInt32Array = PackedInt32Array()
+	# 先按顺序添加已知类型，再添加其他类型（如果有）
+	for t in type_order:
+		if type_map.has(t):
+			var ids: PackedInt32Array = type_map[t]
+			ids.sort()
+			sorted_ids += ids
+	# 处理未列入顺序的类型（放在最后）
+	for t in type_map.keys():
+		if t not in type_order:
+			var ids: PackedInt32Array = type_map[t]
+			ids.sort()
+			sorted_ids += ids
+	# 一次性重排（第二个参数还原为 get_class_name()）
+	area.rearrange_items(sorted_ids, pool[0].data.get_class_name())
 	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
 	_order_dirty_counter = 0
 
-## 扫描池一次，按类型将ID分组到三个紧缩数组中。
-func _classify_pool_ids(pool: Array[RenderItem]) -> Dictionary:
-	var atk: PackedInt32Array = PackedInt32Array()
-	var def: PackedInt32Array = PackedInt32Array()
-	var spl: PackedInt32Array = PackedInt32Array()
-	for item: RenderItem in pool:
-		var type: StringName = item.data.get_card_type()
-		if type == GlobalConstants.DefaultCard.ATTACK:
-			atk.append(item.data.id)
-		elif type == GlobalConstants.DefaultCard.DEFENCE:
-			def.append(item.data.id)
-		else:
-			spl.append(item.data.id)
-	return {GlobalConstants.DefaultCard.ATTACK: atk, GlobalConstants.DefaultCard.DEFENCE: def, GlobalConstants.DefaultCard.SPELL: spl}
-
-## 拼接三个紧缩数组为一个，保持原有顺序。
-func _concat_arrays(a: PackedInt32Array, b: PackedInt32Array, c: PackedInt32Array) -> PackedInt32Array:
-	var total: int = a.size() + b.size() + c.size()
-	var result: PackedInt32Array = PackedInt32Array()
-	result.resize(total)
-	var offset: int = 0
-	for i: int in a.size():
-		result[offset] = a[i]
-		offset += 1
-	for i: int in b.size():
-		result[offset] = b[i]
-		offset += 1
-	for i: int in c.size():
-		result[offset] = c[i]
-		offset += 1
-	return result
+func _on_quick_sort_button_pressed() -> void:
+	if _order_dirty_counter == 0:
+		return
+	_request_sort()
 
 func _on_play_card_button_pressed() -> void:
 	var op_manager:OperationManager= render_context.get_operation_manager()
 	var event:RenderEvent = op_manager.upload_play_card()
 
-# 添加回调
 func _on_discard_button_pressed() -> void:
 	if not render_context:
 		return
@@ -391,7 +389,6 @@ func _on_abandon_response_button_pressed() -> void:
 	var event: RenderEvent = op_manager.upload_abandon_response()
 	_handle_operation_event(event)
 
-# 处理操作事件，显示状态（简单示例）
 func _handle_operation_event(event: RenderEvent) -> void:
 	var status: int = event.config.get(&"status", -1)
 	if status == OperationManager.RequestStatus.SUCCESS:

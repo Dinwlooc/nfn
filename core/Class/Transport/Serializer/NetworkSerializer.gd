@@ -1,6 +1,6 @@
-extends SerializationUtil
+##待重构的网络信息序列化器。
+extends TransPackSerializer
 class_name NetworkSerializer
-
 
 # 序列化网络对象到字节数组
 static func serialize(obj: NetworkManager) -> PackedByteArray:
@@ -15,5 +15,5 @@ static func deserialize(bytes: PackedByteArray) -> Dictionary:
 	buffer.put_data(bytes)
 	buffer.seek(0)
 	var result = {}
-	result[&"url"] = read(buffer, TYPE_INT)
+	result[&"url"] = read(buffer, TYPE_STRING)
 	return result

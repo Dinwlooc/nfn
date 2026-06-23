@@ -25,6 +25,7 @@ static func write(buffer: StreamPeerBuffer, value) -> void:
 		TYPE_DICTIONARY:
 			write_dictionary(buffer, value)
 		_:
+			assert(false, "试图序列化此工具不支持的类型。建议使用其他工具。")
 			buffer.put_var(value)
 
 # 基础类型读取（需指定类型）
@@ -50,31 +51,47 @@ static func read(buffer: StreamPeerBuffer, type: int) -> Variant:
 			return read_dictionary(buffer)
 		_:
 			return buffer.get_var()
-# 模拟逻辑右移（GDScript 仅有算术右移 >>）
-static func _logical_rshift(value: int, bits: int) -> int:
-	if value >= 0:
-		return value >> bits
-	return (value >> bits) + (1 << (64 - bits))
-# ---- 写入 ----
+# ---- 写入变长整数（Zigzag编码） ----
+## 写入一个有符号64位整数，采用 Zigzag + Varint 编码。
+## 对于绝大多数值（除 -2^63），使用算术右移安全高效。
 static func _write_varint(buffer: StreamPeerBuffer, value: int) -> void:
-	var zigzag = (value << 1) ^ (value >> 63)
-	while zigzag < 0 or zigzag >= VARINT_CONTINUE_FLAG:
+	var zigzag: int = (value << 1) ^ (value >> 63)
+	if zigzag < 0:
+		_write_extreme_negative(buffer)  # 独立处理
+		return
+	while zigzag >= VARINT_CONTINUE_FLAG:
 		buffer.put_u8((zigzag & VARINT_MASK) | VARINT_CONTINUE_FLAG)
-		zigzag = _logical_rshift(zigzag, 7)
+		zigzag = zigzag >> 7
 	buffer.put_u8(zigzag)
-
+## 专门处理 value = -2^63 时的编码
+## 该值 Zigzag 后为 -1，其 varint 编码固定为 9 个 0xFF + 1 个 0x01
+static func _write_extreme_negative(buffer: StreamPeerBuffer) -> void:
+	for _i in range(9):
+		buffer.put_u8(0xFF)   # 带继续标志
+	buffer.put_u8(0x01)       # 结束字节
+# ---- 读取变长整数（Zigzag解码） ----
+## 读取一个 varint 并解码为有符号64位整数。
+## 当解析出的无符号数 >= 2^63 时，GDScript 中表现为负数，
+## 解码最后一步需进行逻辑右移，此时调用独立函数处理。
 static func _read_varint(buffer: StreamPeerBuffer) -> int:
-	var result = 0
-	var shift  = 0
+	var result: int = 0
+	var shift: int = 0
 	var byte: int
-	for i in range(10):          # 64位整数最多 10 字节
+	for _i in range(10):
 		byte = buffer.get_u8()
 		result |= (byte & VARINT_MASK) << shift
 		shift += 7
 		if (byte & VARINT_CONTINUE_FLAG) == 0:
 			break
-	return _logical_rshift(result, 1) ^ (-(result & 1))
-
+	if result < 0:
+		return _decode_extreme(result)   # 独立处理
+	return (result >> 1) ^ (-(result & 1))
+## 专门处理 result < 0（即无符号值 >= 2^63）时的解码
+## 此时需将 result 视为无符号数，对其进行逻辑右移 1 位，
+## 然后按 Zigzag 规则还原符号。
+static func _decode_extreme(result: int) -> int:
+	var shifted: int = (result & 0x7FFFFFFFFFFFFFFF) >> 1
+	return shifted ^ (-(result & 1))
 ## 字符串序列化：长度前缀 + UTF‑8 数据
 static func _write_string(buffer: StreamPeerBuffer, value: String) -> void:
 	var utf8_bytes = value.to_utf8_buffer()

@@ -20,8 +20,9 @@ func _on_new_behavior_with_callback(command: BehaviorCommand, callback: Callable
 func _on_enable_processing(enable: bool) -> void:
 	_system.game_state._process_active = enable
 	_system.set_process(enable)
-
+## 所有命令完成时：先处理可能插入的临时阶段，再通知外界
 func _on_all_completed() -> void:
+	_system.game_state.all_commands_completed.emit(_system.game_state)
 	_system.game_state.stage_manager.on_command_processor_idle(_system.game_state)
 
 func _on_command_processing(command: BehaviorCommand) -> void:
