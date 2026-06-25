@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://b025ean41nrj6"]
+[gd_scene format=3 uid="uid://b025ean41nrj6"]
 
 [ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://resource/default/assets/Console/Node_Console.gd" id="1_vrjsm"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="2_n0p75"]
 
-[node name="Console" type="Control"]
+[node name="Console" type="Control" unique_id=1927194631]
 layout_mode = 3
 anchors_preset = 0
 offset_left = -493.0
@@ -12,7 +12,7 @@ offset_bottom = 590.0
 mouse_filter = 2
 script = ExtResource("1_vrjsm")
 
-[node name="Panel" type="TextEdit" parent="."]
+[node name="Panel" type="TextEdit" parent="." unique_id=1207617371]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 1.0
@@ -21,14 +21,15 @@ offset_bottom = 841.0
 scale = Vector2(0.7, 0.7)
 focus_mode = 0
 mouse_filter = 1
+theme = ExtResource("2_n0p75")
 text = "Waiting..."
 editable = false
 shortcut_keys_enabled = false
-virtual_keyboard_enabled = false
 middle_mouse_paste_enabled = false
 wrap_mode = 1
+virtual_keyboard_enabled = false
 
-[node name="Input" type="LineEdit" parent="."]
+[node name="Input" type="LineEdit" parent="." unique_id=996180365]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 560.0
@@ -42,17 +43,17 @@ focus_neighbor_bottom = NodePath(".")
 focus_next = NodePath("../VBoxContainer/Label")
 focus_previous = NodePath(".")
 focus_mode = 1
-theme_override_colors/selection_color = Color(1, 1, 1, 1)
 theme_override_colors/font_selected_color = Color(0, 0, 0, 1)
+theme_override_colors/selection_color = Color(1, 1, 1, 1)
 placeholder_text = "请输入指令..."
 keep_editing_on_text_submit = true
 clear_button_enabled = true
 flat = true
 caret_blink = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1798349895]
 custom_minimum_size = Vector2(150, 300)
-layout_mode = 2
+layout_mode = 0
 offset_left = 3.0
 offset_top = 311.0
 offset_right = 153.0
@@ -60,7 +61,7 @@ offset_bottom = 684.0
 scale = Vector2(0.7, 0.7)
 mouse_filter = 2
 
-[node name="Label" type="LineEdit" parent="VBoxContainer"]
+[node name="Label" type="LineEdit" parent="VBoxContainer" unique_id=792870953]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -74,12 +75,12 @@ text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
 
-[node name="Label2" type="LineEdit" parent="VBoxContainer"]
+[node name="Label2" type="LineEdit" parent="VBoxContainer" unique_id=1924641185]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -88,18 +89,18 @@ focus_neighbor_right = NodePath("../../Input")
 focus_neighbor_bottom = NodePath("../Label3")
 focus_next = NodePath("../Label3")
 theme = ExtResource("2_n0p75")
-theme_override_colors/selection_color = Color(0, 0, 0, 0)
 theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
 text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
 
-[node name="Label3" type="LineEdit" parent="VBoxContainer"]
+[node name="Label3" type="LineEdit" parent="VBoxContainer" unique_id=1667863592]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -112,12 +113,12 @@ text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
 
-[node name="Label4" type="LineEdit" parent="VBoxContainer"]
+[node name="Label4" type="LineEdit" parent="VBoxContainer" unique_id=444242298]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -126,18 +127,18 @@ focus_neighbor_right = NodePath("../../Input")
 focus_neighbor_bottom = NodePath("../Label5")
 focus_next = NodePath("../Label5")
 theme = ExtResource("2_n0p75")
-theme_override_colors/selection_color = Color(0, 0, 0, 0)
 theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
 text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
 
-[node name="Label5" type="LineEdit" parent="VBoxContainer"]
+[node name="Label5" type="LineEdit" parent="VBoxContainer" unique_id=788115336]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -146,18 +147,18 @@ focus_neighbor_right = NodePath("../../Input")
 focus_neighbor_bottom = NodePath("../Label6")
 focus_next = NodePath("../Label6")
 theme = ExtResource("2_n0p75")
-theme_override_colors/selection_color = Color(0, 0, 0, 0)
 theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
 text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
 
-[node name="Label6" type="LineEdit" parent="VBoxContainer"]
+[node name="Label6" type="LineEdit" parent="VBoxContainer" unique_id=374222665]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -166,18 +167,18 @@ focus_neighbor_right = NodePath("../../Input")
 focus_neighbor_bottom = NodePath("../Label7")
 focus_next = NodePath("../Label7")
 theme = ExtResource("2_n0p75")
-theme_override_colors/selection_color = Color(0, 0, 0, 0)
 theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
 text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
 
-[node name="Label7" type="LineEdit" parent="VBoxContainer"]
+[node name="Label7" type="LineEdit" parent="VBoxContainer" unique_id=249192116]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -186,18 +187,18 @@ focus_neighbor_right = NodePath("../../Input")
 focus_neighbor_bottom = NodePath("../Label8")
 focus_next = NodePath("../Label8")
 theme = ExtResource("2_n0p75")
-theme_override_colors/selection_color = Color(0, 0, 0, 0)
 theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
 text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
 
-[node name="Label8" type="LineEdit" parent="VBoxContainer"]
+[node name="Label8" type="LineEdit" parent="VBoxContainer" unique_id=1486664482]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -206,18 +207,18 @@ focus_neighbor_right = NodePath("../../Input")
 focus_neighbor_bottom = NodePath("../Label9")
 focus_next = NodePath("../Label9")
 theme = ExtResource("2_n0p75")
-theme_override_colors/selection_color = Color(0, 0, 0, 0)
 theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
 text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
 
-[node name="Label9" type="LineEdit" parent="VBoxContainer"]
+[node name="Label9" type="LineEdit" parent="VBoxContainer" unique_id=1547406608]
 custom_minimum_size = Vector2(150, 30)
 layout_mode = 2
 focus_neighbor_left = NodePath("../../Input")
@@ -226,13 +227,13 @@ focus_neighbor_right = NodePath("../../Input")
 focus_neighbor_bottom = NodePath("../Label")
 focus_next = NodePath("../Label")
 theme = ExtResource("2_n0p75")
-theme_override_colors/selection_color = Color(0, 0, 0, 0)
 theme_override_colors/font_selected_color = Color(1, 1, 0, 1)
+theme_override_colors/selection_color = Color(0, 0, 0, 0)
 text = "
 "
 context_menu_enabled = false
 emoji_menu_enabled = false
-virtual_keyboard_enabled = false
 shortcut_keys_enabled = false
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+virtual_keyboard_enabled = false
