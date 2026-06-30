@@ -2,7 +2,7 @@
 extends Item
 class_name Player
 
-static var NULL_PLAYER: Player = Player.new().set_id(1)
+static var PUBLIC_PLAYER: Player = Player.new().set_id(1)
 
 var peer_id: int = -1
 var seat_index: int = -1

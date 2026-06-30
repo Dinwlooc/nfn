@@ -75,9 +75,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 static func get_class_name_static() -> StringName:
 	return &"HandCardPack"
 
-static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> CardPack:
-	if pack == NULL_PACK:
-		pack = HandCardPack.new()
+static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = HandCardPack.new()) -> CardPack:
 	super.deserialize_from_buffer(buffer, pack)
 	if pack.merge_mask & (1 << Property.POWER):
 		pack.power = SerializationUtil.read(buffer, TYPE_INT)

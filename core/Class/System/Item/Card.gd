@@ -34,7 +34,7 @@ func set_player(p_player: Player) -> Card:
 	return self
 ## 链式清除玩家
 func clear_player() -> Card:
-	player = Player.NULL_PLAYER
+	player = Player.PUBLIC_PLAYER
 	return self
 ## 获取卡牌名称（从蓝图读取，运行时不可变）
 func get_name() -> StringName:
@@ -50,7 +50,7 @@ func get_player() -> Player:
 	return player
 ## 获取持有者 ID
 func get_owner_id() -> int:
-	if not player or player == Player.NULL_PLAYER:
+	if not player or player == Player.PUBLIC_PLAYER:
 		return 0
 	return player.get_id()
 ## 获取花色

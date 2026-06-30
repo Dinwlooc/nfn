@@ -39,9 +39,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	if merge_mask & (1 << MainProperty.NAME): SerializationUtil.write(buffer, name)
 	if merge_mask & (1 << MainProperty.TYPE): SerializationUtil.write(buffer, type)
 
-static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> CardPack:
-	if pack == NULL_PACK:
-		pack = CardPack.new()
+static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = CardPack.new()) -> CardPack:
 	super.deserialize_from_buffer(buffer, pack)
 	if pack.merge_mask & (1 << MainProperty.NAME):
 		pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)

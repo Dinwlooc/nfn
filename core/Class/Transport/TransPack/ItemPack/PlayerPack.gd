@@ -145,9 +145,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 ## @param buffer 缓冲区
 ## @param pack 可选的现有数据包（默认创建新实例）
 ## @return 反序列化后的 PlayerPack
-static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> PlayerPack:
-	if pack == NULL_PACK:
-		pack = PlayerPack.new()
+static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = PlayerPack.new()) -> PlayerPack:
 	super.deserialize_from_buffer(buffer, pack)
 	if pack.merge_mask & (1 << MainProperty.SEAT_INDEX):
 		pack.seat_index = SerializationUtil.read(buffer, TYPE_INT)

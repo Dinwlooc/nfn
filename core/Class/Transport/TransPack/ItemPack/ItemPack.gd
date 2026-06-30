@@ -19,9 +19,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, merge_mask)
 	SerializationUtil.write(buffer, is_full_update)
 
-static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> ItemPack:
-	if pack == NULL_PACK:
-		pack = ItemPack.new()
+static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = ItemPack.new()) -> ItemPack:
 	pack.id = SerializationUtil.read(buffer, TYPE_INT)
 	pack.version = SerializationUtil.read(buffer, TYPE_INT)
 	pack.merge_mask = SerializationUtil.read(buffer, TYPE_INT)

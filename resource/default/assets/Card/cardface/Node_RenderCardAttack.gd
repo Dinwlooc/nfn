@@ -100,11 +100,9 @@ func _update_background_color() -> void:
 	else:
 		target_color = color_map[&"normal"]
 	_stylebox.bg_color = target_color
-
 ## 获取当前类型对应的颜色映射（纯函数）
 func _get_color_map() -> Dictionary:
 	return TYPE_COLORS.get(_current_type, {})
-
 ## 重置卡面到初始状态（用于回收复用）
 func reset() -> void:
 	item = null

@@ -21,11 +21,9 @@ func complete() -> void:
 	completed.emit()
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	TransPackSerializer.write(buffer, source_player_id)
-static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> OperationRequest:
-	if pack == NULL_PACK:
-		pack = OperationRequest.new()
+static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = OperationRequest.new()) -> OperationRequest:
 	pack.source_player_id = TransPackSerializer.read(buffer, TYPE_INT)
-	return OperationRequest.new()
+	return pack
 
 class PlayCard extends OperationRequest:
 	var _card_id: int
@@ -40,9 +38,7 @@ class PlayCard extends OperationRequest:
 		super.serialize_to_buffer(buffer)
 		TransPackSerializer.write(buffer, _card_id)
 		TransPackSerializer.write(buffer, _target_id)
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = NULL_PACK) -> OperationRequest:
-		if pack == NULL_PACK:
-			pack = PlayCard.new()
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = PlayCard.new()) -> OperationRequest:
 		super.deserialize_from_buffer(buffer,pack)
 		pack ._card_id = TransPackSerializer.read(buffer, TYPE_INT)
 		pack ._target_id = TransPackSerializer.read(buffer, TYPE_INT)
@@ -53,9 +49,7 @@ class AbandonResponse extends OperationRequest:
 		return &"abandon_response"
 	func _init(player_id:int = 0) -> void:
 		source_player_id = player_id
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> OperationRequest:
-		if pack == NULL_PACK:
-			pack = AbandonResponse.new()
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = AbandonResponse.new()) -> OperationRequest:
 		super.deserialize_from_buffer(buffer,pack)
 		return pack
 
@@ -75,9 +69,7 @@ class DiscardCards extends OperationRequest:
 		for id in _card_ids:
 			TransPackSerializer.write(buffer, id)
 
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = NULL_PACK) -> OperationRequest:
-		if pack == NULL_PACK:
-			pack = DiscardCards.new()
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = DiscardCards.new()) -> OperationRequest:
 		super.deserialize_from_buffer(buffer, pack)
 		var size: int = TransPackSerializer.read(buffer, TYPE_INT)
 		var ids: PackedInt32Array = []

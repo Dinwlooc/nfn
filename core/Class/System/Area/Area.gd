@@ -18,7 +18,7 @@ signal area_card_added(new_cardpool: Card, area: Area)
 signal area_card_removed(removed_cards: Card, area: Area)
 signal after_cards_removed()
 
-func _init(_player: Player = Player.NULL_PLAYER) -> void:
+func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	player = _player
 	_init_expand()
 

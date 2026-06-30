@@ -48,7 +48,7 @@ func _init(
 	mode: Context.BuffMode = Context.BuffMode.APPLY,
 	stack_count: int = 1,
 	source_card: Card = null,
-	source_player: Player = Player.NULL_PLAYER,
+	source_player: Player = Player.PUBLIC_PLAYER,
 	name_overriding: StringName = &"Buff",
 	context_overriding: Context = Context.new()
 ) -> void:
