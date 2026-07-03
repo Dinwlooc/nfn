@@ -5,9 +5,9 @@ var settle_count: int = 0
 signal battle_formation_detected(top_card: Card, second_card: Card)
 
 ## 初始化扩展
-func _init_expand() -> void:
+func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
+	super._init(_player)
 	area_name = GlobalConstants.DefaultArea.DEFENCE
-	# 不再需要监听卡牌变化来设置标记，但仍需发出斗牌信号供外部使用
 	area_card_added.connect(_on_cards_changed)
 	area_card_removed.connect(_on_cards_changed)
 

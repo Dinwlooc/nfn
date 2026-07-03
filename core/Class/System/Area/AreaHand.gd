@@ -1,7 +1,8 @@
 extends UnorderedArea
 class_name AreaHand
 
-func _init_expand()->void:
+func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
+	super._init(_player)
 	area_name = GlobalConstants.DefaultArea.HAND
 	visibility = Visibility.PRIVATE
 	area_card_added.connect(_on_area_card_added)

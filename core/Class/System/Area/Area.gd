@@ -1,3 +1,4 @@
+@abstract
 extends RefCounted
 class_name Area
 
@@ -7,7 +8,6 @@ enum Visibility {
 	PRIVATE,     ## 私有可见（仅所属玩家可见）
 	INVISIBLE    ## 不可见（任何玩家都看不到，不传输任何变化）
 }
-
 var player: Player
 var area_name: StringName
 var visibility: Visibility = Visibility.PUBLIC   ## 默认私有可见
@@ -20,10 +20,6 @@ signal after_cards_removed()
 
 func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	player = _player
-	_init_expand()
-
-func _init_expand() -> void:
-	pass
 
 ## 判断某个玩家是否可以看到此区域
 func is_visible_to(peer_id: int) -> bool:
@@ -38,40 +34,27 @@ func is_visible_to(peer_id: int) -> bool:
 			return false
 	return false
 
-## 抽象方法（保持不变）
-func cards_add(_new_cardpool: Array[Card]) -> void:
-	assert(false, "子类必须实现 cards_add 方法")
-
-func remove_cards_by_ids(_ids: PackedInt32Array) -> Array[Card]:
-	assert(false, "子类必须实现 remove_cards_by_ids 方法")
-	return []
-
-func card_count() -> int:
-	assert(false, "子类必须实现 card_count 方法")
-	return 0
-
-func get_card_by_id(_card_id: int) -> Card:
-	assert(false, "子类必须实现 get_card_by_id 方法")
-	return null
-
-func get_all_cards() -> Array[Card]:
-	assert(false, "子类必须实现 get_all_cards 方法")
-	return []
-
-func get_card_ids() -> PackedInt32Array:
-	assert(false, "子类必须实现 get_card_ids 方法")
-	return []
-
-func shuffle_card_pool() -> void:
-	pass
-
-func remove_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]:
-	push_error("此区域不支持按索引移除")
-	return []
-
-func remove_top_cards(_count: int) -> Array[Card]:
-	push_error("此区域不支持堆顶移除")
-	return []
+## 抽象方法
+@abstract
+func cards_add(_new_cardpool: Array[Card]) -> void
+@abstract
+func remove_cards_by_ids(_ids: PackedInt32Array) -> Array[Card]
+@abstract
+func card_count() -> int
+@abstract
+func get_card_by_id(_card_id: int) -> Card
+@abstract
+func get_all_cards() -> Array[Card]
+@abstract
+func get_card_ids() -> PackedInt32Array
+@abstract
+func remove_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]
+@abstract
+func remove_top_cards(_count: int) -> Array[Card]
+@abstract
+func get_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]
+@abstract
+func get_top_cards(_count: int) -> Array[Card]
 
 func get_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 	var result: Array[Card] = []
@@ -81,13 +64,8 @@ func get_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 			result.append(card)
 	return result
 
-func get_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]:
-	push_error("此区域不支持按索引获取")
-	return []
-
-func get_top_cards(_count: int) -> Array[Card]:
-	push_error("此区域不支持获取顶部卡牌")
-	return []
+func shuffle_card_pool() -> void:
+	pass
 
 func request_command(command: BehaviorCommand) -> void:
 	area_request_command.emit(command)

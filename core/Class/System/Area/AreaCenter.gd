@@ -4,7 +4,8 @@ class_name AreaCenter
 ## 技能目标玩家ID列表（用于即将放入的技能卡牌）
 var skill_target_player_ids: PackedInt32Array = PackedInt32Array()
 
-func _init_expand() -> void:
+func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
+	super._init(_player)
 	area_name = GlobalConstants.DefaultArea.CENTER
 
 ## 设置技能目标玩家ID列表

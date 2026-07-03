@@ -40,8 +40,7 @@ func _on_item_created_for_removing(item: RenderItem) -> void:
 ## 当手牌区添加新的 RenderItem 时调用（移入动画）
 func _on_item_added(item: RenderItem) -> void:
 	var tween: Tween = create_tween()
-	tween.tween_property(item, ^"position", position, MOVE_DURATION)\
-		.set_trans(MOVE_TRANS).set_ease(MOVE_EASE)
+	tween.tween_property(item, ^"position", position, MOVE_DURATION).set_trans(MOVE_TRANS).set_ease(MOVE_EASE)
 	tween.finished.connect(_on_move_finished.bind(item), CONNECT_ONE_SHOT)
 
 ## 动画完成时回收临时 RenderItem
