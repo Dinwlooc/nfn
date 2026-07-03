@@ -5,7 +5,6 @@ class_name OperationTrigger
 var _game_state: GameState
 
 func _init(system: System) -> void:
-	super(system)
 	_game_state = system.game_state
 	system.transport.operation_request_received.connect(system.operation_handler.handle_request)
 	system.npc_peer_manager.operation_requested.connect(system.operation_handler.handle_request)

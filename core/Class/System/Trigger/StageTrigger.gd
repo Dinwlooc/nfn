@@ -6,7 +6,6 @@ var _system: System
 var _stage_manager: StageManager
 
 func _init(system: System) -> void:
-	super(system)
 	_system = system
 	_stage_manager = system.game_state.stage_manager
 	if _stage_manager:

@@ -6,6 +6,7 @@ var id: int
 var merge_mask: int = 0
 var is_full_update: bool = false
 const VERSION_MAX: int = 65535
+static var NULL_PACK = ItemPack.new()
 
 func _init(init_id: int = 0) -> void:
 	id = init_id

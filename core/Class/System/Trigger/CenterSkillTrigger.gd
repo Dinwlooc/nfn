@@ -1,11 +1,11 @@
-class_name CenterSkillTrigger
 extends GameStateTrigger
+class_name CenterSkillTrigger
 
 var _center_area: AreaCenter
 var _connected: bool = false
 
 func _init(game_state: GameState) -> void:
-	super._init(game_state)
+	_game_state = game_state
 	_center_area = game_state.area_registry.get_center_area()
 	if _center_area:
 		_center_area.area_card_added.connect(_on_card_added_to_center)

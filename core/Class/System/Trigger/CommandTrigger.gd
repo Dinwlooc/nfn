@@ -5,7 +5,6 @@ class_name CommandTrigger
 var _system: System
 
 func _init(system: System) -> void:
-	super(system)
 	_system = system
 	_system.game_state.new_behavior.connect(_system.command_processor.queue_behavior)
 	_system.game_state.new_behavior_with_callback.connect(_on_new_behavior_with_callback)

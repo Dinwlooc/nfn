@@ -4,7 +4,7 @@ extends GameStateTrigger
 class_name SyncTrigger
 
 func _init(game_state: GameState) -> void:
-	super._init(game_state)
+	_game_state = game_state
 	_game_state.stage_manager.stage_changed.connect(_on_stage_changed)
 
 ## 当任意阶段改变时（包括主阶段与临时阶段），发送阶段切换同步消息

@@ -88,8 +88,6 @@ func _input(event) -> void:
 			if in_area:
 				in_area = false
 				_outto_area()
-
-
 # 拖拽移动时需确保 area 有效
 func try_dragging_move() -> bool:
 	if not area:
@@ -100,7 +98,6 @@ func try_dragging_move() -> bool:
 		dragging_move(card)
 		return true
 	return false
-
 # 连接卡片信号
 func connect_cards_signals(card: RenderItem) -> void:
 	if not card.mouse_entered.is_connected(_on_card_mouse_entered):

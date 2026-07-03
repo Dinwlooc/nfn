@@ -5,9 +5,9 @@ extends AreaFace
 ## 动画时长（秒）
 const MOVE_DURATION: float = 0.3
 ## 动画缓动类型
-const MOVE_EASE: int = Tween.EASE_IN_OUT
+const MOVE_EASE: Tween.EaseType = Tween.EASE_IN_OUT
 ## 动画过渡类型
-const MOVE_TRANS: int = Tween.TRANS_QUAD
+const MOVE_TRANS: Tween.TransitionType = Tween.TRANS_QUAD
 
 ## 目标全局位置（动画终点，默认为当前节点的全局位置）
 var target_global_position: Vector2

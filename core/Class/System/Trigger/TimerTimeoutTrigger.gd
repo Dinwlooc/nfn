@@ -5,7 +5,6 @@ class_name TimerTimeoutTrigger
 var _system: System
 
 func _init(system: System) -> void:
-	super(system)
 	_system = system
 	_system.timer.timeout.connect(_on_timeout)
 

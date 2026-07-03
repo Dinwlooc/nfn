@@ -13,7 +13,7 @@ signal item_created(item: RenderItem)
 var item_mappings: Dictionary[StringName, Dictionary] = {}
 
 ## 从池中取出或新建 RenderItem
-func create_item(item_data: TransPack, render_context: RenderContext) -> RenderItem:
+func create_item(item_data: ItemPack, render_context: RenderContext) -> RenderItem:
 	if not _pool.is_empty():
 		var item: RenderItem = _pool.pop_back()
 		item.data_update(item_data)

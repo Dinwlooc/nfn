@@ -17,6 +17,17 @@ signal area_request_command_with_callback(command: BehaviorCommand, callback: Ca
 signal area_card_added(new_cardpool: Card, area: Area)
 signal area_card_removed(removed_cards: Card, area: Area)
 signal after_cards_removed()
+# 抽象方法
+@abstract func cards_add(_new_cardpool: Array[Card]) -> void
+@abstract func remove_cards_by_ids(_ids: PackedInt32Array) -> Array[Card]
+@abstract func card_count() -> int
+@abstract func get_card_by_id(_card_id: int) -> Card
+@abstract func get_all_cards() -> Array[Card]
+@abstract func get_card_ids() -> PackedInt32Array
+@abstract func remove_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]
+@abstract func remove_top_cards(_count: int) -> Array[Card]
+@abstract func get_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]
+@abstract func get_top_cards(_count: int) -> Array[Card]
 
 func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	player = _player
@@ -33,28 +44,6 @@ func is_visible_to(peer_id: int) -> bool:
 		Visibility.INVISIBLE:
 			return false
 	return false
-
-## 抽象方法
-@abstract
-func cards_add(_new_cardpool: Array[Card]) -> void
-@abstract
-func remove_cards_by_ids(_ids: PackedInt32Array) -> Array[Card]
-@abstract
-func card_count() -> int
-@abstract
-func get_card_by_id(_card_id: int) -> Card
-@abstract
-func get_all_cards() -> Array[Card]
-@abstract
-func get_card_ids() -> PackedInt32Array
-@abstract
-func remove_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]
-@abstract
-func remove_top_cards(_count: int) -> Array[Card]
-@abstract
-func get_cards_at_indices(_indices: PackedInt32Array) -> Array[Card]
-@abstract
-func get_top_cards(_count: int) -> Array[Card]
 
 func get_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 	var result: Array[Card] = []

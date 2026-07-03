@@ -7,7 +7,6 @@ var _operation_handler: OperationHandler
 const UPGRADE_REQUIREMENTS: Array[int] = [7, 12, 15, 18]
 
 func _init(system: System) -> void:
-	super(system)
 	_system = system
 	_operation_handler = system.operation_handler
 	system.game_state.player_manager.player_added.connect(_on_player_added)

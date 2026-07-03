@@ -465,8 +465,8 @@ func _trigger_damage_event(hp_damage: int, mp_damage: int) -> void:
 		return
 	if not render_context:
 		return
-	var area: RenderArea = render_context.get_render_area(RenderArea.DefaultArea.PLAYERS)
-	if area:
+	var _area: RenderArea = render_context.get_render_area(RenderArea.DefaultArea.PLAYERS)
+	if _area:
 		var event: RenderEvent = RenderEvent.new().set_type(RenderEvent.DefaultType.DAMAGED)
 		event.config[&"player_id"] = _cached_player_id
 		event.config[&"hp_damage"] = hp_damage

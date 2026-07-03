@@ -15,7 +15,6 @@ var _divide_index: int = 0
 # ==================== 生命周期与初始化 ====================
 
 func _ready() -> void:
-	super._ready()
 	_initialize_divide_index()
 
 ## 初始化分割索引[code]_divide_index[/code]，计算当前子节点中非[RenderItem]的数量。
@@ -313,3 +312,9 @@ func remove_non_render_item(node: Node) -> bool:
 	if node_index < _divide_index:
 		_divide_index -= 1
 	return true
+
+func  add_item_count(_count: int) -> void:
+	pass
+
+func remove_item_count(_count: int) -> void:
+	pass

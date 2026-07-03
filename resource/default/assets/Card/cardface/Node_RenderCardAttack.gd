@@ -43,7 +43,7 @@ func _ready() -> void:
 	button.button_up.connect(_on_button_up_cancel_dragging)
 
 ## 更新卡片数据（由外部调用，当 item 或其数据变化时）
-func data_update(new_item: RenderItem,render_event:RenderEvent = RenderEvent.NULL_EVENT) -> void:
+func data_update(new_item: RenderItem,_render_event:RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	if item == new_item:
 		item.set_item_size(size)
 		call_deferred(&"_refresh_ui")

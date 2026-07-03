@@ -16,7 +16,7 @@ var selected:bool = false
 var dragged:bool = false
 var dragging:DraggingState = DraggingState.READY
 var hovering:bool = false
-var data:TransPack
+var data:ItemPack
 ## 视觉中心坐标。
 ## Get 返回当前 position + size*scale/2，Set 调整 position 使中心落在给定值。
 var center_position: Vector2:
@@ -34,7 +34,7 @@ signal request_face(item:RenderItem)
 ## 选择状态变化信号，参数为新状态
 signal selected_changed(selected: bool)
 
-func _init(new_data:TransPack = TransPack.NULL_PACK) -> void:
+func _init(new_data:ItemPack = ItemPack.NULL_PACK) -> void:
 	name = &"RenderItem"
 	data = new_data
 
@@ -42,7 +42,7 @@ func _ready() -> void:
 	request_face.emit(self)
 	data_requested.emit(self)
 
-func data_update(new_card_data:TransPack,render_event:RenderEvent = RenderEvent.NULL_EVENT)-> void:
+func data_update(new_card_data:ItemPack,render_event:RenderEvent = RenderEvent.NULL_EVENT)-> void:
 	data = new_card_data
 	if is_inside_tree():
 		data_requested.emit(self,render_event)
@@ -54,7 +54,7 @@ func render_update(render_event:RenderEvent = RenderEvent.NULL_EVENT)->void:
 	render_requested.emit(render_event)
 
 func apply_pack(pack: ItemPack) -> void:
-	if data and data is ItemPack:
+	if data:
 		data.merge(pack)
 		data_requested.emit(self)
 		render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_UPDATE))

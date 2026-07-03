@@ -16,9 +16,9 @@ extends ItemFace
 ## 选中动画时长（秒）
 const SELECT_ANIMATION_DURATION: float = 0.2
 ## 选中动画缓动类型（先快后慢）
-const SELECT_ANIMATION_EASE: int = Tween.EASE_OUT
+const SELECT_ANIMATION_EASE: Tween.EaseType = Tween.EASE_OUT
 ## 选中动画过渡类型
-const SELECT_ANIMATION_TRANS: int = Tween.TRANS_QUAD
+const SELECT_ANIMATION_TRANS: Tween.TransitionType = Tween.TRANS_QUAD
 
 ## 选中时，属性节点向右平移的偏移量（像素）
 const PROPERTIES_SHIFT_X: float = 120.0

@@ -6,9 +6,9 @@ const ANIMATION_DURATION: float = 1.0
 ## 目标位置偏移
 const TARGET_OFFSET: Vector2 = Vector2(-50, 50)
 ## 先慢后快缓动类型（用于第二阶段）
-const EASE_TYPE: int = Tween.EASE_IN
+const EASE_TYPE: Tween.EaseType = Tween.EASE_IN
 ## 先快后慢缓动类型（用于第一阶段）
-const EASE_OUT_TYPE: int = Tween.EASE_OUT
+const EASE_OUT_TYPE: Tween.EaseType = Tween.EASE_OUT
 ## 中间矩形缩放系数
 const CENTER_RECT_SCALE: float = 0.5
 ## 随机偏移范围（像素）
@@ -18,7 +18,7 @@ const FIRST_STAGE_DURATION_RATIO: float = 0.4
 ## 中心矩形定位系数（用于计算位置，值为0.5表示居中）
 const CENTER_RECT_POSITION_FACTOR: float = 0.5
 ## 缓动过渡类型
-const TRANS_TYPE: int = Tween.TRANS_EXPO
+const TRANS_TYPE: Tween.TransitionType = Tween.TRANS_EXPO
 ## 动画完成后的最终缩放（恢复缩放的目标值）
 const FINAL_SCALE: float = 0.8
 

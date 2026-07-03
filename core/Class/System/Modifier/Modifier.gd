@@ -1,4 +1,5 @@
 ## 具体修饰器
+@abstract
 extends RefCounted
 class_name Modifier
 ## 初始化，在 Card 或 Player 加载新修饰器时调用一次。

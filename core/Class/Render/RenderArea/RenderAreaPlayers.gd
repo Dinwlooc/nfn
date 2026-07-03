@@ -4,7 +4,8 @@ class_name RenderAreaPlayers
 var local_player:RenderItem
 signal local_player_received(local_player:RenderItem)
 
-func ready_expand()->void:
+func _ready()->void:
+	super._ready()
 	items_added.connect(_on_player_added)
 
 func _on_player_added(new_player:RenderItem)->void:

@@ -3,9 +3,8 @@ extends GameStateTrigger
 class_name ShuffleWhenEmptyTrigger
 
 func _init(game_state: GameState) -> void:
-	super._init(game_state)
-	if game_state:
-		game_state.all_commands_completed.connect(_on_idle)
+	_game_state = game_state
+	game_state.all_commands_completed.connect(_on_idle)
 
 func _on_idle(game_state:GameState) -> void:
 	if not _game_state:
