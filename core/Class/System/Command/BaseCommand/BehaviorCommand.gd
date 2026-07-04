@@ -19,8 +19,10 @@ func complete() -> void:
 	_is_completed = true
 	command_completed.emit()
 	_context.is_completed = true
-## 追加伴生命令
-func append_companion_command(command: BehaviorCommand) -> void:
+## 伴生一个命令
+func append_companion_command(command: BehaviorCommand,companion_source_overriding:CommandContext = _context) -> void:
+	if command._context:
+		command._context.set_companion_source(companion_source_overriding)
 	companion_command_requested.emit(command)
 ## 取消命令
 func cancel()->void:
