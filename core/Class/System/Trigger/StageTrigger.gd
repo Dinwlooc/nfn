@@ -16,11 +16,11 @@ func _on_stage_completed(ended_stage: Stage) -> void:
 	var player_id: int = _stage_manager.current_player_id
 	if ended_stage.is_temporary():
 		var rollback_cmd := RollbackStageCommand.new(player_id, ended_stage)
-		_system.command_processor.queue_behavior(rollback_cmd)
+		_system.command_bus.queue_behavior(rollback_cmd)
 	else:
 		var switch_cmd := SwitchMainStageCommand.new(player_id)
-		_system.command_processor.queue_behavior(switch_cmd)
+		_system.command_bus.queue_behavior(switch_cmd)
 
 func _on_request_new_round(player_id: int) -> void:
 	var new_round_cmd := NewRoundCommand.new(player_id)
-	_system.command_processor.queue_behavior(new_round_cmd)
+	_system.command_bus.queue_behavior(new_round_cmd)

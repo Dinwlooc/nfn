@@ -4,6 +4,7 @@ class_name System
 @export var timer: GameTimer
 var game_state := GameState.new()
 var command_processor := CommandProcessor.new(game_state)
+var command_bus := CommandBus.new(game_state)
 var operation_handler := OperationHandler.new()
 var trigger_manager := TriggerManager.new()
 var transport: Transport = GlobalTransport
@@ -39,7 +40,7 @@ func _start_game() -> void:
 		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
 		return
 	var start_event = GameStartCommand.new()
-	command_processor.queue_behavior(start_event)
+	command_bus.queue_behavior(start_event)
 	GlobalConsole._print("System:游戏开始事件已创建")
 
 func _draw_cards_test() -> void:
@@ -56,11 +57,11 @@ func _draw_cards_test() -> void:
 		game_state.stage_manager.current_player_id,
 		2
 	)
-	command_processor.queue_behavior(draw_event)
+	command_bus.queue_behavior(draw_event)
 	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % game_state.stage_manager.current_player_id)
 
 func _damage(hp_damage: int = 1, mp_damage: int = 1, player_id: int = 2) -> void:
-	command_processor.queue_behavior(DamageCommand.new(game_state.player_manager.get_player_by_id(player_id), hp_damage, mp_damage))
+	command_bus.queue_behavior(DamageCommand.new(game_state.player_manager.get_player_by_id(player_id), hp_damage, mp_damage))
 
 func signal_connect_test():
 	GlobalConsole.c_start.connect(_start_game)

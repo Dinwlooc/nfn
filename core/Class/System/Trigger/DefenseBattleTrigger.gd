@@ -1,9 +1,10 @@
 ## 守区攻防阶段触发器。当敌方卡牌进入守区时，自动启动 [StageDefense] 临时阶段。
 extends GameStateTrigger
 class_name DefenseBattleTrigger
-## 构造时接收 [GameState]，不持有长期引用。
-func _init(game_state: GameState) -> void:
+
+func _init(game_state: GameState, command_bus: CommandBus) -> void:
 	_game_state = game_state
+	_command_bus = command_bus
 	game_state.area_registry.area_added.connect(_on_defense_area_created)
 	game_state.area_registry.area_removed.connect(_on_defense_area_removed)
 
@@ -31,4 +32,4 @@ func _on_card_added(card: Card, area: AreaDefence) -> void:
 	if area.player == card.get_player():
 		return
 	var command := StartDefenseBattleStageCommand.new(area, card.player)
-	_game_state.queue_behavior(command)
+	_command_bus.queue_behavior(command)

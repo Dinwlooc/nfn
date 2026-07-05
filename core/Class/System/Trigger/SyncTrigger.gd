@@ -3,7 +3,7 @@
 extends GameStateTrigger
 class_name SyncTrigger
 
-func _init(game_state: GameState) -> void:
+func _init(game_state: GameState, command_bus: CommandBus) -> void:
 	_game_state = game_state
 	_game_state.stage_manager.stage_changed.connect(_on_stage_changed)
 

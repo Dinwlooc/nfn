@@ -2,7 +2,6 @@
 extends RefCounted
 class_name GameState
 
-# 移除原有的 area_center, area_drawing, area_discard 字段
 var cardsmanager := CardsManager.new()
 var player_manager := PlayersManager.new()
 var timer: GameTimer

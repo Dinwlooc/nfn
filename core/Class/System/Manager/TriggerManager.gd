@@ -28,11 +28,10 @@ func initialize(system: System) -> void:
 		var trigger: SystemTrigger = _create_system_trigger(trigger_class, system)
 		if trigger:
 			system_triggers.set(i, trigger)
-	# 新增：游戏状态触发器初始化
 	gamestate_triggers.resize(gamestate_trigger_classes.size())
 	for i in gamestate_trigger_classes.size():
 		var trigger_class: Script = gamestate_trigger_classes[i]
-		var trigger: GameStateTrigger = _create_gamestate_trigger(trigger_class, system.game_state)
+		var trigger: GameStateTrigger = _create_gamestate_trigger(trigger_class, system.game_state, system.command_bus)
 		if trigger:
 			gamestate_triggers.set(i, trigger)
 
@@ -48,8 +47,8 @@ func _create_system_trigger(trigger_class: Script, system: System) -> SystemTrig
 	return obj
 
 ## 创建游戏状态触发器实例
-func _create_gamestate_trigger(trigger_class: Script, game_state: GameState) -> GameStateTrigger:
-	var obj: GameStateTrigger = trigger_class.new(game_state)
+func _create_gamestate_trigger(trigger_class: Script, game_state: GameState, command_bus: CommandBus) -> GameStateTrigger:
+	var obj: GameStateTrigger = trigger_class.new(game_state, command_bus)
 	if obj is not GameStateTrigger:
 		return null
 	return obj

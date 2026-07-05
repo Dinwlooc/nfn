@@ -5,15 +5,14 @@ var _face_pool: Dictionary[StringName, Array] = {}
 ## 最大缓存数量
 const MAX_POOL_SIZE: int = 6
 
-# 初始化
+## 初始化
 func _init() -> void:
 	_face_pool = {}
-
-# 连接到RenderItem
+## 连接到RenderItem
 func connect_to_item(item: RenderItem) -> void:
 	item.request_face.connect(create_item_face)
 	item.reset_requested.connect(_on_item_reset_requested)
-# 创建ItemFace（使用回收池）
+## 创建ItemFace（使用回收池）
 func create_item_face(item: RenderItem) -> void:
 	if not item or not item.data:
 		return
@@ -31,8 +30,7 @@ func create_item_face(item: RenderItem) -> void:
 		item.add_child(itemface)
 		_init_item_face(item, itemface)
 		itemface.position = Vector2.ZERO
-
-# 从回收池获取ItemFace
+## 从回收池获取ItemFace
 func _get_from_pool(type_name: StringName) -> ItemFace:
 	if not _face_pool.has(type_name):
 		return null
@@ -41,7 +39,7 @@ func _get_from_pool(type_name: StringName) -> ItemFace:
 		return null
 	return pool_array.pop_back() as ItemFace
 
-# 将ItemFace放入回收池
+## 将ItemFace放入回收池
 func _add_to_pool(itemface: ItemFace) -> void:
 	if not itemface:
 		return
@@ -56,8 +54,7 @@ func _add_to_pool(itemface: ItemFace) -> void:
 		pool_array.append(itemface)
 	else:
 		itemface.queue_free()
-
-# 清理ItemFace状态（仅断开信号和移除父节点，不重置内容）
+## 清理ItemFace状态（仅断开信号和移除父节点，不重置内容）
 func _cleanup_item_face(itemface: ItemFace) -> void:
 	if not itemface:
 		return
@@ -66,19 +63,16 @@ func _cleanup_item_face(itemface: ItemFace) -> void:
 		itemface.item.data_requested.disconnect(itemface.data_update)
 	if itemface.get_parent():
 		itemface.get_parent().remove_child(itemface)
-
-# 初始化ItemFace
+## 初始化ItemFace
 func _init_item_face(item: RenderItem, itemface: ItemFace) -> void:
 	itemface.item_type = item.data.get_class_name()
 	itemface.data_update(item)
 	_connect_item_face_signals(item, itemface)
-
-# 连接ItemFace信号
+## 连接ItemFace信号
 func _connect_item_face_signals(item: RenderItem, itemface: ItemFace) -> void:
 	item.render_requested.connect(itemface.render_update)
 	item.data_requested.connect(itemface.data_update)
-
-# 处理重置请求
+## 处理重置请求
 func _on_item_reset_requested(item: RenderItem) -> void:
 	for child in item.get_children():
 		item.remove_child(child)

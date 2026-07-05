@@ -35,13 +35,13 @@ func uncancel() -> void:
 func virtualize() -> void:
 	is_virtual = true
 ## 获取主修饰玩家ID数组
-## 玩家默认从当前回合玩家开始，逐个轮询以激活其修饰器。
+## 玩家默认从当前回合玩家开始，逐个轮询以激活玩家的修饰器效果。
 ## 此法将使得数组内的玩家优先被轮询，但未被提及的玩家依然会按原始方法被轮询。
 func get_primary_modifier_player_ids() -> PackedInt32Array:
 	return PackedInt32Array([player_id])
 ## 获取主修饰卡牌数组
 ## 卡牌默认不被轮询。
-## 只有该数组内的卡牌会被轮询、检查和触发修饰器效果。
+## 只有该数组内的卡牌将按顺序被轮询，以激活卡牌的修饰器效果。
 func get_primary_modifier_cards() -> Array[Card]:
 	return []
 func set_companion_source(new_companion_source:CommandContext) -> CommandContext:
