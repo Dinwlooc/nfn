@@ -1,26 +1,53 @@
-## 阶段触发器：监听阶段完成与新一轮请求，生成对应的阶段推进命令。
+## 阶段触发器：监听阶段完成、新回合请求、所有命令完成，生成对应的阶段调度命令
 extends SystemTrigger
 class_name StageTrigger
 
 var _system: System
-var _stage_manager: StageManager
 
 func _init(system: System) -> void:
 	_system = system
-	_stage_manager = system.game_state.stage_manager
+	var _stage_manager: StageManager = system.game_state.stage_manager
 	if _stage_manager:
 		_stage_manager.stage_completed.connect(_on_stage_completed)
 		_stage_manager.request_new_round.connect(_on_request_new_round)
+		system.game_state.all_commands_completed.connect(_on_all_commands_completed)
 
+## 阶段完成时生成回滚或主阶段切换命令
 func _on_stage_completed(ended_stage: Stage) -> void:
-	var player_id: int = _stage_manager.current_player_id
 	if ended_stage.is_temporary():
-		var rollback_cmd := RollbackStageCommand.new(player_id, ended_stage)
+		var rollback_cmd := StageScheduleCommand.new(StageScheduleCommand.Operation.ROLLBACK)
 		_system.command_bus.queue_behavior(rollback_cmd)
 	else:
-		var switch_cmd := SwitchMainStageCommand.new(player_id)
+		var switch_cmd := StageScheduleCommand.new(StageScheduleCommand.Operation.SWITCH_MAIN)
 		_system.command_bus.queue_behavior(switch_cmd)
 
+## 请求新回合时，根据当前玩家ID计算下一位并生成 NewRoundCommand
 func _on_request_new_round(player_id: int) -> void:
-	var new_round_cmd := NewRoundCommand.new(player_id)
+	var game_state:GameState = _system.game_state
+	var player_manager:PlayersManager = game_state.player_manager
+	var player_count:int = player_manager.get_player_count()
+	if player_count == 0:
+		return
+	var current_index:int = player_manager.get_seat_index_by_player_id(player_id)
+	if current_index == -1:
+		return
+	var next_index:int = (current_index + 1) % player_count
+	var next_player:Player = player_manager.get_player_by_seat(next_index)
+	if not next_player:
+		return
+	var new_round_cmd := NewRoundCommand.new(next_player.get_id())
 	_system.command_bus.queue_behavior(new_round_cmd)
+
+## 所有命令完成时，检查是否需要启动临时阶段
+func _on_all_commands_completed(_game_state:GameState) -> void:
+	var stack:Array[Stage] = _game_state.stage_manager.temp_stage_stack
+	if not stack.is_empty():
+		var top_stage = stack[-1]
+		if _game_state.stage_manager.current_stage != top_stage:
+			var start_cmd := StageScheduleCommand.new(StageScheduleCommand.Operation.START_TEMP)
+			_system.command_bus.queue_behavior(start_cmd)
+			return  # 等待临时阶段启动命令执行，本次不刷新响应权
+	# 无需启动临时阶段，则刷新当前阶段的响应权
+	var current:Stage = _game_state.stage_manager.current_stage
+	if current and not current.is_ended and not current.is_paused:
+		current.refresh_response(_system.game_state)

@@ -1,16 +1,15 @@
 # GameStartCommand.gd
-extends BehaviorCommand
+extends ScheduleCommand
 class_name GameStartCommand
 
 enum Phase {
-	INIT_SETUP,   # 初始化游戏设置
-	START_DRAW,   # 开始初始抽牌
-	DONE          # 完成
+	INIT_SETUP,
+	START_DRAW,
+	DONE
 }
 
 func _init() -> void:
-	_context = CommandContext.new()
-	super._init(1,&"GameStart")
+	super._init(&"GameStart", CommandContext.new())
 	_context.phase = Phase.INIT_SETUP
 
 func execute(game_state: GameState) -> void:
@@ -40,14 +39,14 @@ func on_init_setup_phase(game_state: GameState) -> void:
 	_context.phase = Phase.START_DRAW
 
 func on_start_draw_phase(game_state: GameState) -> void:
-	var new_round_cmd:= NewRoundCommand.new(0,2)
+	var new_round_cmd := NewRoundCommand.new(2)
 	append_companion_command(new_round_cmd)
 	for player in game_state.player_manager.players:
-		var draw_cmd: = DrawCardsCommand.new(player.get_id(), 4)
+		var draw_cmd := DrawCardsCommand.new(player.get_id(), 4)
 		append_companion_command(draw_cmd)
 	_context.phase = Phase.DONE
 	complete()
 	GlobalConsole._print("GameStartCommand:游戏初始化完成")
 
-func on_done_phase(game_state: GameState) -> void:
+func on_done_phase(_game_state: GameState) -> void:
 	complete()

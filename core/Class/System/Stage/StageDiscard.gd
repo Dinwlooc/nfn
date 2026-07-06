@@ -1,10 +1,9 @@
 extends Stage
 class_name StageDiscard
 
-const TIME_LIMIT: float = 10.0   # 弃牌阶段总时间限制（秒）
-var _players_to_discard: Dictionary[int, int] = {}          # player_id -> 还需弃牌的数量
+const TIME_LIMIT: float = 10.0
+var _players_to_discard: Dictionary[int, int] = {}
 
-# ========== 生命周期 ==========
 func _init() -> void:
 	super._init()
 	stage_name = &"Discard"
@@ -27,7 +26,6 @@ func enter(game_state: GameState) -> void:
 		return
 	game_state.set_responsive_players(responsive_players)
 	_reset_timer()
-	_connect_all_commands_completed_signal(game_state)
 	GlobalConsole._print(["弃牌阶段开始，响应玩家：", responsive_players])
 
 func resume(game_state: GameState) -> void:
@@ -36,21 +34,14 @@ func resume(game_state: GameState) -> void:
 		end_stage(game_state)
 		return
 	_reset_timer()
-	_connect_all_commands_completed_signal(game_state)
 	GlobalConsole._print(["弃牌阶段恢复，剩余需弃牌玩家：", _players_to_discard.keys()])
-
-func pause(game_state: GameState) -> void:
-	super.pause(game_state)
-	_disconnect_all_commands_completed_signal(game_state)
 
 func end_stage_effect(game_state: GameState) -> void:
 	_force_discard_for_all(game_state)
 	game_state.set_responsive_players(PackedInt32Array())
-	_disconnect_all_commands_completed_signal(game_state)
 	_players_to_discard.clear()
 	GlobalConsole._print(["弃牌阶段结束"])
 
-# ========== 操作请求处理 ==========
 func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
@@ -132,15 +123,12 @@ func _process_abandon_response(request: OperationRequest.AbandonResponse, game_s
 	GlobalConsole._print(["弃牌阶段：玩家", player_id, "放弃响应，随机弃牌完成"])
 	request.complete()
 
-# ========== 超时处理 ==========
 func timeout(game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
 	_force_discard_for_all(game_state)
 	end_stage(game_state)
 
-# ========== 辅助函数 ==========
-## 强制所有未完成弃牌的玩家随机选择所需卡牌并执行弃牌命令
 func _force_discard_for_all(game_state: GameState) -> void:
 	if _players_to_discard.is_empty():
 		return
@@ -156,7 +144,6 @@ func _force_discard_for_all(game_state: GameState) -> void:
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "超时，随机弃牌完成"])
 	_players_to_discard.clear()
 
-## 从手牌区随机选择 count 张卡牌（不重复），利用 UnorderedArea 的随机能力
 func _random_select(hand_area: AreaHand, count: int) -> PackedInt32Array:
 	if count <= 0 or hand_area.is_empty():
 		return PackedInt32Array()
@@ -169,10 +156,5 @@ func _random_select(hand_area: AreaHand, count: int) -> PackedInt32Array:
 		result.append(card.id)
 	return result
 
-## 重置计时器（固定时长）
 func _reset_timer() -> void:
 	request_reset_timer.emit(TIME_LIMIT)
-
-func _on_all_commands_completed(game_state: GameState) -> void:
-	if is_ended or is_paused:
-		return

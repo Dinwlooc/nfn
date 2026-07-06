@@ -13,8 +13,7 @@ static var system_trigger_classes: Array[Script] = [
 	StageTrigger,
 ]
 static var gamestate_trigger_classes: Array[Script] = [
-	DefenseBattleTrigger,
-	SettleResetTrigger,
+	DefenseTrigger,
 	CenterSkillTrigger,
 	SyncTrigger,
 	ShuffleWhenEmptyTrigger,
