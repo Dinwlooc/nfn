@@ -26,7 +26,6 @@ func process() -> void:
 		return
 	command_processing.emit(current_behavior)
 	current_behavior.execute(game_state)
-
 ## 添加新命令到堆栈
 func queue_behavior(event: BehaviorCommand) -> void:
 	event.companion_command_requested.connect(_on_companion_command_requested)

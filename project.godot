@@ -16,7 +16,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 
 config/name="NFN Game"
 run/main_scene="uid://c624f44o3dyxc"
-config/features=PackedStringArray("4.7", "Mobile")
+config/features=PackedStringArray("4.7", "C#", "Mobile")
 boot_splash/use_filter=false
 config/icon="res://icon.svg"
 
@@ -33,6 +33,10 @@ GlobalRegistry="*res://core/Global/global_registry.gd"
 window/size/viewport_width=1600
 window/size/viewport_height=900
 window/stretch/mode="canvas_items"
+
+[dotnet]
+
+project/assembly_name="NFN Game"
 
 [editor]
 
