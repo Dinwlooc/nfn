@@ -99,62 +99,57 @@ public partial class SerializationUtil : GodotObject
 	}
 
 	// ==================== 私有辅助方法 ====================
-
-	private static void _write_varint(StreamPeerBuffer buffer, long value)
+/// <summary>
+/// 将 long 编码为 ZigZag 无符号值，再以 7-bit 变长格式写入
+/// </summary>
+private static void _write_varint(StreamPeerBuffer buffer, long value)
+{
+	unchecked
 	{
-		unchecked
-		{
-			long zigzag = (value << 1) ^ (value >> 63);
-			if (zigzag < 0)
-			{
-				_write_extreme_negative(buffer);
-				return;
-			}
-			while (zigzag >= VARINT_CONTINUE_FLAG)
-			{
-				buffer.PutU8((byte)((zigzag & VARINT_MASK) | VARINT_CONTINUE_FLAG));
-				zigzag >>= 7;
-			}
-			buffer.PutU8((byte)zigzag);
-		}
+		// ZigZag 编码：将符号位移到最低位
+		ulong zigzag = (ulong)((value << 1) ^ (value >> 63));
+		_write_varint_unsigned(buffer, zigzag);
 	}
+}
 
-	private static void _write_extreme_negative(StreamPeerBuffer buffer)
+/// <summary>
+/// 从缓冲区读取变长整数，解码为 long
+/// </summary>
+private static long _read_varint(StreamPeerBuffer buffer)
+{
+	ulong zigzag = _read_varint_unsigned(buffer);
+	long decoded = (long)((zigzag >> 1) ^ (ulong)(-(long)(zigzag & 1)));
+	return decoded;
+}
+/// <summary>
+/// 写入无符号变长整数
+/// </summary>
+private static void _write_varint_unsigned(StreamPeerBuffer buffer, ulong value)
+{
+	while (value >= 0x80)
 	{
-		for (int i = 0; i < 9; i++)
-			buffer.PutU8(0xFF);
-		buffer.PutU8(0x01);
+		buffer.PutU8((byte)((value & 0x7F) | 0x80));
+		value >>= 7;
 	}
+	buffer.PutU8((byte)value);
+}
+/// <summary>
+/// 读取无符号变长整数
+/// </summary>
+private static ulong _read_varint_unsigned(StreamPeerBuffer buffer)
+{
+	ulong result = 0;
+	int shift = 0;
+	byte b;
+	do
+	{
+		b = buffer.GetU8();
+		result |= (ulong)(b & 0x7F) << shift;
+		shift += 7;
+	} while ((b & 0x80) != 0);
+	return result;
+}
 
-	private static long _read_varint(StreamPeerBuffer buffer)
-	{
-		unchecked
-		{
-			long result = 0;
-			int shift = 0;
-			byte b;
-			for (int i = 0; i < 10; i++)
-			{
-				b = buffer.GetU8();
-				result |= (long)(b & VARINT_MASK) << shift;
-				shift += 7;
-				if ((b & VARINT_CONTINUE_FLAG) == 0)
-					break;
-			}
-			if (result < 0)
-				return _decode_extreme(result);
-			return (result >> 1) ^ (-(result & 1));
-		}
-	}
-
-	private static long _decode_extreme(long result)
-	{
-		unchecked
-		{
-			long shifted = (result & 0x7FFFFFFFFFFFFFFFL) >> 1;
-			return shifted ^ (-(result & 1));
-		}
-	}
 
 	private static void _write_string(StreamPeerBuffer buffer, string value)
 	{
