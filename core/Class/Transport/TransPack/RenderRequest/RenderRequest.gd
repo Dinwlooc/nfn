@@ -5,7 +5,7 @@ const PUBLIC_AREA_PLAYER_ID: int = 1
 var target_area: StringName
 var target_area_player_id: int = PUBLIC_AREA_PLAYER_ID
 ## 自定义参数字典（所有子类通用）
-var custom_params: Dictionary
+var custom_params: Dictionary[StringName,Variant]
 @warning_ignore("assert_always_true")
 func send_to_player(peer_id: int) -> void:
 	GlobalTransport.send_render_request(peer_id, self)
@@ -30,7 +30,7 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = 
 		pack.target_area_player_id = SerializationUtil.read(buffer, TYPE_INT)
 	else:
 		pack.target_area_player_id = PUBLIC_AREA_PLAYER_ID
-	var dict:Dictionary = SerializationUtil.read(buffer,TYPE_DICTIONARY)
+	var dict:Dictionary[StringName,Variant] = SerializationUtil.read(buffer,TYPE_DICTIONARY)
 	pack.custom_params = dict
 	return pack
 
