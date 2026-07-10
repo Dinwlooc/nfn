@@ -15,7 +15,7 @@
 - **通信**：处理客户端与服务器之间的网络通信。
 - **辅助系统**：包括场景转场和动画工具等。
 ## 开发环境与依赖
-- **Godot 引擎**：项目使用 Godot 4.7.stable 开发，请确保使用兼容版本打开。
+- **Godot 引擎**：项目使用 Godot 4.7.stable_mono 开发，请确保使用兼容版本打开。
 - **Git 插件**：项目中集成了 `godot-git-plugin`，用于版本控制。
 ## 如何运行项目
 1. 安装 [Godot 4.x](https://godotengine.org/download/)。

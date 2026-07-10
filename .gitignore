@@ -5,6 +5,7 @@ export_presets.cfg
 .godot/
 addons/
 .idea/
+Unused/
 # Imported translations (automatically generated from CSV files)
 *.translation
 .vs
