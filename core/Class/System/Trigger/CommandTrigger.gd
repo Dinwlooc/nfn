@@ -11,6 +11,9 @@ func _init(system: System) -> void:
 	_system.command_processor.enable_processing.connect(_on_enable_processing)
 	_system.command_processor.all_completed.connect(_on_all_completed)
 	_system.command_processor.command_processing.connect(_on_command_processing)
+	# 监听命令压入和弹出信号，同步上下文堆栈
+	_system.command_processor.command_pushed.connect(_on_command_pushed)
+	_system.command_processor.command_popped.connect(_on_command_popped)
 
 func _on_new_behavior_with_callback(command: BehaviorCommand, callback: Callable) -> void:
 	_system.command_processor.all_completed.connect(callback, CONNECT_ONE_SHOT)
@@ -25,3 +28,11 @@ func _on_all_completed() -> void:
 
 func _on_command_processing(command: BehaviorCommand) -> void:
 	_system.modifier_manager.process_modifiers(command._context, _system.game_state)
+
+## 命令压入堆栈时，将命令上下文压入游戏状态堆栈
+func _on_command_pushed(behavior: BehaviorCommand) -> void:
+	_system.game_state.push_command_context(behavior._context)
+
+## 命令弹出堆栈时，从游戏状态堆栈弹出上下文（不做检查）
+func _on_command_popped(_behavior: BehaviorCommand) -> void:
+	_system.game_state.pop_command_context()

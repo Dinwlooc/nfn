@@ -9,6 +9,10 @@ var is_empty: bool = true
 signal all_completed()
 signal command_processing(command: BehaviorCommand)
 signal enable_processing(_enable:bool)
+## 命令压入堆栈时发出，携带命令实例
+signal command_pushed(behavior: BehaviorCommand)
+## 命令从堆栈弹出时发出，携带命令实例
+signal command_popped(behavior: BehaviorCommand)
 
 func _init(p_game_state: GameState) -> void:
 	game_state = p_game_state
@@ -23,6 +27,7 @@ func process() -> void:
 	var current_behavior: BehaviorCommand = behavior_stack.back()
 	if current_behavior._is_completed:
 		behavior_stack.pop_back()
+		command_popped.emit(current_behavior)
 		return
 	command_processing.emit(current_behavior)
 	current_behavior.execute(game_state)
@@ -30,6 +35,7 @@ func process() -> void:
 func queue_behavior(event: BehaviorCommand) -> void:
 	event.companion_command_requested.connect(_on_companion_command_requested)
 	behavior_stack.push_back(event)
+	command_pushed.emit(event)
 	if is_empty:
 		is_empty = false
 		enable_processing.emit(true)

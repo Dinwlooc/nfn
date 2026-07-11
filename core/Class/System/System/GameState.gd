@@ -10,8 +10,9 @@ var _process_active := false
 var stage_manager: StageManager = StageManager.new()
 ## 区域注册表统一管理器
 var area_registry: AreaManager = AreaManager.new()
+## 命令上下文堆栈。命令可以在其他命令的执行中途入栈，故尾部仅代表在当前的修饰下，下一轮调用时将被执行的命令。
+var command_context_stack: Array[CommandContext] = []
 const PUBLIC_PLAYER_ID: int = 1
-
 signal start_round(player_id: int)
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
 signal new_behavior(command: BehaviorCommand)
@@ -110,3 +111,12 @@ func get_drawing_area() -> AreaDrawing:
 ## 获取公共弃牌堆区（便捷方法）
 func get_discard_area() -> AreaDiscard:
 	return area_registry.get_discard_area()
+
+## 压入命令上下文到堆栈尾部
+func push_command_context(context: CommandContext) -> void:
+	command_context_stack.push_back(context)
+
+## 弹出命令上下文从堆栈尾部（不做检查）
+func pop_command_context() -> void:
+	if not command_context_stack.is_empty():
+		command_context_stack.pop_back()
