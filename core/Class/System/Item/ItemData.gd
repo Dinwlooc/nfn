@@ -5,7 +5,7 @@ class_name ItemData
 ## 属性修饰器列表（内嵌子资源，不建议跨物品共享）
 @export var attribute_defaults: Array[AttributeData] = []
 ## 预置修饰器脚本列表
-@export var modifiers: Array[Script] = []
+@export var modifiers: Array[Modifier] = []
 ## 规则覆盖字典
 @export var rule_overrides: Dictionary = {}
 ## 指定对应的 ItemPack 子类

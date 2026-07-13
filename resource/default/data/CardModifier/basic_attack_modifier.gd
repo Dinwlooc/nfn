@@ -1,6 +1,6 @@
 extends Modifier
 
-static func process(context: CommandContext, state: GameState, creator: Item) -> void:
+func process(context: CommandContext, state: GameState, creator: Item) -> void:
 	if not (creator is Card):
 		return
 	var card: Card = creator as Card

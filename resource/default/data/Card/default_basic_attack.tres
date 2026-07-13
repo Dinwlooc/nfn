@@ -1,30 +1,28 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=7 format=3 uid="uid://cvtw8wnsvyfp0"]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://cvtw8wnsvyfp0"]
 
-[ext_resource type="Script" uid="uid://bxumydctuiihd" path="res://resource/default/data/CardModifier/basic_attack_modifier.gd" id="1_0xey4"]
+[ext_resource type="Script" uid="uid://bq8pou4k8ujat" path="res://core/Class/System/Modifier/Modifier.gd" id="1_jnom1"]
 [ext_resource type="Script" uid="uid://chndppyj08lvd" path="res://core/Class/System/Item/AttributeData.gd" id="1_qhk8a"]
 [ext_resource type="Script" uid="uid://xwa2xhc857ep" path="res://core/Class/Transport/TransPack/ItemPack/HandCardPack.gd" id="3_rvtcu"]
+[ext_resource type="Script" uid="uid://bxumydctuiihd" path="res://resource/default/data/CardModifier/basic_attack_modifier.gd" id="3_to1qo"]
 [ext_resource type="Script" uid="uid://b04wnl4nfxsn2" path="res://core/Class/System/Item/CardData.gd" id="4_to1qo"]
 
 [sub_resource type="Resource" id="Resource_qhk8a"]
 script = ExtResource("1_qhk8a")
 attribute = &"power"
 value = 3.0
-arithmetic_type = 0
-modifier_name = &"base_value"
 
 [sub_resource type="Resource" id="Resource_rvtcu"]
 script = ExtResource("1_qhk8a")
 attribute = &"cost"
 value = 1.0
-arithmetic_type = 0
-modifier_name = &"base_value"
+
+[sub_resource type="Resource" id="Resource_ujjcp"]
+script = ExtResource("3_to1qo")
+metadata/_custom_type_script = "uid://bq8pou4k8ujat"
 
 [resource]
 script = ExtResource("4_to1qo")
 name = &"nfn:basic_attack"
-type = &"attack"
 attribute_defaults = Array[ExtResource("1_qhk8a")]([SubResource("Resource_qhk8a"), SubResource("Resource_rvtcu")])
-modifiers = Array[Script]([ExtResource("1_0xey4")])
-rule_overrides = {}
+modifiers = Array[ExtResource("1_jnom1")]([SubResource("Resource_ujjcp")])
 pack_class = ExtResource("3_rvtcu")
-_reset_to_defaults = false

@@ -2,9 +2,9 @@ extends Buff
 class_name CommandBuff
 
 var command_modifiers: CommandModifiers
-var modifier_script: Script
+var modifier_script: Modifier
 
-func _init(p_buff_name: StringName, p_command_modifiers: CommandModifiers, p_modifier_script: Script) -> void:
+func _init(p_buff_name: StringName, p_command_modifiers: CommandModifiers, p_modifier_script: Modifier) -> void:
 	super._init(p_buff_name)
 	command_modifiers = p_command_modifiers
 	modifier_script = p_modifier_script

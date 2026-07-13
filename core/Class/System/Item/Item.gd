@@ -6,12 +6,16 @@ var id: int = -1
 var last_pack: ItemPack = null
 var data: ItemData
 var attributeModifiers: AttributeModifiers = AttributeModifiers.new()
-var command_modifiers: CommandModifiers = CommandModifiers.new()
-var buff_modifiers: BuffModifiers = BuffModifiers.new(attributeModifiers, command_modifiers)
+var command_modifiers: CommandModifiers
+var buff_modifiers: BuffModifiers
 var rule_overrides: Dictionary
 ## 构造函数，接收一个 ItemData 蓝图
-func _init(item_data: ItemData) -> void:
+func _init(item_data: ItemData,is_virtual:bool = false) -> void:
 	data = item_data
+	if is_virtual:
+		return
+	command_modifiers = CommandModifiers.new()
+	buff_modifiers = BuffModifiers.new(attributeModifiers, command_modifiers)
 	_reset_to_data()
 ## 获取物品 ID
 func get_id() -> int:
@@ -19,7 +23,8 @@ func get_id() -> int:
 ## 设置物品 ID（由管理器调用），并根据虚方法 _get_owner_type 设置 BuffModifiers 所有者
 func set_id(new_id: int) -> Item:
 	id = new_id
-	buff_modifiers.set_owner(self.get_item_type(), id)
+	if buff_modifiers:
+		buff_modifiers.set_owner(self.get_item_type(), id)
 	return self
 ## 重置物品到蓝本状态（清除所有运行时修改）
 func reset_item() -> void:
@@ -36,15 +41,15 @@ func _reset_to_data() -> void:
 			attr_data.value
 		)
 	command_modifiers.reset()
-	for modifier_script: Script in data.modifiers:
+	for modifier_script: Modifier in data.modifiers:
 		add_modifier(modifier_script)
 	rule_overrides = data.rule_overrides.duplicate(true)
 ## 添加运行时修饰器（不影响蓝本）
-func add_modifier(modifier_script: Script) -> void:
+func add_modifier(modifier_script: Modifier) -> void:
 	command_modifiers.add_modifier(modifier_script)
 	modifier_script.init(self)
 ## 移除运行时修饰器
-func remove_modifier(modifier_script: Script) -> void:
+func remove_modifier(modifier_script: Modifier) -> void:
 	command_modifiers.remove_modifier(modifier_script)
 ## 获取最终属性值（基础值 + 所有加成）
 func get_attribute(attribute: StringName) -> int:

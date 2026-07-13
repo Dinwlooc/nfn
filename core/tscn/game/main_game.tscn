@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://cq8jj35acobqx"]
+[gd_scene format=3 uid="uid://cq8jj35acobqx"]
 
 [ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System/System.gd" id="2_gpy5h"]
@@ -21,18 +21,18 @@
 [ext_resource type="PackedScene" uid="uid://b025ean41nrj6" path="res://core/tscn/game/console.tscn" id="15_vjhr3"]
 [ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/areaface_denfence.tscn" id="16_jjejj"]
 
-[node name="MainGame" type="Node2D"]
+[node name="MainGame" type="Node2D" unique_id=264974230]
 
-[node name="System" type="Node" parent="." node_paths=PackedStringArray("timer")]
+[node name="System" type="Node" parent="." unique_id=632558749 node_paths=PackedStringArray("timer")]
 script = ExtResource("2_gpy5h")
 timer = NodePath("../Timer")
 
-[node name="Timer" type="Timer" parent="."]
+[node name="Timer" type="Timer" parent="." unique_id=1423721328]
 one_shot = true
 ignore_time_scale = true
 script = ExtResource("2_4k47o")
 
-[node name="Control" type="Control" parent="."]
+[node name="Control" type="Control" parent="." unique_id=1430176070]
 custom_minimum_size = Vector2(1600, 900)
 layout_mode = 3
 anchors_preset = 0
@@ -41,23 +41,23 @@ offset_bottom = 900.0
 focus_mode = 1
 script = ExtResource("4_ppvbj")
 
-[node name="AreaDraw" type="Control" parent="Control"]
-layout_mode = 3
+[node name="AreaDraw" type="Control" parent="Control" unique_id=1968768482]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("4_662gx")
 metadata/_custom_type_script = "uid://drlnwp8p3nn5a"
 
-[node name="AreaCenter" type="Control" parent="Control"]
+[node name="AreaCenter" type="Control" parent="Control" unique_id=362697441]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("4_8dpeo")
 
-[node name="Backgound" parent="Control/AreaCenter" instance=ExtResource("5_2w2we")]
+[node name="Backgound" parent="Control/AreaCenter" unique_id=1511702194 instance=ExtResource("5_2w2we")]
+layout_mode = 0
 
-[node name="StageFace" type="Control" parent="Control/AreaCenter" node_paths=PackedStringArray("render_control")]
+[node name="StageFace" type="Control" parent="Control/AreaCenter" unique_id=734852879 node_paths=PackedStringArray("render_control")]
 anchors_preset = 0
 offset_left = 72.0
 offset_top = 184.0
@@ -67,7 +67,7 @@ script = ExtResource("6_t5eyl")
 render_control = NodePath("../..")
 metadata/_custom_type_script = "uid://btwt7f8flx66t"
 
-[node name="RenderTimer" type="Label" parent="Control/AreaCenter"]
+[node name="RenderTimer" type="Label" parent="Control/AreaCenter" unique_id=2133939479]
 layout_mode = 0
 offset_left = 58.0
 offset_top = 12.0
@@ -77,7 +77,7 @@ theme_override_font_sizes/font_size = 100
 text = "0"
 script = ExtResource("8_ppvbj")
 
-[node name="Arrow" type="Control" parent="Control/AreaCenter" node_paths=PackedStringArray("render_control")]
+[node name="Arrow" type="Control" parent="Control/AreaCenter" unique_id=810185477 node_paths=PackedStringArray("render_control")]
 layout_mode = 1
 anchor_left = 1.025
 anchor_top = -2.175
@@ -90,24 +90,25 @@ script = ExtResource("5_4k47o")
 render_control = NodePath("../..")
 metadata/_edit_use_anchors_ = true
 
-[node name="AreaPlayers" type="Control" parent="Control"]
+[node name="AreaPlayers" type="Control" parent="Control" unique_id=1842885599]
 anchors_preset = 0
 script = ExtResource("14_a6oxl")
 
-[node name="AreaFaceTargets" parent="Control/AreaPlayers" instance=ExtResource("14_8v20q")]
+[node name="AreaFaceTargets" parent="Control/AreaPlayers" unique_id=717599472 instance=ExtResource("14_8v20q")]
+layout_mode = 0
 offset_top = 30.0
 offset_right = 1605.0
 offset_bottom = 286.0
 mouse_filter = 1
 
-[node name="AreaFaceSelf" parent="Control/AreaPlayers" instance=ExtResource("11_4k47o")]
+[node name="AreaFaceSelf" parent="Control/AreaPlayers" unique_id=311997906 instance=ExtResource("11_4k47o")]
 layout_mode = 1
 offset_left = 1404.0
 offset_top = 464.0
 offset_right = 1603.0
 offset_bottom = 826.0
 
-[node name="AreaFaceSelf_Properties" parent="Control/AreaPlayers" instance=ExtResource("12_f8lnr")]
+[node name="AreaFaceSelf_Properties" parent="Control/AreaPlayers" unique_id=1317956383 instance=ExtResource("12_f8lnr")]
 layout_mode = 1
 offset_left = 1.0
 offset_top = 437.0
@@ -115,7 +116,7 @@ offset_right = 220.0
 offset_bottom = 637.0
 scale = Vector2(2, 2)
 
-[node name="AreaHand" type="Control" parent="Control"]
+[node name="AreaHand" type="Control" parent="Control" unique_id=2096029957]
 anchors_preset = 0
 offset_right = 1613.0
 offset_bottom = 907.0
@@ -123,7 +124,7 @@ mouse_filter = 2
 script = ExtResource("7_jjejj")
 metadata/_custom_type_script = "uid://b5f71t7ikic0w"
 
-[node name="AreaFaceHand" parent="Control/AreaHand" instance=ExtResource("9_2w2we")]
+[node name="AreaFaceHand" parent="Control/AreaHand" unique_id=1839999649 instance=ExtResource("9_2w2we")]
 layout_mode = 1
 anchor_left = 0.177
 anchor_top = 0.782
@@ -134,21 +135,21 @@ offset_right = 1083.27
 offset_bottom = 307.726
 mouse_filter = 1
 
-[node name="AreaDiscard" type="Control" parent="Control"]
+[node name="AreaDiscard" type="Control" parent="Control" unique_id=717434565]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("14_eqfmo")
 metadata/_custom_type_script = "uid://b2kx1en87wqae"
 
-[node name="AreaFace" type="Control" parent="Control/AreaDiscard"]
+[node name="AreaFace" type="Control" parent="Control/AreaDiscard" unique_id=1366462617]
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 script = ExtResource("15_ppvbj")
 metadata/_custom_type_script = "uid://btwt7f8flx66t"
 
-[node name="AreaDenfence" type="Control" parent="Control"]
+[node name="AreaDenfence" type="Control" parent="Control" unique_id=1581273362]
 anchors_preset = 0
 offset_left = 1395.0
 offset_top = 830.0
@@ -157,10 +158,12 @@ offset_bottom = 926.0
 script = ExtResource("15_eqfmo")
 metadata/_custom_type_script = "uid://2mqjwyo4dqay"
 
-[node name="AreaFaceDenfence" parent="Control/AreaDenfence" instance=ExtResource("16_jjejj")]
+[node name="AreaFaceDenfence" parent="Control/AreaDenfence" unique_id=1146233634 instance=ExtResource("16_jjejj")]
+layout_mode = 0
 offset_left = 7.0
 offset_top = -38.0
 offset_right = 184.0
 offset_bottom = 84.0
 
-[node name="Console" parent="Control" instance=ExtResource("15_vjhr3")]
+[node name="Console" parent="Control" unique_id=2013217500 instance=ExtResource("15_vjhr3")]
+layout_mode = 0

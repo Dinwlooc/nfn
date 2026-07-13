@@ -2,16 +2,16 @@
 extends RefCounted
 class_name CommandModifiers
 
-var _modifiers: Array[Script] = []
+var _modifiers: Array[Modifier] = []
 
-func add_modifier(script: Script) -> void:
+func add_modifier(script: Modifier) -> void:
 	if script not in _modifiers:
 		_modifiers.append(script)
 
-func remove_modifier(script: Script) -> void:
+func remove_modifier(script: Modifier) -> void:
 	_modifiers.erase(script)
 
-func get_modifiers() -> Array[Script]:
+func get_modifiers() -> Array[Modifier]:
 	return _modifiers.duplicate()
 
 ## 重置为预设脚本列表（清除所有动态修改并重新加载）

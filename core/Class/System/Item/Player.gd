@@ -2,7 +2,7 @@
 extends Item
 class_name Player
 
-static var PUBLIC_PLAYER: Player = Player.new().set_id(1)
+static var PUBLIC_PLAYER: Player = Player.new(PlayerData.new(),true).set_id(1)
 
 var peer_id: int = -1
 var seat_index: int = -1
@@ -19,8 +19,8 @@ signal morale_defense_increased(amount: int)
 signal morale_level_changed(new_level: int)
 signal morale_cleared()
 
-func _init(player_data: PlayerData = PlayerData.new()) -> void:
-	super._init(player_data)
+func _init(player_data: PlayerData = PlayerData.new(),is_virtual:bool = false) -> void:
+	super._init(player_data,is_virtual)
 
 static func get_item_type() -> StringName:
 	return &"player"

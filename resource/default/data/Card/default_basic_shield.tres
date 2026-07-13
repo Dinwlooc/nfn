@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="CardData" load_steps=5 format=3 uid="uid://eugf8ukhmudx"]
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://eugf8ukhmudx"]
 
 [ext_resource type="Script" uid="uid://chndppyj08lvd" path="res://core/Class/System/Item/AttributeData.gd" id="1_8utbd"]
 [ext_resource type="Script" uid="uid://xwa2xhc857ep" path="res://core/Class/Transport/TransPack/ItemPack/HandCardPack.gd" id="2_ahaay"]
@@ -8,15 +8,11 @@
 script = ExtResource("1_8utbd")
 attribute = &"power"
 value = 3.0
-arithmetic_type = 0
-modifier_name = &"base_value"
 
 [resource]
 script = ExtResource("3_ivra0")
 name = &"nfn:basic_shield"
 type = &"defence"
 attribute_defaults = Array[ExtResource("1_8utbd")]([SubResource("Resource_b323l")])
-modifiers = Array[Script]([])
-rule_overrides = {}
 pack_class = ExtResource("2_ahaay")
-_reset_to_defaults = false
+_reset_to_defaults = null
