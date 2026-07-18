@@ -32,14 +32,14 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	for p in [attacker.get_id(), defender.get_id()]:
 		total_time_used[p] = 0.0
 		dynamic_time_limit[p] = DEFAULT_TIME_LIMIT
-	_update_responsive_player(game_state)
+	_update_responsive_player(game_state, command_bus)
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
 	_generate_and_queue_battle_command(game_state, command_bus, true)
 	super.enter(game_state, command_bus)
 
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
-	_update_responsive_player(game_state)
+	_update_responsive_player(game_state, command_bus)
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
 	super.resume(game_state, command_bus)
@@ -124,13 +124,13 @@ func _check_defense_battle_restrictions(
 		game_state
 	)
 
-func _update_responsive_player(game_state: GameState) -> void:
+func _update_responsive_player(game_state: GameState, command_bus: CommandBus) -> void:
 	var top: Card = defense_area.get_top_card()
 	if top:
 		current_responsive_player_id = attacker.get_id() if top.player == defender else defender.get_id()
 	else:
 		current_responsive_player_id = attacker.get_id()
-	game_state.set_responsive_players(PackedInt32Array([current_responsive_player_id]))
+	command_bus.set_responsive_players(PackedInt32Array([current_responsive_player_id]))
 	GlobalConsole._print(["守区攻防阶段：更新响应权为玩家", current_responsive_player_id])
 
 func _generate_and_queue_battle_command(game_state: GameState, command_bus: CommandBus, save_reference: bool = false) -> BattleCommand:
@@ -169,7 +169,7 @@ func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 		if new_cmd:
 			GlobalConsole._print(["守区攻防阶段：重新生成斗牌命令，跳过响应权更新"])
 			return
-	_update_responsive_player(game_state)
+	_update_responsive_player(game_state, command_bus)
 	_reset_timer_for_current_player()
 	GlobalConsole._print(["守区攻防阶段：命令全部完成，已更新玩家响应权"])
 

@@ -24,7 +24,7 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	if responsive_players.is_empty():
 		end_stage(game_state, command_bus)
 		return
-	game_state.set_responsive_players(responsive_players)
+	command_bus.set_responsive_players(responsive_players)
 	_reset_timer()
 	GlobalConsole._print(["弃牌阶段开始，响应玩家：", responsive_players])
 
@@ -38,7 +38,7 @@ func resume(game_state: GameState, command_bus: CommandBus) -> void:
 
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_force_discard_for_all(game_state, command_bus)
-	game_state.set_responsive_players(PackedInt32Array())
+	command_bus.set_responsive_players(PackedInt32Array())
 	_players_to_discard.clear()
 	GlobalConsole._print(["弃牌阶段结束"])
 

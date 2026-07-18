@@ -16,20 +16,20 @@ func _init() -> void:
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.get_id()
-	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
+	command_bus.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT)
 	super.enter(game_state, command_bus)
 
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.get_id()
-	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
+	command_bus.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT / 2)
 	super.resume(game_state, command_bus)
 
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = null
-	game_state.set_responsive_players(PackedInt32Array())
+	command_bus.set_responsive_players(PackedInt32Array())
 	super.end_stage_effect(game_state, command_bus)
 
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
@@ -84,6 +84,6 @@ func _reset_timer_for_current_player(new_time_limit: int) -> void:
 func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
-	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
+	command_bus.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT / 2)
 	GlobalConsole._print(["主阶段：所有命令完成，已刷新响应权为玩家", _current_attacker_id])

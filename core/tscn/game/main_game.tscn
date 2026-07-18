@@ -167,3 +167,5 @@ offset_bottom = 84.0
 
 [node name="Console" parent="Control" unique_id=2013217500 instance=ExtResource("15_vjhr3")]
 layout_mode = 0
+offset_left = -492.0
+offset_right = -4.0

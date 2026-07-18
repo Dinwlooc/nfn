@@ -71,6 +71,7 @@ func _charge_special_cards(player: Player, morale_type: StringName, base_amount:
 	var charge_amount: int = player.get_charge_amount(base_amount)
 	# TODO: 获取玩家拥有的特殊牌列表，筛选类型匹配的牌，调用其充能方法。
 	pass
+
 ## 所有命令完成后的回调：检查并进入濒死阶段
 func _on_all_commands_completed(game_state:GameState) -> void:
 	if _is_in_dying_stage(game_state):
@@ -88,10 +89,12 @@ func _on_all_commands_completed(game_state:GameState) -> void:
 		if player.HP <= 0:
 			_enter_dying_stage(game_state, player)
 			return
+
 ## 检查当前阶段是否为濒死阶段
 func _is_in_dying_stage(game_state: GameState) -> bool:
 	var stage: Stage = game_state.stage_manager.current_stage
 	return stage != null and stage.stage_name == &"Dying"
+
 ## 获取当前回合玩家的座位索引
 func _get_current_player_seat_index(game_state: GameState) -> int:
 	var cur_player_id: int = game_state.stage_manager.current_player_id
@@ -99,7 +102,8 @@ func _get_current_player_seat_index(game_state: GameState) -> int:
 		return -1
 	var player: Player = game_state.player_manager.get_player_by_id(cur_player_id)
 	return player.seat_index if player else -1
-## 进入濒死阶段
+
+## 进入濒死阶段（通过命令请求，而非直接操作阶段管理器）
 func _enter_dying_stage(game_state: GameState, dying_player: Player) -> void:
-	var dying_stage := StageDying.new(dying_player)
-	game_state.stage_manager.start_temp_stage(dying_stage, game_state)
+	var request_cmd := DyingStageRequestCommand.new(dying_player)
+	_system.command_bus.queue_behavior(request_cmd)

@@ -13,10 +13,9 @@ var area_registry: AreaManager = AreaManager.new()
 ## 命令上下文堆栈。命令可以在其他命令的执行中途入栈，故尾部仅代表在当前的修饰下，下一轮调用时将被执行的命令。
 var command_context_stack: Array[CommandContext] = []
 const PUBLIC_PLAYER_ID: int = 1
-# signal start_round 已移除，阶段启动由 NewRoundCommand 通过 CommandBus 触发
+# signal request_set_responsive_players 已移至 CommandBus
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
 signal new_behavior(command: BehaviorCommand)
-signal request_set_responsive_players(player_ids: PackedInt32Array)
 signal all_commands_completed(game_state:GameState)
 
 ## 加载卡牌并将所有牌置入牌堆
@@ -49,10 +48,6 @@ func get_current_active_stage_name() -> StringName:
 	if cur:
 		return cur.stage_name
 	return &""
-
-## 设置可响应玩家
-func set_responsive_players(player_ids: PackedInt32Array) -> void:
-	request_set_responsive_players.emit(player_ids)
 
 ## 入队命令
 func queue_behavior(command: BehaviorCommand) -> void:

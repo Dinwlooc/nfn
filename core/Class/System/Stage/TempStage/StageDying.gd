@@ -20,22 +20,22 @@ func _init(p_dying_player: Player) -> void:
 	_current_time_limit = DEFAULT_TIME_LIMIT
 
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
-	_grant_response_permission_to_all_players(game_state)
+	_grant_response_permission_to_all_players(game_state, command_bus)
 	_reset_timer()
 	super.enter(game_state, command_bus)
 
 func pause(game_state: GameState, command_bus: CommandBus) -> void:
-	_revoke_response_permission(game_state)
+	_revoke_response_permission(command_bus)
 	_stop_timer()
 	super.pause(game_state, command_bus)
 
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
-	_grant_response_permission_to_all_players(game_state)
+	_grant_response_permission_to_all_players(game_state, command_bus)
 	_reset_timer()
 	super.resume(game_state, command_bus)
 
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
-	_revoke_response_permission(game_state)
+	_revoke_response_permission(command_bus)
 	_stop_timer()
 	if dying_player.HP <= 0:
 		_generate_player_death_command(game_state, command_bus)
@@ -82,7 +82,7 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["濒死阶段：规则未返回命令"])
 		request.cancel()
 		return
-	_lock_response(game_state)
+	_lock_response(game_state, command_bus)
 	request.complete()
 	command_bus.queue_behavior_with_callback(command, func():
 		_on_command_completed(game_state, command_bus)
@@ -92,7 +92,7 @@ func _on_command_completed(game_state: GameState, command_bus: CommandBus) -> vo
 	if is_ended or is_paused:
 		return
 	_current_time_limit = max(_current_time_limit - TIME_PENALTY_STEP, MIN_TIME_LIMIT)
-	_unlock_response(game_state)
+	_unlock_response(game_state, command_bus)
 	_reset_timer()
 	GlobalConsole._print(["濒死阶段：命令完成，新时间限制", _current_time_limit])
 
@@ -103,29 +103,29 @@ func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 		end_stage(game_state, command_bus)
 		return
 	if _is_locked:
-		_unlock_response(game_state)
+		_unlock_response(game_state, command_bus)
 
-func _grant_response_permission_to_all_players(game_state: GameState) -> void:
+func _grant_response_permission_to_all_players(game_state: GameState, command_bus: CommandBus) -> void:
 	var all_player_ids: PackedInt32Array = []
 	for player in game_state.player_manager.players:
 		all_player_ids.append(player.get_id())
-	game_state.set_responsive_players(all_player_ids)
+	command_bus.set_responsive_players(all_player_ids)
 
-func _revoke_response_permission(game_state: GameState) -> void:
-	game_state.set_responsive_players(PackedInt32Array())
+func _revoke_response_permission(command_bus: CommandBus) -> void:
+	command_bus.set_responsive_players(PackedInt32Array())
 
-func _lock_response(game_state: GameState) -> void:
+func _lock_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if _is_locked:
 		return
 	_is_locked = true
-	_revoke_response_permission(game_state)
+	_revoke_response_permission(command_bus)
 	_stop_timer()
 
-func _unlock_response(game_state: GameState) -> void:
+func _unlock_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if not _is_locked:
 		return
 	_is_locked = false
-	_grant_response_permission_to_all_players(game_state)
+	_grant_response_permission_to_all_players(game_state, command_bus)
 	_reset_timer()
 
 func _reset_timer() -> void:
