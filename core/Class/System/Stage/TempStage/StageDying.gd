@@ -19,47 +19,47 @@ func _init(p_dying_player: Player) -> void:
 	time_limit = DEFAULT_TIME_LIMIT
 	_current_time_limit = DEFAULT_TIME_LIMIT
 
-func enter(game_state: GameState) -> void:
+func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_grant_response_permission_to_all_players(game_state)
 	_reset_timer()
-	super.enter(game_state)
+	super.enter(game_state, command_bus)
 
-func pause(game_state: GameState) -> void:
+func pause(game_state: GameState, command_bus: CommandBus) -> void:
 	_revoke_response_permission(game_state)
 	_stop_timer()
-	super.pause(game_state)
+	super.pause(game_state, command_bus)
 
-func resume(game_state: GameState) -> void:
+func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_grant_response_permission_to_all_players(game_state)
 	_reset_timer()
-	super.resume(game_state)
+	super.resume(game_state, command_bus)
 
-func end_stage_effect(game_state: GameState) -> void:
+func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_revoke_response_permission(game_state)
 	_stop_timer()
 	if dying_player.HP <= 0:
-		_generate_player_death_command(game_state)
-	super.end_stage_effect(game_state)
+		_generate_player_death_command(game_state, command_bus)
+	super.end_stage_effect(game_state, command_bus)
 
-func timeout(game_state: GameState) -> void:
+func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	_pending_stage_end = true
 	_stop_timer()
 	if _is_locked == false:
-		end_stage(game_state)
+		end_stage(game_state, command_bus)
 
-func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
+func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused or _is_locked:
 		return
 	match request.get_class_name():
 		&"play_card":
-			_process_play_card_request(request as OperationRequest.PlayCard, game_state)
+			_process_play_card_request(request as OperationRequest.PlayCard, game_state, command_bus)
 		_:
 			GlobalConsole._print(["濒死阶段：不支持的操作类型", request.get_class_name_static()])
 			request.cancel()
 
-func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState) -> void:
+func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState, command_bus: CommandBus) -> void:
 	var card: Card = game_state.cardsmanager.get_card_by_id(request._card_id)
 	var source_player: Player = game_state.player_manager.get_player_by_id(request.source_player_id)
 	var target_player: Player = game_state.player_manager.get_player_by_id(request._target_id) if request._target_id >= 0 else null
@@ -84,11 +84,11 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		return
 	_lock_response(game_state)
 	request.complete()
-	game_state.queue_behavior_with_callback(command, func():
-		_on_command_completed(game_state)
+	command_bus.queue_behavior_with_callback(command, func():
+		_on_command_completed(game_state, command_bus)
 	)
 
-func _on_command_completed(game_state: GameState) -> void:
+func _on_command_completed(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	_current_time_limit = max(_current_time_limit - TIME_PENALTY_STEP, MIN_TIME_LIMIT)
@@ -96,11 +96,11 @@ func _on_command_completed(game_state: GameState) -> void:
 	_reset_timer()
 	GlobalConsole._print(["濒死阶段：命令完成，新时间限制", _current_time_limit])
 
-func refresh_response(game_state: GameState) -> void:
+func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	if _pending_stage_end:
-		end_stage(game_state)
+		end_stage(game_state, command_bus)
 		return
 	if _is_locked:
 		_unlock_response(game_state)
@@ -134,7 +134,7 @@ func _reset_timer() -> void:
 func _stop_timer() -> void:
 	request_reset_timer.emit(0.0)
 
-func _generate_player_death_command(game_state: GameState) -> void:
+func _generate_player_death_command(game_state: GameState, command_bus: CommandBus) -> void:
 	var death_cmd := PlayerDeathCommand.new(dying_player)
-	game_state.queue_behavior(death_cmd)
+	command_bus.queue_behavior(death_cmd)
 	GlobalConsole._print(["濒死阶段：玩家", dying_player.get_id(), "死亡，已生成死亡命令"])

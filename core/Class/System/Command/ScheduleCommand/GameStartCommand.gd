@@ -1,4 +1,3 @@
-# GameStartCommand.gd
 extends ScheduleCommand
 class_name GameStartCommand
 
@@ -8,8 +7,8 @@ enum Phase {
 	DONE
 }
 
-func _init() -> void:
-	super._init(&"GameStart", CommandContext.new())
+func _init(command_bus: CommandBus) -> void:
+	super._init(command_bus, &"GameStart", CommandContext.new())
 	_context.phase = Phase.INIT_SETUP
 
 func execute(game_state: GameState) -> void:
@@ -39,7 +38,7 @@ func on_init_setup_phase(game_state: GameState) -> void:
 	_context.phase = Phase.START_DRAW
 
 func on_start_draw_phase(game_state: GameState) -> void:
-	var new_round_cmd := NewRoundCommand.new(2)
+	var new_round_cmd := NewRoundCommand.new(_command_bus, 2)
 	append_companion_command(new_round_cmd)
 	for player in game_state.player_manager.players:
 		var draw_cmd := DrawCardsCommand.new(player.get_id(), 4)

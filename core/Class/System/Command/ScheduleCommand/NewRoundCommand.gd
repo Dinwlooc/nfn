@@ -1,18 +1,24 @@
+## @param command_bus 命令总线引用（必须）
+## @param new_round_player_id 下一回合的玩家ID，若为 -1 则自动计算下一个座位玩家
 extends ScheduleCommand
 class_name NewRoundCommand
 
 class Context extends CommandContext:
 	var new_round_player_id: int
 
-## @param new_round_player_id 下一回合的玩家ID，若为 -1 则自动计算下一个座位玩家
-## @param name_overriding      命令名称（可选）
-## @param context_overriding   上下文（可选）
-func _init(new_round_player_id: int = -1, name_overriding: StringName = &"NewRound", context_overriding: Context = Context.new()) -> void:
-	super._init(name_overriding, context_overriding)
-	_context.new_round_player_id = new_round_player_id
+func _init(
+	command_bus: CommandBus,
+	new_round_player_id: int = -1,
+	name_overriding: StringName = &"NewRound",
+	context_overriding: Context = Context.new()
+) -> void:
+	super._init(command_bus, name_overriding, context_overriding)
+	var ctx = _context as Context
+	ctx.new_round_player_id = new_round_player_id
 
 func execute(game_state: GameState) -> void:
-	var target_id: int = _context.new_round_player_id
+	var ctx = _context as Context
+	var target_id: int = ctx.new_round_player_id
 	if target_id == -1:
 		var player_count: int = game_state.player_manager.get_player_count()
 		if player_count == 0:
@@ -25,5 +31,5 @@ func execute(game_state: GameState) -> void:
 			complete()
 			return
 		target_id = next_player.get_id()
-	game_state.start_new_round(target_id)
+	game_state.stage_manager.start_round(target_id, game_state, _command_bus)
 	complete()

@@ -9,8 +9,8 @@ func _init() -> void:
 	stage_name = &"Discard"
 	time_limit = TIME_LIMIT
 
-func enter(game_state: GameState) -> void:
-	super.enter(game_state)
+func enter(game_state: GameState, command_bus: CommandBus) -> void:
+	super.enter(game_state, command_bus)
 	var responsive_players: PackedInt32Array = []
 	for player in game_state.player_manager.players:
 		var hand_area: AreaHand = game_state.get_hand_area(player.get_id())
@@ -22,41 +22,41 @@ func enter(game_state: GameState) -> void:
 			responsive_players.append(player.get_id())
 			GlobalConsole._print(["玩家", player.get_id(), "需要弃置", need_discard, "张牌（手牌", hand_count, "，上限", hand_limit, "）"])
 	if responsive_players.is_empty():
-		end_stage(game_state)
+		end_stage(game_state, command_bus)
 		return
 	game_state.set_responsive_players(responsive_players)
 	_reset_timer()
 	GlobalConsole._print(["弃牌阶段开始，响应玩家：", responsive_players])
 
-func resume(game_state: GameState) -> void:
-	super.resume(game_state)
+func resume(game_state: GameState, command_bus: CommandBus) -> void:
+	super.resume(game_state, command_bus)
 	if _players_to_discard.is_empty():
-		end_stage(game_state)
+		end_stage(game_state, command_bus)
 		return
 	_reset_timer()
 	GlobalConsole._print(["弃牌阶段恢复，剩余需弃牌玩家：", _players_to_discard.keys()])
 
-func end_stage_effect(game_state: GameState) -> void:
-	_force_discard_for_all(game_state)
+func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
+	_force_discard_for_all(game_state, command_bus)
 	game_state.set_responsive_players(PackedInt32Array())
 	_players_to_discard.clear()
 	GlobalConsole._print(["弃牌阶段结束"])
 
-func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
+func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	match request.get_class_name():
 		&"discard_cards":
-			_process_discard_request(request as OperationRequest.DiscardCards, game_state)
+			_process_discard_request(request as OperationRequest.DiscardCards, game_state, command_bus)
 		&"abandon_response":
-			_process_abandon_response(request as OperationRequest.AbandonResponse, game_state)
+			_process_abandon_response(request as OperationRequest.AbandonResponse, game_state, command_bus)
 		_:
 			request.cancel()
 			GlobalConsole._print(["弃牌阶段：不支持的操作类型", request.get_class_name_static()])
 	if _players_to_discard.is_empty():
-		end_stage(game_state)
+		end_stage(game_state, command_bus)
 
-func _process_discard_request(request: OperationRequest.DiscardCards, game_state: GameState) -> void:
+func _process_discard_request(request: OperationRequest.DiscardCards, game_state: GameState, command_bus: CommandBus) -> void:
 	var player_id: int = request.source_player_id
 	if not _players_to_discard.has(player_id):
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "不在弃牌列表中"])
@@ -93,7 +93,7 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 	else:
 		actual_discard = valid_ids
 	var discard_command := DiscardCardsCommand.new(player_id, actual_discard)
-	game_state.queue_behavior(discard_command)
+	command_bus.queue_behavior(discard_command)
 	var new_need: int = need_count - actual_discard.size()
 	if new_need == 0:
 		_players_to_discard.erase(player_id)
@@ -104,7 +104,7 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "还需弃置", new_need, "张牌"])
 		request.cancel()
 
-func _process_abandon_response(request: OperationRequest.AbandonResponse, game_state: GameState) -> void:
+func _process_abandon_response(request: OperationRequest.AbandonResponse, game_state: GameState, command_bus: CommandBus) -> void:
 	var player_id: int = request.source_player_id
 	if not _players_to_discard.has(player_id):
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "不在弃牌列表中，忽略放弃响应"])
@@ -118,18 +118,18 @@ func _process_abandon_response(request: OperationRequest.AbandonResponse, game_s
 		need_count = hand_card_ids.size()
 	var selected: PackedInt32Array = _random_select(hand_area, need_count)
 	var discard_command := DiscardCardsCommand.new(player_id, selected)
-	game_state.queue_behavior(discard_command)
+	command_bus.queue_behavior(discard_command)
 	_players_to_discard.erase(player_id)
 	GlobalConsole._print(["弃牌阶段：玩家", player_id, "放弃响应，随机弃牌完成"])
 	request.complete()
 
-func timeout(game_state: GameState) -> void:
+func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
-	_force_discard_for_all(game_state)
-	end_stage(game_state)
+	_force_discard_for_all(game_state, command_bus)
+	end_stage(game_state, command_bus)
 
-func _force_discard_for_all(game_state: GameState) -> void:
+func _force_discard_for_all(game_state: GameState, command_bus: CommandBus) -> void:
 	if _players_to_discard.is_empty():
 		return
 	for player_id in _players_to_discard.keys():
@@ -140,7 +140,7 @@ func _force_discard_for_all(game_state: GameState) -> void:
 			continue
 		var selected: PackedInt32Array = _random_select(hand_area, need_count)
 		var discard_command := DiscardCardsCommand.new(player_id, selected)
-		game_state.queue_behavior(discard_command)
+		command_bus.queue_behavior(discard_command)
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "超时，随机弃牌完成"])
 	_players_to_discard.clear()
 

@@ -28,45 +28,45 @@ func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	stage_name = &"DefenseBattle"
 	time_limit = DEFAULT_TIME_LIMIT
 
-func enter(game_state: GameState) -> void:
+func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	for p in [attacker.get_id(), defender.get_id()]:
 		total_time_used[p] = 0.0
 		dynamic_time_limit[p] = DEFAULT_TIME_LIMIT
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
-	_generate_and_queue_battle_command(game_state, true)
-	super.enter(game_state)
+	_generate_and_queue_battle_command(game_state, command_bus, true)
+	super.enter(game_state, command_bus)
 
-func resume(game_state: GameState) -> void:
+func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_update_responsive_player(game_state)
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
-	super.resume(game_state)
+	super.resume(game_state, command_bus)
 
-func pause(game_state: GameState) -> void:
+func pause(game_state: GameState, command_bus: CommandBus) -> void:
 	_disconnect_defense_area_signals()
-	super.pause(game_state)
+	super.pause(game_state, command_bus)
 
-func end_stage_effect(game_state: GameState) -> void:
+func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_disconnect_defense_area_signals()
 	_pending_stage_end = false
 	_current_battle_command = null
-	super.end_stage_effect(game_state)
+	super.end_stage_effect(game_state, command_bus)
 
-func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
+func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	match request.get_class_name():
 		&"play_card":
-			_process_play_card_request(request as OperationRequest.PlayCard, game_state)
+			_process_play_card_request(request as OperationRequest.PlayCard, game_state, command_bus)
 		&"abandon_response":
-			_process_settle_request(request, game_state)
+			_process_settle_request(request, game_state, command_bus)
 		_:
 			GlobalConsole._print(["守区攻防阶段：不支持的操作类型", request.get_class_name_static()])
 			request.cancel()
 
-func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState) -> void:
+func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState, command_bus: CommandBus) -> void:
 	var card: Card = game_state.cardsmanager.get_card_by_id(request._card_id)
 	var source_player: Player = game_state.player_manager.get_player_by_id(request.source_player_id)
 	var target_player: Player = game_state.player_manager.get_player_by_id(request._target_id) if request._target_id >= 0 else null
@@ -90,21 +90,21 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		request.cancel()
 		return
 	var elapsed: float = _get_elapsed_time_since_last_reset()
-	game_state.queue_behavior_with_callback(command, func():
+	command_bus.queue_behavior_with_callback(command, func():
 		_total_time_used_update(current_responsive_player_id, elapsed)
 		GlobalConsole._print(["守区攻防阶段：出牌成功，等待所有命令完成后更新响应权"])
 	)
 	request.complete()
 
-func timeout(game_state: GameState) -> void:
+func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	var abandon_request := OperationRequest.AbandonResponse.new(current_responsive_player_id)
-	process_operation_request(abandon_request, game_state)
+	process_operation_request(abandon_request, game_state, command_bus)
 
-func _process_settle_request(request: OperationRequest, game_state: GameState) -> void:
+func _process_settle_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	var settle_cmd := SettleCommand.new(current_responsive_player_id, defense_area, attacker)
-	game_state.queue_behavior(settle_cmd)
+	command_bus.queue_behavior(settle_cmd)
 	_pending_stage_end = true
 	request.complete()
 
@@ -133,13 +133,13 @@ func _update_responsive_player(game_state: GameState) -> void:
 	game_state.set_responsive_players(PackedInt32Array([current_responsive_player_id]))
 	GlobalConsole._print(["守区攻防阶段：更新响应权为玩家", current_responsive_player_id])
 
-func _generate_and_queue_battle_command(game_state: GameState, save_reference: bool = false) -> BattleCommand:
+func _generate_and_queue_battle_command(game_state: GameState, command_bus: CommandBus, save_reference: bool = false) -> BattleCommand:
 	if not defense_area.check_battle_formation():
 		return null
 	var top_card: Card = defense_area.get_top_card()
 	var second_card: Card = defense_area.get_second_card()
 	var battle_command := BattleCommand.new(defense_area, top_card, second_card)
-	game_state.queue_behavior(battle_command)
+	command_bus.queue_behavior(battle_command)
 	if save_reference:
 		_current_battle_command = battle_command
 	GlobalConsole._print(["守区攻防阶段：生成并排队斗牌命令"])
@@ -157,15 +157,15 @@ func _on_defense_area_changed(_card: Card, _area: Area, game_state: GameState) -
 	_cancel_current_battle_command()
 	_need_regenerate_battle_command = true
 
-func refresh_response(game_state: GameState) -> void:
+func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	if _pending_stage_end:
-		end_stage(game_state)
+		end_stage(game_state, command_bus)
 		return
 	if _need_regenerate_battle_command:
 		_need_regenerate_battle_command = false
-		var new_cmd: BattleCommand = _generate_and_queue_battle_command(game_state, true)
+		var new_cmd: BattleCommand = _generate_and_queue_battle_command(game_state, command_bus, true)
 		if new_cmd:
 			GlobalConsole._print(["守区攻防阶段：重新生成斗牌命令，跳过响应权更新"])
 			return

@@ -13,40 +13,40 @@ func _init() -> void:
 	stage_name = &"Main"
 	time_limit = ENTER_TIME_LIMIT
 
-func enter(game_state: GameState) -> void:
+func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.get_id()
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT)
-	super.enter(game_state)
+	super.enter(game_state, command_bus)
 
-func resume(game_state: GameState) -> void:
+func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.get_id()
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))
 	_reset_timer_for_current_player(ENTER_TIME_LIMIT / 2)
-	super.resume(game_state)
+	super.resume(game_state, command_bus)
 
-func end_stage_effect(game_state: GameState) -> void:
+func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = null
 	game_state.set_responsive_players(PackedInt32Array())
-	super.end_stage_effect(game_state)
+	super.end_stage_effect(game_state, command_bus)
 
-func process_operation_request(request: OperationRequest, game_state: GameState) -> void:
+func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	match request.get_class_name():
 		&"play_card":
-			_process_play_card_request(request as OperationRequest.PlayCard, game_state)
+			_process_play_card_request(request as OperationRequest.PlayCard, game_state, command_bus)
 		&"abandon_response":
-			end_stage(game_state)
+			end_stage(game_state, command_bus)
 			request.complete()
 			GlobalConsole._print(["主阶段：放弃响应，结束阶段"])
 		_:
 			request.cancel()
 			GlobalConsole._print(["主阶段：不支持的操作类型", request.get_class_name_static()])
 
-func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState) -> void:
+func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState, command_bus: CommandBus) -> void:
 	if request.source_player_id != _current_attacker_id:
 		GlobalConsole._print(["主阶段：非当前玩家操作，忽略"])
 		request.cancel()
@@ -69,7 +69,7 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["主阶段：", usage_result.message])
 		request.cancel()
 		return
-	game_state.queue_behavior(rule_result.command)
+	command_bus.queue_behavior(rule_result.command)
 	GlobalConsole._print(["主阶段：卡牌使用成功"])
 	request.complete()
 
@@ -81,7 +81,7 @@ func _reset_timer_for_current_player(new_time_limit: int) -> void:
 	last_timer_reset_time = Time.get_ticks_msec()
 
 ## 由触发器在命令完成后调用，刷新响应权
-func refresh_response(game_state: GameState) -> void:
+func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	game_state.set_responsive_players(PackedInt32Array([_current_attacker_id]))

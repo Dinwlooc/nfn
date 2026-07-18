@@ -13,8 +13,15 @@ class Context extends CommandContext:
 	var skip_count: int = 0
 	var disallowed_stages: Array[StringName] = []
 
-func _init(operation: Operation, skip_count: int = 0, disallowed: Array[StringName] = [], name_overriding: StringName = &"StageSchedule", context_overriding: Context = Context.new()) -> void:
-	super._init(name_overriding, context_overriding)
+func _init(
+	command_bus: CommandBus,
+	operation: Operation,
+	skip_count: int = 0,
+	disallowed: Array[StringName] = [],
+	name_overriding: StringName = &"StageSchedule",
+	context_overriding: Context = Context.new()
+) -> void:
+	super._init(command_bus, name_overriding, context_overriding)
 	var ctx = _context as Context
 	ctx.operation = operation
 	ctx.skip_count = skip_count
@@ -24,9 +31,9 @@ func execute(game_state: GameState) -> void:
 	var ctx = _context as Context
 	match ctx.operation:
 		Operation.ROLLBACK:
-			game_state.stage_manager.rollback_stage(game_state)
+			game_state.stage_manager.rollback_stage(game_state, _command_bus)
 		Operation.SWITCH_MAIN:
-			game_state.stage_manager.switch_to_main_stage(game_state, ctx.skip_count, ctx.disallowed_stages)
+			game_state.stage_manager.switch_to_main_stage(game_state, ctx.skip_count, ctx.disallowed_stages, _command_bus)
 		Operation.START_TEMP:
-			game_state.stage_manager.start_pending_temp_stage(game_state)
+			game_state.stage_manager.start_pending_temp_stage(game_state, _command_bus)
 	complete()

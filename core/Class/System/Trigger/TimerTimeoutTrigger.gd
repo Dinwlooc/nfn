@@ -9,4 +9,4 @@ func _init(system: System) -> void:
 	_system.timer.timeout.connect(_on_timeout)
 
 func _on_timeout() -> void:
-	_system.game_state.stage_manager.on_timer_timeout(_system.game_state)
+	_system.game_state.stage_manager.on_timer_timeout(_system.game_state,_system.command_bus)

@@ -21,7 +21,6 @@ var _latest_request_id: int = 0
 
 func _init(game_state: GameState, player_id: int) -> void:
 	super._init(game_state, player_id)
-	_game_state.start_round.connect(_on_start_round)
 
 ## 异步决策入口：立即提交新任务，旧任务的结果将被丢弃
 func request_decision_async(callback: Callable) -> void:

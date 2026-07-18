@@ -46,15 +46,15 @@ func _init():
 	for i in MAIN_STAGES_SCRIPTS.size():
 		main_stages[i] = MAIN_STAGES_SCRIPTS[i].new()
 
-## 连接阶段信号
-func connect_stage_to_manager(new_stage: Stage, game_state: GameState) -> void:
+## 连接阶段信号（增加 command_bus 绑定）
+func connect_stage_to_manager(new_stage: Stage, game_state: GameState, command_bus: CommandBus) -> void:
 	if not new_stage.stage_ended.is_connected(_on_stage_ended):
-		new_stage.stage_ended.connect(_on_stage_ended.bind(game_state))
+		new_stage.stage_ended.connect(_on_stage_ended.bind(game_state, command_bus))
 	if not new_stage.request_reset_timer.is_connected(_on_stage_reset_timer_requested):
-		new_stage.request_reset_timer.connect(_on_stage_reset_timer_requested.bind(game_state))
+		new_stage.request_reset_timer.connect(_on_stage_reset_timer_requested.bind(game_state, command_bus))
 
 ## 断开阶段信号
-func _disconnect_stage_signals(stage: Stage, game_state: GameState) -> void:
+func _disconnect_stage_signals(stage: Stage) -> void:
 	if stage.stage_ended.is_connected(_on_stage_ended):
 		stage.stage_ended.disconnect(_on_stage_ended)
 	if stage.request_reset_timer.is_connected(_on_stage_reset_timer_requested):
@@ -63,24 +63,24 @@ func _disconnect_stage_signals(stage: Stage, game_state: GameState) -> void:
 func set_timer(_timer: GameTimer) -> void:
 	timer = _timer
 
-func handle_validated_request(request: OperationRequest, game_state: GameState) -> void:
+func handle_validated_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if not current_stage:
 		push_error("StageManager: 当前阶段为空，无法处理操作请求")
 		return
-	current_stage.process_operation_request(request, game_state)
+	current_stage.process_operation_request(request, game_state, command_bus)
 
-func complete_current_stage(game_state: GameState) -> void:
+func complete_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if current_stage and not current_stage.is_ended:
-		current_stage.end_stage(game_state)
+		current_stage.end_stage(game_state, command_bus)
 
 ## 清空所有临时阶段（结束并清空栈）
-func complete_all_temp_stages(game_state: GameState) -> void:
+func complete_all_temp_stages(game_state: GameState, command_bus: CommandBus) -> void:
 	if temp_stage_stack.is_empty():
 		return
 	while not temp_stage_stack.is_empty():
 		var stage = temp_stage_stack.pop_back()
 		if not stage.is_ended:
-			stage.end_stage(game_state)
+			stage.end_stage(game_state, command_bus)
 	temp_stages_cleared.emit()
 
 ## 将临时阶段压入栈（不启动），若阶段已存在则忽略（由调用方保证）
@@ -90,20 +90,20 @@ func push_temp_stage(stage: Stage) -> void:
 	temp_stage_stack.push_back(stage)
 
 ## 启动栈尾的临时阶段（若尚未启动）
-func start_pending_temp_stage(game_state: GameState) -> void:
+func start_pending_temp_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if temp_stage_stack.is_empty():
 		return
 	var top_stage = temp_stage_stack[-1]
 	if current_stage == top_stage:
 		return
-	_transition_to(top_stage, game_state)
+	_transition_to(top_stage, game_state, command_bus)
 
 ## 结束当前回合
-func end_round(game_state: GameState) -> void:
+func end_round(game_state: GameState, command_bus: CommandBus) -> void:
 	if timer:
 		timer.stop()
 	if current_stage and not current_stage.is_ended:
-		current_stage.end_stage(game_state)
+		current_stage.end_stage(game_state, command_bus)
 	temp_stage_stack.clear()
 	current_main_stage_name = &""
 	current_player_id = 0
@@ -113,33 +113,34 @@ func end_round(game_state: GameState) -> void:
 	round_completed.emit()
 
 ## 启动阶段：启动计时器，调用 enter/resume，发出 stage_entered 信号
-func _start_stage(stage: Stage, game_state: GameState) -> void:
+func _start_stage(stage: Stage, game_state: GameState, command_bus: CommandBus) -> void:
 	if stage.time_limit > 0.0:
 		timer.start(stage.time_limit)
 	else:
 		timer.stop()
 	if stage.is_paused:
-		stage.resume(game_state)
+		stage.resume(game_state, command_bus)
 	else:
-		stage.enter(game_state)
+		stage.enter(game_state, command_bus)
 		stage_entered.emit(stage)
 
 ## 切换到新阶段（断开旧阶段信号、连接新阶段、启动）
-func _transition_to(new_stage: Stage, game_state: GameState) -> void:
+func _transition_to(new_stage: Stage, game_state: GameState, command_bus: CommandBus) -> void:
 	if not new_stage:
 		return
 	var old_stage = current_stage
 	if old_stage:
-		_disconnect_stage_signals(old_stage, game_state)
+		_disconnect_stage_signals(old_stage)
 	current_stage = new_stage
 	if not new_stage.is_temporary():
 		current_main_stage_name = new_stage.stage_name
-		complete_all_temp_stages(game_state)
-	connect_stage_to_manager(new_stage, game_state)
+		complete_all_temp_stages(game_state, command_bus)
+	connect_stage_to_manager(new_stage, game_state, command_bus)
 	stage_changed.emit(old_stage, new_stage)
-	_start_stage(new_stage, game_state)
+	_start_stage(new_stage, game_state, command_bus)
+
 ## 回滚到上一个阶段（弹出栈顶临时阶段，恢复上一阶段）
-func rollback_stage(game_state: GameState) -> void:
+func rollback_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if temp_stage_stack.is_empty():
 		push_error("回滚失败：临时阶段栈为空")
 		return
@@ -149,20 +150,22 @@ func rollback_stage(game_state: GameState) -> void:
 		return
 	if temp_stage_stack.is_empty():
 		var main_stage = main_stages[current_main_stage_index]
-		_transition_to(main_stage, game_state)
+		_transition_to(main_stage, game_state, command_bus)
 	else:
 		var previous_stage = temp_stage_stack[-1]
-		_transition_to(previous_stage, game_state)
+		_transition_to(previous_stage, game_state, command_bus)
 	stage_rolled_back.emit(ended_stage, current_stage)
+
 ## 前进到下一个主阶段（内部使用，自动 +1）
-func _advance_to_next_main_stage(game_state: GameState) -> void:
+func _advance_to_next_main_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= main_stages.size():
 		request_new_round.emit(current_player_id)
 		return
-	_transition_to(main_stages[current_main_stage_index], game_state)
+	_transition_to(main_stages[current_main_stage_index], game_state, command_bus)
+
 ## 切换到下一个主阶段，可额外跳过若干阶段
-func switch_to_main_stage(game_state: GameState, skip_count: int = 0, disallowed_stages: Array[StringName] = []) -> void:
+func switch_to_main_stage(game_state: GameState, skip_count: int = 0, disallowed_stages: Array[StringName] = [], command_bus: CommandBus = null) -> void:
 	var actual_skip = skip_count
 	if not disallowed_stages.is_empty():
 		var current_name = current_stage.stage_name if current_stage else MAIN_STAGE_NAMES[0]
@@ -176,32 +179,38 @@ func switch_to_main_stage(game_state: GameState, skip_count: int = 0, disallowed
 			steps += 1
 		actual_skip = steps
 	current_main_stage_index += actual_skip
-	_advance_to_next_main_stage(game_state)
-## 阶段结束回调
-func _on_stage_ended(ended_stage: Stage, game_state: GameState) -> void:
+	_advance_to_next_main_stage(game_state, command_bus)
+
+## 阶段结束回调（绑定 game_state 和 command_bus）
+func _on_stage_ended(ended_stage: Stage, game_state: GameState, command_bus: CommandBus) -> void:
 	if ended_stage != current_stage:
 		return
 	if timer:
 		timer.stop()
 	stage_completed.emit(ended_stage)
+
 ## 计时器超时回调
-func on_timer_timeout(game_state: GameState) -> void:
+func on_timer_timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if current_stage and not current_stage.is_ended:
-		current_stage.timeout(game_state)
-## 重置计时器请求
-func _on_stage_reset_timer_requested(new_time_limit: float, game_state: GameState) -> void:
+		current_stage.timeout(game_state, command_bus)
+
+## 重置计时器请求（绑定 game_state 和 command_bus）
+func _on_stage_reset_timer_requested(new_time_limit: float, game_state: GameState, command_bus: CommandBus) -> void:
 	if timer and current_stage and not current_stage.is_ended:
 		timer.start(new_time_limit)
+
 ## 开始新回合
-func start_round(player_id: int, game_state: GameState) -> void:
-	end_round(game_state)
+func start_round(player_id: int, game_state: GameState, command_bus: CommandBus) -> void:
+	end_round(game_state, command_bus)
 	current_main_stage_index = 0
 	current_player_id = player_id
 	temp_stage_stack.clear()
-	_transition_to(main_stages[current_main_stage_index], game_state)
+	_transition_to(main_stages[current_main_stage_index], game_state, command_bus)
+
 ## 获取当前主阶段索引
 func get_current_stage_enum() -> int:
 	return current_main_stage_index
+
 ## 检查是否存在指定名称的阶段（包括当前阶段、临时阶段栈）
 func has_stage_with_name(stage_name: StringName) -> bool:
 	if current_stage and current_stage.stage_name == stage_name:

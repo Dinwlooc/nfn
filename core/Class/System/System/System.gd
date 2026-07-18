@@ -39,7 +39,7 @@ func _start_game() -> void:
 	if game_state.stage_manager.get_current_stage_enum() != -1:
 		GlobalConsole._print("System:Error:c_start未生效。游戏已开始。")
 		return
-	var start_event = GameStartCommand.new()
+	var start_event = GameStartCommand.new(command_bus)
 	command_bus.queue_behavior(start_event)
 	GlobalConsole._print("System:游戏开始事件已创建")
 

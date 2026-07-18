@@ -4,15 +4,15 @@ class_name CommandModifiers
 
 var _modifiers: Array[Modifier] = []
 
-func add_modifier(script: Modifier) -> void:
-	if script not in _modifiers:
-		_modifiers.append(script)
+func add_modifier(modifier: Modifier) -> void:
+	if modifier not in _modifiers:
+		_modifiers.append(modifier)
 
-func remove_modifier(script: Modifier) -> void:
-	_modifiers.erase(script)
+func remove_modifier(modifier: Modifier) -> void:
+	_modifiers.erase(modifier)
 
 func get_modifiers() -> Array[Modifier]:
-	return _modifiers.duplicate()
+	return _modifiers
 
 ## 重置为预设脚本列表（清除所有动态修改并重新加载）
 func reset() -> void:

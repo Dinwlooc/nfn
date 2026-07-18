@@ -3,9 +3,11 @@ extends SystemTrigger
 class_name OperationTrigger
 
 var _game_state: GameState
+var _command_bus:CommandBus
 
 func _init(system: System) -> void:
 	_game_state = system.game_state
+	_command_bus = system.command_bus
 	system.transport.operation_request_received.connect(system.operation_handler.handle_request)
 	system.npc_peer_manager.operation_requested.connect(system.operation_handler.handle_request)
 	system.game_state.request_set_responsive_players.connect(system.operation_handler.set_responsive_players)
@@ -13,4 +15,4 @@ func _init(system: System) -> void:
 	system.operation_handler.operation_validated.connect(_on_operation_validated)
 
 func _on_operation_validated(request: OperationRequest) -> void:
-	_game_state.stage_manager.handle_validated_request(request, _game_state)
+	_game_state.stage_manager.handle_validated_request(request, _game_state,_command_bus)
