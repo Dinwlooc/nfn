@@ -11,7 +11,7 @@ func _init(system: System) -> void:
 	_system.command_bus.new_behavior_with_callback.connect(_on_new_behavior_with_callback)
 	_system.command_processor.enable_processing.connect(_on_enable_processing)
 	_system.command_processor.all_completed.connect(_on_all_completed)
-	_system.command_processor.command_processing.connect(_on_command_processing)
+	_system.command_processor.command_processing.connect(_on_command_processing)  # 新信号带 sequence
 	# 监听命令压入和弹出信号，同步上下文堆栈
 	_system.command_processor.command_pushed.connect(_on_command_pushed)
 	_system.command_processor.command_popped.connect(_on_command_popped)
@@ -27,8 +27,9 @@ func _on_enable_processing(enable: bool) -> void:
 func _on_all_completed() -> void:
 	_system.game_state.all_commands_completed.emit(_system.game_state)
 
-func _on_command_processing(command: BehaviorCommand) -> void:
-	_system.modifier_manager.process_modifiers(command._context, _system.game_state, _system.command_bus)
+## 命令处理时触发修饰器处理，传入序列号
+func _on_command_processing(command: BehaviorCommand, sequence: int) -> void:
+	_system.modifier_manager.process_modifiers(command._context, _system.game_state, _system.command_bus, sequence)
 
 func _on_command_pushed(behavior: BehaviorCommand) -> void:
 	_system.game_state.push_command_context(behavior._context)
