@@ -13,20 +13,14 @@ var area_registry: AreaManager = AreaManager.new()
 ## 命令上下文堆栈。命令可以在其他命令的执行中途入栈，故尾部仅代表在当前的修饰下，下一轮调用时将被执行的命令。
 var command_context_stack: Array[CommandContext] = []
 const PUBLIC_PLAYER_ID: int = 1
-# signal request_set_responsive_players 已移至 CommandBus
-signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
-signal new_behavior(command: BehaviorCommand)
-signal all_commands_completed(game_state:GameState)
+# 命令信号已移至 CommandBus
+signal all_commands_completed(game_state: GameState)
 
 ## 加载卡牌并将所有牌置入牌堆
 func load_cards() -> void:
 	var drawing: AreaDrawing = area_registry.get_drawing_area()
 	drawing.cards_add(cardsmanager.load_all_cards())
 	drawing.shuffle_card_pool()
-
-## 入队带回调的命令
-func queue_behavior_with_callback(command: BehaviorCommand, callback: Callable = Callable()) -> void:
-	new_behavior_with_callback.emit(command, callback)
 
 ## 获取当前主阶段名
 func get_main_stage_name() -> StringName:
@@ -48,10 +42,6 @@ func get_current_active_stage_name() -> StringName:
 	if cur:
 		return cur.stage_name
 	return &""
-
-## 入队命令
-func queue_behavior(command: BehaviorCommand) -> void:
-	new_behavior.emit(command)
 
 ## 通过玩家ID获取玩家实例
 func get_player_by_id(player_id: int) -> Player:

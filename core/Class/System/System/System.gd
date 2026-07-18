@@ -4,7 +4,7 @@ class_name System
 @export var timer: GameTimer
 var game_state := GameState.new()
 var command_processor := CommandProcessor.new(game_state)
-var command_bus := CommandBus.new(game_state)
+var command_bus := CommandBus.new()
 var operation_handler := OperationHandler.new()
 var trigger_manager := TriggerManager.new()
 var transport: Transport = GlobalTransport
