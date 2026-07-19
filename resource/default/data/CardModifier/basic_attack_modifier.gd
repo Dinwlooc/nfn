@@ -1,11 +1,13 @@
 extends Modifier
 
-func process(context: CommandContext, state: GameState, command_bus: CommandBus, creator: Item) -> int:
+func process(context: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
+	if RuleModifierRuntime.should_skip(modifier_ctx):
+		return modifier_ctx
+	if not RuleModifierTiming.is_settle_effect(context, creator):
+		return modifier_ctx
 	if not (creator is Card):
-		return 0  # PASS
+		return modifier_ctx.set_error(ModifierContext.ERR_INVALID_TARGET)
 	var card: Card = creator as Card
-	if not RuleModifierTiming.is_settle_effect(context, card):
-		return 0
 	var sctx: SettleCommand.Context = context as SettleCommand.Context
 	var transfer_cmd := CardTransferCommand.new(
 		card.get_owner_id(),
@@ -14,5 +16,5 @@ func process(context: CommandContext, state: GameState, command_bus: CommandBus,
 		CardTransferCommand.Context.MoveOutMode.BY_ID,
 		PackedInt32Array([card.id])
 	)
-	command_bus.queue_behavior(transfer_cmd)
-	return Modifier.COMMAND_SENT  # 发送了命令
+	_send_command(transfer_cmd, modifier_ctx)
+	return modifier_ctx

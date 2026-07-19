@@ -4,7 +4,7 @@ class_name CommandModifiers
 
 var _modifiers: Array[Modifier] = []
 var _cached_sequence: int = -1
-var _cached_results: Array[int] = []  # 存储掩码
+var _cached_results: Array[ModifierContext] = []
 
 func add_modifier(modifier: Modifier) -> void:
 	if modifier not in _modifiers:
@@ -16,7 +16,6 @@ func remove_modifier(modifier: Modifier) -> void:
 func get_modifiers() -> Array[Modifier]:
 	return _modifiers
 
-## 重置为预设脚本列表（清除所有动态修改并重新加载）
 func reset() -> void:
 	_modifiers.clear()
 	_cached_sequence = -1
@@ -26,20 +25,17 @@ func reset() -> void:
 func process_modifiers(context: CommandContext, state: GameState, command_bus: CommandBus, creator: Item, sequence: int) -> void:
 	if _modifiers.is_empty():
 		return
-	# 缓存重置检查
 	if sequence != _cached_sequence:
 		_cached_sequence = sequence
 		_cached_results.clear()
 		_cached_results.resize(_modifiers.size())
 		for i in _cached_results.size():
-			_cached_results[i] = 0  # 默认无效果
-	# 遍历处理
+			_cached_results[i] = ModifierContext.new()
 	for i in _modifiers.size():
-		# 若缓存结果包含 LOCK_SELF，则跳过
-		if _cached_results[i] & Modifier.LOCK_SELF:
-			continue
-		var result: int = _modifiers[i].process(context, state, command_bus, creator)
+		var input_ctx := ModifierContext.new()
+		var result: ModifierContext = _modifiers[i].process(context, state, input_ctx, creator)
 		_cached_results[i] = result
-		# 若结果包含 ABORT_TRAVERSAL，中断循环
-		if result & Modifier.ABORT_TRAVERSAL:
-			break
+		# 发送待处理命令并清空
+		var cmds:Array[BehaviorCommand] = result.take_commands()
+		for cmd in cmds:
+			command_bus.queue_behavior(cmd)

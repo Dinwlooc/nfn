@@ -4,12 +4,16 @@ extends Modifier
 @export var health_damage: int = 0
 @export var mental_damage: int = 0
 
-func process(ctx: CommandContext, state: GameState, command_bus: CommandBus, creator: Item) -> int:
-	if not RuleModifierTiming.is_skill_phase(ctx, creator):
-		return 0
+func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
+	if RuleModifierRuntime.should_skip(modifier_ctx):
+		return modifier_ctx
+	if not RuleModifierTiming.is_skill_phase(ctx, creator as Card):
+		return modifier_ctx
+	if not (creator is Card):
+		return modifier_ctx.set_error(ModifierContext.ERR_INVALID_TARGET)
 	var sctx: SkillCommand.Context = ctx as SkillCommand.Context
 	if sctx.target_player_ids.is_empty():
-		return 0
+		return modifier_ctx
 	var source_player_id: int = 0
 	if creator is Card:
 		source_player_id = creator.get_owner_id()
@@ -24,5 +28,5 @@ func process(ctx: CommandContext, state: GameState, command_bus: CommandBus, cre
 			DamageCommand.SourceMechanism.GENERAL,
 			source_player_id
 		)
-		command_bus.queue_behavior(heal_cmd)
-	return Modifier.COMMAND_SENT
+		_send_command(heal_cmd, modifier_ctx)
+	return modifier_ctx

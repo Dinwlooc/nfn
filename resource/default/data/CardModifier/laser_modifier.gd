@@ -4,17 +4,19 @@ extends Modifier
 const ComponentDestroyX: Script = preload("res://resource/default/data/Component/ComponentDestroyX.gd")
 @export var destroy_x: int = 4
 
-func process(ctx: CommandContext, state: GameState, command_bus: CommandBus, creator: Item) -> int:
+func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
+	if RuleModifierRuntime.should_skip(modifier_ctx):
+		return modifier_ctx
+	if not RuleModifierTiming.is_suppressing(ctx, creator):
+		return modifier_ctx
 	if not (creator is Card):
-		return 0
+		return modifier_ctx.set_error(ModifierContext.ERR_INVALID_TARGET)
 	var source_card: Card = creator as Card
-	if not RuleModifierTiming.is_suppressing(ctx, source_card):
-		return 0
 	var bctx: BattleCommand.Context = ctx as BattleCommand.Context
-	_apply_suppress(source_card, bctx.second_card, bctx.defensive_area, state, command_bus)
-	return Modifier.COMMAND_SENT  # 发送了命令
+	_apply_suppress(source_card, bctx.second_card, bctx.defensive_area, state, modifier_ctx)
+	return modifier_ctx
 
-func _apply_suppress(source_card: Card, target_card: Card, src_area: AreaDefence, state: GameState, command_bus: CommandBus) -> void:
+func _apply_suppress(source_card: Card, target_card: Card, src_area: AreaDefence, state: GameState, modifier_ctx: ModifierContext) -> void:
 	var owner: Player = source_card.get_player()
 	var self_destroy_cmd := DestroyCardsCommand.new(
 		owner.get_id() if owner else 0,
@@ -23,8 +25,8 @@ func _apply_suppress(source_card: Card, target_card: Card, src_area: AreaDefence
 		owner,
 		source_card
 	)
-	command_bus.queue_behavior(self_destroy_cmd)
+	_send_command(self_destroy_cmd, modifier_ctx)
 	if not ComponentDestroyX:
 		return
 	var cmd: BehaviorCommand = ComponentDestroyX.generate_command(owner, source_card, target_card, src_area, destroy_x, state)
-	command_bus.queue_behavior(cmd)
+	_send_command(cmd, modifier_ctx)
