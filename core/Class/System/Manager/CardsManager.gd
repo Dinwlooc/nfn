@@ -106,7 +106,6 @@ func load_all_cards() -> Array[Card]:
 			_add_card_to_array(card, next_id)
 			all_cards.append(card)
 			next_id += 1
-			# 注意：原代码中有一行 card._init() 是不必要的，Card 的构造函数已经完成初始化
 	return all_cards
 
 ## 清除所有卡牌

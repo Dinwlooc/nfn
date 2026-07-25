@@ -1,5 +1,5 @@
-class_name ModifierManager
 extends RefCounted
+class_name ModifierManager
 
 ## 处理命令上下文，遍历所有主修饰卡牌，应用其CommandModifiers中的生效脚本
 func process_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int) -> void:

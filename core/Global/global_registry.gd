@@ -1,7 +1,8 @@
+## 全局配置表
+## 该单例尚未投入使用。
 extends Node
 # 统一信号定义
 signal singleton_registered(type: String, instance: Node)
-signal renderarea_registered(name: StringName, area: RenderArea)
 signal constant_registered(type: StringName)  # 新增常量注册信号
 
 # 注册表存储
