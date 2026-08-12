@@ -19,7 +19,6 @@ func _on_init_phase(game_state: GameState) -> void:
 	_context.set_id_mode(ids)
 	_context.set_source_area(discard)
 	_context.set_target_area(drawing)
-	_context.phase = CardMoveCommand.Context.Phase.MOVE_OUT
 
 func _on_move_in_phase(game_state: GameState) -> void:
 	super._on_move_in_phase(game_state)

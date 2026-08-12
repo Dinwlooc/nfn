@@ -45,10 +45,8 @@ func _init(
 
 func _on_apply_phase(game_state: GameState, ctx: PlayerAttributeCommand.Context) -> void:
 	if not ctx.target_player:
-		ctx.phase = Context.Phase.DONE
 		return
 	if ctx.cached_attack_delta > 0:
 		ctx.target_player.add_morale_attack(ctx.cached_attack_delta)
 	if ctx.cached_defense_delta > 0:
 		ctx.target_player.add_morale_defense(ctx.cached_defense_delta)
-	ctx.phase = Context.Phase.DONE

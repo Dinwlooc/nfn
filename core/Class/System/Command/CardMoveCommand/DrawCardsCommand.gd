@@ -23,7 +23,7 @@ func _on_init_phase(game_state: GameState) -> void:
 		return
 	_context.source_area = game_state.get_drawing_area()
 	_context.target_area = game_state.get_hand_area(_context.player_id)
-	# 抽牌不足时伴生洗牌命令（仅发射，不改变后续流程）
+	# 抽牌不足时伴生洗牌命令
 	if _context.source_area.card_count() < draw_context.draw_count:
 		append_companion_command(ShuffleCommand.new())
 	var actual: int = draw_context.get_actual_draw_count(_context.source_area)
@@ -31,4 +31,3 @@ func _on_init_phase(game_state: GameState) -> void:
 		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
 	draw_context.set_top_mode(actual)
-	_context.phase = CardMoveCommand.Context.Phase.MOVE_OUT

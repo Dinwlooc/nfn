@@ -17,10 +17,4 @@ func _on_init_phase(game_state: GameState) -> void:
 		if stage is StageDying:
 			complete()
 			return
-	super._on_init_phase(game_state)
-
-## 重写请求阶段，构造濒死阶段并设置到 ctx.stage
-func _on_request_phase(_game_state: GameState) -> void:
-	var ctx = _context as Context
 	ctx.stage = StageDying.new(ctx.dying_player)
-	super._on_request_phase(_game_state)

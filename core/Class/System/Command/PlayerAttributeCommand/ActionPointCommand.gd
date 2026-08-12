@@ -37,7 +37,6 @@ func _init(
 
 func _on_apply_phase(game_state: GameState, ctx: PlayerAttributeCommand.Context) -> void:
 	if not ctx.target_player:
-		ctx.phase = Context.Phase.DONE
 		return
 	match ctx.operation:
 		Context.Operation.ADD:
@@ -46,4 +45,3 @@ func _on_apply_phase(game_state: GameState, ctx: PlayerAttributeCommand.Context)
 			ctx.target_player.sub_ap(ctx.cached_amount)
 		Context.Operation.SET:
 			ctx.target_player.set_ap(ctx.cached_amount)
-	ctx.phase = Context.Phase.DONE

@@ -51,5 +51,3 @@ func _on_init_phase(game_state: GameState) -> void:
 	_context.target_area = game_state.get_discard_area()
 	# 设置移出模式为ID模式
 	_context.set_id_mode(_context.card_ids)
-	# 切换到MOVE_OUT阶段
-	_context.phase = CardMoveCommand.Context.Phase.MOVE_OUT

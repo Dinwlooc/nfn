@@ -23,10 +23,4 @@ func _on_init_phase(game_state: GameState) -> void:
 	if ctx.defense_area.player == ctx.attacker:
 		complete()
 		return
-	super._on_init_phase(game_state)
-
-## 重写请求阶段，构造防御阶段并设置到 ctx.stage
-func _on_request_phase(_game_state: GameState) -> void:
-	var ctx:Context = _context as Context
 	ctx.stage = StageDefense.new(ctx.defense_area, ctx.attacker)
-	super._on_request_phase(_game_state)

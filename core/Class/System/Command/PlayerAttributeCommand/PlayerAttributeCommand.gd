@@ -27,15 +27,17 @@ func execute(game_state: GameState) -> void:
 	var ctx: Context = _context
 	match ctx.phase:
 		Context.Phase.INIT:
+			ctx.phase = Context.Phase.APPLY
 			_on_init_phase(game_state, ctx)
 		Context.Phase.APPLY:
+			ctx.phase = Context.Phase.DONE
 			_on_apply_phase(game_state, ctx)
 		Context.Phase.DONE:
 			_on_done_phase(game_state, ctx)
 
 ## 初始化阶段：默认切换到 APPLY，子类可重写并自行设置下一阶段
 func _on_init_phase(game_state: GameState, ctx: Context) -> void:
-	ctx.phase = Context.Phase.APPLY
+	pass
 
 ## 应用阶段：子类必须重写，并最终设置 ctx.phase = Context.Phase.DONE
 func _on_apply_phase(game_state: GameState, ctx: Context) -> void:

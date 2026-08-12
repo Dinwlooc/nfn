@@ -24,8 +24,8 @@ func _on_card_added_to_center(card: Card, _area: Area) -> void:
 
 func _schedule_skill(card: Card) -> void:
 	_command_bus.queue_behavior(_create_move_to_discard_command(card))
-	var target_ids: PackedInt32Array = _center_area.skill_target_player_ids
-	_command_bus.queue_behavior(SkillCommand.new(card, _center_area, target_ids))
+	var targets: Array[Player] = _center_area.skill_target_players
+	_command_bus.queue_behavior(SkillCommand.new(card, _center_area, targets))
 
 func _schedule_group_attack(card: Card) -> void:
 	_command_bus.queue_behavior(_create_move_to_discard_command(card))

@@ -12,15 +12,12 @@ func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContex
 	if not (creator is Card):
 		return modifier_ctx.set_error(ModifierContext.ERR_INVALID_TARGET)
 	var sctx: SkillCommand.Context = ctx as SkillCommand.Context
-	if sctx.target_player_ids.is_empty():
+	if sctx.target_players.is_empty():
 		return modifier_ctx
 	var source_player_id: int = 0
 	if creator is Card:
 		source_player_id = creator.get_owner_id()
-	for target_id in sctx.target_player_ids:
-		var target_player: Player = state.get_player_by_id(target_id)
-		if not target_player:
-			continue
+	for target_player in sctx.target_players:
 		var heal_cmd := DamageCommand.new(
 			target_player,
 			health_damage,

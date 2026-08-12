@@ -84,13 +84,11 @@ func get_update_event_type() -> RenderRequest.ItemSet.EventType:
 
 func _on_apply_phase(game_state: GameState, ctx: PlayerAttributeCommand.Context) -> void:
 	if not ctx.target_player:
-		ctx.phase = Context.Phase.DONE
 		return
 	if ctx.cached_health_damage != 0:
 		_apply_health_change(ctx.target_player, ctx.cached_health_damage, ctx.ignore_cap)
 	if ctx.cached_mental_damage != 0:
 		_apply_mental_change(ctx.target_player, ctx.cached_mental_damage, ctx.ignore_cap)
-	ctx.phase = Context.Phase.DONE
 
 static func _apply_health_change(player: Player, delta: int, ignore_cap: bool) -> void:
 	var new_value: int = player.HP - delta

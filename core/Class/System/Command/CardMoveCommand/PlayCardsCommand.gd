@@ -71,7 +71,7 @@ func _on_init_phase(game_state: GameState) -> void:
 	_context.source_area = game_state.get_hand_area(_context.source_player_id)
 	match _context.target_area_type:
 		Context.TargetAreaType.CENTER:
-			game_state.get_center_area().set_skill_targets([_context.target_player_id])
+			game_state.get_center_area().set_skill_targets([game_state.player_manager.get_player_by_id(_context.target_player_id)])
 			_context.target_area = game_state.get_center_area()
 		Context.TargetAreaType.PLAYER_DEF:
 			var target_player: Player = game_state.player_manager.get_player_by_id(_context.target_player_id)
@@ -85,4 +85,3 @@ func _on_init_phase(game_state: GameState) -> void:
 			_context.phase = CardMoveCommand.Context.Phase.DONE
 			return
 	_context.set_id_mode(_context.card_ids)
-	_context.phase = CardMoveCommand.Context.Phase.MOVE_OUT

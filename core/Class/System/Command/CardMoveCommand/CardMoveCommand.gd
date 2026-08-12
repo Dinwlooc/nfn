@@ -80,23 +80,26 @@ class Context extends CommandContext:
 		if phase < Phase.MOVE_OUT:
 			return []
 		return moved_cards
-## 卡牌移动命令
+
 func _init(player_id: int ,name_overriding: StringName = &"Move", context_overriding:Context = Context.new()) -> void:
 	super._init(player_id,name_overriding,context_overriding)
 
 func execute(game_state: GameState) -> void:
 	match _context.phase:
 		Context.Phase.INIT:
+			_context.phase = Context.Phase.MOVE_OUT
 			_on_init_phase(game_state)
 		Context.Phase.MOVE_OUT:
+			_context.phase = Context.Phase.MOVE_IN
 			_on_move_out_phase(game_state)
 		Context.Phase.MOVE_IN:
+			_context.phase = Context.Phase.DONE
 			_on_move_in_phase(game_state)
 		Context.Phase.DONE:
 			_on_done_phase(game_state)
 
 func _on_init_phase(_game_state: GameState) -> void:
-	_context.phase = Context.Phase.MOVE_OUT
+	pass
 
 func _on_move_out_phase(_game_state: GameState) -> void:
 	if not _context.source_area:
@@ -120,17 +123,15 @@ func _on_move_out_phase(_game_state: GameState) -> void:
 	if _context.moved_cards.is_empty():
 		_context.phase = Context.Phase.DONE
 		return
-	_context.phase = Context.Phase.MOVE_IN
 
 func _on_move_in_phase(_game_state: GameState) -> void:
-	if not _context.target_area:
-		push_error("移入区域未设置")
-		_context.phase = Context.Phase.DONE
+	if _context.is_virtual:
 		return
-	if not _context.is_virtual:
-		_context.target_area.cards_add(_context.moved_cards)
-		RuleTrans.send_cards(_context.source_area,_context.target_area,_context.moved_cards)
-	_context.phase = Context.Phase.DONE
+	if not _context.target_area:
+		_context.source_area.cards_add(_context.moved_cards)
+		return
+	_context.target_area.cards_add(_context.moved_cards)
+	RuleTrans.send_cards(_context.source_area,_context.target_area,_context.moved_cards)
 	GlobalConsole._print(["CardMoveCommand:卡牌移动完成"])
 
 func _on_done_phase(game_state: GameState) -> void:
