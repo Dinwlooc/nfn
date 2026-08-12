@@ -1,30 +1,12 @@
-extends BehaviorCommand
+extends PlayerAttributeCommand
 class_name DamageCommand
 
-## 伤害标签掩码枚举
-enum DamageTag {
-	CUSTOM = 1 << 0,
-	FIRE = 1 << 1,
-	ICE = 1 << 2,
-	LIGHTNING = 1 << 3,
-	POISON = 1 << 4,
-	BLEED = 1 << 5,
-	HOLY = 1 << 6,
-	SHADOW = 1 << 7,
-}
+enum DamageTag { CUSTOM = 1 << 0, FIRE = 1 << 1, ICE = 1 << 2, LIGHTNING = 1 << 3, POISON = 1 << 4, BLEED = 1 << 5, HOLY = 1 << 6, SHADOW = 1 << 7 }
+enum SourceMechanism { GENERAL = 0, NEGATIVE_STATE = 1, DRAIN = 2, CUSTOM = 3 }
 
-## 伤害来源机制枚举
-enum SourceMechanism {
-	GENERAL = 0,
-	NEGATIVE_STATE = 1,
-	DRAIN = 2,
-	CUSTOM = 3,
-}
-
-class Context extends CommandContext:
-	var target_player: Player
-	var health_damage: int          # 负数代表治疗
-	var mental_damage: int          # 负数代表治疗
+class Context extends PlayerAttributeCommand.Context:
+	var health_damage: int
+	var mental_damage: int
 	var source_mechanism: int
 	var source_player_id: int
 	var source_custom_name: StringName
@@ -35,11 +17,11 @@ class Context extends CommandContext:
 	var ignore_cap: bool = false
 
 	func modify_health_damage(new_value: int) -> void:
-		if phase == 1:
+		if phase == PlayerAttributeCommand.Context.Phase.INIT:
 			cached_health_damage = new_value
 
 	func modify_mental_damage(new_value: int) -> void:
-		if phase == 1:
+		if phase == PlayerAttributeCommand.Context.Phase.INIT:
 			cached_mental_damage = new_value
 
 	func add_damage_tag(tag: DamageTag, custom_name: StringName = &"") -> void:
@@ -84,47 +66,42 @@ func _init(
 	name_overriding: StringName = &"DamageCommand",
 	context_overriding: Context = Context.new()
 ) -> void:
-	super._init(source_id, name_overriding, context_overriding)
-	_context.target_player = target_player
-	_context.health_damage = health_dmg
-	_context.mental_damage = mental_dmg
-	_context.source_mechanism = mechanism
-	_context.source_player_id = source_id
-	_context.source_custom_name = source_custom
-	_context.damage_tags_mask = damage_tags_mask
-	_context.custom_damage_tags = custom_tags
-	_context.ignore_cap = ignore_cap
+	context_overriding.set_target_player(target_player)
+	context_overriding.health_damage = health_dmg
+	context_overriding.mental_damage = mental_dmg
+	context_overriding.cached_health_damage = health_dmg
+	context_overriding.cached_mental_damage = mental_dmg
+	context_overriding.source_mechanism = mechanism
+	context_overriding.source_player_id = source_id
+	context_overriding.source_custom_name = source_custom
+	context_overriding.damage_tags_mask = damage_tags_mask
+	context_overriding.custom_damage_tags = custom_tags
+	context_overriding.ignore_cap = ignore_cap
+	super._init(target_player, name_overriding, context_overriding)
 
-func execute(game_state: GameState) -> void:
-	var ctx = _context as Context
-	match ctx.phase:
-		0:
-			ctx.cached_health_damage = ctx.health_damage
-			ctx.cached_mental_damage = ctx.mental_damage
-			ctx.phase = 1
-		1:
-			if not ctx.target_player:
-				complete()
-				return
-			if ctx.cached_health_damage != 0:
-				_apply_health_change(ctx.target_player, ctx.cached_health_damage, ctx.ignore_cap)
-			if ctx.cached_mental_damage != 0:
-				_apply_mental_change(ctx.target_player, ctx.cached_mental_damage, ctx.ignore_cap)
-			RuleTrans.send_player_delta_updates([ctx.target_player], RenderRequest.ItemSet.EventType.ATTACK, ctx.source_player_id)
-			complete()
+func get_update_event_type() -> RenderRequest.ItemSet.EventType:
+	return RenderRequest.ItemSet.EventType.ATTACK
 
-## 应用生命值变化（伤害或治疗）
+func _on_apply_phase(game_state: GameState, ctx: PlayerAttributeCommand.Context) -> void:
+	if not ctx.target_player:
+		ctx.phase = Context.Phase.DONE
+		return
+	if ctx.cached_health_damage != 0:
+		_apply_health_change(ctx.target_player, ctx.cached_health_damage, ctx.ignore_cap)
+	if ctx.cached_mental_damage != 0:
+		_apply_mental_change(ctx.target_player, ctx.cached_mental_damage, ctx.ignore_cap)
+	ctx.phase = Context.Phase.DONE
+
 static func _apply_health_change(player: Player, delta: int, ignore_cap: bool) -> void:
 	var new_value: int = player.HP - delta
-	if delta <= 0 and not ignore_cap:  # 治疗且需钳位
+	if delta <= 0 and not ignore_cap:
 		new_value = min(new_value, player.get_attribute(&"HP_max"))
 	player.HP = new_value
 
-## 应用精神值变化（伤害或治疗）
 static func _apply_mental_change(player: Player, delta: int, ignore_cap: bool) -> void:
 	var new_value: int = player.MP - delta
-	if delta > 0:  # 伤害：不低于0
+	if delta > 0:
 		new_value = max(0, new_value)
-	elif not ignore_cap:  # 治疗且需钳位
+	elif not ignore_cap:
 		new_value = min(new_value, player.get_attribute(&"MP_max"))
 	player.MP = new_value

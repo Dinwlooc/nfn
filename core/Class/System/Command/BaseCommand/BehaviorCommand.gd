@@ -1,14 +1,13 @@
 ## 行为命令基类
+## 很多下级命令基类会预设execute结构、传输行为和样板方法。在重写位于execute的业务方法时，请注意需要显式切换状态机。
 @abstract
 extends RefCounted
 class_name BehaviorCommand
 
 var _is_completed: bool = false
 var _context: CommandContext
-
 signal companion_command_requested(command: BehaviorCommand)
 signal command_completed()
-
 @abstract func execute(game_state: GameState) -> void
 
 func _init(init_player_id: int = 1 ,name_overriding:StringName = &"" ,context_overriding:CommandContext = CommandContext.NULL_CONTEXT):

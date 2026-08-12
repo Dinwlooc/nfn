@@ -10,41 +10,35 @@ extends RefCounted
 class_name CommandContext
 
 var player_id: int
-## 命令类型标识
 var command_name: StringName
-## 命令阶段（执行进度）
 var phase: int = 0
-## 命令是否被视为完成。不影响命令的实际完成情况。
 var is_completed: bool = false
-##“取消”使该命令不做后续执行并立即结束。
 var is_cancelled: bool = false
-##“视为”前缀代表该命令将不执行实际效果，但修饰接口不变。
 var is_virtual: bool = false
 var can_be_cancelled: bool = true
-## 伴生源。由命令A伴生的命令B，将弱引用命令A的CommandContext。伴生源有唯一性。
-var companion_source:WeakRef
-static var NULL_CONTEXT:CommandContext = CommandContext.new()
+var companion_source: WeakRef
+static var NULL_CONTEXT: CommandContext = CommandContext.new()
 
 func cancel() -> void:
 	if can_be_cancelled:
 		is_cancelled = true
-## 撤销取消
+
 func uncancel() -> void:
 	if can_be_cancelled:
 		is_cancelled = false
+
 func virtualize() -> void:
 	is_virtual = true
-## 获取主修饰玩家ID数组
-## 玩家默认从当前回合玩家开始，逐个轮询以激活玩家的修饰器效果。
-## 此法将使得数组内的玩家优先被轮询，但未被提及的玩家依然会按原始方法被轮询。
-func get_primary_modifier_player_ids() -> PackedInt32Array:
-	return PackedInt32Array([player_id])
-## 获取主修饰卡牌数组
-## 卡牌默认不被轮询。
-## 只有该数组内的卡牌将按顺序被轮询，以激活卡牌的修饰器效果。
+
+## 获取主修饰卡牌列表（第一优先），默认空，子类可重写
 func get_primary_modifier_cards() -> Array[Card]:
 	return []
-func set_companion_source(new_companion_source:CommandContext) -> CommandContext:
+
+## 获取主修饰玩家列表（第二优先），默认空，子类可重写
+func get_primary_modifier_players() -> Array[Player]:
+	return []
+
+func set_companion_source(new_companion_source: CommandContext) -> CommandContext:
 	companion_source = weakref(new_companion_source)
 	return self
 

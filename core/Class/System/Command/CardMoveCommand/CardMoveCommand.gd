@@ -81,7 +81,7 @@ class Context extends CommandContext:
 			return []
 		return moved_cards
 ## 卡牌移动命令
-func _init( player_id: int ,name_overriding: StringName = &"Move", context_overriding:Context = Context.new()) -> void:
+func _init(player_id: int ,name_overriding: StringName = &"Move", context_overriding:Context = Context.new()) -> void:
 	super._init(player_id,name_overriding,context_overriding)
 
 func execute(game_state: GameState) -> void:
