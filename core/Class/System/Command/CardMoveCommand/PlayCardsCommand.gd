@@ -28,7 +28,7 @@ func _init(
 	card_ids: PackedInt32Array,
 	target_player_id: int,
 	target_area_type: Context.TargetAreaType = Context.TargetAreaType.PLAYER_DEF,
-	ap_source_player: Player = null,
+	ap_source_player: Player = player,
 	name_overriding: StringName = &"PlayCards",
 	context_overriding = Context.new()
 ) -> void:

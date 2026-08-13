@@ -19,7 +19,6 @@ func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContex
 func _apply_suppress(source_card: Card, target_card: Card, src_area: AreaDefence, state: GameState, modifier_ctx: ModifierContext) -> void:
 	var owner: Player = source_card.get_player()
 	var self_destroy_cmd := DestroyCardsCommand.new(
-		owner,
 		src_area,
 		source_card.get_id(),
 		owner,

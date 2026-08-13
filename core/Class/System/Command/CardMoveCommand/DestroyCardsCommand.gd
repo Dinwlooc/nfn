@@ -3,23 +3,15 @@ class_name DestroyCardsCommand
 
 ## 摧毁命令上下文类
 class Context extends CardMoveCommand.Context:
-	var executor_player: Player = null       ## 实施摧毁的玩家（可为空）
 	var source_card: Card = null             ## 实施摧毁的卡牌（可为空）
 	var target_card_id: int = 0              ## 要摧毁的目标卡牌ID
 	var target_defense_area: AreaDefence = null  ## 目标守区
-
-	## 设置实施摧毁的玩家
-	func set_executor_player(player: Player) -> void:
-		executor_player = player
-
 	## 设置实施摧毁的卡牌
 	func set_source_card(card: Card) -> void:
 		source_card = card
-
 	## 设置目标卡牌ID
 	func set_target_card_id(id: int) -> void:
 		target_card_id = id
-
 	## 设置目标守区
 	func set_target_defense_area(area: AreaDefence) -> void:
 		target_defense_area = area
@@ -33,18 +25,16 @@ class Context extends CardMoveCommand.Context:
 ## @param name_overriding: 命令名称
 ## @param context_overriding: 外部传入的上下文（通常不传）
 func _init(
-	player: Player,
 	target_defense_area: AreaDefence,
 	target_card_id: int,
-	executor_player: Player = null,
+	source_player: Player = Player.PUBLIC_PLAYER,
 	source_card: Card = null,
 	name_overriding: StringName = &"DestroyCards",
 	context_overriding: Context = Context.new()
 ) -> void:
-	super._init(player, name_overriding, context_overriding)
+	super._init(source_player, name_overriding, context_overriding)
 	_context.set_target_defense_area(target_defense_area)
 	_context.set_target_card_id(target_card_id)
-	_context.set_executor_player(executor_player)
 	_context.set_source_card(source_card)
 	_context.set_event_type(RenderRequest.ItemSet.EventType.DEATH)
 
