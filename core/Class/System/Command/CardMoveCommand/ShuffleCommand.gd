@@ -3,8 +3,8 @@
 extends CardMoveCommand
 class_name ShuffleCommand
 
-func _init(player_id: int = 1, name_overriding: StringName = &"Shuffle", context_overriding: CardMoveCommand.Context = CardMoveCommand.Context.new()) -> void:
-	super._init(player_id, name_overriding, context_overriding)
+func _init(player: Player = Player.PUBLIC_PLAYER, name_overriding: StringName = &"Shuffle", context_overriding: CardMoveCommand.Context = CardMoveCommand.Context.new()) -> void:
+	super._init(player, name_overriding, context_overriding)
 
 func _on_init_phase(game_state: GameState) -> void:
 	var discard: AreaDiscard = game_state.get_discard_area()

@@ -10,7 +10,7 @@ class_name ModifierManager
 func process_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int) -> void:
 	if not context:
 		return
-	var processed_player_ids := {}
+	var processed_player_ids :Dictionary[int,bool]= {}
 	_process_card_modifiers(context, game_state, command_bus, sequence)
 	_process_primary_player_modifiers(context, game_state, command_bus, sequence, processed_player_ids)
 	_process_other_player_modifiers(context, game_state, command_bus, sequence, processed_player_ids)
@@ -23,7 +23,7 @@ func _process_card_modifiers(context: CommandContext, game_state: GameState, com
 			card.command_modifiers.process_modifiers(context, game_state, command_bus, card, sequence)
 
 ## 处理主修饰玩家（第二优先）
-func _process_primary_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary) -> void:
+func _process_primary_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary[int,bool]) -> void:
 	var players: Array[Player] = context.get_primary_modifier_players()
 	for player in players:
 		if player and player.command_modifiers:
@@ -31,7 +31,7 @@ func _process_primary_player_modifiers(context: CommandContext, game_state: Game
 			processed[player.get_id()] = true
 
 ## 处理其他在座玩家（第三优先，从当前回合玩家开始轮询）
-func _process_other_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary) -> void:
+func _process_other_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary[int,bool]) -> void:
 	var current_turn_player_id: int = game_state.stage_manager.current_player_id if game_state.stage_manager else 0
 	var all_players: Array[Player] = game_state.player_manager.get_seated_players()
 	var start_index: int = game_state.player_manager.get_seat_index_by_player_id(current_turn_player_id)

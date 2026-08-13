@@ -7,7 +7,6 @@ class Context extends CardMoveCommand.Context:
 		CENTER,
 		PLAYER_DEF
 	}
-	var source_player_id: int = 0
 	var target_player_id: int = 0
 	var target_area_type: TargetAreaType = TargetAreaType.PLAYER_DEF
 	var card_ids: PackedInt32Array = PackedInt32Array()
@@ -15,8 +14,6 @@ class Context extends CardMoveCommand.Context:
 
 	func set_ap_source_player(player: Player) -> void:
 		ap_source_player = player
-	func set_source_player_id(id: int) -> void:
-		source_player_id = id
 	func set_target_player_id(id: int) -> void:
 		target_player_id = id
 	func set_target_area_type(area_type: TargetAreaType) -> void:
@@ -27,7 +24,7 @@ class Context extends CardMoveCommand.Context:
 		return card_ids.size() > 0
 
 func _init(
-	source_player_id: int,
+	player: Player,
 	card_ids: PackedInt32Array,
 	target_player_id: int,
 	target_area_type: Context.TargetAreaType = Context.TargetAreaType.PLAYER_DEF,
@@ -35,8 +32,7 @@ func _init(
 	name_overriding: StringName = &"PlayCards",
 	context_overriding = Context.new()
 ) -> void:
-	super._init(source_player_id, name_overriding, context_overriding)
-	_context.set_source_player_id(source_player_id)
+	super._init(player, name_overriding, context_overriding)
 	_context.set_target_player_id(target_player_id)
 	_context.set_target_area_type(target_area_type)
 	_context.set_card_ids(card_ids)
@@ -52,23 +48,24 @@ func _on_init_phase(game_state: GameState) -> void:
 		push_error("PlayCardsCommand: 无效的卡牌ID数组")
 		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
+	var source_player: Player = _context.get_source_player()
 	# 行动点检查与消耗
 	if _context.ap_source_player:
-		var source_player: Player = _context.ap_source_player
-		_context.source_area = game_state.get_hand_area(_context.source_player_id)
+		var ap_player: Player = _context.ap_source_player
+		_context.source_area = game_state.get_hand_area(source_player.get_id())
 		var cards: Array[Card] = _context.source_area.get_cards_by_ids(_context.card_ids)
 		var total_cost: int = 0
 		for card in cards:
 			total_cost += card.get_attribute(&"cost")
 		var ap_cmd := ActionPointCommand.new(
-			source_player,
+			ap_player,
 			total_cost,
 			ActionPointCommand.Context.Operation.SUB,
 			&"play_card"
 		)
 		append_companion_command(ap_cmd)
 	# 设置源区域（手牌）
-	_context.source_area = game_state.get_hand_area(_context.source_player_id)
+	_context.source_area = game_state.get_hand_area(source_player.get_id())
 	match _context.target_area_type:
 		Context.TargetAreaType.CENTER:
 			game_state.get_center_area().set_skill_targets([game_state.player_manager.get_player_by_id(_context.target_player_id)])

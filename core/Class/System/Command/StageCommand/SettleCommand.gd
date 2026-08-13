@@ -211,7 +211,7 @@ func _on_effect_phase(game_state: GameState, ctx: Context) -> void:
 	ctx.phase = Context.Phase.CLEAR
 
 func _on_clear_phase(game_state: GameState, ctx: Context) -> void:
-	var transfer_cmd := CardTransferCommand.new(ctx.player_id,
+	var transfer_cmd := CardTransferCommand.new(game_state.get_player_by_id(ctx.player_id),
 		ctx.defensive_area,
 		game_state.get_discard_area(),
 		CardTransferCommand.Context.MoveOutMode.TOP,

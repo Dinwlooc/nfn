@@ -21,7 +21,7 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 		&"draw_stage_reset_ap"
 	)
 	var draw_count: int = player.get_attribute(&"draw_cards_count")
-	var draw_event := DrawCardsCommand.new(player_id, draw_count)
+	var draw_event := DrawCardsCommand.new(player, draw_count)
 	var callback: Callable = func(): end_stage(game_state, command_bus)
 	command_bus.queue_behavior_with_callback(draw_event, callback)
 	command_bus.queue_behavior(reset_ap_command)

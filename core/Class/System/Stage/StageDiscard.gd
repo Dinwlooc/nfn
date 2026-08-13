@@ -92,7 +92,12 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 		actual_discard = valid_ids.slice(valid_ids.size() - need_count, valid_ids.size())
 	else:
 		actual_discard = valid_ids
-	var discard_command := DiscardCardsCommand.new(player_id, actual_discard)
+	var player: Player = game_state.player_manager.get_player_by_id(player_id)
+	if not player:
+		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "实例"])
+		request.cancel()
+		return
+	var discard_command := DiscardCardsCommand.new(player, actual_discard)
 	command_bus.queue_behavior(discard_command)
 	var new_need: int = need_count - actual_discard.size()
 	if new_need == 0:
@@ -117,7 +122,12 @@ func _process_abandon_response(request: OperationRequest.AbandonResponse, game_s
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "手牌不足", need_count, "张，将弃置所有手牌"])
 		need_count = hand_card_ids.size()
 	var selected: PackedInt32Array = _random_select(hand_area, need_count)
-	var discard_command := DiscardCardsCommand.new(player_id, selected)
+	var player: Player = game_state.player_manager.get_player_by_id(player_id)
+	if not player:
+		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "实例"])
+		request.cancel()
+		return
+	var discard_command := DiscardCardsCommand.new(player, selected)
 	command_bus.queue_behavior(discard_command)
 	_players_to_discard.erase(player_id)
 	GlobalConsole._print(["弃牌阶段：玩家", player_id, "放弃响应，随机弃牌完成"])
@@ -139,7 +149,11 @@ func _force_discard_for_all(game_state: GameState, command_bus: CommandBus) -> v
 			_players_to_discard.erase(player_id)
 			continue
 		var selected: PackedInt32Array = _random_select(hand_area, need_count)
-		var discard_command := DiscardCardsCommand.new(player_id, selected)
+		var player: Player = game_state.player_manager.get_player_by_id(player_id)
+		if not player:
+			GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "实例"])
+			continue
+		var discard_command := DiscardCardsCommand.new(player, selected)
 		command_bus.queue_behavior(discard_command)
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "超时，随机弃牌完成"])
 	_players_to_discard.clear()

@@ -19,7 +19,7 @@ static func generate_command(
 	var command: BehaviorCommand
 	if x >= target_card.get_attribute(&"power"):
 			command = DestroyCardsCommand.new(
-				source_player.get_id() if source_player else target_card.get_owner_id(),
+				source_player,
 				target_area ,
 				target_card.get_id(),
 				source_player,

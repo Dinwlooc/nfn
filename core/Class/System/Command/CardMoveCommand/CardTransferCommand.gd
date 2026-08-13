@@ -6,7 +6,7 @@ class Context extends CardMoveCommand.Context:
 	pass
 
 ## 卡牌转移命令
-## @param player_id: 发起者玩家ID
+## @param player: 发起者玩家实例
 ## @param source_area: 源区域
 ## @param target_area: 目标区域
 ## @param move_out_mode: 移出模式（默认为 TOP）
@@ -14,7 +14,7 @@ class Context extends CardMoveCommand.Context:
 ## @param name_overriding: 命令名称
 ## @param context_overriding: 外部传入的上下文（通常不传）
 func _init(
-	player_id: int,
+	player: Player,
 	source_area: Area,
 	target_area: Area,
 	move_out_mode: Context.MoveOutMode = Context.MoveOutMode.TOP,
@@ -22,7 +22,7 @@ func _init(
 	name_overriding: StringName = &"Transfer",
 	context_overriding: Context = Context.new()
 ) -> void:
-	super._init(player_id, name_overriding, context_overriding)
+	super._init(player, name_overriding, context_overriding)
 	_context.source_area = source_area
 	_context.target_area = target_area
 	_context.move_out_mode = move_out_mode

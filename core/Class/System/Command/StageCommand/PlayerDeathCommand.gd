@@ -24,7 +24,7 @@ func _on_transfer_phase(game_state: GameState, ctx: Context) -> void:
 	var hand_area: AreaHand = game_state.area_registry.get_hand_area(ctx.dying_player.get_id())
 	if hand_area and hand_area.card_count() > 0:
 		var transfer_cmd := CardTransferCommand.new(
-			ctx.dying_player.get_id(),
+			ctx.dying_player,
 			hand_area,
 			game_state.get_discard_area(),
 			CardMoveCommand.Context.MoveOutMode.TOP,

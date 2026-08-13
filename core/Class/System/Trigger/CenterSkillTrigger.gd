@@ -36,7 +36,7 @@ func _schedule_move_to_discard(card: Card) -> void:
 func _create_move_to_discard_command(card: Card) -> BehaviorCommand:
 	var discard_area:AreaDiscard = _game_state.get_discard_area()
 	return CardTransferCommand.new(
-		card.get_owner_id(),
+		_game_state.get_player_by_id(card.get_owner_id()),
 		_center_area,
 		discard_area,
 		CardTransferCommand.Context.MoveOutMode.BY_ID,

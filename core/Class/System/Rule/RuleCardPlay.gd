@@ -184,7 +184,7 @@ static func _build_command(source: Player, card: Card, target: Player, area_mode
 		PlayAreaMode.TARGET_DEFENSE:
 			target_area_type = PlayCardsCommand.Context.TargetAreaType.PLAYER_DEF
 	return PlayCardsCommand.new(
-		source.get_id(),
+		source,
 		PackedInt32Array([card.id]),
 		target_player_id,
 		target_area_type,

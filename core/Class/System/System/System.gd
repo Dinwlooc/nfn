@@ -54,7 +54,7 @@ func _draw_cards_test() -> void:
 		GlobalConsole._print("System:Error:c_draw未生效。无存活玩家。")
 		return
 	var draw_event = DrawCardsCommand.new(
-		game_state.stage_manager.current_player_id,
+		game_state.get_player_by_id(game_state.stage_manager.current_player_id),
 		2
 	)
 	command_bus.queue_behavior(draw_event)

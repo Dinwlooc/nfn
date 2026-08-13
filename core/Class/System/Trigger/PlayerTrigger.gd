@@ -54,7 +54,7 @@ func _apply_morale_bonus(player: Player, level: int) -> void:
 			pass
 
 func _draw_one_card(player: Player) -> void:
-	var draw_cmd := DrawCardsCommand.new(player.get_id(), 1)
+	var draw_cmd := DrawCardsCommand.new(player, 1)
 	_command_bus.queue_behavior(draw_cmd)
 
 func _handle_ability_selection(_player: Player, _new_level: int) -> void:

@@ -8,9 +8,10 @@ func process(context: CommandContext, state: GameState, modifier_ctx: ModifierCo
 	if not (creator is Card):
 		return modifier_ctx.set_error(ModifierContext.ERR_INVALID_TARGET)
 	var card: Card = creator as Card
+	var player: Player = state.get_player_by_id(card.get_owner_id())
 	var sctx: SettleCommand.Context = context as SettleCommand.Context
 	var transfer_cmd := CardTransferCommand.new(
-		card.get_owner_id(),
+		player,
 		sctx.defensive_area,
 		state.get_hand_area(card.get_owner_id()),
 		CardTransferCommand.Context.MoveOutMode.BY_ID,

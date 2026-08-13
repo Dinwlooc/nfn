@@ -20,10 +20,20 @@ class Context extends CommandContext:
 	var move_out_param = null
 	var target_area: Area = null
 	var moved_cards: Array[Card] = []
-
-	# 新增：渲染事件类型和自定义事件名
+	  ## 发起者玩家对象
+	var source_player: Player = null
+	##渲染事件类型和自定义事件名
 	var event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.DRAW
 	var custom_event_name: StringName = &""
+
+	## 设置源玩家（链式调用）
+	func set_source_player(player: Player) -> Context:
+		source_player = player
+		return self
+
+	## 获取源玩家
+	func get_source_player() -> Player:
+		return source_player
 
 	## 获取移动的卡牌
 	func get_moved_cards() -> Array[Card]:
@@ -50,12 +60,10 @@ class Context extends CommandContext:
 	func set_source_area(area: Area) -> Context:
 		source_area = area
 		return self
-
 	## 新增：设置事件类型（链式调用）
 	func set_event_type(type: RenderRequest.ItemSet.EventType) -> Context:
 		event_type = type
 		return self
-
 	## 新增：设置自定义事件名称（仅在 event_type 为 CUSTOM 时有效，否则报错）
 	func set_custom_event_name(name: StringName) -> Context:
 		if event_type == RenderRequest.ItemSet.EventType.CUSTOM:
@@ -63,26 +71,25 @@ class Context extends CommandContext:
 		else:
 			push_error("Cannot set custom event name when event_type is not CUSTOM")
 		return self
-
-	## 重写：主修饰玩家ID数组（从被移动卡牌的拥有者中提取，发起者置于首位）
-	func get_primary_modifier_player_ids() -> PackedInt32Array:
-		if not player_id or player_id < 0:
-			return []
-		var ids: PackedInt32Array = [player_id]
-		for card in moved_cards:
-			var owner_id = card.get_owner_id() if card else 0
-			if not owner_id == 0 and not owner_id == player_id and not owner_id in ids:
-				ids.append(owner_id)
-		return ids
-
+	## 重写：主修饰玩家数组（按优先级：源玩家、源区域从属玩家、目标区域从属玩家）
+	func get_primary_modifier_players() -> Array[Player]:
+		var players: Array[Player] = []
+		if source_player:
+			players.append(source_player)
+		if source_area and source_area.player and not source_area.player in players:
+			players.append(source_area.player)
+		if target_area and target_area.player and not target_area.player in players:
+			players.append(target_area.player)
+		return players
 	## 重写：主修饰卡牌数组
 	func get_primary_modifier_cards() -> Array[Card]:
 		if phase < Phase.MOVE_OUT:
 			return []
 		return moved_cards
 
-func _init(player_id: int ,name_overriding: StringName = &"Move", context_overriding:Context = Context.new()) -> void:
-	super._init(player_id,name_overriding,context_overriding)
+func _init(player: Player = Player.PUBLIC_PLAYER , name_overriding: StringName = &"Move", context_overriding: Context = Context.new()) -> void:
+	super._init(player.get_id(), name_overriding, context_overriding)
+	_context.set_source_player(player)
 
 func execute(game_state: GameState) -> void:
 	match _context.phase:
