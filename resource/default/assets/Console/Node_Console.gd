@@ -35,7 +35,7 @@ var current_selection: int = -1
 ## 过滤后的建议列表
 var filtered: PackedStringArray = []
 ## 所有可用命令名的缓存
-var command_suggestions: Array = GlobalConsole.command_list.keys()
+var command_suggestions: Array
 ## 面板位置动画 Tween 引用
 var panel_tween: Tween
 ## 文本变化事件标记，防止递归更新
@@ -65,6 +65,7 @@ func _ready():
 	command_load()
 	input_load()
 	suggestion_labels_load()
+	command_suggestions = GlobalConsole.command_list.keys()
 	GlobalRegistry.register_singleton(GlobalRegistry.CONSOLE_TYPE, self)
 	_setup_log_optimization()
 ## 初始化日志优化组件：禁用编辑、启动定时刷新

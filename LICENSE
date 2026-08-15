@@ -1,3 +1,11 @@
+SCOPE NOTICE:
+This MIT License applies exclusively to the source code and documentation files located in the root directory of this repository. 
+It does NOT apply to the "resource/" folder or the "mods/" folder, nor to any of their subfolders. 
+The contents within these folders are subject to their own separate licensing terms, which must be specified within each respective subfolder. 
+In the absence of a separate license inside any such subfolder, ALL RIGHTS ARE RESERVED, and the contents may not be copied, distributed, or modified without explicit prior written permission from the copyright holder.
+
+---
+
 MIT License
 
 Copyright (c) 2025 Dinwlooc
