@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://ld25ivvpfrx8"]
+[gd_scene format=3 uid="uid://ld25ivvpfrx8"]
 
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/rgb_shift_distortion.gdshader" id="1_dri28"]
 [ext_resource type="Script" uid="uid://d1u5il71urrcj" path="res://resource/default/assets/Area/areaface/player_status_face.gd" id="1_dvwbm"]
@@ -83,7 +83,7 @@ corner_detail = 1
 shadow_color = Color(0, 0, 0, 0.482)
 anti_aliasing = false
 
-[node name="AreaFaceSelf_Properties" type="Control"]
+[node name="AreaFaceSelf_Properties" type="Control" unique_id=810112760]
 material = SubResource("ShaderMaterial_ggemd")
 layout_mode = 3
 anchor_top = 0.759
@@ -97,15 +97,15 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("1_dvwbm")
 
-[node name="MPGound" type="Panel" parent="."]
-layout_mode = 2
+[node name="MPGound" type="Panel" parent="." unique_id=1264081195]
+layout_mode = 0
 offset_left = 6.0
 offset_top = 5.0
 offset_right = 113.0
 offset_bottom = 223.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ggemd")
 
-[node name="MPLabel" type="Label" parent="."]
+[node name="MPLabel" type="Label" parent="." unique_id=451216774]
 layout_mode = 0
 offset_left = 36.0
 offset_top = 178.0
@@ -117,7 +117,7 @@ theme_override_font_sizes/font_size = 80
 text = "-"
 horizontal_alignment = 1
 
-[node name="HPBar" type="Control" parent="."]
+[node name="HPBar" type="Control" parent="." unique_id=825881445]
 layout_mode = 1
 anchors_preset = 0
 offset_left = 16.0
@@ -127,7 +127,7 @@ offset_bottom = 203.0
 rotation = -1.5708
 mouse_filter = 2
 
-[node name="HPFillBackGound" type="Panel" parent="HPBar"]
+[node name="HPFillBackground" type="Panel" parent="HPBar" unique_id=1897376245]
 use_parent_material = true
 layout_mode = 0
 offset_left = 26.0
@@ -135,7 +135,7 @@ offset_right = 187.0
 offset_bottom = 21.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dri28")
 
-[node name="HPFill" type="Panel" parent="HPBar/HPFillBackGound"]
+[node name="HPFill" type="Panel" parent="HPBar/HPFillBackground" unique_id=1062224499]
 material = SubResource("ShaderMaterial_dri28")
 use_parent_material = true
 layout_mode = 0
@@ -143,7 +143,7 @@ offset_right = 2.0
 offset_bottom = 17.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dvwbm")
 
-[node name="HPLabel" type="Label" parent="HPBar"]
+[node name="HPLabel" type="Label" parent="HPBar" unique_id=316275878]
 layout_mode = 0
 offset_left = 25.0
 offset_top = -13.0
@@ -156,7 +156,7 @@ theme_override_font_sizes/font_size = 80
 text = "-"
 horizontal_alignment = 1
 
-[node name="MPContainer" type="HBoxContainer" parent="."]
+[node name="MPContainer" type="HBoxContainer" parent="." unique_id=3291562]
 layout_mode = 0
 offset_left = 45.0
 offset_top = 168.0
@@ -164,13 +164,13 @@ offset_right = 242.0
 offset_bottom = 188.0
 rotation = -1.5708
 
-[node name="MPUnit" type="Control" parent="MPContainer"]
+[node name="MPUnit" type="Control" parent="MPContainer" unique_id=344167776]
 material = SubResource("ShaderMaterial_j7r54")
 use_parent_material = true
 custom_minimum_size = Vector2(20, 20)
 layout_mode = 2
 
-[node name="MPFourInOneUnit" type="GridContainer" parent="MPContainer/MPUnit"]
+[node name="MPFourInOneUnit" type="GridContainer" parent="MPContainer/MPUnit" unique_id=2101998059]
 layout_mode = 0
 offset_left = -19.0
 offset_top = -6.0
@@ -181,28 +181,28 @@ scale = Vector2(-0.3, 0.3)
 pivot_offset = Vector2(19.2, 19.2)
 columns = 2
 
-[node name="ColorRect" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit"]
+[node name="ColorRect" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit" unique_id=2000440283]
 use_parent_material = true
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 color = Color(0, 1, 1, 1)
 
-[node name="ColorRect2" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit"]
+[node name="ColorRect2" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit" unique_id=1487964914]
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 color = Color(0, 1, 1, 1)
 
-[node name="ColorRect3" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit"]
+[node name="ColorRect3" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit" unique_id=663503118]
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 color = Color(0, 1, 1, 1)
 
-[node name="ColorRect4" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit"]
+[node name="ColorRect4" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit" unique_id=1133305394]
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 color = Color(0, 1, 1, 1)
 
-[node name="APContainer" type="Control" parent="."]
+[node name="APContainer" type="Control" parent="." unique_id=2084904102]
 anchors_preset = 0
 offset_left = 5.0
 offset_top = 137.0
@@ -210,7 +210,7 @@ offset_right = 5.0
 offset_bottom = 137.0
 mouse_filter = 2
 
-[node name="MPGound" type="Panel" parent="APContainer"]
+[node name="MPGound" type="Panel" parent="APContainer" unique_id=144366497]
 visible = false
 layout_mode = 0
 offset_left = 12.0
@@ -219,7 +219,7 @@ offset_right = 102.0
 offset_bottom = 84.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_kwfkx")
 
-[node name="APIcon" type="Panel" parent="APContainer"]
+[node name="APIcon" type="Panel" parent="APContainer" unique_id=1897480467]
 use_parent_material = true
 layout_mode = 0
 offset_left = 13.0
@@ -228,7 +228,7 @@ offset_right = 28.0
 offset_bottom = 78.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_j7r54")
 
-[node name="APLabel" type="Label" parent="APContainer"]
+[node name="APLabel" type="Label" parent="APContainer" unique_id=370512949]
 layout_mode = 0
 offset_left = 47.0
 offset_top = 53.0
@@ -241,8 +241,7 @@ theme_override_constants/shadow_outline_size = 17
 theme_override_font_sizes/font_size = 120
 text = "3 / 3"
 
-[node name="MoraleBar" type="Control" parent="."]
-layout_mode = 3
+[node name="MoraleBar" type="Control" parent="." unique_id=548585462]
 anchors_preset = 0
 offset_left = -7.0
 offset_top = 203.0
@@ -251,7 +250,7 @@ offset_bottom = 203.0
 rotation = -1.5708
 mouse_filter = 2
 
-[node name="MoraleFillBackground" type="Panel" parent="MoraleBar"]
+[node name="MoraleFillBackground" type="Panel" parent="MoraleBar" unique_id=60687949]
 use_parent_material = true
 layout_mode = 0
 offset_left = 25.9997
@@ -260,7 +259,7 @@ offset_right = 187.0
 offset_bottom = 115.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_m8l5k")
 
-[node name="MoraleFillTemplate" type="Panel" parent="MoraleBar/MoraleFillBackground"]
+[node name="MoraleFillTemplate" type="Panel" parent="MoraleBar/MoraleFillBackground" unique_id=1411012004]
 material = SubResource("ShaderMaterial_dri28")
 use_parent_material = true
 layout_mode = 0
@@ -268,7 +267,7 @@ offset_right = 2.0
 offset_bottom = 17.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_2skah")
 
-[node name="MoraleLevelLabel" type="Label" parent="MoraleBar"]
+[node name="MoraleLevelLabel" type="Label" parent="MoraleBar" unique_id=820599670]
 layout_mode = 0
 offset_left = 26.9997
 offset_top = 77.0001
@@ -281,7 +280,7 @@ text = "-"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MoraleValueLabel" type="RichTextLabel" parent="MoraleBar"]
+[node name="MoraleValueLabel" type="RichTextLabel" parent="MoraleBar" unique_id=798058004]
 visible = false
 layout_mode = 0
 offset_left = 25.0

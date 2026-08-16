@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://chndppyj08lvd" path="res://core/Class/System/Item/AttributeData.gd" id="1_8utbd"]
 [ext_resource type="Script" uid="uid://xwa2xhc857ep" path="res://core/Class/Transport/TransPack/ItemPack/HandCardPack.gd" id="2_ahaay"]
+[ext_resource type="Script" uid="uid://bq8pou4k8ujat" path="res://core/Class/System/Modifier/Modifier.gd" id="2_ivra0"]
 [ext_resource type="Script" uid="uid://b04wnl4nfxsn2" path="res://core/Class/System/Item/CardData.gd" id="3_ivra0"]
 
 [sub_resource type="Resource" id="Resource_b323l"]
@@ -15,4 +16,3 @@ name = &"nfn:basic_shield"
 type = &"defence"
 attribute_defaults = Array[ExtResource("1_8utbd")]([SubResource("Resource_b323l")])
 pack_class = ExtResource("2_ahaay")
-_reset_to_defaults = null

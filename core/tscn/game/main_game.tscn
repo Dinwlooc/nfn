@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://drlnwp8p3nn5a" path="res://core/Class/Render/RenderArea/RenderAreaDraw.gd" id="4_662gx"]
 [ext_resource type="Script" uid="uid://b3knkkllshowq" path="res://core/Class/Render/RenderControl/RenderControl.gd" id="4_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://di6xhhto3hhci" path="res://resource/default/assets/Area/areaface/backgound.tscn" id="5_2w2we"]
-[ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://resource/default/assets/Area/areaface/RenderArrow/render_arrow.gd" id="5_4k47o"]
+[ext_resource type="Script" uid="uid://jhh8ub2ho2y1" path="res://resource/default/assets/Area/areaface/RenderArrow/RenderArrow.gd" id="5_4k47o"]
 [ext_resource type="Script" uid="uid://ilpalorndt2y" path="res://resource/default/assets/Area/areaface/stages_face.gd" id="6_t5eyl"]
 [ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Class/Render/RenderArea/RenderAreaHand.gd" id="7_jjejj"]
 [ext_resource type="Script" uid="uid://c6oyqsx5j42c5" path="res://core/tscn/game/RenderTimer.gd" id="8_ppvbj"]

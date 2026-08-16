@@ -1,66 +1,110 @@
 extends AreaFace
-
+## 模式枚举：AUTO 自动跟随本地玩家，MANUAL 手动指定。
 enum Mode { AUTO, MANUAL }
+## 当前工作模式。
 @export var mode: Mode = Mode.AUTO
+## HP 条根控件。
 @onready var hp_bar: Control = $HPBar
-@onready var hp_fill_background: Panel = $HPBar/HPFillBackGound
-@onready var hp_fill_template: Panel = $HPBar/HPFillBackGound/HPFill
+## HP 条背景面板。
+@onready var hp_fill_background: Panel = $HPBar/HPFillBackground
+## HP 填充块模板。
+@onready var hp_fill_template: Panel = $HPBar/HPFillBackground/HPFill
+## HP 数值标签。
 @onready var hp_label: Label = $HPBar/HPLabel
+## MP 单位容器。
 @onready var mp_container: HBoxContainer = $MPContainer
+## MP 单位模板。
 @onready var mp_unit_template: Control = $MPContainer/MPUnit
+## AP 容器。
 @onready var ap_container: Control = $APContainer
+## AP 图标控件。
 @onready var ap_icon: Control = $APContainer/APIcon
+## AP 数值标签。
 @onready var ap_label: Label = $APContainer/APLabel
+## MP 数值标签。
 @onready var mp_label: Label = $MPLabel
+## 战意等级标签。
 @onready var morale_level_label: Label = $MoraleBar/MoraleLevelLabel
+## 战意攻防数值标签（富文本）。
 @onready var morale_value_label: RichTextLabel = $MoraleBar/MoraleValueLabel
+## 战意条根控件。
 @onready var morale_bar: Control = $MoraleBar
+## 战意条背景面板。
 @onready var morale_fill_background: Panel = $MoraleBar/MoraleFillBackground
+## 战意填充块模板。
 @onready var morale_fill_template: Panel = $MoraleBar/MoraleFillBackground/MoraleFillTemplate
-
+## HP 最大值缓存。
 var _cached_hp_max: int = 0
+## HP 当前值缓存。
 var _cached_hp_current: int = 0
+## MP 最大值缓存。
 var _cached_mp_max: int = 0
+## MP 当前值缓存。
 var _cached_mp_current: int = 0
+## AP 当前值缓存。
 var _cached_ap_current: int = 0
+## 修正初始 AP 缓存。
 var _cached_modified_init_ap: int = 0
+## HP 填充块列表。
 var _hp_blocks: Array[Panel] = []
+## MP 单位列表。
 var _mp_units: Array[Control] = []
+## 当前绑定的玩家渲染项。
 var _current_player: RenderItem = null
+## 当前玩家 ID 缓存。
 var _cached_player_id: int = -1
+## 战意攻击值缓存。
 var _cached_morale_attack: int = 0
+## 战意防御值缓存。
 var _cached_morale_defense: int = 0
+## 战意等级缓存。
 var _cached_morale_level: int = 0
+## 战意升级所需总值缓存。
 var _cached_required_total: int = 0
+## 战意填充块列表。
 var _morale_blocks: Array[Panel] = []
+## 是否已初始化。
 var _initialized: bool = false
-
+## HP 当前块颜色。
 const COLOR_HP_CURRENT: Color = Color(0.99, 0.1, 0.0, 0.7)
+## HP 损失块颜色。
 const COLOR_HP_LOST: Color = Color(0.5, 0.5, 0.5, 0.7)
+## MP 当前颜色。
 const COLOR_MP_CURRENT: Color = Color(0, 1.0, 1.0, 0.7)
+## MP 损失颜色。
 const COLOR_MP_LOST: Color = Color(0.2, 0.2, 0.2, 0.7)
+## HP 块闪烁时长。
 const HP_BLINK_DURATION: float = 0.2
+## MP 块闪烁时长。
 const MP_BLINK_DURATION: float = 0.2
+## HP 块缩放系数。
 const HP_BLOCK_SCALE: float = 0.8
+## 每单位 MP 点数。
 const MP_DOTS_PER_UNIT: int = 4
+## MP 点淡出时长。
 const MP_DOT_FADE_OUT_DURATION: float = 0.2
+## 治疗闪烁时长。
 const HEAL_FLASH_DURATION: float = 0.3
-
+## 战意升级所需总值数组。
 const UPGRADE_REQUIREMENTS: Array[int] = [7, 12, 15, 18]
+## 战意攻击颜色。
 const COLOR_MORALE_ATTACK: Color = Color(0.8, 0.2, 0.8, 0.8)
+## 战意防御颜色。
 const COLOR_MORALE_DEFENSE: Color = Color(0.2, 0.4, 0.8, 0.8)
+## 战意已满颜色。
 const COLOR_MORALE_FULL: Color = Color(0.7, 0.3, 1.0, 0.85)
+## 战意块缩放系数。
 const MORALE_BLOCK_SCALE: float = 0.8
+## 战意块闪烁时长。
 const MORALE_BLINK_DURATION: float = 0.15
-
+## 节点就绪时初始化模板可见性并请求玩家渲染区域。
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
-	hp_fill_template.visible = false
 	if mp_unit_template:
 		mp_unit_template.visible = false
 	if morale_fill_template:
 		morale_fill_template.visible = false
-
+## 连接到目标渲染区域，自动模式下绑定本地玩家信号。
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
 	if not (target_area is RenderAreaPlayers):
@@ -69,10 +113,10 @@ func _connect_to_area(target_area: RenderArea) -> void:
 		target_area.local_player_received.connect(_on_local_player_received)
 		if target_area.local_player:
 			_on_local_player_received(target_area.local_player)
-
+## 本地玩家接收回调。
 func _on_local_player_received(local_player: RenderItem) -> void:
 	set_player(local_player)
-
+## 设置绑定的玩家渲染项。
 func set_player(player: RenderItem) -> void:
 	if _current_player == player:
 		return
@@ -89,11 +133,11 @@ func set_player(player: RenderItem) -> void:
 		_update_cached_stats(_current_player.data)
 	else:
 		_clear_display()
-
+## 玩家数据请求回调。
 func _on_player_data_requested(player: RenderItem) -> void:
 	if player == _current_player and player and player.data is PlayerPack:
 		_update_cached_stats(player.data)
-
+## 更新所有缓存的玩家状态并触发对应动画。
 func _update_cached_stats(player_data: PlayerPack) -> void:
 	var old_hp: int = _cached_hp_current
 	var old_mp: int = _cached_mp_current
@@ -169,7 +213,7 @@ func _update_cached_stats(player_data: PlayerPack) -> void:
 		_cached_required_total = new_required
 		_apply_morale_animation(old_attack, old_defense, old_required, new_attack, new_defense, new_required)
 		_update_morale_value_text(new_attack, new_defense, new_required)
-
+## 清空所有显示内容。
 func _clear_display() -> void:
 	_update_hp_label(0, 0)
 	_update_mp_label(0, 0)
@@ -183,23 +227,22 @@ func _clear_display() -> void:
 	_update_morale_level(0)
 	_update_morale_value_text(0, 0, UPGRADE_REQUIREMENTS[0])
 	_clear_morale_blocks()
-
 # ==================== 战意更新方法（无文本动画） ====================
+## 更新战意等级标签文本。
 func _update_morale_level(new_level: int) -> void:
 	morale_level_label.text = "Lv.%d" % new_level
-
+## 更新战意攻防数值富文本。
 func _update_morale_value_text(attack: int, defense: int, required: int) -> void:
 	var total: int = attack + defense
 	var text: String = "[color=#CC33CC]%d[/color]+[color=#3366CC]%d[/color]=[color=#AA66FF]%d[/color]/[color=#AA66FF]%d[/color]" % [attack, defense, total, required]
 	morale_value_label.text = text
 	morale_value_label.bbcode_enabled = true
-
+## 根据战意等级获取升级所需总值。
 func _get_morale_required(level: int) -> int:
 	if level < UPGRADE_REQUIREMENTS.size():
 		return UPGRADE_REQUIREMENTS[level]
 	return 0
-
-## 战意进度条动画（模仿 HP 条）
+## 应用战意进度条动画（容量调整与颜色闪烁）。
 func _apply_morale_animation(old_attack: int, old_defense: int, old_required: int, new_attack: int, new_defense: int, new_required: int) -> void:
 	# 先调整容量，新格子初始透明，移除多余格子
 	_adjust_morale_bar_capacity(new_required)
@@ -212,30 +255,30 @@ func _apply_morale_animation(old_attack: int, old_defense: int, old_required: in
 			old_color = _get_morale_block_color(i, old_attack, old_defense, old_required)
 		if old_color != new_color:
 			_start_morale_block_blink(block, old_color, new_color)
-
+## 获取指定索引战意块的颜色。
 func _get_morale_block_color(index: int, attack: int, defense: int, required: int) -> Color:
 	if required <= 0:
 		return Color.TRANSPARENT
-	var total :int = attack + defense
+	var total: int = attack + defense
 	if total >= required:
-		var is_filled :bool = index < attack or index >= required - defense
+		var is_filled: bool = index < attack or index >= required - defense
 		return COLOR_MORALE_FULL if is_filled else Color.TRANSPARENT
 	if index < attack:
 		return COLOR_MORALE_ATTACK
 	if index >= required - defense:
 		return COLOR_MORALE_DEFENSE
 	return Color.TRANSPARENT
-## 战意格子闪烁
+## 战意块颜色闪烁。
 func _start_morale_block_blink(block: Panel, from_color: Color, to_color: Color) -> void:
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	stylebox.bg_color = from_color
 	UIAnimationUtils.blink_stylebox_bg_color(block, from_color, to_color, MORALE_BLINK_DURATION)
-
+## 清除所有战意块。
 func _clear_morale_blocks() -> void:
 	for block in _morale_blocks:
 		block.queue_free()
 	_morale_blocks.clear()
-
+## 调整战意条容量至目标值。
 func _adjust_morale_bar_capacity(target_max: int) -> void:
 	if target_max <= 0:
 		_clear_morale_blocks()
@@ -259,7 +302,7 @@ func _adjust_morale_bar_capacity(target_max: int) -> void:
 			var block: Panel = _morale_blocks.pop_back()
 			block.queue_free()
 		_relayout_morale_blocks()
-
+## 重新布局战意块。
 func _relayout_morale_blocks() -> void:
 	if _cached_required_total <= 0:
 		return
@@ -268,7 +311,7 @@ func _relayout_morale_blocks() -> void:
 		var block: Panel = _morale_blocks[i]
 		block.size = Vector2(block_width * MORALE_BLOCK_SCALE, morale_fill_background.size.y * MORALE_BLOCK_SCALE)
 		block.position = Vector2(i * block_width, 0)
-
+## 根据攻防值直接填充战意块颜色（无动画）。
 func _fill_morale_blocks(attack: int, defense: int, required: int) -> void:
 	if required <= 0:
 		return
@@ -277,6 +320,7 @@ func _fill_morale_blocks(attack: int, defense: int, required: int) -> void:
 		var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 		stylebox.bg_color = _get_morale_block_color(i, attack, defense, required)
 # ==================== HP 动画（已修复布局问题） ====================
+## 应用 HP 条动画，处理容量变化与填充状态变化。
 func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
@@ -305,7 +349,7 @@ func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 			var start: int = max(0, min(clamped_old_cur, clamped_new_cur))
 			var end: int = max(0, max(clamped_old_cur, clamped_new_cur) - 1)
 			_animate_hp_range(start, end, new_cur < old_cur, new_max)
-
+## 动画化 HP 块范围内颜色变化。
 func _animate_hp_range(start: int, end: int, is_decrease: bool, limit: int) -> void:
 	start = max(0, start)
 	if start > end:
@@ -317,7 +361,7 @@ func _animate_hp_range(start: int, end: int, is_decrease: bool, limit: int) -> v
 		var from_color: Color = COLOR_HP_CURRENT if is_decrease else COLOR_HP_LOST
 		var to_color: Color = COLOR_HP_LOST if is_decrease else COLOR_HP_CURRENT
 		_start_hp_block_blink(block, from_color, to_color)
-
+## 调整 HP 条容量至目标值。
 func _adjust_hp_bar_capacity(target_max: int, new_cur: int) -> void:
 	var current: int = _hp_blocks.size()
 	if target_max > current:
@@ -337,7 +381,7 @@ func _adjust_hp_bar_capacity(target_max: int, new_cur: int) -> void:
 			var block: Panel = _hp_blocks.pop_back()
 			block.queue_free()
 		_relayout_hp_blocks(target_max)
-
+## 重新布局 HP 块。
 func _relayout_hp_blocks(total_blocks: int) -> void:
 	if total_blocks <= 0:
 		return
@@ -346,12 +390,12 @@ func _relayout_hp_blocks(total_blocks: int) -> void:
 		var block: Panel = _hp_blocks[i]
 		block.size = Vector2(block_width * HP_BLOCK_SCALE, hp_fill_background.size.y * HP_BLOCK_SCALE)
 		block.position = Vector2(i * block_width, 0)
-
+## HP 块颜色闪烁。
 func _start_hp_block_blink(block: Panel, from_color: Color, to_color: Color) -> void:
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	stylebox.bg_color = from_color
 	UIAnimationUtils.blink_stylebox_bg_color(block, from_color, to_color, HP_BLINK_DURATION)
-
+## HP 块特殊闪烁（用于容量缩减时保留块）。
 func _start_hp_block_special_blink(block: Panel, target_color: Color) -> void:
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	var start_color: Color = stylebox.bg_color
@@ -361,8 +405,8 @@ func _start_hp_block_special_blink(block: Panel, target_color: Color) -> void:
 	tween.tween_property(stylebox, ^"bg_color", target_color, HP_BLINK_DURATION)
 	tween.tween_property(stylebox, ^"bg_color", transparent, HP_BLINK_DURATION)
 	tween.tween_property(stylebox, ^"bg_color", target_color, HP_BLINK_DURATION)
-
 # ==================== MP 动画 ====================
+## 应用 MP 条动画，处理容量变化与填充状态变化。
 func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
@@ -391,7 +435,7 @@ func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 			var start: int = max(0, min(clamped_old_cur, clamped_new_cur))
 			var end: int = max(0, max(clamped_old_cur, clamped_new_cur) - 1)
 			_animate_mp_range(start, end, new_cur < old_cur, new_max)
-
+## 动画化 MP 点范围内颜色变化。
 func _animate_mp_range(start: int, end: int, is_decrease: bool, limit: int) -> void:
 	start = max(0, start)
 	if start > end:
@@ -404,7 +448,7 @@ func _animate_mp_range(start: int, end: int, is_decrease: bool, limit: int) -> v
 		var from_color: Color = COLOR_MP_CURRENT if is_decrease else COLOR_MP_LOST
 		var to_color: Color = COLOR_MP_LOST if is_decrease else COLOR_MP_CURRENT
 		_start_mp_dot_blink(dot, from_color, to_color)
-
+## 确保 MP 单位容器容量足够。
 func _ensure_mp_capacity(target_max: int) -> void:
 	var needed: int = ceili(float(target_max) / float(MP_DOTS_PER_UNIT))
 	while _mp_units.size() < needed:
@@ -418,7 +462,7 @@ func _ensure_mp_capacity(target_max: int) -> void:
 				color_dot.visible = true
 		mp_container.add_child(unit)
 		_mp_units.append(unit)
-
+## 获取所有 MP 点。
 func _get_all_mp_dots() -> Array[ColorRect]:
 	var dots: Array[ColorRect] = []
 	for unit in _mp_units:
@@ -427,11 +471,11 @@ func _get_all_mp_dots() -> Array[ColorRect]:
 			for dot in container.get_children():
 				dots.append(dot as ColorRect)
 	return dots
-
+## MP 点颜色闪烁。
 func _start_mp_dot_blink(dot: ColorRect, from_color: Color, to_color: Color) -> void:
 	dot.color = from_color
 	UIAnimationUtils.blink_color(dot, from_color, to_color, MP_BLINK_DURATION)
-
+## MP 点淡出动画，完成后隐藏空的 MP 单位。
 func _start_mp_dot_fade_out(dot: ColorRect, dot_index: int, new_max: int) -> void:
 	var tween: Tween = create_tween()
 	tween.tween_property(dot, ^"color", Color.TRANSPARENT, MP_DOT_FADE_OUT_DURATION)
@@ -452,14 +496,14 @@ func _start_mp_dot_fade_out(dot: ColorRect, dot_index: int, new_max: int) -> voi
 		if not any_visible:
 			unit.visible = false
 	, CONNECT_ONE_SHOT)
-
+## 查找点所属的 MP 单位。
 func _find_unit_of_dot(dot: ColorRect) -> Control:
 	for unit in _mp_units:
 		var container: Control = unit.get_child(0) as Control
 		if container and dot in container.get_children():
 			return unit
 	return null
-
+## 触发玩家受伤事件。
 func _trigger_damage_event(hp_damage: int, mp_damage: int) -> void:
 	if _cached_player_id == -1:
 		return
@@ -472,12 +516,12 @@ func _trigger_damage_event(hp_damage: int, mp_damage: int) -> void:
 		event.config[&"hp_damage"] = hp_damage
 		event.config[&"mp_damage"] = mp_damage
 		area.tween_update(event)
-
+## 更新 HP 数值标签。
 func _update_hp_label(current: int, max_hp: int) -> void:
 	hp_label.text = "%d / %d" % [current, max_hp]
-
+## 更新 MP 数值标签。
 func _update_mp_label(current: int, max_mp: int) -> void:
 	mp_label.text = "%d / %d" % [current, max_mp]
-
+## 更新 AP 数值标签。
 func _update_ap_display(current: int, init_ap: int) -> void:
 	ap_label.text = "%d / %d" % [current, init_ap]

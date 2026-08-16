@@ -1,6 +1,5 @@
 ## 闪电连接线的数据与动画类，负责存储曲线点集、执行电光闪烁动画。
 extends RefCounted
-class_name ArrowLine
 
 ## 曲线局部坐标点集
 var points: PackedVector2Array = PackedVector2Array()
@@ -18,7 +17,6 @@ var inner_width: float = 2.0
 var outer_anim_time: float = 0.5
 ## 内线淡入时长
 var inner_fadein_time: float = 0.1
-
 ## 当前外线颜色
 var outer_color: Color = Color.WHITE
 ## 当前外线宽度
@@ -91,7 +89,6 @@ static func create_smooth_curve(start: Vector2, end: Vector2, start_tangent_up: 
 	var start_out: Vector2
 	var end_in: Vector2
 	if is_same_direction:
-		# 切线向上时 sign=-1，向下时 sign=1
 		var sign: float = -1.0 if start_tangent_up else 1.0
 		var dy: float = end.y - start.y
 		var abs_dy: float = abs(dy)

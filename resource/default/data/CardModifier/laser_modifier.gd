@@ -1,7 +1,7 @@
 ## 激光修饰器：压制时对被压制牌造成「摧毁4」并摧毁自身。
 extends Modifier
 
-const ComponentDestroyX: Script = preload("res://resource/default/data/Component/ComponentDestroyX.gd")
+const ComponentDestroyX: Script = preload("Component/ComponentDestroyX.gd")
 @export var destroy_x: int = 4
 
 func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:

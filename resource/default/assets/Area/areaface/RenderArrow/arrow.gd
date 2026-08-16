@@ -1,6 +1,5 @@
 ## 单箭头控件：节点位置为箭头尖端，尾部在目标反方向，矩形尾部中心即线的起终点。
 extends Control
-class_name ArrowNode
 
 enum State { HIDDEN, TRANSITION, STABLE }
 
