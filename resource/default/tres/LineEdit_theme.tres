@@ -780,7 +780,7 @@ corner_radius_bottom_left = 4
 corner_detail = 6
 
 [resource]
-LineEdit/colors/caret_color = Color(0.431373, 0.431373, 0.431373, 0)
+LineEdit/colors/caret_color = Color(0.43137255, 0.43137255, 0.43137255, 0)
 LineEdit/colors/clear_button_color = Color(0.875, 0.875, 0.875, 1)
 LineEdit/colors/clear_button_color_pressed = Color(1, 1, 1, 1)
 LineEdit/colors/font_color = Color(0.875, 0.875, 0.875, 1)
