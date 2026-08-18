@@ -1,8 +1,12 @@
 [gd_scene format=3 uid="uid://ld25ivvpfrx8"]
 
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/rgb_shift_distortion.gdshader" id="1_dri28"]
-[ext_resource type="Script" uid="uid://d1u5il71urrcj" path="res://resource/default/assets/Area/areaface/player_status_face.gd" id="1_dvwbm"]
+[ext_resource type="Script" uid="uid://d1u5il71urrcj" path="res://resource/default/assets/Area/areaface/PlayerStatus/player_status_face.gd" id="1_dvwbm"]
 [ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/flash_color.gdshader" id="1_j7r54"]
+[ext_resource type="Script" uid="uid://cgq5mj4swuwa2" path="res://resource/default/assets/Area/areaface/PlayerStatus/block_indicator.gd" id="3_x2uyb"]
+[ext_resource type="Script" uid="uid://b1dob454nxdax" path="res://resource/default/assets/Area/areaface/PlayerStatus/dot_indicator.gd" id="5_k6e0a"]
+[ext_resource type="Script" uid="uid://cfjpkvg8bm4fi" path="res://resource/default/assets/Area/areaface/PlayerStatus/dot_unit.gd" id="6_1w0bs"]
+[ext_resource type="Script" uid="uid://ci0qv2rcc5l3b" path="res://resource/default/assets/Area/areaface/PlayerStatus/text_icon_indicator.gd" id="7_7tnk2"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ggemd"]
 shader = ExtResource("1_j7r54")
@@ -49,14 +53,6 @@ anti_aliasing = false
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_j7r54"]
 shader = ExtResource("1_dri28")
 shader_parameter/distortion_intensity = 3.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kwfkx"]
-bg_color = Color(0.605931, 0.40202, 0, 0.517647)
-border_color = Color(0.992157, 0.113725, 0, 1)
-corner_detail = 1
-shadow_color = Color(1, 1, 1, 0.635294)
-shadow_size = 2
-anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j7r54"]
 bg_color = Color(0.908206, 0.956616, 1.54018e-06, 1)
@@ -105,18 +101,6 @@ offset_right = 113.0
 offset_bottom = 223.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ggemd")
 
-[node name="MPLabel" type="Label" parent="." unique_id=451216774]
-layout_mode = 0
-offset_left = 36.0
-offset_top = 178.0
-offset_right = 496.0
-offset_bottom = 438.0
-scale = Vector2(0.1, 0.1)
-theme_override_colors/font_color = Color(0, 1, 1, 1)
-theme_override_font_sizes/font_size = 80
-text = "-"
-horizontal_alignment = 1
-
 [node name="HPBar" type="Control" parent="." unique_id=825881445]
 layout_mode = 1
 anchors_preset = 0
@@ -126,8 +110,9 @@ offset_right = 16.0
 offset_bottom = 203.0
 rotation = -1.5708
 mouse_filter = 2
+script = ExtResource("3_x2uyb")
 
-[node name="HPFillBackground" type="Panel" parent="HPBar" unique_id=1897376245]
+[node name="FillBackground" type="Panel" parent="HPBar" unique_id=1897376245]
 use_parent_material = true
 layout_mode = 0
 offset_left = 26.0
@@ -135,15 +120,7 @@ offset_right = 187.0
 offset_bottom = 21.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dri28")
 
-[node name="HPFill" type="Panel" parent="HPBar/HPFillBackground" unique_id=1062224499]
-material = SubResource("ShaderMaterial_dri28")
-use_parent_material = true
-layout_mode = 0
-offset_right = 2.0
-offset_bottom = 17.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_dvwbm")
-
-[node name="HPLabel" type="Label" parent="HPBar" unique_id=316275878]
+[node name="ValueLabel" type="Label" parent="HPBar" unique_id=316275878]
 layout_mode = 0
 offset_left = 25.0
 offset_top = -13.0
@@ -156,7 +133,22 @@ theme_override_font_sizes/font_size = 80
 text = "-"
 horizontal_alignment = 1
 
-[node name="MPContainer" type="HBoxContainer" parent="." unique_id=3291562]
+[node name="Template" type="Panel" parent="HPBar" unique_id=1062224499]
+material = SubResource("ShaderMaterial_dri28")
+use_parent_material = true
+layout_mode = 0
+offset_left = 26.0
+offset_right = 28.0
+offset_bottom = 17.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dvwbm")
+
+[node name="MPContainer" type="Control" parent="." unique_id=1871222108]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("5_k6e0a")
+
+[node name="Container" type="HBoxContainer" parent="MPContainer" unique_id=3291562]
 layout_mode = 0
 offset_left = 45.0
 offset_top = 168.0
@@ -164,13 +156,31 @@ offset_right = 242.0
 offset_bottom = 188.0
 rotation = -1.5708
 
-[node name="MPUnit" type="Control" parent="MPContainer" unique_id=344167776]
+[node name="ValueLabel" type="Label" parent="MPContainer" unique_id=1763094863]
+layout_mode = 0
+offset_left = 44.999905
+offset_top = 178.0
+offset_right = 315.00085
+offset_bottom = 378.0
+scale = Vector2(0.1, 0.1)
+theme_override_colors/font_color = Color(0, 1, 0.7921569, 1)
+theme_override_font_sizes/font_size = 80
+text = "-"
+horizontal_alignment = 1
+
+[node name="Template" type="Control" parent="MPContainer" unique_id=344167776]
+visible = false
 material = SubResource("ShaderMaterial_j7r54")
 use_parent_material = true
 custom_minimum_size = Vector2(20, 20)
-layout_mode = 2
+anchors_preset = 0
+offset_left = 45.0
+offset_top = 168.0
+offset_right = 65.0
+offset_bottom = 188.0
+script = ExtResource("6_1w0bs")
 
-[node name="MPFourInOneUnit" type="GridContainer" parent="MPContainer/MPUnit" unique_id=2101998059]
+[node name="DotContainer" type="GridContainer" parent="MPContainer/Template" unique_id=2101998059]
 layout_mode = 0
 offset_left = -19.0
 offset_top = -6.0
@@ -181,23 +191,23 @@ scale = Vector2(-0.3, 0.3)
 pivot_offset = Vector2(19.2, 19.2)
 columns = 2
 
-[node name="ColorRect" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit" unique_id=2000440283]
+[node name="ColorRect" type="ColorRect" parent="MPContainer/Template/DotContainer" unique_id=2000440283]
 use_parent_material = true
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 color = Color(0, 1, 1, 1)
 
-[node name="ColorRect2" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit" unique_id=1487964914]
+[node name="ColorRect2" type="ColorRect" parent="MPContainer/Template/DotContainer" unique_id=1487964914]
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 color = Color(0, 1, 1, 1)
 
-[node name="ColorRect3" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit" unique_id=663503118]
+[node name="ColorRect3" type="ColorRect" parent="MPContainer/Template/DotContainer" unique_id=663503118]
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 color = Color(0, 1, 1, 1)
 
-[node name="ColorRect4" type="ColorRect" parent="MPContainer/MPUnit/MPFourInOneUnit" unique_id=1133305394]
+[node name="ColorRect4" type="ColorRect" parent="MPContainer/Template/DotContainer" unique_id=1133305394]
 custom_minimum_size = Vector2(18, 18)
 layout_mode = 2
 color = Color(0, 1, 1, 1)
@@ -209,17 +219,9 @@ offset_top = 137.0
 offset_right = 5.0
 offset_bottom = 137.0
 mouse_filter = 2
+script = ExtResource("7_7tnk2")
 
-[node name="MPGound" type="Panel" parent="APContainer" unique_id=144366497]
-visible = false
-layout_mode = 0
-offset_left = 12.0
-offset_top = 58.0
-offset_right = 102.0
-offset_bottom = 84.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_kwfkx")
-
-[node name="APIcon" type="Panel" parent="APContainer" unique_id=1897480467]
+[node name="Icon" type="Panel" parent="APContainer" unique_id=1897480467]
 use_parent_material = true
 layout_mode = 0
 offset_left = 13.0
@@ -228,7 +230,8 @@ offset_right = 28.0
 offset_bottom = 78.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_j7r54")
 
-[node name="APLabel" type="Label" parent="APContainer" unique_id=370512949]
+[node name="Label" type="Label" parent="APContainer" unique_id=370512949]
+visible = false
 layout_mode = 0
 offset_left = 47.0
 offset_top = 53.0
@@ -249,8 +252,9 @@ offset_right = -7.0
 offset_bottom = 203.0
 rotation = -1.5708
 mouse_filter = 2
+script = ExtResource("3_x2uyb")
 
-[node name="MoraleFillBackground" type="Panel" parent="MoraleBar" unique_id=60687949]
+[node name="FillBackground" type="Panel" parent="MoraleBar" unique_id=60687949]
 use_parent_material = true
 layout_mode = 0
 offset_left = 25.9997
@@ -259,15 +263,7 @@ offset_right = 187.0
 offset_bottom = 115.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_m8l5k")
 
-[node name="MoraleFillTemplate" type="Panel" parent="MoraleBar/MoraleFillBackground" unique_id=1411012004]
-material = SubResource("ShaderMaterial_dri28")
-use_parent_material = true
-layout_mode = 0
-offset_right = 2.0
-offset_bottom = 17.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_2skah")
-
-[node name="MoraleLevelLabel" type="Label" parent="MoraleBar" unique_id=820599670]
+[node name="ValueLabel" type="Label" parent="MoraleBar" unique_id=820599670]
 layout_mode = 0
 offset_left = 26.9997
 offset_top = 77.0001
@@ -291,3 +287,13 @@ scale = Vector2(0.1, 0.1)
 theme_override_font_sizes/normal_font_size = 120
 text = "-"
 horizontal_alignment = 1
+
+[node name="Template" type="Panel" parent="MoraleBar" unique_id=1411012004]
+material = SubResource("ShaderMaterial_dri28")
+use_parent_material = true
+layout_mode = 0
+offset_left = 25.999695
+offset_top = 94.0001
+offset_right = 27.999695
+offset_bottom = 111.0001
+theme_override_styles/panel = SubResource("StyleBoxFlat_2skah")

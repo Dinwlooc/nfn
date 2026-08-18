@@ -1,7 +1,7 @@
-[gd_scene load_steps=8 format=3 uid="uid://s0d734yjh7uc"]
+[gd_scene format=3 uid="uid://s0d734yjh7uc"]
 
 [ext_resource type="Script" uid="uid://inhy17k8yahq" path="res://resource/default/assets/Character/charactercard/charactertargetcard.gd" id="1_1lsym"]
-[ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://resource/default/assets/Area/areaface/areaface_self_properties.tscn" id="2_f0c7v"]
+[ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://resource/default/assets/Area/areaface/PlayerStatus/areaface_self_properties.tscn" id="2_f0c7v"]
 [ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/areaface_denfence.tscn" id="3_ct3wd"]
 [ext_resource type="PackedScene" uid="uid://bjdp8ibnlaew1" path="res://resource/default/assets/Character/charactercard/character_container.tscn" id="4_ct3wd"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="4_gn4qo"]
