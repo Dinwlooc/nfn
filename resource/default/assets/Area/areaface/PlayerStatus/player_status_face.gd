@@ -65,32 +65,20 @@ func _process(_delta: float) -> void:
 		_tremor_anim.update()
 	if _morale_breath_anim:
 		_morale_breath_anim.update()
-	# ---- 流血逻辑（取模方式） ----
 	if not _bleed_active or _cached_hp_current <= 0:
 		_bleed_frame_counter = 0
 		return
 	_bleed_frame_counter += 1
 	if _bleed_frame_counter % _bleed_interval != 0:
 		return
-	# 触发发射
 	var available: int = _cached_hp_current
-	var select_count: int = min(available, C.BLEED_SELECT_COUNT)
-	var block_indices: Array[int] = []
-	while block_indices.size() < select_count:
-		var idx: int = randi_range(0, available - 1)
-		if not idx in block_indices:
-			block_indices.append(idx)
-	var positions: Array[Vector2] = []
-	var directions: Array[int] = []
-	for idx in block_indices:
-		var block: Panel = hp_indicator.blocks[idx]
-		var dir: int = 1 if randf() > 0.5 else -1
-		directions.append(dir)
-		var pos_x: float = block.global_position.x + (block.size.x if dir == 1 else 0.0)
-		var pos: Vector2 = Vector2(pos_x, block.global_position.y + block.size.y * 0.5)
-		positions.append(pos)
+	var idx: int = randi_range(0, available - 1)
+	var block: Panel = hp_indicator.blocks[idx]
+	var dir: int = 1 if randf() > 0.5 else -1
+	var pos_x: float = block.global_position.x + (block.size.x if dir == 1 else 0.0)
+	var pos: Vector2 = Vector2(pos_x, block.global_position.y + block.size.y * 0.5)
 	var ratio: float = float(_cached_hp_current) / float(_cached_hp_max) if _cached_hp_max > 0 else 0.0
-	particle_manager.emit_blood_bleed_batch(positions, directions, ratio)
+	particle_manager.emit_blood_bleed_single(pos, dir, ratio)
 
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
@@ -254,7 +242,13 @@ func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 		if old_color == new_color:
 			continue
 		if use_gradient:
-			hp_indicator.set_block_color_gradient(i, new_color)
+			var flash_color: Color
+			if new_cur > old_cur:
+				flash_color = Color.WHITE
+			else:
+				flash_color = Color.BLACK
+			# 使用常量配置的两步渐变参数
+			hp_indicator.set_block_color_two_step(i, flash_color, new_color, C.HP_TWO_STEP_FLASH_DURATION, C.HP_TWO_STEP_GRADIENT_DURATION)
 		else:
 			hp_indicator.blink_block(i, old_color, new_color, blink_duration)
 	hp_indicator.set_background_ratio(ratio, true)
@@ -265,14 +259,18 @@ func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 		_breath_anim.set_active(false)
 		_tremor_anim.set_active(clamped_new_cur > 0)
 		_tremor_anim.update_amplitude_by_hp(clamped_new_cur, new_max)
-	# 受击失血粒子
 	var hp_loss: int = clamped_old_cur - clamped_new_cur
 	if hp_loss > 0:
-		var idx: int = clamped_new_cur
-		if idx >= 0 and idx < hp_indicator.blocks.size():
-			var block: Panel = hp_indicator.blocks[idx]
-			var pos: Vector2 = block.global_position + Vector2(block.size.x, block.size.y * 0.5)
-			particle_manager.emit_blood_hit(pos, hp_loss, ratio)
+		if clamped_new_cur == 0:
+			var first_block: Panel = hp_indicator.blocks[0]
+			var pos: Vector2 = first_block.global_position + Vector2(first_block.size.x * 0.5, first_block.size.y)
+			particle_manager.emit_blood_gush(pos)
+		else:
+			var idx: int = clamped_new_cur
+			if idx >= 0 and idx < hp_indicator.blocks.size():
+				var block: Panel = hp_indicator.blocks[idx]
+				var pos: Vector2 = block.global_position + Vector2(block.size.x, block.size.y * 0.5)
+				particle_manager.emit_blood_hit(pos, hp_loss, ratio)
 
 ## ---- MP 动画 ----
 func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
@@ -379,7 +377,7 @@ func _update_bleed_state() -> void:
 	var ratio: float = float(_cached_hp_current) / float(_cached_hp_max)
 	if _cached_hp_current > 0 and ratio <= 0.5:
 		_bleed_active = true
-		var t: float = ratio * 2.0   # 0~1
+		var t: float = ratio * 2.0
 		_bleed_interval = int(lerp(float(C.BLEED_INTERVAL_AT_0), float(C.BLEED_INTERVAL_AT_50), t))
 	else:
 		_bleed_active = false

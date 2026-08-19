@@ -16,15 +16,16 @@ const HIT_SPEED_MAX_MAX: float = 800.0
 const HIT_SPREAD_MIN: float = 20.0
 const HIT_SPREAD_MAX: float = 180.0
 
-## ---- 流血参数 ----
-const BLEED_COUNT_MIN: int = 2
-const BLEED_COUNT_MAX: int = 4
+## ---- 流血参数（单发射器） ----
+const BLEED_COUNT_MIN: int = 1
+const BLEED_COUNT_MAX: int = 1
 const BLEED_SPEED_MIN: float = 30.0
 const BLEED_SPEED_MAX: float = 100.0
 const BLEED_SPREAD: float = 30.0
 const BLEED_INTERVAL_AT_50: int = 240   # 血量50%时间隔帧数
-const BLEED_INTERVAL_AT_0: int = 60    # 血量0%时间隔帧数（最快）
-const BLEED_SELECT_COUNT: int = 4      # 每次流血选取的最大块数
+const BLEED_INTERVAL_AT_0: int = 60     # 血量0%时间隔帧数（最快）
+const BLEED_LIFETIME: float = 0.5       # 独立寿命
+const BLEED_DAMPING: float = 100.0      # 速度阻尼（每秒速度减少量）
 
 ## ---- 升级粒子 ----
 const LEVELUP_PARTICLE_COUNT: int = 40
@@ -35,7 +36,7 @@ const LEVELUP_PARTICLE_SCALE_MIN: float = 2.0    # 粒子最小尺寸
 const LEVELUP_PARTICLE_SCALE_MAX: float = 6.0    # 粒子最大尺寸
 const LEVELUP_DAMPING: float = 150.0             # 速度阻尼（每秒速度减少量）
 
-## ---- HP/MP/战意颜色等UI常量（从原文件移出） ----
+## ---- HP/MP/战意颜色等UI常量 ----
 const COLOR_HP_CURRENT: Color = Color(0.99, 0.1, 0.0, 0.7)
 const COLOR_HP_LOST: Color = Color(0.5, 0.5, 0.5, 0.7)
 const COLOR_MP_CURRENT: Color = Color(0, 1.0, 1.0, 0.7)
@@ -54,3 +55,7 @@ const MORALE_BLOCK_SCALE: float = 0.8
 const MORALE_BLINK_DURATION: float = 0.15
 const UPGRADE_REQUIREMENTS: Array[int] = [7, 12, 15, 18]
 const MORALE_NEW_BLOCK_FADE_DURATION: float = 1.0
+
+## ---- 两步渐变参数（生命值 > 50% 时使用） ----
+const HP_TWO_STEP_FLASH_DURATION: float = 0.2
+const HP_TWO_STEP_GRADIENT_DURATION: float = 0.5

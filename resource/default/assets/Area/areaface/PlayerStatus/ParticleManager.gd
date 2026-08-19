@@ -19,19 +19,16 @@ class ParticleConfig:
 
 ## ---- 发射器 ----
 var _hit_emitter: GPUParticles2D = null
-var _bleed_emitters: Array[GPUParticles2D] = []   # 4个流血发射器
-var _bleed_index: int = 0
+var _bleed_emitter: GPUParticles2D = null          # 改为单个
 var _levelup_emitter: GPUParticles2D = null
 
 func _ready() -> void:
 	_hit_emitter = _create_blood_particle()
 	_hit_emitter.emitting = false
 	add_child(_hit_emitter)
-	for i in 4:
-		var p: GPUParticles2D = _create_blood_particle()
-		p.emitting = false
-		add_child(p)
-		_bleed_emitters.append(p)
+	_bleed_emitter = _create_bleed_particle()       # 专用流血发射器
+	_bleed_emitter.emitting = false
+	add_child(_bleed_emitter)
 	_levelup_emitter = _create_levelup_particle()
 	_levelup_emitter.emitting = false
 	add_child(_levelup_emitter)
@@ -47,21 +44,25 @@ func emit_blood_hit(global_pos: Vector2, hp_loss: int, hp_ratio: float) -> void:
 	var spread: float = lerp(C.HIT_SPREAD_MIN, C.HIT_SPREAD_MAX, 1.0 - hp_ratio)
 	_configure_and_emit(_hit_emitter, global_pos, count, speed_min, speed_max, spread, Vector3(1.0, 0.0, 0.0))
 
-## 批量发射流血粒子（每个块独立方向）
-func emit_blood_bleed_batch(positions: Array[Vector2], directions: Array[int], hp_ratio: float) -> void:
-	if positions.is_empty() or _bleed_emitters.is_empty():
+## 井喷粒子（血量归零时最大量喷射，速度最小值归零）
+func emit_blood_gush(global_pos: Vector2) -> void:
+	if not _hit_emitter:
 		return
-	var count: int = min(positions.size(), _bleed_emitters.size())
-	var particle_count: int = int(lerp(float(C.BLEED_COUNT_MIN), float(C.BLEED_COUNT_MAX), 1.0 - hp_ratio))
-	particle_count = clamp(particle_count, C.BLEED_COUNT_MIN, C.BLEED_COUNT_MAX)
+	var count: int = C.HIT_COUNT_MAX
+	var speed_min: float = 0.0
+	var speed_max: float = C.HIT_SPEED_MAX_MAX
+	var spread: float = C.HIT_SPREAD_MAX
+	_configure_and_emit(_hit_emitter, global_pos, count, speed_min, speed_max, spread, Vector3(1.0, 0.0, 0.0))
+## 单次流血发射（只选一个块）
+func emit_blood_bleed_single(global_pos: Vector2, direction: int, hp_ratio: float) -> void:
+	if not _bleed_emitter:
+		return
+	var count: int = int(lerp(float(C.BLEED_COUNT_MIN), float(C.BLEED_COUNT_MAX), 1.0 - hp_ratio))
+	count = clamp(count, C.BLEED_COUNT_MIN, C.BLEED_COUNT_MAX)
 	var speed: float = lerp(C.BLEED_SPEED_MIN, C.BLEED_SPEED_MAX, 1.0 - hp_ratio)
 	var spread: float = C.BLEED_SPREAD
-	for i in range(count):
-		var emitter: GPUParticles2D = _bleed_emitters[_bleed_index]
-		_bleed_index = (_bleed_index + 1) % _bleed_emitters.size()
-		var dir: float = 1.0 if directions[i] == 1 else -1.0
-		var pos: Vector2 = positions[i]
-		_configure_and_emit(emitter, pos, particle_count, speed * 0.5, speed, spread, Vector3(dir, -1.5, 0.0))
+	var dir_vec: Vector3 = Vector3(float(direction), -1.5, 0.0)
+	_configure_and_emit(_bleed_emitter, global_pos, count, speed * 0.5, speed, spread, dir_vec)
 
 ## 发射升级特效粒子（在最后一个战意格位置，外部已传位置）
 func emit_level_up(global_pos: Vector2) -> void:
@@ -127,6 +128,28 @@ func _create_blood_particle() -> GPUParticles2D:
 	config.scale_min = C.BLOOD_PARTICLE_SIZE
 	config.scale_max = C.BLOOD_PARTICLE_SIZE
 	return _create_particle(1, C.BLOOD_LIFETIME, config)
+
+func _create_bleed_particle() -> GPUParticles2D:
+	var gradient: Gradient = Gradient.new()
+	gradient.colors = [Color.RED, Color.DARK_RED]
+	gradient.offsets = [0.0, 1.0]
+	var color_ramp: GradientTexture1D = GradientTexture1D.new()
+	color_ramp.gradient = gradient
+	var config: ParticleConfig = ParticleConfig.new()
+	config.direction = Vector3(1.0, 0.0, 0.0)
+	config.spread = 30.0
+	config.gravity = C.BLOOD_GRAVITY
+	config.velocity_min = 40.0
+	config.velocity_max = 150.0
+	config.color_ramp = color_ramp
+	config.scale_min = C.BLOOD_PARTICLE_SIZE
+	config.scale_max = C.BLOOD_PARTICLE_SIZE
+	var p: GPUParticles2D = _create_particle(1, C.BLEED_LIFETIME, config)
+	var mat: ParticleProcessMaterial = p.process_material as ParticleProcessMaterial
+	if mat:
+		mat.damping_max = C.BLEED_DAMPING
+		mat.damping_min = C.BLEED_DAMPING
+	return p
 
 func _create_levelup_particle() -> GPUParticles2D:
 	# 紫色渐变至白色

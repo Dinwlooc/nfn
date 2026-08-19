@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://yi3uwit7y1dv" path="res://resource/default/assets/Area/areaface/AreaHand/areaface_hand.gd" id="1_08dya"]
 
-[node name="AreaFaceHand" type="Control"]
+[node name="AreaFaceHand" type="Control" unique_id=1700898875]
 layout_mode = 3
 anchor_left = 0.179
 anchor_top = 0.727
@@ -16,20 +16,20 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_08dya")
 
-[node name="UIContainer" type="Control" parent="."]
+[node name="UIContainer" type="Control" parent="." unique_id=665256330]
 anchors_preset = 0
 offset_left = 54.0
 offset_top = 45.0
 offset_right = 573.0
 offset_bottom = 82.0
 
-[node name="QuickSortUI" type="Panel" parent="UIContainer"]
+[node name="QuickSortUI" type="Panel" parent="UIContainer" unique_id=2088255128]
 custom_minimum_size = Vector2(100, 20)
-layout_mode = 2
+layout_mode = 0
 offset_right = 100.0
 offset_bottom = 39.0
 
-[node name="QuickSortLabel" type="Label" parent="UIContainer/QuickSortUI"]
+[node name="QuickSortLabel" type="Label" parent="UIContainer/QuickSortUI" unique_id=453617069]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 39.0
@@ -37,21 +37,21 @@ text = "快速理牌"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="QuickSortButton" type="Button" parent="UIContainer/QuickSortUI"]
+[node name="QuickSortButton" type="Button" parent="UIContainer/QuickSortUI" unique_id=237052096]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 39.0
 action_mode = 0
 flat = true
 
-[node name="PlayCardUI" type="Panel" parent="UIContainer"]
+[node name="PlayCardUI" type="Panel" parent="UIContainer" unique_id=1871988109]
 custom_minimum_size = Vector2(100, 20)
-layout_mode = 2
+layout_mode = 0
 offset_left = 392.0
 offset_right = 492.0
 offset_bottom = 39.0
 
-[node name="PlayCardLabel" type="Label" parent="UIContainer/PlayCardUI"]
+[node name="PlayCardLabel" type="Label" parent="UIContainer/PlayCardUI" unique_id=1054114247]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 39.0
@@ -59,21 +59,21 @@ text = "打出"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PlayCardButton" type="Button" parent="UIContainer/PlayCardUI"]
+[node name="PlayCardButton" type="Button" parent="UIContainer/PlayCardUI" unique_id=1301830998]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 39.0
 action_mode = 0
 flat = true
 
-[node name="DiscardCardsUI" type="Panel" parent="UIContainer"]
+[node name="DiscardCardsUI" type="Panel" parent="UIContainer" unique_id=284439708]
 custom_minimum_size = Vector2(100, 20)
 layout_mode = 0
 offset_left = 515.0
 offset_right = 615.0
 offset_bottom = 39.0
 
-[node name="DiscardCardsLabel" type="Label" parent="UIContainer/DiscardCardsUI"]
+[node name="DiscardCardsLabel" type="Label" parent="UIContainer/DiscardCardsUI" unique_id=1079039908]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 39.0
@@ -81,21 +81,21 @@ text = "弃牌"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DiscardCardsButton" type="Button" parent="UIContainer/DiscardCardsUI"]
+[node name="DiscardCardsButton" type="Button" parent="UIContainer/DiscardCardsUI" unique_id=1641672542]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 39.0
 action_mode = 0
 flat = true
 
-[node name="AbandonResponseUI" type="Panel" parent="UIContainer"]
+[node name="AbandonResponseUI" type="Panel" parent="UIContainer" unique_id=1978038755]
 custom_minimum_size = Vector2(100, 20)
 layout_mode = 0
 offset_left = 635.0
 offset_right = 735.0
 offset_bottom = 39.0
 
-[node name="AbandonResponseLabel" type="Label" parent="UIContainer/AbandonResponseUI"]
+[node name="AbandonResponseLabel" type="Label" parent="UIContainer/AbandonResponseUI" unique_id=1555493864]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 39.0
@@ -103,7 +103,7 @@ text = "放弃响应"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="AbandonResponseButton" type="Button" parent="UIContainer/AbandonResponseUI"]
+[node name="AbandonResponseButton" type="Button" parent="UIContainer/AbandonResponseUI" unique_id=256939989]
 layout_mode = 0
 offset_right = 101.0
 offset_bottom = 39.0

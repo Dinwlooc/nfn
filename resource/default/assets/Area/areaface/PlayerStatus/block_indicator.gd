@@ -60,7 +60,6 @@ func set_capacity(new_max: int) -> void:
 func set_block_color(index: int, color: Color) -> void:
 	if index < 0 or index >= blocks.size():
 		return
-	# 如果有正在运行的动画，先终止
 	_cancel_block_animation(index)
 	block_base_colors[index] = color
 	var block: Panel = blocks[index]
@@ -82,6 +81,23 @@ func set_block_color_gradient(index: int, color: Color, duration: float = gradie
 		.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN_OUT)
 	tween.finished.connect(_on_color_animation_finished.bind(index), CONNECT_ONE_SHOT)
 
+## 两步渐变：先快速过渡到闪色，再渐变到目标色
+func set_block_color_two_step(index: int, flash_color: Color, target_color: Color, flash_duration: float = 0.05, gradient_duration: float = gradient_duration) -> void:
+	if index < 0 or index >= blocks.size():
+		return
+	_cancel_block_animation(index)
+	block_animating[index] = true
+	var block: Panel = blocks[index]
+	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
+	var tween: Tween = create_tween()
+	tween.tween_property(stylebox, ^"bg_color", flash_color, flash_duration) \
+		.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(stylebox, ^"bg_color", target_color, gradient_duration) \
+		.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN_OUT)
+	block_base_colors[index] = target_color
+	tween.finished.connect(_on_color_animation_finished.bind(index), CONNECT_ONE_SHOT)
+	_block_tweens[index] = tween
+
 ## 闪烁设置单个块的颜色（使用工具类，返回 Tween 并自动管理）。
 func blink_block(index: int, from_color: Color, to_color: Color, duration: float = blink_duration) -> void:
 	if index < 0 or index >= blocks.size():
@@ -92,10 +108,8 @@ func blink_block(index: int, from_color: Color, to_color: Color, duration: float
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	stylebox.bg_color = from_color
 	block_base_colors[index] = to_color
-	# 调用工具类，获取 Tween
 	var tween: Tween = UIAnimationUtils.blink_stylebox_bg_color(block, from_color, to_color, duration)
 	_block_tweens[index] = tween
-	# 连接完成信号，确保清理
 	tween.finished.connect(_on_blink_finished.bind(index), CONNECT_ONE_SHOT)
 
 func _on_color_animation_finished(index: int) -> void:
@@ -174,7 +188,6 @@ func _adjust_blocks(target_max: int) -> void:
 	elif target_max < current:
 		for i in range(target_max, current):
 			var block: Panel = blocks.pop_back()
-			# 取消该块的动画
 			var idx: int = blocks.size()
 			_cancel_block_animation(idx)
 			block.queue_free()

@@ -204,7 +204,6 @@ func reset() -> void:
 	_was_selected = false
 	if _current_tween and _current_tween.is_valid():
 		_current_tween.kill()
-	if character and character.has_method(&"stop_damage_animation"):
 		character.stop_damage_animation()
 	_revert_selected_effects()
 	character_container.position = _container_original_position

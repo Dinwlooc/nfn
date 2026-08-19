@@ -1,9 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://ct8jneqmxsdoa"]
+[gd_scene format=3 uid="uid://ct8jneqmxsdoa"]
 
 [ext_resource type="Script" uid="uid://6ohup1dhlali" path="res://resource/default/assets/Area/areaface/areaface_self.gd" id="1_fqk35"]
 [ext_resource type="PackedScene" uid="uid://bjdp8ibnlaew1" path="res://resource/default/assets/Character/charactercard/character_container.tscn" id="2_en3oj"]
 
-[node name="AreaFaceSelf" type="Control"]
+[node name="AreaFaceSelf" type="Control" unique_id=389224729]
 layout_mode = 3
 anchor_right = 0.127
 anchor_bottom = 0.402
@@ -14,14 +14,14 @@ pivot_offset = Vector2(102, 181)
 script = ExtResource("1_fqk35")
 metadata/_custom_type_script = "uid://btwt7f8flx66t"
 
-[node name="Backgound" type="ColorRect" parent="."]
+[node name="Backgound" type="ColorRect" parent="." unique_id=522271829]
 texture_filter = 1
 layout_mode = 0
 offset_right = 196.0
 offset_bottom = 344.0
 color = Color(0.968627, 0.482353, 0.219608, 0.411765)
 
-[node name="BackgoundCharacter" type="ColorRect" parent="."]
+[node name="BackgoundCharacter" type="ColorRect" parent="." unique_id=1893031539]
 texture_filter = 1
 clip_contents = true
 layout_mode = 1
@@ -34,10 +34,11 @@ offset_right = 184.308
 offset_bottom = 293.0
 color = Color(0.977015, 0.823146, 0.738518, 0.486275)
 
-[node name="CharacterContainer" parent="BackgoundCharacter" instance=ExtResource("2_en3oj")]
+[node name="CharacterContainer" parent="BackgoundCharacter" unique_id=1440807403 instance=ExtResource("2_en3oj")]
+layout_mode = 0
 mouse_filter = 2
 
-[node name="BackgoundAbility" type="ColorRect" parent="."]
+[node name="BackgoundAbility" type="ColorRect" parent="." unique_id=475639063]
 texture_filter = 1
 layout_mode = 0
 offset_left = 8.0
@@ -46,7 +47,7 @@ offset_right = 188.0
 offset_bottom = 341.0
 color = Color(1, 0.639216, 0.329412, 0.823529)
 
-[node name="SelectButton" type="Button" parent="."]
+[node name="SelectButton" type="Button" parent="." unique_id=1846185075]
 layout_mode = 0
 offset_left = -2.0
 offset_top = 2.0
