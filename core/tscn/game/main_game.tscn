@@ -10,7 +10,7 @@
 [ext_resource type="Script" uid="uid://ilpalorndt2y" path="res://resource/default/assets/Area/areaface/stages_face.gd" id="6_t5eyl"]
 [ext_resource type="Script" uid="uid://b5f71t7ikic0w" path="res://core/Class/Render/RenderArea/RenderAreaHand.gd" id="7_jjejj"]
 [ext_resource type="Script" uid="uid://c6oyqsx5j42c5" path="res://core/tscn/game/RenderTimer.gd" id="8_ppvbj"]
-[ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://resource/default/assets/Area/areaface/areaface_hand.tscn" id="9_2w2we"]
+[ext_resource type="PackedScene" uid="uid://pq8byw2ywuri" path="res://resource/default/assets/Area/areaface/AreaHand/areaface_hand.tscn" id="9_2w2we"]
 [ext_resource type="PackedScene" uid="uid://ct8jneqmxsdoa" path="res://resource/default/assets/Area/areaface/areaface_self.tscn" id="11_4k47o"]
 [ext_resource type="PackedScene" uid="uid://ld25ivvpfrx8" path="res://resource/default/assets/Area/areaface/PlayerStatus/areaface_self_properties.tscn" id="12_f8lnr"]
 [ext_resource type="PackedScene" uid="uid://cwwsimyoypxle" path="res://resource/default/assets/Area/areaface/areaface_targets.tscn" id="14_8v20q"]
