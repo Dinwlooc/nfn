@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://b1dob454nxdax" path="res://resource/default/assets/Area/areaface/PlayerStatus/dot_indicator.gd" id="5_k6e0a"]
 [ext_resource type="Script" uid="uid://cfjpkvg8bm4fi" path="res://resource/default/assets/Area/areaface/PlayerStatus/dot_unit.gd" id="6_1w0bs"]
 [ext_resource type="Script" uid="uid://ci0qv2rcc5l3b" path="res://resource/default/assets/Area/areaface/PlayerStatus/text_icon_indicator.gd" id="7_7tnk2"]
+[ext_resource type="Script" uid="uid://cy62p1it8728u" path="res://resource/default/assets/Area/areaface/PlayerStatus/ParticleManager.gd" id="8_k6e0a"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ggemd"]
 shader = ExtResource("1_j7r54")
@@ -298,3 +299,6 @@ offset_top = 94.0001
 offset_right = 27.999695
 offset_bottom = 111.0001
 theme_override_styles/panel = SubResource("StyleBoxFlat_2skah")
+
+[node name="ParticleManager" type="Node2D" parent="." unique_id=1442607241]
+script = ExtResource("8_k6e0a")
