@@ -44,6 +44,7 @@ focus_previous = NodePath(".")
 focus_mode = 1
 theme = ExtResource("2_n0p75")
 theme_override_colors/font_selected_color = Color(0, 0, 0, 1)
+theme_override_colors/caret_color = Color(0.8879926, 0.88799256, 0.8879925, 1)
 theme_override_colors/selection_color = Color(1, 1, 1, 1)
 placeholder_text = "请输入指令..."
 keep_editing_on_text_submit = true

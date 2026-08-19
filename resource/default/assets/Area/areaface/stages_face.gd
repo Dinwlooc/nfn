@@ -17,6 +17,17 @@ const FONT_SIZE_NORMAL := 14
 const FONT_SIZE_EMPHASIZED := 28
 const MAIN_TO_TEMP_GAP := 8.0
 
+# ==================== 枚举 ====================
+enum LabelState {
+	IDLE,
+	MAIN_CENTER,
+	MAIN_RIGHT,
+	MAIN_PULLING,
+	TEMP_CENTER,
+	TEMP_RIGHT,
+	TEMP_PULLING,
+}
+
 # ==================== 导出变量 ====================
 @export var render_control: RenderControl = null
 
@@ -32,7 +43,7 @@ class StageMessage:
 
 # ==================== 内部变量 ====================
 var _labels: Array[Label] = []
-var _label_state: Array[StringName] = []
+var _label_state: Array[LabelState] = []
 var _label_tweens: Array[Tween] = [null, null, null, null, null, null]
 var _label_line: Array[int] = []
 
@@ -70,7 +81,7 @@ func _setup_labels() -> void:
 		label.visible = false
 		add_child(label)
 		_labels.append(label)
-		_label_state.append(&"idle")
+		_label_state.append(LabelState.IDLE)
 		_label_line.append(-1)
 	_label_tweens.resize(6)
 	_label_tweens.fill(null)
@@ -86,7 +97,7 @@ func _set_label_emphasized(label: Label, flag: bool) -> void:
 func _show_initial_main(text: String) -> void:
 	var idx := _get_idle_label_index()
 	if idx == -1: return
-	_assign_label(idx, StageLine.MAIN, &"main_center")
+	_assign_label(idx, StageLine.MAIN, LabelState.MAIN_CENTER)
 	_labels[idx].text = text
 	_set_label_emphasized(_labels[idx], true)
 	_labels[idx].reset_size()
@@ -137,7 +148,7 @@ func _start_main_animation(new_text: String, is_stable: bool) -> void:
 		_main_right_idx = -1
 
 	var old_idx := _main_center_idx
-	_label_state[old_idx] = &"main_right"
+	_label_state[old_idx] = LabelState.MAIN_RIGHT
 	_label_line[old_idx] = StageLine.MAIN
 	_main_right_idx = old_idx
 	_main_center_idx = new_idx
@@ -150,7 +161,7 @@ func _start_main_animation(new_text: String, is_stable: bool) -> void:
 	var w := new_label.get_combined_minimum_size().x
 	new_label.position = Vector2(-w - SLIDE_IN_MARGIN, MAIN_CENTER_POS.y)
 	new_label.visible = true
-	_assign_label(new_idx, StageLine.MAIN, &"main_center")
+	_assign_label(new_idx, StageLine.MAIN, LabelState.MAIN_CENTER)
 
 	var right_pos := MAIN_CENTER_POS + Vector2(w + RIGHT_SPACING, 0)
 	var tween := create_tween()
@@ -168,7 +179,7 @@ func _start_main_pull_back(index: int) -> void:
 	if index < 0 or index >= _labels.size(): return
 	var label := _labels[index]
 	if not label.visible: return
-	_label_state[index] = &"main_pulling"
+	_label_state[index] = LabelState.MAIN_PULLING
 	var h := label.get_combined_minimum_size().y
 	if h <= 0: h = 30
 	var up_pos := label.position + Vector2(0, -h)
@@ -200,7 +211,7 @@ func _start_temp_animation(new_text: String, is_stable: bool) -> void:
 		var w := label.get_combined_minimum_size().x
 		label.position = Vector2(-w - SLIDE_IN_MARGIN, temp_center.y)
 		label.visible = true
-		_assign_label(idx, StageLine.TEMP, &"temp_center")
+		_assign_label(idx, StageLine.TEMP, LabelState.TEMP_CENTER)
 		_temp_center_idx = idx
 		var tw := create_tween()
 		_label_tweens[idx] = tw
@@ -215,7 +226,7 @@ func _start_temp_animation(new_text: String, is_stable: bool) -> void:
 		_temp_right_idx = -1
 
 	var old_idx := _temp_center_idx
-	_label_state[old_idx] = &"temp_right"
+	_label_state[old_idx] = LabelState.TEMP_RIGHT
 	_label_line[old_idx] = StageLine.TEMP
 	_temp_right_idx = old_idx
 	_temp_center_idx = new_idx
@@ -228,7 +239,7 @@ func _start_temp_animation(new_text: String, is_stable: bool) -> void:
 	var w := new_label.get_combined_minimum_size().x
 	new_label.position = Vector2(-w - SLIDE_IN_MARGIN, temp_center.y)
 	new_label.visible = true
-	_assign_label(new_idx, StageLine.TEMP, &"temp_center")
+	_assign_label(new_idx, StageLine.TEMP, LabelState.TEMP_CENTER)
 
 	var right_pos := temp_center + Vector2(w + RIGHT_SPACING, 0)
 	var tween := create_tween()
@@ -246,7 +257,7 @@ func _start_temp_pull_back(index: int) -> void:
 	if index < 0 or index >= _labels.size(): return
 	var label := _labels[index]
 	if not label.visible: return
-	_label_state[index] = &"temp_pulling"
+	_label_state[index] = LabelState.TEMP_PULLING
 	var h := label.get_combined_minimum_size().y
 	if h <= 0: h = 30
 	var down_pos := label.position + Vector2(0, h)
@@ -269,7 +280,7 @@ func _interrupt_and_pull(index: int, line: StageLine, is_main: bool) -> void:
 
 func _on_pull_complete(index: int, line: StageLine) -> void:
 	_labels[index].visible = false
-	_label_state[index] = &"idle"
+	_label_state[index] = LabelState.IDLE
 	_label_line[index] = -1
 	_label_tweens[index] = null
 	if line == StageLine.MAIN and _main_right_idx == index:
@@ -295,11 +306,11 @@ func _clear_temp_with_pull() -> void:
 # ==================== 辅助 ====================
 func _get_idle_label_index() -> int:
 	for i in _labels.size():
-		if _label_state[i] == &"idle":
+		if _label_state[i] == LabelState.IDLE:
 			return i
 	return -1
 
-func _assign_label(idx: int, line: StageLine, state: StringName) -> void:
+func _assign_label(idx: int, line: StageLine, state: LabelState) -> void:
 	_label_line[idx] = line
 	_label_state[idx] = state
 

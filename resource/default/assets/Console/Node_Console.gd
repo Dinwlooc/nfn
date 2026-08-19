@@ -20,7 +20,7 @@ var start: Node = null
 var labels: Array[Node] = []
 ## 命令历史记录
 var command_history: PackedStringArray = []
-## 当前历史导航索引，0 表示输入框为空
+## 当前历史导航索引，-1 表示空输入；0 表示最新命令，1 表示前一个，依此类推
 var current_history_index: int = -1
 ## 是否启用历史上下浏览
 var history_navigation_enabled: bool = false
@@ -174,9 +174,10 @@ func _on_focus_exited():
 func _on_text_changed(new_text: String):
 	if _ignore_text_changed:
 		return
+	# 任何文本变化都重置历史导航索引，保证下次按上键从最新命令开始
+	current_history_index = -1
 	if not new_text.to_lower().begins_with("c"):
 		toggle_suggestions(false)
-		current_history_index = 0
 		return
 	filtered = []
 	if new_text.length() > 2:
@@ -185,7 +186,6 @@ func _on_text_changed(new_text: String):
 		filtered = command_suggestions.duplicate()
 	toggle_suggestions(not filtered.is_empty())
 	filtered.append("...")
-	current_history_index = 0
 
 func _suggestion_submitted(suggestion: String):
 	input_line_edit.text = suggestion + "()"
@@ -223,7 +223,7 @@ func _on_command_submitted(new_text: String):
 	command_history.append(command_with_args)
 	if command_history.size() > MAX_HISTORY:
 		command_history.remove_at(0)
-	current_history_index = 0
+	# 提交后文本会被清空，同时 _on_text_changed 会将 current_history_index 重置为 -1
 	var parts = command_with_args.split("(", false, 1)
 	var command = parts[0].to_lower()
 	var args_str = parts[1] if parts.size() > 1 else ""
@@ -254,15 +254,22 @@ func toggle_suggestions(_show: bool):
 		current_selection = -1
 		update_page_display(0)
 
+## 历史导航：is_up = true 表示向上（更早命令），false 表示向下（更近命令）
 func navigate_history(is_up: bool):
-	if command_history.size() == 0:
+	if command_history.is_empty():
 		return
-	match is_up:
-		true:
-			current_history_index = clamp(current_history_index - 1, -command_history.size(), 0)
-		false:
-			current_history_index = clamp(current_history_index + 1, -command_history.size(), 0)
-	input_line_edit.text = "" if current_history_index == 0 else command_history[current_history_index]
+	if is_up:
+		# 向上：索引增加（0 -> 1 -> 2 ...）
+		current_history_index = min(current_history_index + 1, command_history.size() - 1)
+	else:
+		# 向下：索引减少（2 -> 1 -> 0 -> -1）
+		current_history_index = max(current_history_index - 1, -1)
+	if current_history_index == -1:
+		input_line_edit.text = ""
+	else:
+		# 将索引映射到实际数组：0 对应最后一个（最新）
+		var actual_index = command_history.size() - 1 - current_history_index
+		input_line_edit.text = command_history[actual_index]
 
 func _input(event):
 	if not event.is_pressed():

@@ -20,6 +20,9 @@ class Context extends CommandContext:
 		target_player = player
 
 func _init(player: Player, name_overriding: StringName = &"PlayerAttribute", context_overriding: Context = Context.new()) -> void:
+	if not player:
+		complete()
+		return
 	context_overriding.set_target_player(player)
 	super._init(player.get_id(), name_overriding, context_overriding)
 

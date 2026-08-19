@@ -61,6 +61,15 @@ func _draw_cards_test() -> void:
 	GlobalConsole._print("System:调试抽卡，（玩家 %s）" % game_state.stage_manager.current_player_id)
 
 func _damage(hp_damage: int = 1, mp_damage: int = 1, player_id: int = 2) -> void:
+	if game_state._process_active:
+		GlobalConsole._print("System:Error:c_damage未生效。无法插入事件至处理中的堆栈。")
+		return
+	if game_state.stage_manager.get_current_stage_enum() == -1:
+		GlobalConsole._print("System:Error:c_damage未生效。游戏未开始。")
+		return
+	if game_state.player_manager.players.is_empty():
+		GlobalConsole._print("System:Error:c_damage未生效。无存活玩家。")
+		return
 	command_bus.queue_behavior(DamageCommand.new(game_state.player_manager.get_player_by_id(player_id), hp_damage, mp_damage))
 
 func signal_connect_test():

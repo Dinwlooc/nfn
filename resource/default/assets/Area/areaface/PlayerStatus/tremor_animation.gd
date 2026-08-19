@@ -6,9 +6,9 @@ extends RefCounted
 const BlockIndicator = preload("block_indicator.gd")
 
 ## 最小偏移（像素）
-var min_offset: float = 0.05
+var min_offset: float = 0.1
 ## 基础最大偏移（像素），实际最大偏移会根据血量动态变化
-var base_max_offset: float = 0.1
+var base_max_offset: float = 0.05
 ## 最大偏移倍数（血量越低，最大偏移越接近此倍数 × base_max_offset）
 var max_offset_multiplier: float = 64.0
 ## 当前实际最大偏移（由血量比例决定）
@@ -27,16 +27,13 @@ var _active: bool = false
 var _tremor_enabled: Array[bool] = []    # 每个块是否启用颤动（当前始终为 true）
 var _tremor_offsets: Array[float] = []   # 每个块当前的 Y 偏移量
 var _update_counter: int = 0              # 更新次数计数器（每次更新+1）
-
 const CYCLE_UPDATES: int = 10            # 总更新点数（20 * 当前间隔 = 周期帧数）
 const ACTIVE_UPDATES: int = 10            # 全部为活动状态（无静止）
-
 ## 绑定目标指示器
 func bind_indicator(indicator: BlockIndicator) -> void:
 	_indicator = indicator
 	_ensure_arrays()
 	_enable_all_blocks()
-
 ## 启用/禁用
 func set_active(active: bool) -> void:
 	if _active == active:
@@ -53,11 +50,6 @@ func set_active(active: bool) -> void:
 					continue
 				_tremor_offsets[i] = 0.0
 				_indicator.blocks[i].position = _indicator.block_base_positions[i]
-
-## 更新颤动掩码（废弃，强制启用所有块）
-func update_mask(_current_hp: int = 0) -> void:
-	_enable_all_blocks()
-
 ## 根据当前血量和最大血量更新幅度和频率参数
 func update_amplitude_by_hp(hp: int, max_hp: int) -> void:
 	if max_hp <= 0:
@@ -70,7 +62,6 @@ func update_amplitude_by_hp(hp: int, max_hp: int) -> void:
 	# 更新频率：血量越少，间隔越小（越快）
 	current_update_interval = int(lerp(float(min_update_interval), float(base_update_interval), ratio))
 	current_update_interval = clamp(current_update_interval, min_update_interval, base_update_interval)
-
 ## 每帧更新（由外部调用）
 func update() -> void:
 	if not _active or not _indicator or _indicator.blocks.is_empty():
@@ -82,14 +73,12 @@ func update() -> void:
 	_ensure_arrays()
 	_update_counter = (_update_counter + 1) % CYCLE_UPDATES
 	var amplitude: float = randf_range(min_offset, current_max_offset)
-
 	for i in range(_indicator.blocks.size()):
 		if _indicator.block_animating[i]:
 			if _tremor_offsets[i] != 0.0:
 				_tremor_offsets[i] = 0.0
 				_indicator.blocks[i].position = _indicator.block_base_positions[i]
 			continue
-
 		var state_idx: int = (_update_counter + i * phase_offset) % CYCLE_UPDATES
 		var offset_y: float = 0.0
 		if state_idx < ACTIVE_UPDATES:
@@ -100,7 +89,6 @@ func update() -> void:
 					offset_y = 0.0
 				4, 5:
 					offset_y = amplitude
-
 		if _tremor_offsets[i] == offset_y:
 			continue
 		_tremor_offsets[i] = offset_y
