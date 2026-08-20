@@ -4,29 +4,16 @@ extends Node2D
 
 const C = preload("status_constants.gd")
 
-## ---- 内部配置结构体（替代字典） ----
-class ParticleConfig:
-	extends RefCounted
-	var direction: Vector3 = Vector3(1.0, 0.0, 0.0)
-	var spread: float = 30.0
-	var gravity: Vector3 = Vector3.ZERO
-	var velocity_min: float = 40.0
-	var velocity_max: float = 150.0
-	var color_ramp: GradientTexture1D = null
-	var scale_min: float = 0.0
-	var scale_max: float = 1.0
-	var scale_curve: CurveTexture = null
-
 ## ---- 发射器 ----
 var _hit_emitter: GPUParticles2D = null
-var _bleed_emitter: GPUParticles2D = null          # 改为单个
+var _bleed_emitter: GPUParticles2D = null
 var _levelup_emitter: GPUParticles2D = null
 
 func _ready() -> void:
 	_hit_emitter = _create_blood_particle()
 	_hit_emitter.emitting = false
 	add_child(_hit_emitter)
-	_bleed_emitter = _create_bleed_particle()       # 专用流血发射器
+	_bleed_emitter = _create_bleed_particle()
 	_bleed_emitter.emitting = false
 	add_child(_bleed_emitter)
 	_levelup_emitter = _create_levelup_particle()
@@ -53,6 +40,7 @@ func emit_blood_gush(global_pos: Vector2) -> void:
 	var speed_max: float = C.HIT_SPEED_MAX_MAX
 	var spread: float = C.HIT_SPREAD_MAX
 	_configure_and_emit(_hit_emitter, global_pos, count, speed_min, speed_max, spread, Vector3(1.0, 0.0, 0.0))
+
 ## 单次流血发射（只选一个块）
 func emit_blood_bleed_single(global_pos: Vector2, direction: int, hp_ratio: float) -> void:
 	if not _bleed_emitter:
@@ -83,41 +71,14 @@ func _configure_and_emit(emitter: GPUParticles2D, global_pos: Vector2, count: in
 		mat.direction = direction
 	emitter.restart()
 
-## ---- 通用粒子构造器（使用配置结构体） ----
-func _create_particle(amount: int, lifetime: float, config: ParticleConfig) -> GPUParticles2D:
-	var p: GPUParticles2D = GPUParticles2D.new()
-	p.amount = amount
-	p.lifetime = lifetime
-	p.one_shot = true
-	p.explosiveness = 1.0
-	# 白色方形纹理
-	var img: Image = Image.create(2, 2, false, Image.FORMAT_RGBA8)
-	img.fill(Color.WHITE)
-	var tex: ImageTexture = ImageTexture.create_from_image(img)
-	p.texture = tex
-	var mat: ParticleProcessMaterial = ParticleProcessMaterial.new()
-	mat.direction = config.direction
-	mat.spread = config.spread
-	mat.gravity = config.gravity
-	mat.initial_velocity_min = config.velocity_min
-	mat.initial_velocity_max = config.velocity_max
-	if config.color_ramp:
-		mat.color_ramp = config.color_ramp
-	if config.scale_min > 0 or config.scale_max > 0:
-		mat.scale_min = config.scale_min
-		mat.scale_max = config.scale_max
-	if config.scale_curve:
-		mat.scale_curve = config.scale_curve
-	p.process_material = mat
-	return p
-
-## ---- 工厂方法 ----
+## ---- 工厂方法（均使用 Core 的 ParticleFactory） ----
 func _create_blood_particle() -> GPUParticles2D:
 	var gradient: Gradient = Gradient.new()
 	gradient.colors = [Color.RED, Color.DARK_RED]
 	gradient.offsets = [0.0, 1.0]
 	var color_ramp: GradientTexture1D = GradientTexture1D.new()
 	color_ramp.gradient = gradient
+
 	var config: ParticleConfig = ParticleConfig.new()
 	config.direction = Vector3(1.0, 0.0, 0.0)
 	config.spread = 30.0
@@ -127,7 +88,7 @@ func _create_blood_particle() -> GPUParticles2D:
 	config.color_ramp = color_ramp
 	config.scale_min = C.BLOOD_PARTICLE_SIZE
 	config.scale_max = C.BLOOD_PARTICLE_SIZE
-	return _create_particle(1, C.BLOOD_LIFETIME, config)
+	return ParticleFactory.create_particles(1, C.BLOOD_LIFETIME, config)
 
 func _create_bleed_particle() -> GPUParticles2D:
 	var gradient: Gradient = Gradient.new()
@@ -135,6 +96,7 @@ func _create_bleed_particle() -> GPUParticles2D:
 	gradient.offsets = [0.0, 1.0]
 	var color_ramp: GradientTexture1D = GradientTexture1D.new()
 	color_ramp.gradient = gradient
+
 	var config: ParticleConfig = ParticleConfig.new()
 	config.direction = Vector3(1.0, 0.0, 0.0)
 	config.spread = 30.0
@@ -144,21 +106,17 @@ func _create_bleed_particle() -> GPUParticles2D:
 	config.color_ramp = color_ramp
 	config.scale_min = C.BLOOD_PARTICLE_SIZE
 	config.scale_max = C.BLOOD_PARTICLE_SIZE
-	var p: GPUParticles2D = _create_particle(1, C.BLEED_LIFETIME, config)
-	var mat: ParticleProcessMaterial = p.process_material as ParticleProcessMaterial
-	if mat:
-		mat.damping_max = C.BLEED_DAMPING
-		mat.damping_min = C.BLEED_DAMPING
-	return p
+	config.damping_min = C.BLEED_DAMPING
+	config.damping_max = C.BLEED_DAMPING
+	return ParticleFactory.create_particles(1, C.BLEED_LIFETIME, config)
 
 func _create_levelup_particle() -> GPUParticles2D:
-	# 紫色渐变至白色
 	var gradient: Gradient = Gradient.new()
 	gradient.colors = [Color(0.6, 0.0, 0.8), Color(1.0, 1.0, 1.0)]
 	gradient.offsets = [0.0, 1.0]
 	var color_ramp: GradientTexture1D = GradientTexture1D.new()
 	color_ramp.gradient = gradient
-	# 大小曲线（随时间缓慢收缩至初始大小的50%）
+
 	var scale_curve: Curve = Curve.new()
 	scale_curve.add_point(Vector2(0.0, 1.0))
 	scale_curve.add_point(Vector2(0.4, 0.9))
@@ -166,6 +124,7 @@ func _create_levelup_particle() -> GPUParticles2D:
 	scale_curve.add_point(Vector2(1.0, 0))
 	var scale_texture: CurveTexture = CurveTexture.new()
 	scale_texture.curve = scale_curve
+
 	var config: ParticleConfig = ParticleConfig.new()
 	config.direction = Vector3(0.0, -1.0, 0.0)
 	config.spread = 180.0
@@ -176,11 +135,6 @@ func _create_levelup_particle() -> GPUParticles2D:
 	config.scale_min = C.LEVELUP_PARTICLE_SCALE_MIN
 	config.scale_max = C.LEVELUP_PARTICLE_SCALE_MAX
 	config.scale_curve = scale_texture
-
-	var p: GPUParticles2D = _create_particle(C.LEVELUP_PARTICLE_COUNT, C.LEVELUP_LIFETIME, config)
-	# 设置阻尼使速度线性衰减
-	var mat: ParticleProcessMaterial = p.process_material as ParticleProcessMaterial
-	if mat:
-		mat.damping_max = C.LEVELUP_DAMPING
-		mat.damping_min = C.LEVELUP_DAMPING
-	return p
+	config.damping_min = C.LEVELUP_DAMPING
+	config.damping_max = C.LEVELUP_DAMPING
+	return ParticleFactory.create_particles(C.LEVELUP_PARTICLE_COUNT, C.LEVELUP_LIFETIME, config)

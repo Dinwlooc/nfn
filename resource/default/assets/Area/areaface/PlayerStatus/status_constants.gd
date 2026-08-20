@@ -26,7 +26,6 @@ const BLEED_INTERVAL_AT_50: int = 240   # 血量50%时间隔帧数
 const BLEED_INTERVAL_AT_0: int = 60     # 血量0%时间隔帧数（最快）
 const BLEED_LIFETIME: float = 0.5       # 独立寿命
 const BLEED_DAMPING: float = 100.0      # 速度阻尼（每秒速度减少量）
-
 ## ---- 升级粒子 ----
 const LEVELUP_PARTICLE_COUNT: int = 40
 const LEVELUP_LIFETIME: float = 3.2
@@ -35,7 +34,6 @@ const LEVELUP_MAX_SPEED: float = 220.0
 const LEVELUP_PARTICLE_SCALE_MIN: float = 2.0    # 粒子最小尺寸
 const LEVELUP_PARTICLE_SCALE_MAX: float = 6.0    # 粒子最大尺寸
 const LEVELUP_DAMPING: float = 150.0             # 速度阻尼（每秒速度减少量）
-
 ## ---- HP/MP/战意颜色等UI常量 ----
 const COLOR_HP_CURRENT: Color = Color(0.99, 0.1, 0.0, 0.7)
 const COLOR_HP_LOST: Color = Color(0.5, 0.5, 0.5, 0.7)

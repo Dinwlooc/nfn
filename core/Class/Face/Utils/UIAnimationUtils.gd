@@ -1,6 +1,6 @@
 extends RefCounted
 class_name UIAnimationUtils
-#以全局脚本的形式提供UI动画插值函数。
+
 const  DEFAULT_SPEED = 0.07704  # 使任意6帧(0.1s)中的总移动与目标距离呈现为黄金比例
 const  GOLDEN_SPEED_3FRAMES = 0.14935
 
@@ -47,7 +47,6 @@ static func generate_coordinates(card_container_position:Vector2,card_container_
 		var x = ((i as float + 1) / (card_count + 1)) * width
 		coordinates.append(Vector2(x, y_center)+card_container_position)
 	return coordinates
-
 # 让 Panel 的 StyleBoxFlat 背景颜色闪烁
 static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: Color,  half_duration: float = 0.1 , times: int = 2) -> Tween:
 	var stylebox = block.get_theme_stylebox(&"panel") as StyleBoxFlat
@@ -60,7 +59,6 @@ static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: C
 		tween.tween_property(stylebox, ^"bg_color", from_color, half_duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
 	tween.tween_property(stylebox, ^"bg_color", to_color, half_duration)
 	return tween
-
 # 让 ColorRect 的颜色闪烁
 static func blink_color(rect: ColorRect, from_color: Color, to_color: Color, half_duration: float = 0.1, times: int = 2) -> Tween:
 	var tween = rect.create_tween()

@@ -3,7 +3,6 @@ extends AreaFace
 ## 模式枚举：AUTO 自动跟随本地玩家，MANUAL 手动指定。
 enum Mode { AUTO, MANUAL }
 @export var mode: Mode = Mode.AUTO
-
 ## 预加载组件类
 const BlockIndicator = preload("block_indicator.gd")
 const DotIndicator = preload("dot_indicator.gd")
@@ -12,7 +11,6 @@ const BreathAnimation = preload("breath_animation.gd")
 const TremorAnimation = preload("tremor_animation.gd")
 const ParticleManager = preload("ParticleManager.gd")
 const C = preload("status_constants.gd")
-
 ## 节点引用
 @onready var hp_indicator: BlockIndicator = $HPBar
 @onready var mp_indicator: DotIndicator = $MPContainer
@@ -21,7 +19,6 @@ const C = preload("status_constants.gd")
 @onready var morale_level_label: Label = $MoraleBar/ValueLabel
 @onready var morale_value_label: RichTextLabel = $MoraleBar/MoraleValueLabel
 @onready var particle_manager: ParticleManager = $ParticleManager
-
 ## 缓存变量
 var _cached_hp_max: int = 0
 var _cached_hp_current: int = 0
@@ -59,6 +56,9 @@ func _ready() -> void:
 	_morale_breath_anim.phase_offset = 2
 
 func _process(_delta: float) -> void:
+	# 不可见时跳过所有帧更新，避免无效计算
+	if not visible:
+		return
 	if _breath_anim:
 		_breath_anim.update()
 	if _tremor_anim:
@@ -247,7 +247,6 @@ func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 				flash_color = Color.WHITE
 			else:
 				flash_color = Color.BLACK
-			# 使用常量配置的两步渐变参数
 			hp_indicator.set_block_color_two_step(i, flash_color, new_color, C.HP_TWO_STEP_FLASH_DURATION, C.HP_TWO_STEP_GRADIENT_DURATION)
 		else:
 			hp_indicator.blink_block(i, old_color, new_color, blink_duration)

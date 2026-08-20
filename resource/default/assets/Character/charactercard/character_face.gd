@@ -124,7 +124,7 @@ func _play_normal_hit_animation(factor: float, T: float, dir: float, remaining_h
 	_current_tween.chain().tween_callback(_on_physical_anim_finished)
 ## 添加受击阶段（并行位移+旋转）
 func _add_hit_phase(tween: Tween, target_x: float, target_y: float, target_rot: float, duration: float) -> void:
-	if rotation > target_rot:
+	if rotation <= target_rot == _is_mirrored :
 		return
 	tween.tween_property(self, ^"position:x", target_x, duration).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, ^"position:y", target_y, duration).set_ease(Tween.EASE_IN_OUT)
