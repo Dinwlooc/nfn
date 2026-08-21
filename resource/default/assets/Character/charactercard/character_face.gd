@@ -43,7 +43,6 @@ const RISE_WALK_DURATION_FACTOR: float = 4.0   # 走回原位（水平归位）�
 const RISE_SINK_DISTANCE: float = 30.0
 ## 起身速度与剩余生命比例的关系：因子 sink_factor = 1 / max(0.1, remaining_hp_ratio)，并钳位到 [1, RISE_SINK_MAX_FACTOR]
 const RISE_SINK_MAX_FACTOR: float = 2.0
-
 ## ==================== 运行时变量 ====================
 var _current_hp_damage: int = 0
 var _current_tween: Tween = null
@@ -58,6 +57,7 @@ var _original_rotation: float
 func _ready() -> void:
 	_original_position = position
 	_original_rotation = rotation
+
 ## 播放受击动画（重写父类方法，增加剩余生命比例参数）
 ## @param hp_damage: 生命值变化（正伤害，负治疗）
 ## @param mp_damage: 精神值变化（仅用于闪蓝）
@@ -91,8 +91,7 @@ func _handle_heal(hp_damage: int, remaining_hp_ratio: float) -> void:
 func _play_physical_hit_animation(hp_damage: int, factor: float, T: float, flash_duration: float, dir: float, remaining_hp_ratio: float) -> void:
 	if remaining_hp_ratio <= 0.0:
 		_play_down_animation(factor, T, dir)
-		if character and character.material is ShaderMaterial:
-			ShaderEffectsUtils.flash_color(character, Color.RED, flash_duration, 1.0)
+		_flash_sprite(Color.RED, flash_duration)
 		return
 	# 非致死：原有优先级逻辑（高伤害覆盖低伤害）
 	if _current_tween != null and hp_damage >= _current_hp_damage:
@@ -101,8 +100,8 @@ func _play_physical_hit_animation(hp_damage: int, factor: float, T: float, flash
 		return
 	_current_hp_damage = hp_damage
 	_play_normal_hit_animation(factor, T, dir, remaining_hp_ratio)
-	if character and character.material is ShaderMaterial:
-		ShaderEffectsUtils.flash_color(character, Color.RED, flash_duration, 1.0)
+	_flash_sprite(Color.RED, flash_duration)
+
 ## 播放普通受击动画（有恢复阶段）
 func _play_normal_hit_animation(factor: float, T: float, dir: float, remaining_hp_ratio: float) -> void:
 	var angle: float = (MIN_ANGLE + (MAX_ANGLE - MIN_ANGLE) * factor) * dir
@@ -122,6 +121,7 @@ func _play_normal_hit_animation(factor: float, T: float, dir: float, remaining_h
 	_current_tween.chain()
 	_add_recover_phase(_current_tween, _original_position.x, _original_position.y, _original_rotation, RECOVER_X_FACTOR * T * recover_multiplier, RECOVER_Y_FACTOR * T * recover_multiplier, RECOVER_ROT_FACTOR * T * recover_multiplier)
 	_current_tween.chain().tween_callback(_on_physical_anim_finished)
+
 ## 添加受击阶段（并行位移+旋转）
 func _add_hit_phase(tween: Tween, target_x: float, target_y: float, target_rot: float, duration: float) -> void:
 	if rotation <= target_rot == _is_mirrored :
@@ -129,11 +129,13 @@ func _add_hit_phase(tween: Tween, target_x: float, target_y: float, target_rot: 
 	tween.tween_property(self, ^"position:x", target_x, duration).set_ease(Tween.EASE_OUT)
 	tween.tween_property(self, ^"position:y", target_y, duration).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(self, ^"rotation", target_rot, duration).set_ease(Tween.EASE_OUT)
+
 ## 添加恢复阶段（并行归位，使用TRANS_BACK弹性）
 func _add_recover_phase(tween: Tween, target_x: float, target_y: float, target_rot: float, dur_x: float, dur_y: float, dur_rot: float) -> void:
 	tween.tween_property(self, ^"position:x", target_x, dur_x).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_BACK)
 	tween.tween_property(self, ^"position:y", target_y, dur_y).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_BACK)
 	tween.tween_property(self, ^"rotation", target_rot, dur_rot).set_ease(Tween.EASE_IN)
+
 ## 播放倒地动画（两阶段）
 func _play_down_animation(factor: float, T: float, dir: float) -> void:
 	var angle1: float = (MIN_ANGLE + (MAX_ANGLE - MIN_ANGLE) * factor) * dir
@@ -156,21 +158,24 @@ func _play_down_animation(factor: float, T: float, dir: float) -> void:
 	_add_down_fall_phase(_current_tween, target_x2, target_y2, target_rot2, fall_duration)
 	_is_down_stagger = true
 	_current_tween.chain().tween_callback(_on_down_anim_finished)
+
 ## 添加倒地第二段（平躺，使用缓入）
 func _add_down_fall_phase(tween: Tween, target_x: float, target_y: float, target_rot: float, duration: float) -> void:
 	tween.tween_property(self, ^"position:x", target_x, duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUART)
 	tween.tween_property(self, ^"position:y", target_y, duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUART)
 	tween.tween_property(self, ^"rotation", target_rot, duration).set_ease(Tween.EASE_IN).set_trans(Tween.TRANS_QUART)
+
 ## 播放魔法受击动画（仅闪蓝，帧变化）
 func _play_magic_hit_animation(mp_damage: int, flash_duration: float) -> void:
-	if character and character.material is ShaderMaterial:
-		ShaderEffectsUtils.flash_color(character, Color.BLUE, flash_duration, 1.0)
+	_flash_sprite(Color.BLUE, flash_duration)
 	if character is Sprite2D:
 		character.frame = 1
+	# 延迟直接切回正常帧（无交叉淡化）
 	create_tween().tween_callback(func():
 		if is_instance_valid(character) and character is Sprite2D:
-			ShaderEffectsUtils.crossfade_sprite_frame(character, 0, 0.2)
+			character.frame = 0
 	).set_delay(flash_duration)
+
 ## 从倒地状态恢复的动画（治疗触发），时长仅与剩余生命比例相关
 ## 各阶段时长全部相对于 RISE_BASE_DURATION，旋转回正时长独立配置，不与下沉阶段耦合
 ## @param remaining_hp_ratio: 当前剩余生命比例（>0）
@@ -198,30 +203,37 @@ func _play_recover_from_down_animation(remaining_hp_ratio: float) -> void:
 	_current_tween.chain().tween_callback(_on_recover_from_down_finished)
 	if character is Sprite2D:
 		character.frame = 0
+
 ## 添加起身下沉阶段（垂直下压）
 func _add_rise_sink_phase(tween: Tween, target_y: float, duration: float) -> void:
 	tween.tween_property(self, ^"position:y", target_y, duration).set_ease(Tween.EASE_IN)
+
 ## 添加起身旋转回正阶段（使用TRANS_BACK弹性）
 func _add_rise_rot_phase(tween: Tween, target_rot: float, duration: float) -> void:
 	tween.tween_property(self, ^"rotation", target_rot, duration).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
 ## 添加起身上升阶段（垂直归位）
 func _add_rise_up_phase(tween: Tween, target_y: float, duration: float) -> void:
 	tween.tween_property(self, ^"position:y", target_y, duration).set_ease(Tween.EASE_OUT)
+
 ## 添加起身走回阶段（水平归位，使用TRANS_BACK弹性）
 func _add_rise_walk_phase(tween: Tween, target_x: float, duration: float) -> void:
 	tween.tween_property(self, ^"position:x", target_x, duration).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_BACK)
+
 ## 倒地动画结束回调（保持硬直状态）
 func _on_down_anim_finished() -> void:
 	_current_hp_damage = 0
 	_current_tween = null
 	if character is Sprite2D:
 		character.frame = 1
+
 ## 从倒地恢复完成回调（清除硬直状态）
 func _on_recover_from_down_finished() -> void:
 	_is_down_stagger = false
 	_current_tween = null
 	if character is Sprite2D:
 		character.frame = 0
+
 ## 停止当前受击动画（重写父类方法）
 func stop_damage_animation() -> void:
 	_kill_current_animation_if_exists()
@@ -229,19 +241,30 @@ func stop_damage_animation() -> void:
 	rotation = _original_rotation
 	if character and character is Sprite2D:
 		character.frame = 0
+
 ## 强制杀死当前动画（如果有），重置相关状态
 func _kill_current_animation_if_exists() -> void:
 	if _current_tween != null and _current_tween.is_valid():
 		_current_tween.kill()
 		_current_tween = null
 		_current_hp_damage = 0
+
 ## 设置水平镜像（重写父类方法）
 func set_mirrored(flip_h: bool) -> void:
 	_is_mirrored = flip_h
 	if character:
 		character.flip_h = flip_h
-## 物理受击动画结束回调（交叉渐变切回正常帧）
+
+## 物理受击动画结束回调（直接切回正常帧）
 func _on_physical_anim_finished() -> void:
-	ShaderEffectsUtils.crossfade_sprite_frame(character, 0, 0.2)
+	if character is Sprite2D:
+		character.frame = 0
 	_current_hp_damage = 0
 	_current_tween = null
+
+## 内部闪烁辅助方法（独立封装）
+## @param color: 闪烁颜色
+## @param duration: 闪烁持续时长
+func _flash_sprite(color: Color, duration: float) -> void:
+	if character and character.material is ShaderMaterial:
+		ShaderEffectsUtils.flash_color(character, color, duration, 1.0)

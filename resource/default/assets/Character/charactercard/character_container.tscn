@@ -1,18 +1,18 @@
 [gd_scene format=3 uid="uid://bjdp8ibnlaew1"]
 
 [ext_resource type="Script" uid="uid://b581hwjvp5kp5" path="res://resource/default/assets/Character/charactercard/character_face.gd" id="1_0cvc3"]
-[ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/flash_color.gdshader" id="1_awksa"]
+[ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/gdshader/flash_color.gdshader" id="1_awksa"]
 [ext_resource type="Texture2D" uid="uid://bqorna25qfuyo" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami_Sprite.png" id="2_0cvc3"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0cvc3"]
-resource_local_to_scene = true
 shader = ExtResource("1_awksa")
+shader_parameter/enable_flash = true
 shader_parameter/flash_color = Color(0, 0, 0, 1)
 shader_parameter/flash_intensity = 0.0
 shader_parameter/alpha = 1.0
-shader_parameter/enable_crossfade = false
+shader_parameter/enable_crossfade = true
 shader_parameter/crossfade_amount = 1.0
-shader_parameter/enable_sprite_crossfade = false
+shader_parameter/enable_sprite_crossfade = true
 shader_parameter/early_frame = 0
 shader_parameter/current_frame = 0
 shader_parameter/hframes = 1

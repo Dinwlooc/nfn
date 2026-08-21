@@ -57,17 +57,11 @@ func _ready() -> void:
 	if area and area.items_pool.size() > 0:
 		_request_sort()
 
-## 根据卡牌数量更新缩放
 func _update_total_scale_factor() -> void:
 	if not area:
 		return
 	var count: int = area.items_pool.size()
-	if count <= 8:
-		total_scale_factor = 1.0
-	elif count >= 24:
-		total_scale_factor = 0.75
-	else:
-		total_scale_factor = 1.0 - (count - 8) / 16.0 * 0.25
+	total_scale_factor = UIAnimationUtils.compute_scale_factor(count, 8, 24, 0.75, 1.0)
 
 func _physics_process(delta: float) -> void:
 	if in_area:

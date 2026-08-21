@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://ld25ivvpfrx8"]
 
-[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/rgb_shift_distortion.gdshader" id="1_dri28"]
+[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/gdshader/rgb_shift_distortion.gdshader" id="1_dri28"]
 [ext_resource type="Script" uid="uid://d1u5il71urrcj" path="res://resource/default/assets/Area/areaface/PlayerStatus/player_status_face.gd" id="1_dvwbm"]
-[ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/flash_color.gdshader" id="1_j7r54"]
+[ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/gdshader/flash_color.gdshader" id="1_j7r54"]
 [ext_resource type="Script" uid="uid://cgq5mj4swuwa2" path="res://resource/default/assets/Area/areaface/PlayerStatus/block_indicator.gd" id="3_x2uyb"]
 [ext_resource type="Script" uid="uid://b1dob454nxdax" path="res://resource/default/assets/Area/areaface/PlayerStatus/dot_indicator.gd" id="5_k6e0a"]
 [ext_resource type="Script" uid="uid://cfjpkvg8bm4fi" path="res://resource/default/assets/Area/areaface/PlayerStatus/dot_unit.gd" id="6_1w0bs"]
@@ -11,17 +11,10 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ggemd"]
 shader = ExtResource("1_j7r54")
+shader_parameter/enable_flash = false
 shader_parameter/flash_color = Color(0, 0, 0, 1)
 shader_parameter/flash_intensity = 0.446
 shader_parameter/alpha = 1.0
-shader_parameter/enable_crossfade = false
-shader_parameter/crossfade_amount = 1.0
-shader_parameter/enable_sprite_crossfade = false
-shader_parameter/early_frame = 0
-shader_parameter/current_frame = 0
-shader_parameter/hframes = 1
-shader_parameter/vframes = 1
-shader_parameter/sprite_crossfade_amount = 1.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ggemd"]
 bg_color = Color(0.785329, 0.327489, 0, 0.470588)

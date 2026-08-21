@@ -259,7 +259,7 @@ func _build_line() -> void:
 	var end: Vector2 = _player_arrow.get_tail_global()
 	var start_tangent_up: bool = not _hand_arrow.direction.is_equal_approx(Vector2.UP)
 	var end_tangent_up: bool = not _player_arrow.direction.is_equal_approx(Vector2.UP)
-	var curve: Curve2D = ArrowLine.create_smooth_curve(start, end, start_tangent_up, end_tangent_up)
+	var curve: Curve2D = MathUtils.create_smooth_curve(start, end, start_tangent_up, end_tangent_up)
 	_line.points = curve.tessellate(CURVE_TESSELLATE_PRECISION)
 	var offset: Vector2 = global_position
 	for i: int in _line.points.size():

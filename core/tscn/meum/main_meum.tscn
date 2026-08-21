@@ -2,23 +2,23 @@
 
 [ext_resource type="Script" uid="uid://bsycek868a820" path="res://core/tscn/meum/Node_MeumControl.gd" id="1_x1yqv"]
 [ext_resource type="Script" uid="uid://bfurfdhnckykn" path="res://resource/default/assets/Area/areaface/backgound.gd" id="2_0deb0"]
-[ext_resource type="Shader" uid="uid://doci3osgosgmd" path="res://resource/default/shader/bloom.gdshader" id="3_3ffcx"]
-[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/rgb_shift_distortion.gdshader" id="3_j0cbf"]
+[ext_resource type="Shader" uid="uid://doci3osgosgmd" path="res://resource/default/shader/gdshader/bloom.gdshader" id="3_3ffcx"]
+[ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/gdshader/rgb_shift_distortion.gdshader" id="3_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://resource/default/assets/Backgound/backgound6.png" id="4_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://v20ylpnaw8mc" path="res://resource/default/assets/Backgound/backgound2.png" id="6_m1fcx"]
-[ext_resource type="Script" uid="uid://062bg815jifb" path="res://resource/default/shader/shaderScript/shader_lights.gd" id="7_71pag"]
 [ext_resource type="Texture2D" uid="uid://c3ants1otolio" path="res://resource/default/assets/Backgound/backgound3icon3png.png" id="7_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://csli57il02lge" path="res://resource/default/assets/Backgound/backgound3icon2.png" id="8_m1fcx"]
 [ext_resource type="PackedScene" uid="uid://b025ean41nrj6" path="res://core/tscn/game/console.tscn" id="10_l3ebq"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fu0d1"]
 shader = ExtResource("3_3ffcx")
-shader_parameter/threshold_min = 0.12
-shader_parameter/threshold_max = 1.0
-shader_parameter/intensity = 0.5
-shader_parameter/radius = 1.0
+shader_parameter/enable_bloom = false
+shader_parameter/threshold_min = 0.7590000360525
+shader_parameter/brightness_upper_limit = 0.818000038855
+shader_parameter/bloom_intensity = 0.5
+shader_parameter/spread = 4.3650002073375
 shader_parameter/enable_pulse = true
-shader_parameter/pulse_speed = 2.0
+shader_parameter/pulse_speed = 0.83400003635512
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_d576q"]
 shader = ExtResource("3_j0cbf")
@@ -39,8 +39,6 @@ metadata/_edit_use_anchors_ = true
 
 [node name="Backgound" type="Control" parent="MeumControl" unique_id=1450387378]
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
 scale = Vector2(1.02, 1.02)
 script = ExtResource("2_0deb0")
 
@@ -68,7 +66,6 @@ scale = Vector2(0.5, 0.5)
 texture = ExtResource("6_m1fcx")
 expand_mode = 1
 stretch_mode = 3
-script = ExtResource("7_71pag")
 metadata/_edit_use_anchors_ = true
 
 [node name="ItemList_Set" type="ItemList" parent="MeumControl" unique_id=33504981]
