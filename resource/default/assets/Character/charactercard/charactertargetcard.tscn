@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://2reoptdkag2j" path="res://resource/default/assets/Area/areaface/areaface_target_hand.tscn" id="4_iwfka"]
 [ext_resource type="Texture2D" uid="uid://caivq3rbvlms4" path="res://resource/default/assets/Character/charactercard/character_selected_icon.png" id="5_ct3wd"]
 
-[node name="CharacterTargetCard" type="Control"]
+[node name="CharacterTargetCard" type="Control" unique_id=1319322203]
 custom_minimum_size = Vector2(236, 236)
 layout_mode = 3
 anchors_preset = 0
@@ -20,25 +20,25 @@ mouse_filter = 2
 script = ExtResource("1_1lsym")
 metadata/_custom_type_script = "uid://onljydwdxj4o"
 
-[node name="Backgound" type="ColorRect" parent="."]
+[node name="Backgound" type="ColorRect" parent="." unique_id=737628132]
 texture_filter = 1
-layout_mode = 2
+layout_mode = 0
 offset_left = 6.0
 offset_right = 237.0
 offset_bottom = 231.0
 color = Color(0.968627, 0.482353, 0.219608, 0.411765)
 
-[node name="BackgoundAbility" type="ColorRect" parent="."]
+[node name="BackgoundAbility" type="ColorRect" parent="." unique_id=879620656]
 visible = false
 texture_filter = 1
-layout_mode = 2
+layout_mode = 0
 offset_left = 14.0
 offset_top = 156.0
 offset_right = 230.0
 offset_bottom = 223.0
 color = Color(1, 0.639216, 0.329412, 0.823529)
 
-[node name="AreaFaceSelf_Properties" parent="." instance=ExtResource("2_f0c7v")]
+[node name="AreaFaceSelf_Properties" parent="." unique_id=355456068 instance=ExtResource("2_f0c7v")]
 layout_mode = 1
 offset_left = 120.0
 offset_top = -172.57
@@ -46,20 +46,22 @@ offset_right = 329.508
 offset_bottom = 139.0
 mode = 1
 
-[node name="AreaFaceDenfence" parent="." instance=ExtResource("3_ct3wd")]
+[node name="AreaFaceDenfence" parent="." unique_id=436431586 instance=ExtResource("3_ct3wd")]
+layout_mode = 0
 offset_left = 14.0
 offset_top = 232.0
 offset_right = 232.0
 offset_bottom = 318.0
 mode = 1
 
-[node name="AreaFaceHand" parent="." instance=ExtResource("4_iwfka")]
+[node name="AreaFaceHand" parent="." unique_id=167046545 instance=ExtResource("4_iwfka")]
+layout_mode = 0
 offset_left = 11.0
 offset_top = 170.0
 offset_right = 119.0
 offset_bottom = 224.0
 
-[node name="CharacterPanel" type="Control" parent="."]
+[node name="CharacterPanel" type="Control" parent="." unique_id=90124985]
 clip_contents = true
 anchors_preset = 0
 offset_left = 13.0
@@ -67,16 +69,16 @@ offset_top = 6.0
 offset_right = 127.0
 offset_bottom = 161.0
 
-[node name="BackgoundCharacter" type="ColorRect" parent="CharacterPanel"]
+[node name="BackgoundCharacter" type="ColorRect" parent="CharacterPanel" unique_id=1317831902]
 texture_filter = 1
-layout_mode = 2
+layout_mode = 0
 offset_left = -11.0
 offset_top = -11.0
 offset_right = 225.0
 offset_bottom = 225.0
 color = Color(0.309804, 0.152941, 0.0509804, 0.486275)
 
-[node name="Anchor" type="Control" parent="CharacterPanel"]
+[node name="Anchor" type="Control" parent="CharacterPanel" unique_id=1132624271]
 layout_mode = 1
 anchor_left = 0.5
 anchor_top = 0.328
@@ -88,14 +90,17 @@ offset_right = -11.0
 offset_bottom = -90.43
 scale = Vector2(0.9, 0.9)
 
-[node name="CharacterContainer" parent="CharacterPanel/Anchor" instance=ExtResource("4_ct3wd")]
+[node name="CharacterContainer" parent="CharacterPanel/Anchor" unique_id=1774446217 instance=ExtResource("4_ct3wd")]
 clip_contents = false
 layout_mode = 1
-offset_left = -28.0
-offset_right = 150.0
-offset_bottom = 267.425
+anchors_preset = 0
+offset_left = -35.555176
+offset_top = 28.888224
+offset_right = 169.85931
+offset_bottom = 296.3132
+scale = Vector2(1.8, 1.8)
 
-[node name="SelectedIcon" type="TextureRect" parent="."]
+[node name="SelectedIcon" type="TextureRect" parent="." unique_id=40023988]
 visible = false
 layout_mode = 0
 offset_left = -11.0
@@ -104,7 +109,7 @@ offset_right = 256.0
 offset_bottom = 251.0
 texture = ExtResource("5_ct3wd")
 
-[node name="Button" type="Button" parent="."]
+[node name="Button" type="Button" parent="." unique_id=1479380532]
 layout_mode = 0
 offset_left = 8.0
 offset_top = -4.0

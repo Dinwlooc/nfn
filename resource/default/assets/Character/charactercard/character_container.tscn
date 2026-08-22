@@ -2,32 +2,19 @@
 
 [ext_resource type="Script" uid="uid://b581hwjvp5kp5" path="res://resource/default/assets/Character/charactercard/character_face.gd" id="1_0cvc3"]
 [ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/gdshader/flash_color.gdshader" id="1_awksa"]
-[ext_resource type="Texture2D" uid="uid://bqorna25qfuyo" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami_Sprite.png" id="2_0cvc3"]
+[ext_resource type="Texture2D" uid="uid://cmgxffqsluc8l" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami_Sprite.png" id="2_0cvc3"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0cvc3"]
 shader = ExtResource("1_awksa")
-shader_parameter/enable_flash = true
-shader_parameter/flash_color = Color(0, 0, 0, 1)
-shader_parameter/flash_intensity = 0.0
-shader_parameter/alpha = 1.0
-shader_parameter/enable_crossfade = true
-shader_parameter/crossfade_amount = 1.0
-shader_parameter/enable_sprite_crossfade = true
-shader_parameter/early_frame = 0
-shader_parameter/current_frame = 0
-shader_parameter/hframes = 1
-shader_parameter/vframes = 1
-shader_parameter/sprite_crossfade_amount = 1.0
 
 [node name="CharacterContainer" type="Control" unique_id=2047449437]
 texture_filter = 1
 texture_repeat = 1
 clip_contents = true
 layout_mode = 3
-anchors_preset = 0
 offset_right = 178.0
-offset_bottom = 355.0
-pivot_offset = Vector2(88, 315)
+offset_bottom = 357.0
+pivot_offset = Vector2(88, 357)
 script = ExtResource("1_0cvc3")
 metadata/_custom_type_script = "uid://drcmit26ljvlo"
 
@@ -35,6 +22,7 @@ metadata/_custom_type_script = "uid://drcmit26ljvlo"
 light_mask = 2
 texture_filter = 1
 material = SubResource("ShaderMaterial_0cvc3")
-position = Vector2(83, 190)
+position = Vector2(-39, -27)
 texture = ExtResource("2_0cvc3")
+centered = false
 hframes = 2

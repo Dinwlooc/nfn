@@ -43,6 +43,10 @@ const RISE_WALK_DURATION_FACTOR: float = 4.0   # 走回原位（水平归位）�
 const RISE_SINK_DISTANCE: float = 30.0
 ## 起身速度与剩余生命比例的关系：因子 sink_factor = 1 / max(0.1, remaining_hp_ratio)，并钳位到 [1, RISE_SINK_MAX_FACTOR]
 const RISE_SINK_MAX_FACTOR: float = 2.0
+## ==================== 交叉渐变参数 ====================
+## 切换回正常帧（frame=0）时的交叉渐变时长（秒）
+const CROSSFADE_DURATION: float = 0.3
+
 ## ==================== 运行时变量 ====================
 var _current_hp_damage: int = 0
 var _current_tween: Tween = null
@@ -66,19 +70,15 @@ func play_damage_animation(hp_damage: int, mp_damage: int, remaining_hp_ratio: f
 	if hp_damage < 0:
 		_handle_heal(hp_damage, remaining_hp_ratio)
 		return
-	# 正伤害或零伤害
 	if hp_damage == 0 and mp_damage <= 0:
 		return
-	# 计算通用参数
 	var factor: float = clampf(hp_damage / DAMAGE_REFERENCE, 0.0, 1.0)
 	var T: float = MIN_DURATION + (MAX_DURATION - MIN_DURATION) * factor
 	var flash_duration: float = TOTAL_TIME_FACTOR * T
 	var dir: float = -1.0 if _is_mirrored else 1.0
-	# 物理伤害（HP）
 	if hp_damage > 0 and remaining_hp_ratio < 1:
 		_play_physical_hit_animation(hp_damage, factor, T, flash_duration, dir, remaining_hp_ratio)
 		return
-	# 魔法伤害（MP）
 	if mp_damage > 0:
 		_play_magic_hit_animation(mp_damage, flash_duration)
 
@@ -93,7 +93,6 @@ func _play_physical_hit_animation(hp_damage: int, factor: float, T: float, flash
 		_play_down_animation(factor, T, dir)
 		_flash_sprite(Color.RED, flash_duration)
 		return
-	# 非致死：原有优先级逻辑（高伤害覆盖低伤害）
 	if _current_tween != null and hp_damage >= _current_hp_damage:
 		_kill_current_animation_if_exists()
 	if _current_tween != null:
@@ -115,7 +114,6 @@ func _play_normal_hit_animation(factor: float, T: float, dir: float, remaining_h
 	if character is Sprite2D:
 		character.frame = 1
 	_add_hit_phase(_current_tween, target_x, target_y, target_rot, T)
-	# 恢复阶段
 	var t: float = clampf(remaining_hp_ratio, 0.0, 1.0)
 	var recover_multiplier: float = 1.0 + (RECOVER_PENALTY_MAX_MULTIPLIER - 1.0) * (1.0 - t)
 	_current_tween.chain()
@@ -149,7 +147,6 @@ func _play_down_animation(factor: float, T: float, dir: float) -> void:
 	if character is Sprite2D:
 		character.frame = 1
 	_add_hit_phase(_current_tween, target_x1, target_y1, target_rot1, T)
-	# 第二阶段
 	_current_tween.chain()
 	var fall_duration: float = DOWN_FALL_DUR_FACTOR
 	var target_x2: float = target_x1
@@ -170,11 +167,7 @@ func _play_magic_hit_animation(mp_damage: int, flash_duration: float) -> void:
 	_flash_sprite(Color.BLUE, flash_duration)
 	if character is Sprite2D:
 		character.frame = 1
-	# 延迟直接切回正常帧（无交叉淡化）
-	create_tween().tween_callback(func():
-		if is_instance_valid(character) and character is Sprite2D:
-			character.frame = 0
-	).set_delay(flash_duration)
+	create_tween().tween_callback(_crossfade_to_normal).set_delay(flash_duration)
 
 ## 从倒地状态恢复的动画（治疗触发），时长仅与剩余生命比例相关
 ## 各阶段时长全部相对于 RISE_BASE_DURATION，旋转回正时长独立配置，不与下沉阶段耦合
@@ -185,7 +178,7 @@ func _play_recover_from_down_animation(remaining_hp_ratio: float) -> void:
 	_current_tween = create_tween()
 	var sink_factor: float = 1.0 / max(0.1, remaining_hp_ratio)
 	sink_factor = clampf(sink_factor, 1.0, RISE_SINK_MAX_FACTOR)
-	# 1. 下沉 + 旋转回正（同时进行）
+	_crossfade_to_normal()
 	var sink_duration: float = RISE_BASE_DURATION * RISE_SINK_DURATION_FACTOR * sink_factor
 	var rot_duration: float = RISE_BASE_DURATION * RISE_ROT_DURATION_FACTOR * sink_factor
 	var target_y_down: float = _original_position.y + RISE_SINK_DISTANCE
@@ -193,16 +186,12 @@ func _play_recover_from_down_animation(remaining_hp_ratio: float) -> void:
 	_current_tween.set_parallel(true)
 	_add_rise_sink_phase(_current_tween, target_y_down, sink_duration)
 	_add_rise_rot_phase(_current_tween, target_rot_down, rot_duration)
-	# 2. 起身（垂直归位）
 	var up_duration: float = RISE_BASE_DURATION * RISE_UP_DURATION_FACTOR * sink_factor
 	_current_tween.chain()
 	_add_rise_up_phase(_current_tween, _original_position.y, up_duration)
-	# 3. 走回原位（水平归位）
 	var walk_duration: float = RISE_BASE_DURATION * RISE_WALK_DURATION_FACTOR * sink_factor
 	_add_rise_walk_phase(_current_tween, _original_position.x, walk_duration)
 	_current_tween.chain().tween_callback(_on_recover_from_down_finished)
-	if character is Sprite2D:
-		character.frame = 0
 
 ## 添加起身下沉阶段（垂直下压）
 func _add_rise_sink_phase(tween: Tween, target_y: float, duration: float) -> void:
@@ -231,16 +220,13 @@ func _on_down_anim_finished() -> void:
 func _on_recover_from_down_finished() -> void:
 	_is_down_stagger = false
 	_current_tween = null
-	if character is Sprite2D:
-		character.frame = 0
 
 ## 停止当前受击动画（重写父类方法）
 func stop_damage_animation() -> void:
 	_kill_current_animation_if_exists()
 	position = _original_position
 	rotation = _original_rotation
-	if character and character is Sprite2D:
-		character.frame = 0
+	_crossfade_to_normal()
 
 ## 强制杀死当前动画（如果有），重置相关状态
 func _kill_current_animation_if_exists() -> void:
@@ -255,12 +241,11 @@ func set_mirrored(flip_h: bool) -> void:
 	if character:
 		character.flip_h = flip_h
 
-## 物理受击动画结束回调（直接切回正常帧）
+## 物理受击动画结束回调（通过交叉渐变切回正常帧）
 func _on_physical_anim_finished() -> void:
-	if character is Sprite2D:
-		character.frame = 0
 	_current_hp_damage = 0
 	_current_tween = null
+	_crossfade_to_normal()
 
 ## 内部闪烁辅助方法（独立封装）
 ## @param color: 闪烁颜色
@@ -268,3 +253,15 @@ func _on_physical_anim_finished() -> void:
 func _flash_sprite(color: Color, duration: float) -> void:
 	if character and character.material is ShaderMaterial:
 		ShaderEffectsUtils.flash_color(character, color, duration, 1.0)
+
+## 使用交叉渐变将精灵帧切换为正常帧（frame=0）
+## 若当前帧已经是0或节点不支持，则直接设置
+func _crossfade_to_normal() -> void:
+	if not (character is Sprite2D):
+		return
+	if character.frame == 0:
+		return
+	if character.material is ShaderMaterial:
+		ShaderEffectsUtils.crossfade_sprite_frame(character, 0, CROSSFADE_DURATION)
+	else:
+		character.frame = 0
