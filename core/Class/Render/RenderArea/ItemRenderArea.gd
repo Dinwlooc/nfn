@@ -66,11 +66,11 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 				source_area.item_created_for_removing.emit(render_item)
 		if render_item.area_name == get_area_name():
 			_update_item_data(render_item, item_pack)
-		else:
-			var current_area: RenderArea = render_context.get_render_area(render_item.area_name, render_item.player_id)
-			if current_area:
-				current_area.remove_item(render_item)
-			add_item(render_item)
+			continue
+		var current_area: RenderArea = render_context.get_render_area(render_item.area_name, render_item.player_id)
+		if current_area:
+			current_area.remove_item(render_item)
+		add_item(render_item)
 # ==================== 选择操作 ====================
 ## 处理[param item]的选中/取消选中逻辑，维护选中列表，并触发选择变化事件。
 func on_select(item: RenderItem) -> void:

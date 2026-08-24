@@ -182,7 +182,7 @@ func _on_damage_phase(game_state: GameState, ctx: Context) -> void:
 
 ## 将战意授予列表转换为每个玩家的战意命令
 func _apply_combat_will_grants_with_command(grants: Array[RuleSettle.CombatWillGrant]) -> void:
-	var player_deltas: Dictionary = {}  # key: Player, value: {attack: int, defense: int}
+	var player_deltas: Dictionary = {}
 	for grant in grants:
 		var player: Player = grant.target_player
 		if not player:

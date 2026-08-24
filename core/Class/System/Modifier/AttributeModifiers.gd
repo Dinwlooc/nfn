@@ -154,3 +154,20 @@ func compute_with_temporary_bonus(attribute: StringName, bonus: float) -> int:
 func clear() -> void:
 	modifiers_dict.clear()
 	combined_values.clear()
+
+## 将另一个属性修饰器中指定属性的所有修饰器合并到当前修饰器的指定属性中。
+## 合并方式：提取源属性的四大运算合并值（基础加、基础乘、最终加、最终乘），
+## 作为四个独立的修饰器（使用指定的合成修饰器名）添加到目标属性。
+## @param source 源属性修饰器实例
+## @param attribute 源属性名
+## @param target_attribute 目标属性名（默认为 attribute）
+## @param synthesized_modifier_name 合成修饰器的名称（默认为 &"merged"）
+func merge_modifiers_from(source: AttributeModifiers, attribute: StringName, target_attribute: StringName = attribute, synthesized_modifier_name: StringName = &"merged") -> void:
+	if source == self:
+		return
+	if not source.combined_values.has(attribute):
+		return
+	_ensure_attribute_exists(target_attribute)
+	var vals: PackedFloat32Array = source.combined_values[attribute]
+	for type in range(4):
+		add_modifier(target_attribute, type, synthesized_modifier_name, vals[type])

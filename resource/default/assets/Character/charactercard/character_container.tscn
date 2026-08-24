@@ -25,4 +25,4 @@ material = SubResource("ShaderMaterial_0cvc3")
 position = Vector2(-39, -27)
 texture = ExtResource("2_0cvc3")
 centered = false
-hframes = 2
+hframes = 4

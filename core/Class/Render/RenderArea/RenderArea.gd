@@ -58,7 +58,7 @@ func set_render_context(context:RenderContext) -> void:
 ##更新ItemPack数据
 func _update_item_data(render_item: RenderItem, item_pack: ItemPack) -> void:
 	render_item.apply_pack(item_pack)
-	tween_update(RenderEvent.new(RenderEvent.DefaultType.CARD_UPDATE))
+	render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_UPDATE))
 ## 处理ItemSet请求
 func _process_item_set(_item_set: RenderRequest.ItemSet) -> void:
 	pass

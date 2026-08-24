@@ -32,6 +32,7 @@ const DEFAULT_COLOR: Color = Color(0.8, 0.8, 0.8, 0.3)
 
 var _stylebox: StyleBoxFlat
 var _current_type: StringName
+var _blink_tween: Tween = null          # 弃牌区闪烁动画
 
 func _ready() -> void:
 	_stylebox = background_panel.get_theme_stylebox(&"panel") as StyleBoxFlat
@@ -51,6 +52,7 @@ func data_update(new_item: RenderItem,_render_event:RenderEvent = RenderEvent.NU
 	item = new_item
 	item.set_item_size(size)
 	call_deferred(&"_refresh_ui")
+
 
 ## 刷新界面（根据当前 item 的数据重绘）
 func _refresh_ui() -> void:
@@ -73,15 +75,47 @@ func _refresh_ui() -> void:
 	name_label.text = get_real_name(data.name)
 	vertical_name_label.text = get_real_name(data.name)
 	suit_sprite.frame = get_suit(data.suit)
+	_update_background_color()
 	render_update()
 
 ## 渲染更新（由 render_context 触发）
 func render_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	var area: ItemRenderArea
-	if item and item.render_context:
+	var area: RenderArea
+	if not item:
+		return
+	if item.area_name == RenderArea.DefaultArea.HAND and item.render_context:
 		area = item.render_context.get_render_area(item.area_name)
-	var show_vertical: bool = area and area.items_pool.size() > 12 and vertical_name_label.text.length() <= 4
-	vertical_name_label.visible = show_vertical
+		var show_vertical: bool = area and area.items_pool.size() > 12 and vertical_name_label.text.length() <= 4
+		vertical_name_label.visible = show_vertical
+		return
+	if not _render_event.get_type() == RenderEvent.DefaultType.CARD_ADD:
+		return
+	if item.area_name == RenderArea.DefaultArea.DISCARD:
+		_start_discard_blink()
+		return
+	_stop_discard_blink()
+
+## 启动弃牌区循环闪烁（仅在动画不存在或无效时创建）
+func _start_discard_blink() -> void:
+	# 如果已有有效动画，直接返回，不重新创建
+	if _blink_tween and _blink_tween.is_valid():
+		return
+	# 先设置原色（基于当前交互状态）
+	_update_background_color()
+	var original_color: Color = _stylebox.bg_color
+	var target_color: Color = Color.WHITE
+	# 创建循环 Tween：原色 ↔ 白色
+	_blink_tween = create_tween()
+	_blink_tween.set_loops()
+	_blink_tween.tween_property(_stylebox, ^"bg_color", target_color, 0.3).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
+	_blink_tween.tween_property(_stylebox, ^"bg_color", original_color, 0.3).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)
+
+## 停止弃牌区闪烁，恢复背景为正常颜色
+func _stop_discard_blink() -> void:
+	if _blink_tween and _blink_tween.is_valid():
+		_blink_tween.kill()
+		_blink_tween = null
+	# 恢复背景为正常颜色（交互状态决定）
 	_update_background_color()
 
 ## 更新背景颜色（根据当前类型和交互状态）
@@ -100,11 +134,15 @@ func _update_background_color() -> void:
 	else:
 		target_color = color_map[&"normal"]
 	_stylebox.bg_color = target_color
+
 ## 获取当前类型对应的颜色映射（纯函数）
 func _get_color_map() -> Dictionary:
 	return TYPE_COLORS.get(_current_type, {})
+
 ## 重置卡面到初始状态（用于回收复用）
 func reset() -> void:
+	# 停止闪烁
+	_stop_discard_blink()
 	item = null
 	_current_type = &""
 	texture_rect.texture = null

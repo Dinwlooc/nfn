@@ -38,6 +38,8 @@ func _ready() -> void:
 	render_context.area_manager.area_created.connect(_on_render_context_area_created)
 
 func _process(_delta: float) -> void:
+	if not Engine.get_process_frames() % 10 == 0:
+		return
 	_request_queue.process_one()
 
 func _initialize_render_area(area: RenderArea) -> void:

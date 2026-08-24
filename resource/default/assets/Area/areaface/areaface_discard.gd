@@ -19,8 +19,10 @@ const FIRST_STAGE_DURATION_RATIO: float = 0.4
 const CENTER_RECT_POSITION_FACTOR: float = 0.5
 ## 缓动过渡类型
 const TRANS_TYPE: Tween.TransitionType = Tween.TRANS_EXPO
-## 动画完成后的最终缩放（恢复缩放的目标值）
+## 第一阶段完成后的缩放（恢复缩放的目标值）
 const FINAL_SCALE: float = 0.8
+## 第二阶段最终缩放
+const FINAL_SCALE_END: float = 0.2
 
 ## 缓存的弃牌区域实例
 var _discard_area: RenderAreaDiscard = null
@@ -62,7 +64,7 @@ func _on_item_added(render_item: RenderItem) -> void:
 		center_rect.position.x + sx * center_rect.size.x,
 		center_rect.position.y + sy * center_rect.size.y
 	)
-	# 添加随机偏移
+	# 添加随机偏移（保留随机弹射效果）
 	var random_offset: Vector2 = Vector2(
 		randf_range(-RANDOM_OFFSET_RANGE.x, RANDOM_OFFSET_RANGE.x),
 		randf_range(-RANDOM_OFFSET_RANGE.y, RANDOM_OFFSET_RANGE.y)
@@ -70,18 +72,18 @@ func _on_item_added(render_item: RenderItem) -> void:
 	mid_global_pos += random_offset
 	# 创建动画序列
 	var tween: Tween = create_tween()
-	# 第一阶段：恢复缩放并移动到中间点（先快后慢）
+	# 第一阶段：并行执行缩放和位置动画（先快后慢）
 	tween.set_parallel(true)
 	tween.tween_property(render_item, ^"scale", Vector2(FINAL_SCALE, FINAL_SCALE), ANIMATION_DURATION * FIRST_STAGE_DURATION_RATIO)\
 			.set_trans(TRANS_TYPE).set_ease(EASE_OUT_TYPE)
 	tween.tween_property(render_item, ^"global_position", mid_global_pos, ANIMATION_DURATION * FIRST_STAGE_DURATION_RATIO)\
 			.set_trans(TRANS_TYPE).set_ease(EASE_OUT_TYPE)
-	tween.set_parallel(false)
-
-	# 第二阶段：移动到右上角（先慢后快）
+	# 第二阶段：并行执行位置和缩放动画（先慢后快）
+	tween.chain()
 	tween.tween_property(render_item, ^"global_position", target_global_pos, ANIMATION_DURATION)\
 			.set_trans(TRANS_TYPE).set_ease(EASE_TYPE)
-
+	tween.tween_property(render_item, ^"scale", Vector2(FINAL_SCALE_END, FINAL_SCALE_END), ANIMATION_DURATION)\
+			.set_trans(TRANS_TYPE).set_ease(EASE_TYPE)
 	# 动画完成后回收卡片
 	tween.finished.connect(_on_animation_finished.bind(render_item), CONNECT_ONE_SHOT)
 

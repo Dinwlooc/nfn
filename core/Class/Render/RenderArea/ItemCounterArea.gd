@@ -17,10 +17,10 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 		var render_item: RenderItem = render_context.get_or_create_item(item_pack)
 		if render_item.area_name == get_area_name():
 			_update_item_data(render_item, item_pack)
-		else:
-			var current_area: RenderArea = render_context.get_render_area(render_item.area_name, render_item.player_id)
-			if current_area:
-				current_area.remove_item(render_item)
+			continue
+		var current_area: RenderArea = render_context.get_render_area(render_item.area_name, render_item.player_id)
+		if current_area:
+			current_area.remove_item(render_item)
 		add_item(render_item)
 
 func _process_item_count_set(item_count_set: RenderRequest.ItemCountSet) -> void:
@@ -31,9 +31,12 @@ func _process_item_count_set(item_count_set: RenderRequest.ItemCountSet) -> void
 	item_count = item_count_set.total_count
 
 func add_item(item: RenderItem, index: int = -1) -> void:
+	item.area_name = get_area_name()
+	_connect_item_to_area(item)
 	item_count += 1
 	if recycle_mode == RecycleMode.AUTO:
 		_request_recycle_item(item)
+	render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_ADD))
 	items_added.emit(item)
 
 func remove_item(item: RenderItem) -> void:
