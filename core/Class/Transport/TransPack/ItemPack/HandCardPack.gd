@@ -34,6 +34,7 @@ static func init_from_card(card: Card) -> HandCardPack:
 			card.id,
 			card.get_name(),
 			card.type,
+			card.get_owner_id(),          # 新增：传递玩家ID
 			card.get_base_power(),
 			card.get_base_cost(),
 			card.suit,
@@ -46,13 +47,15 @@ func _init(
 	init_id: int = 0,
 	init_name: StringName = &"",
 	init_type: StringName = NULL,
+	init_player_id: int = 0,              # 新增参数
 	init_power: int = STANDARD_POWER,
 	init_cost: int = STANDARD_COST,
 	init_suit: int = STANDARD_SUIT,
 	init_modified_power: int = STANDARD_MODIFIED_POWER,
 	init_modified_cost: int = STANDARD_MODIFIED_COST
 ) -> void:
-	super._init(init_id, init_name, init_type)
+	# 传递玩家ID给父类
+	super._init(init_id, init_name, init_type, init_player_id)
 	power = init_power
 	cost = init_cost
 	suit = init_suit
@@ -132,6 +135,7 @@ func update_merge_mask() -> void:
 	if modified_cost != STANDARD_MODIFIED_COST: merge_mask |= 1 << Property.MODIFIED_COST
 
 func _update_and_calculate_delta(card: Card) -> void:
+	# 父类会处理 player_id 等基础字段
 	super._update_and_calculate_delta(card)
 	if card is not Card:
 		return

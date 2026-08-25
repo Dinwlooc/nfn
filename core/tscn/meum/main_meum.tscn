@@ -12,17 +12,9 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fu0d1"]
 shader = ExtResource("3_3ffcx")
-shader_parameter/enable_bloom = false
-shader_parameter/threshold_min = 0.7590000360525
-shader_parameter/brightness_upper_limit = 0.818000038855
-shader_parameter/bloom_intensity = 0.5
-shader_parameter/spread = 4.3650002073375
-shader_parameter/enable_pulse = true
-shader_parameter/pulse_speed = 0.83400003635512
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_d576q"]
 shader = ExtResource("3_j0cbf")
-shader_parameter/distortion_intensity = 0.0
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6du6q"]
 

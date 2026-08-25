@@ -19,7 +19,7 @@
 [ext_resource type="Script" uid="uid://bqpyx1hbdgjdl" path="res://core/Class/Render/RenderArea/RenderAreaDefence.gd" id="15_eqfmo"]
 [ext_resource type="Script" uid="uid://5o64qp3kknjx" path="res://resource/default/assets/Area/areaface/areaface_discard.gd" id="15_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://b025ean41nrj6" path="res://core/tscn/game/console.tscn" id="15_vjhr3"]
-[ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/areaface_denfence.tscn" id="16_jjejj"]
+[ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/AreaDenfence/areaface_denfence.tscn" id="16_jjejj"]
 
 [node name="MainGame" type="Node2D" unique_id=264974230]
 
@@ -96,6 +96,7 @@ script = ExtResource("14_a6oxl")
 
 [node name="AreaFaceTargets" parent="Control/AreaPlayers" unique_id=717599472 instance=ExtResource("14_8v20q")]
 layout_mode = 0
+offset_left = -15.0
 offset_top = 30.0
 offset_right = 1605.0
 offset_bottom = 286.0

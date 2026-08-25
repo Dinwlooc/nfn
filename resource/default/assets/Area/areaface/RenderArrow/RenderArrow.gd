@@ -1,24 +1,29 @@
-## 动态箭头管理器：维护手牌箭头、玩家箭头和连接线。
+## 动态箭头管理器：维护手牌箭头、玩家箭头、连接线，以及守区非我方牌到其所有者的指示线。
 ## 通过信号驱动更新，主循环使用状态机（等待→排列→绘制）轮询。
 extends Control
 
-# 导入内部依赖（原 class_name 移除，改用 preload，用于类型提示和实例化）
+# 导入内部依赖
 const ArrowNode = preload("Arrow.gd")
 const ArrowLine = preload("ArrowLine.gd")
+
 # ==================== 常量 ====================
 const HAND_AREA_NAME: StringName = RenderArea.DefaultArea.HAND
 const PLAYERS_AREA_NAME: StringName = RenderArea.DefaultArea.PLAYERS
 const DEFENCE_AREA_NAME: StringName = RenderArea.DefaultArea.DEFENCE
 const CURVE_TESSELLATE_PRECISION: int = 5
 const ACTIVATION_DELAY_MS: int = 250
+
 ## 主循环状态机
 enum State { IDLE, WAITING, ARRANGING, DRAWING }
-## 手牌箭头（直接使用 preload 类名）
+
+## 手牌箭头
 var _hand_arrow: ArrowNode
 ## 玩家箭头
 var _player_arrow: ArrowNode
-## 连接线
+## 主线连接线
 var _line: ArrowLine
+## 守区非我方牌指示线（无箭头）
+var _enemy_line: ArrowLine
 ## 激活延迟时间戳（毫秒），仅在 WAITING 状态有意义
 var _activation_timestamp: int = 0
 ## 曲线插值数组是否有效（无需重新计算）
@@ -38,6 +43,12 @@ var _cached_hand_dir: Vector2 = Vector2.DOWN
 var _cached_player_target: Vector2 = Vector2.INF
 ## 缓存：上次玩家箭头方向
 var _cached_player_dir: Vector2 = Vector2.UP
+## 当前选中的玩家及目标（用于主线目标解析）
+var _target_player: RenderItem = null
+var _target_item: RenderItem = null
+## 标记敌方曲线是否已经更新（防止重复构建）
+var _enemy_line_updated: bool = false
+
 var render_context: RenderContext
 @export var render_control: RenderControl
 ## 当前状态
@@ -53,10 +64,12 @@ func _ready() -> void:
 	_hand_arrow = ArrowNode.new()
 	_player_arrow = ArrowNode.new()
 	_line = ArrowLine.new()
+	_enemy_line = ArrowLine.new()
 	add_child(_hand_arrow)
 	add_child(_player_arrow)
 	_hand_arrow.hide_arrow()
 	_player_arrow.hide_arrow()
+	_enemy_line.kill_animation()
 	render_context.connect_renderarea(HAND_AREA_NAME, _on_area_connected)
 	render_context.connect_renderarea(PLAYERS_AREA_NAME, _on_area_connected)
 
@@ -106,10 +119,12 @@ func _on_area_render_event(event: RenderEvent) -> void:
 	elif type == RenderEvent.DefaultType.OUTTO_AREA:
 		_in_area = false
 		_remove_line_only()
+		_hide_enemy_line()
 	elif type == RenderEvent.DefaultType.CARD_START_DRAGGING:
 		_is_dragging = true
 		_remove_line_only()
 		_hide_hand_arrow()
+		_hide_enemy_line()
 		_to_idle()
 		return
 	elif type == RenderEvent.DefaultType.CARD_CANCEL_DRAGGING:
@@ -130,6 +145,8 @@ func _evaluate_arrows() -> void:
 	if not hand_area or not players_area:
 		return
 	_remove_line_only()
+	_hide_enemy_line()
+	_enemy_line_updated = false
 	_activation_timestamp = Time.get_ticks_msec()
 	_change_state(State.WAITING)
 
@@ -172,6 +189,9 @@ func _apply_player_arrow(player_selected: Array[RenderItem], players_area: Rende
 		return
 	var player: RenderItem = player_selected[-1]
 	var target_item: RenderItem = _resolve_target(player)
+	_target_player = player
+	_target_item = target_item
+
 	if not target_item:
 		_hide_player_arrow()
 		return
@@ -202,6 +222,8 @@ func _hide_player_arrow() -> void:
 	_player_arrow.hide_arrow()
 	_cached_player_target = Vector2.INF
 	_line_curve_valid = false
+	_target_player = null
+	_target_item = null
 
 # ==================== 目标解析 ====================
 func _resolve_target(player: RenderItem) -> RenderItem:
@@ -242,6 +264,7 @@ func _arranging_process() -> void:
 func _drawing_process() -> void:
 	if _hand_arrow.state != ArrowNode.State.STABLE or _player_arrow.state != ArrowNode.State.STABLE:
 		return
+	# 主线处理
 	if not _line_curve_valid and _in_area:
 		_build_line()
 	if _in_area and _line_curve_valid and _line.state == ArrowLine.State.HIDDEN:
@@ -249,9 +272,13 @@ func _drawing_process() -> void:
 	if _line.state == ArrowLine.State.ANIMATING:
 		_needs_redraw = true
 	if _line.state == ArrowLine.State.STABLE:
-		_to_idle()
+		# 敌方线已在 _build_line 中启动，只需等待其动画完成
+		if _enemy_line.state == ArrowLine.State.ANIMATING:
+			_needs_redraw = true
+		elif _enemy_line.state == ArrowLine.State.STABLE or _enemy_line.state == ArrowLine.State.HIDDEN:
+			_to_idle()
 
-# ==================== 连线管理 ====================
+# ==================== 主线连线管理 ====================
 func _build_line() -> void:
 	_line_curve_valid = true
 	_line.kill_animation()
@@ -267,13 +294,114 @@ func _build_line() -> void:
 	_line.start_animation(self)
 	_needs_redraw = true
 
+	# 同时构建守区非我方牌指示线（若条件满足）
+	_build_enemy_line_if_possible()
+
+# ==================== 守区非我方牌指示线（无箭头） ====================
+func _build_enemy_line_if_possible() -> void:
+	# 获取守区区域（当前玩家的守区）
+	var player_id: int = _target_player.data.get_id() if _target_player and _target_player.data else 0
+	if player_id <= 0:
+		_hide_enemy_line()
+		return
+	var defence_area: RenderArea = render_context.get_render_area(DEFENCE_AREA_NAME, player_id)
+	if not defence_area:
+		_hide_enemy_line()
+		return
+	# 检查预览模式
+	var preview_mode: Variant = defence_area.get_face_cache(&"nfn:preview_mode")
+	if not preview_mode or preview_mode != true:
+		_hide_enemy_line()
+		return
+	# 获取顶层和次层牌
+	var pool: Array = defence_area.items_pool
+	if pool.is_empty():
+		_hide_enemy_line()
+		return
+	var top_card: RenderItem = pool[-1]
+	var second_card: RenderItem = pool[-2] if pool.size() >= 2 else null
+	var local_id: int = render_context.area_manager.local_player_id if render_context and render_context.area_manager else 0
+	# 选择牌：顶层优先，若顶层非我方则用顶层，否则检查次层
+	var selected_card: RenderItem = null
+	var top_owner: int = (top_card.data as CardPack).player_id if top_card.data is CardPack else 0
+	if top_owner != local_id and top_owner != 0:
+		selected_card = top_card
+	elif second_card:
+		var second_owner: int = (second_card.data as CardPack).player_id if second_card.data is CardPack else 0
+		if second_owner != local_id and second_owner != 0:
+			selected_card = second_card
+	if not selected_card:
+		_hide_enemy_line()
+		return
+	# 获取牌的所有者玩家实体
+	var owner_id: int = (selected_card.data as CardPack).player_id if selected_card.data is CardPack else 0
+	if owner_id == 0:
+		_hide_enemy_line()
+		return
+	var owner_player: RenderItem = _get_player_by_id(owner_id)
+	if not owner_player:
+		_hide_enemy_line()
+		return
+
+	# 构建曲线
+	_enemy_line.kill_animation()
+	var start: Vector2 = ArrowNode.get_card_top_center_global(selected_card)
+	var end: Vector2 = ArrowNode.get_card_bottom_center_global(owner_player)
+	var curve: Curve2D = MathUtils.create_smooth_curve(start, end, true, false)
+	_enemy_line.points = curve.tessellate(CURVE_TESSELLATE_PRECISION)
+	var offset: Vector2 = global_position
+	for i: int in _enemy_line.points.size():
+		_enemy_line.points[i] -= offset
+	_enemy_line.start_animation(self)
+	_enemy_line_updated = true
+	_needs_redraw = true
+
+func _get_player_by_id(player_id: int) -> RenderItem:
+	if not render_context:
+		return null
+	var players_area: RenderArea = render_context.get_render_area(PLAYERS_AREA_NAME)
+	if not players_area:
+		return null
+	for item in players_area.items_pool:
+		if item.data and item.data.get_id() == player_id:
+			return item
+	return null
+
 func _remove_line_only() -> void:
 	_line.kill_animation()
 	_needs_redraw = true
 
+func _hide_enemy_line() -> void:
+	if _enemy_line.state != ArrowLine.State.HIDDEN:
+		_enemy_line.kill_animation()
+		_needs_redraw = true
+	_enemy_line_updated = false
+
+# ==================== 绘制 ====================
+func _draw() -> void:
+	# 主线
+	if _in_area and _line.state != ArrowLine.State.HIDDEN and not _line.points.is_empty():
+		if _line.outer_width > 0.0 and _line.outer_color.a > 0.0:
+			draw_polyline(_line.points, _line.outer_color, _line.outer_width, true)
+		if _line.inner_alpha > 0.0:
+			var col: Color = _line.inner_color
+			col.a = _line.inner_alpha
+			draw_polyline(_line.points, col, _line.inner_width, true)
+	# 守区非我方牌指示线
+	if _in_area and _enemy_line.state != ArrowLine.State.HIDDEN and not _enemy_line.points.is_empty():
+		if _enemy_line.outer_width > 0.0 and _enemy_line.outer_color.a > 0.0:
+			draw_polyline(_enemy_line.points, _enemy_line.outer_color, _enemy_line.outer_width, true)
+		if _enemy_line.inner_alpha > 0.0:
+			var col: Color = _enemy_line.inner_color
+			col.a = _enemy_line.inner_alpha
+			draw_polyline(_enemy_line.points, col, _enemy_line.inner_width, true)
+
+# ==================== 清理 ====================
 func _stop_render() -> void:
 	_line.kill_animation()
 	_line.points.clear()
+	_enemy_line.kill_animation()
+	_enemy_line.points.clear()
 	_hand_arrow.hide_arrow()
 	_player_arrow.hide_arrow()
 	_line_curve_valid = false
@@ -281,19 +409,10 @@ func _stop_render() -> void:
 	_needs_redraw = false
 	_cached_hand_target = Vector2.INF
 	_cached_player_target = Vector2.INF
+	_target_player = null
+	_target_item = null
+	_enemy_line_updated = false
 	_state = State.IDLE
 
-# ==================== 绘制 ====================
-func _draw() -> void:
-	if not _in_area or _line.state == ArrowLine.State.HIDDEN or _line.points.is_empty():
-		return
-	if _line.outer_width > 0.0 and _line.outer_color.a > 0.0:
-		draw_polyline(_line.points, _line.outer_color, _line.outer_width, true)
-	if _line.inner_alpha > 0.0:
-		var col: Color = _line.inner_color
-		col.a = _line.inner_alpha
-		draw_polyline(_line.points, col, _line.inner_width, true)
-
-# ==================== 清理 ====================
 func _cleanup_all() -> void:
 	_stop_render()
