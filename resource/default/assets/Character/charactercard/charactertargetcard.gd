@@ -60,8 +60,6 @@ func _ready() -> void:
 	_properties_original_position = properties.position
 	_properties_original_scale = properties.scale
 	character.set_mirrored(true)
-	if area_hand:
-		area_hand.request_area(RenderArea.DefaultArea.HAND)
 
 ## 更新卡片数据（由外部调用）
 func data_update(new_item: RenderItem,render_item:RenderEvent = RenderEvent.NULL_EVENT) -> void:

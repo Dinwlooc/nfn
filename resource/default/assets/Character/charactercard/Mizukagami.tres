@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CharacterProfile" format=3 uid="uid://b1w5b64o0y10j"]
+
+[ext_resource type="Script" uid="uid://bx8xiv3qqkaju" path="res://core/Class/Face/RenderFace/CharacterProfile.gd" id="1_8wgem"]
+[ext_resource type="Texture2D" uid="uid://cmgxffqsluc8l" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami_Sprite.png" id="2_les14"]
+
+[resource]
+script = ExtResource("1_8wgem")
+texture = ExtResource("2_les14")
+hframes = 4
+hit_frame = 2
+metadata/_custom_type_script = "uid://bx8xiv3qqkaju"

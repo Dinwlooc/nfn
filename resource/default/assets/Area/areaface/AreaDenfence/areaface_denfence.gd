@@ -37,7 +37,6 @@ func _ready() -> void:
 	_preview_manager = DefencePreviewManager.new()
 	_preview_manager.preview_state_changed.connect(_on_preview_state_changed)
 	_preview_manager.request_preview_start.connect(_on_preview_start_requested)
-
 	if mode == Mode.AUTO:
 		request_area(RenderArea.DefaultArea.DEFENCE)
 	original_position = position
@@ -45,14 +44,12 @@ func _ready() -> void:
 	area_target_position = original_position
 	area_target_size = original_size
 	_update_total_scale_factor()
-	# 注意：此时 render_context 可能为空，预览管理器需在 _connect_to_area 中注入
 
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
 	if not (target_area is RenderAreaDefence):
 		return
 	GlobalConsole._print(["守区接入,", target_area])
-	# 注入渲染上下文到预览管理器（确保有效）
 	if render_context:
 		_preview_manager.set_render_context(render_context)
 	if mode == Mode.AUTO:
@@ -110,13 +107,8 @@ func _on_preview_start_requested() -> void:
 func _update_face_cache(active: bool) -> void:
 	if not area:
 		return
-	if active:
-		var player: RenderItem = _preview_manager.get_player()
-		var player_id: int = player.data.get_id() if player and player.data else 0
-		area.register_face_cache(&"nfn:preview_mode", true)
-		area.register_face_cache(&"nfn:associated_player_id", player_id)
-	else:
-		area.register_face_cache(&"nfn:preview_mode", false)
+	# 只注册预览模式开关，关联玩家由内部管理，不写入缓存
+	area.register_face_cache(&"nfn:preview_mode", active)
 
 # ==================== 核心动画 ====================
 
@@ -212,7 +204,7 @@ func check_preview_condition() -> void:
 func _cleanup_preview_connections() -> void:
 	if area:
 		area.unregister_face_cache(&"nfn:preview_mode")
-		area.unregister_face_cache(&"nfn:associated_player_id")
+		# 不再注销 associated_player_id
 	if render_context:
 		var players_area: RenderArea = render_context.get_render_area(
 			RenderAreaPlayers.get_area_name_static(),

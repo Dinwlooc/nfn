@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://bjdp8ibnlaew1" path="res://resource/default/assets/Character/charactercard/character_container.tscn" id="4_ct3wd"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="4_gn4qo"]
 [ext_resource type="PackedScene" uid="uid://2reoptdkag2j" path="res://resource/default/assets/Area/areaface/areaface_target_hand.tscn" id="4_iwfka"]
-[ext_resource type="Texture2D" uid="uid://caivq3rbvlms4" path="res://resource/default/assets/Character/charactercard/character_selected_icon.png" id="5_ct3wd"]
+[ext_resource type="Texture2D" uid="uid://caivq3rbvlms4" path="res://resource/default/assets/Character/character_selected_icon.png" id="5_ct3wd"]
 
 [node name="CharacterTargetCard" type="Control" unique_id=1319322203]
 custom_minimum_size = Vector2(236, 236)
@@ -93,7 +93,6 @@ scale = Vector2(0.9, 0.9)
 [node name="CharacterContainer" parent="CharacterPanel/Anchor" unique_id=1774446217 instance=ExtResource("4_ct3wd")]
 clip_contents = false
 layout_mode = 1
-anchors_preset = 0
 offset_left = -35.555176
 offset_top = 28.888224
 offset_right = 169.85931

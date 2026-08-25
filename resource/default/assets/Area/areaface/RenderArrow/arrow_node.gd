@@ -11,10 +11,8 @@ const SHOW_DURATION: float = 0.35
 const HIDE_DURATION: float = 0.4
 ## 指向目标时反方向预留的默认余量（像素）
 const DEFAULT_MARGIN: float = 10.0
-
 ## 箭头颜色
-@export var arrow_color: Color = Color.AQUA
-
+var arrow_color: Color = Color.AQUA
 ## 当前状态
 var state: State = State.HIDDEN
 ## 当前箭头朝向（从尾部指向尖端的单位向量），用于外部查询，绘制不再依赖

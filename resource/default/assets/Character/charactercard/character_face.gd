@@ -1,7 +1,10 @@
 extends CharacterFace
 
-## 角色Sprite节点（需手动设置或通过路径获取）
+## 角色Sprite节点
 @onready var character: Sprite2D = $Character
+
+## 角色配置文件（导出，可在编辑器中指定测试资源）
+@export var profile: CharacterProfile = null
 
 ## ==================== 受击动画参数 ====================
 ## 受击动画基准伤害（用于归一化因子）
@@ -21,48 +24,53 @@ const DOWN_ANGLE: float = PI / 2
 const MIN_DURATION: float = 0.04
 const MAX_DURATION: float = 0.2
 ## 受击后恢复阶段时长系数（相对于 T）
-const RECOVER_X_FACTOR: float = 10.0   # 水平归位
-const RECOVER_Y_FACTOR: float = 7.0    # 垂直归位
-const RECOVER_ROT_FACTOR: float = 5.0  # 旋转归位
+const RECOVER_X_FACTOR: float = 10.0
+const RECOVER_Y_FACTOR: float = 7.0
+const RECOVER_ROT_FACTOR: float = 5.0
 ## 残血恢复惩罚最大倍率（剩余HP比例越低，恢复越慢，最大为此倍数）
 const RECOVER_PENALTY_MAX_MULTIPLIER: float = 4.0
 ## 总闪红时长系数（包含恢复）
 const TOTAL_TIME_FACTOR: float = 1.0 + RECOVER_X_FACTOR
-## ==================== 倒地第二段（从受击状态到平躺）参数 ====================
-## 第二段时长系数（相对于受击基础时长 T）—— 与受击伤害强度正相关
+## 倒地第二段（从受击状态到平躺）时长系数（相对于受击基础时长 T）
 const DOWN_FALL_DUR_FACTOR: float = 1.5
-## ==================== 治疗起身动画参数（独立于受击强度，仅与剩余生命比例相关） ====================
 ## 起身动画的基准时长（秒），与实际受击伤害无关，仅与剩余生命比例相关
 const RISE_BASE_DURATION: float = 0.3
-## 起身动画各阶段时长系数（全部相对于 RISE_BASE_DURATION，独立配置）
-const RISE_SINK_DURATION_FACTOR: float = 2.0   # 下沉阶段（身体下沉）时长系数
-const RISE_ROT_DURATION_FACTOR: float = 3.5    # 旋转回正阶段时长系数（独立，与下沉并行但时长可不同）
-const RISE_UP_DURATION_FACTOR: float = 2.0    # 起身（从下沉最低点回到正常高度）时长系数 = RISE_SINK_DURATION_FACTOR * 0.8
-const RISE_WALK_DURATION_FACTOR: float = 4.0   # 走回原位（水平归位）时长系数
+## 起身动画各阶段时长系数（全部相对于 RISE_BASE_DURATION）
+const RISE_SINK_DURATION_FACTOR: float = 2.0
+const RISE_ROT_DURATION_FACTOR: float = 3.5
+const RISE_UP_DURATION_FACTOR: float = 2.0
+const RISE_WALK_DURATION_FACTOR: float = 4.0
 ## 起身时下沉的额外距离（像素），使角色先蹲下再站起
 const RISE_SINK_DISTANCE: float = 30.0
-## 起身速度与剩余生命比例的关系：因子 sink_factor = 1 / max(0.1, remaining_hp_ratio)，并钳位到 [1, RISE_SINK_MAX_FACTOR]
+## 起身速度与剩余生命比例的关系因子，钳位到 [1, RISE_SINK_MAX_FACTOR]
 const RISE_SINK_MAX_FACTOR: float = 2.0
-## ==================== 交叉渐变参数 ====================
-## 切换回正常帧（frame=0）时的交叉渐变时长（秒）
+## 切换回正常帧时的交叉渐变时长（秒）
 const CROSSFADE_DURATION: float = 0.3
 
 ## ==================== 运行时变量 ====================
+## 当前受击伤害值（用于防止动画叠加）
 var _current_hp_damage: int = 0
+## 当前动画 Tween 引用
 var _current_tween: Tween = null
+## 是否水平镜像
 var _is_mirrored: bool = false
-## 是否处于倒地硬直（包括二段倒下过程中及完全倒地后），期间免疫正伤害，但治疗可立即起身
+## 是否处于倒地硬直状态
 var _is_down_stagger: bool = false
-
+## 原始位置（用于还原）
 var _original_position: Vector2
+## 原始旋转（用于还原）
 var _original_rotation: float
-
 
 func _ready() -> void:
 	_original_position = position
 	_original_rotation = rotation
+	if profile and profile.texture and character:
+		character.texture = profile.texture
+		character.hframes = profile.hframes
+		character.vframes = profile.vframes
+		character.frame = profile.idle_frame_normal
 
-## 播放受击动画（重写父类方法，增加剩余生命比例参数）
+## 播放受击动画（重写父类方法）
 ## @param hp_damage: 生命值变化（正伤害，负治疗）
 ## @param mp_damage: 精神值变化（仅用于闪蓝）
 ## @param remaining_hp_ratio: 剩余生命比例（当前生命/最大生命），默认为1
@@ -111,8 +119,8 @@ func _play_normal_hit_animation(factor: float, T: float, dir: float, remaining_h
 	var target_rot: float = _original_rotation + angle
 	_current_tween = create_tween()
 	_current_tween.set_parallel(true)
-	if character is Sprite2D:
-		character.frame = 1
+	if character:
+		character.frame = profile.hit_frame if profile else 1
 	_add_hit_phase(_current_tween, target_x, target_y, target_rot, T)
 	var t: float = clampf(remaining_hp_ratio, 0.0, 1.0)
 	var recover_multiplier: float = 1.0 + (RECOVER_PENALTY_MAX_MULTIPLIER - 1.0) * (1.0 - t)
@@ -144,8 +152,8 @@ func _play_down_animation(factor: float, T: float, dir: float) -> void:
 	var target_rot1: float = _original_rotation + angle1
 	_current_tween = create_tween()
 	_current_tween.set_parallel(true)
-	if character is Sprite2D:
-		character.frame = 1
+	if character:
+		character.frame = profile.hit_frame if profile else 1
 	_add_hit_phase(_current_tween, target_x1, target_y1, target_rot1, T)
 	_current_tween.chain()
 	var fall_duration: float = DOWN_FALL_DUR_FACTOR
@@ -165,13 +173,11 @@ func _add_down_fall_phase(tween: Tween, target_x: float, target_y: float, target
 ## 播放魔法受击动画（仅闪蓝，帧变化）
 func _play_magic_hit_animation(mp_damage: int, flash_duration: float) -> void:
 	_flash_sprite(Color.BLUE, flash_duration)
-	if character is Sprite2D:
-		character.frame = 1
+	if character:
+		character.frame = profile.hit_frame if profile else 1
 	create_tween().tween_callback(_crossfade_to_normal).set_delay(flash_duration)
 
 ## 从倒地状态恢复的动画（治疗触发），时长仅与剩余生命比例相关
-## 各阶段时长全部相对于 RISE_BASE_DURATION，旋转回正时长独立配置，不与下沉阶段耦合
-## @param remaining_hp_ratio: 当前剩余生命比例（>0）
 func _play_recover_from_down_animation(remaining_hp_ratio: float) -> void:
 	_is_down_stagger = false
 	_kill_current_animation_if_exists()
@@ -213,8 +219,8 @@ func _add_rise_walk_phase(tween: Tween, target_x: float, duration: float) -> voi
 func _on_down_anim_finished() -> void:
 	_current_hp_damage = 0
 	_current_tween = null
-	if character is Sprite2D:
-		character.frame = 1
+	if character:
+		character.frame = profile.hit_frame if profile else 1
 
 ## 从倒地恢复完成回调（清除硬直状态）
 func _on_recover_from_down_finished() -> void:
@@ -257,11 +263,12 @@ func _flash_sprite(color: Color, duration: float) -> void:
 ## 使用交叉渐变将精灵帧切换为正常帧（frame=0）
 ## 若当前帧已经是0或节点不支持，则直接设置
 func _crossfade_to_normal() -> void:
-	if not (character is Sprite2D):
+	if not character:
 		return
-	if character.frame == 0:
+	var target_frame = profile.idle_frame_normal if profile else 0
+	if character.frame == target_frame:
 		return
 	if character.material is ShaderMaterial:
-		ShaderEffectsUtils.crossfade_sprite_frame(character, 0, CROSSFADE_DURATION)
+		ShaderEffectsUtils.crossfade_sprite_frame(character, target_frame, CROSSFADE_DURATION)
 	else:
-		character.frame = 0
+		character.frame = target_frame

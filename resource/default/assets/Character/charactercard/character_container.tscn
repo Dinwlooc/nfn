@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://b581hwjvp5kp5" path="res://resource/default/assets/Character/charactercard/character_face.gd" id="1_0cvc3"]
 [ext_resource type="Shader" uid="uid://dogew2q6laufq" path="res://resource/default/shader/gdshader/flash_color.gdshader" id="1_awksa"]
 [ext_resource type="Texture2D" uid="uid://cmgxffqsluc8l" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami_Sprite.png" id="2_0cvc3"]
+[ext_resource type="Resource" uid="uid://b1w5b64o0y10j" path="res://resource/default/assets/Character/charactercard/Mizukagami.tres" id="2_00ons"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_0cvc3"]
 shader = ExtResource("1_awksa")
@@ -12,10 +13,12 @@ texture_filter = 1
 texture_repeat = 1
 clip_contents = true
 layout_mode = 3
+anchors_preset = 0
 offset_right = 178.0
 offset_bottom = 357.0
 pivot_offset = Vector2(88, 357)
 script = ExtResource("1_0cvc3")
+profile = ExtResource("2_00ons")
 metadata/_custom_type_script = "uid://drcmit26ljvlo"
 
 [node name="Character" type="Sprite2D" parent="." unique_id=1213827517]
@@ -26,3 +29,4 @@ position = Vector2(-39, -27)
 texture = ExtResource("2_0cvc3")
 centered = false
 hframes = 4
+frame = 2

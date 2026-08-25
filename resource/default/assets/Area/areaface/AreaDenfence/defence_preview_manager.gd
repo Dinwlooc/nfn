@@ -6,10 +6,8 @@ const PREVIEW_DELAY_MS: int = 500
 signal preview_state_changed(active: bool)
 signal request_preview_start()
 
-var preview_mode: bool = false:
-	get: return _preview_mode
 
-var _preview_mode: bool = false
+var preview_mode: bool = false
 var _associated_player: RenderItem = null
 var _preview_delay_start_ms: int = 0
 var _is_processing: bool = false
@@ -18,6 +16,9 @@ var _render_context: RenderContext = null
 ## 设置渲染上下文（由主类注入）
 func set_render_context(context: RenderContext) -> void:
 	_render_context = context
+	# 若已有关联玩家且上下文已存在，立即触发条件检查
+	if _associated_player and _render_context:
+		check_condition(_render_context)
 
 ## 设置关联玩家，自动连接/断开选中信号
 func set_player(player: RenderItem) -> void:
@@ -43,26 +44,26 @@ func update(delta: float) -> void:
 	if _preview_delay_start_ms > 0:
 		if Time.get_ticks_msec() - _preview_delay_start_ms >= PREVIEW_DELAY_MS:
 			_preview_delay_start_ms = 0
-			if not _preview_mode:
+			if not preview_mode:
 				_activate_preview()
 			return
 
 ## 由主类调用，传入 render_context 进行条件判断
 func check_condition(render_context: RenderContext) -> void:
 	var should_preview: bool = _should_preview(render_context)
-	if should_preview and not _preview_mode:
+	if should_preview and not preview_mode:
 		if not _is_processing:
 			_activate_preview()
-	elif not should_preview and _preview_mode:
+	elif not should_preview and preview_mode:
 		_deactivate_preview()
 
 ## 延迟进入预览
 func trigger_delayed_preview(render_context: RenderContext) -> void:
 	if not _should_preview(render_context):
 		return
-	if _preview_mode:
+	if preview_mode:
 		return
-	_preview_mode = false
+	preview_mode = false
 	_preview_delay_start_ms = Time.get_ticks_msec()
 	_is_processing = true
 	request_preview_start.emit()
@@ -70,7 +71,7 @@ func trigger_delayed_preview(render_context: RenderContext) -> void:
 ## 清理
 func cleanup() -> void:
 	_disconnect_player_selection_signal()
-	_preview_mode = false
+	preview_mode = false
 	_preview_delay_start_ms = 0
 	_is_processing = false
 	_render_context = null
@@ -88,12 +89,12 @@ func _should_preview(render_context: RenderContext) -> bool:
 	return players_area.select_limit == 1
 
 func _activate_preview() -> void:
-	_preview_mode = true
+	preview_mode = true
 	preview_state_changed.emit(true)
 	request_preview_start.emit()
 
 func _deactivate_preview() -> void:
-	_preview_mode = false
+	preview_mode = false
 	_preview_delay_start_ms = 0
 	_is_processing = false
 	preview_state_changed.emit(false)

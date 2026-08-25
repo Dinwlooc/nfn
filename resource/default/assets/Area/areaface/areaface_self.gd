@@ -48,7 +48,7 @@ func render_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	tween_update(_render_event)
 
 func tween_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	if _render_event != RenderEvent.NULL_EVENT and _render_event.get_type() == RenderEvent.DefaultType.DAMAGED:
+	if  _render_event.get_type() == RenderEvent.DefaultType.DAMAGED:
 		_handle_damage_event(_render_event)
 	card_move()
 
