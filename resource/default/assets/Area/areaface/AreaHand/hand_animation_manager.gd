@@ -12,11 +12,9 @@ const PHASE_INCREMENT: int = 1
 const MASK: int = TABLE_SIZE - 1
 const CARD_PHASE_OFFSET: int = 4
 const AMPLITUDE: float = 0.3
-
 const TWEEN_TIME: float = 0.2
 const DRAG_TWEEN_TIME: float = 0.1
 const RESET_TIME: float = TWEEN_TIME / 2.0
-
 const SELECTED_Y_OFFSET: float = -40.0
 const SCALE_NEUTRAL: float = 1.0
 const ROTATION_NEUTRAL: float = 0.0

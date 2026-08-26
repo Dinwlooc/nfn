@@ -1,21 +1,20 @@
+## 手牌表现脚本（手动配置挂件），用于卡牌移出/移入动画。
 extends AreaFace
-## 手牌表现脚本（手动配置挂件）
-## 用于显示卡牌从手牌区移出/移入的视觉效果
-## 需要手动挂载到场景中，并确保目标手牌区存在
-## 动画时长（秒）
+
+## 移动动画时长
 const MOVE_DURATION: float = 0.3
-## 动画缓动类型
+## 缓动类型
 const MOVE_EASE: Tween.EaseType = Tween.EASE_IN_OUT
-## 动画过渡类型
+## 过渡类型
 const MOVE_TRANS: Tween.TransitionType = Tween.TRANS_QUAD
 
-## 目标全局位置（动画终点，默认为当前节点的全局位置）
+## 目标全局位置（动画终点）
 var target_global_position: Vector2
 
 func _ready() -> void:
+	request_area(RenderArea.DefaultArea.HAND)
 	target_global_position = global_position
 
-## 重写连接区域方法，额外连接手牌区特有信号
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
 	if not target_area.item_created_for_removing.is_connected(_on_item_created_for_removing):
@@ -23,35 +22,34 @@ func _connect_to_area(target_area: RenderArea) -> void:
 	if not target_area.items_added.is_connected(_on_item_added):
 		target_area.items_added.connect(_on_item_added)
 
-## 重写断开连接方法，清理自定义信号
-func _disconnect_from_current_area() -> void:
-	if not area:
-		return
-	if area.item_created_for_removing.is_connected(_on_item_created_for_removing):
-		area.item_created_for_removing.disconnect(_on_item_created_for_removing)
-	if area.items_added.is_connected(_on_item_added):
-		area.items_added.disconnect(_on_item_added)
-	super._disconnect_from_current_area()
+func _disconnect_from_area(target_area: RenderArea) -> void:
+	if target_area.item_created_for_removing.is_connected(_on_item_created_for_removing):
+		target_area.item_created_for_removing.disconnect(_on_item_created_for_removing)
+	if target_area.items_added.is_connected(_on_item_added):
+		target_area.items_added.disconnect(_on_item_added)
+	super._disconnect_from_area(target_area)
 
-## 当手牌区创建用于移除的 RenderItem 时调用（移出动画起点）
+## 创建移除卡牌时设置起始位置
 func _on_item_created_for_removing(item: RenderItem) -> void:
 	item.position = global_position
 
-## 当手牌区添加新的 RenderItem 时调用（移入动画）
+## 添加卡牌时播放移入动画
 func _on_item_added(item: RenderItem) -> void:
 	var tween: Tween = create_tween()
 	tween.tween_property(item, ^"position", position, MOVE_DURATION).set_trans(MOVE_TRANS).set_ease(MOVE_EASE)
 	tween.finished.connect(_on_move_finished.bind(item), CONNECT_ONE_SHOT)
 
-## 动画完成时回收临时 RenderItem
+## 动画完成后回收临时卡牌
 func _on_move_finished(item: RenderItem) -> void:
+	if not area:
+		return
 	area.remove_item(item)
 	if render_context:
 		render_context.request_recycle_item(item)
 
-## 覆盖父类的 render_update 和 tween_update，避免干扰手牌区的默认行为
-func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
+## 禁用手牌区的默认渲染更新（由本类自定义）
+func render_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	pass
 
-func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
+func tween_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	pass

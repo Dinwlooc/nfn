@@ -24,7 +24,7 @@ func _start_sort(area: RenderArea, on_sort_start: Callable, on_sort_end: Callabl
 	is_sorting = true
 	if on_sort_start.is_valid():
 		on_sort_start.call()
-	await _quick_sort_cards(area)
+	_quick_sort_cards(area)
 	is_sorting = false
 	if on_sort_end.is_valid():
 		on_sort_end.call()
@@ -37,14 +37,12 @@ func _quick_sort_cards(area: RenderArea) -> void:
 	var pool: Array[RenderItem] = area.items_pool
 	if pool.is_empty():
 		return
-	# 按类型分组
 	var type_map: Dictionary = {}
 	for item in pool:
 		var type: StringName = item.data.get_card_type()
 		if not type_map.has(type):
 			type_map[type] = PackedInt32Array()
 		type_map[type].append(item.data.id)
-	# 定义类型顺序（攻击、防御、法术）
 	var type_order: Array[StringName] = [
 		GlobalConstants.DefaultCard.ATTACK,
 		GlobalConstants.DefaultCard.DEFENCE,

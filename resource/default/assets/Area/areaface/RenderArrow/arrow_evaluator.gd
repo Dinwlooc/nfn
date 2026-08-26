@@ -3,40 +3,43 @@ extends RefCounted
 
 const ArrowNode = preload("arrow_node.gd")
 
+## 手牌箭头控件
 var _hand_arrow: ArrowNode
+## 玩家箭头控件
 var _player_arrow: ArrowNode
+## 渲染上下文
 var _render_context: RenderContext
-
+## 缓存的手牌箭头目标位置
 var _cached_hand_target: Vector2 = Vector2.INF
+## 缓存的手牌箭头方向
 var _cached_hand_dir: Vector2 = Vector2.DOWN
+## 缓存的玩家箭头目标位置
 var _cached_player_target: Vector2 = Vector2.INF
+## 缓存的玩家箭头方向
 var _cached_player_dir: Vector2 = Vector2.UP
-
+## 当前选中的玩家（用于敌方线）
 var target_player: RenderItem = null
+## 当前箭头指向的目标卡牌（用于敌方线）
 var target_item: RenderItem = null
-
+## 初始化评估器
 func init(hand_arrow: ArrowNode, player_arrow: ArrowNode, context: RenderContext) -> void:
 	_hand_arrow = hand_arrow
 	_player_arrow = player_arrow
 	_render_context = context
-
 ## 评估手牌箭头，返回是否发生了变化
 func apply_hand_arrow(hand_selected: Array[RenderItem]) -> bool:
-	if hand_selected.size() > 0:
-		return _point_hand_arrow_to(hand_selected[-1])
-	else:
+	if hand_selected.size() == 0:
 		_hide_hand_arrow()
 		return false
-
-## 评估玩家箭头，返回是否发生了变化（原方法已返回 bool）
+	return _point_hand_arrow_to(hand_selected[-1])
+## 评估玩家箭头，返回是否发生了变化
 func apply_player_arrow(player_selected: Array[RenderItem], players_area: RenderArea) -> bool:
 	if player_selected.size() == 0:
 		_hide_player_arrow()
 		return false
 	var player: RenderItem = player_selected[-1]
-	var target_item: RenderItem = _resolve_target(player)
+	target_item = _resolve_target(player)
 	target_player = player
-	target_item = target_item
 	if not target_item:
 		_hide_player_arrow()
 		return false
@@ -61,7 +64,7 @@ func apply_player_arrow(player_selected: Array[RenderItem], players_area: Render
 	_cached_player_target = target_pos
 	_cached_player_dir = direction
 	return true
-
+## 将手牌箭头指向指定卡片
 func _point_hand_arrow_to(card: RenderItem) -> bool:
 	var target_pos: Vector2 = ArrowNode.get_card_top_center_global(card)
 	var dir: Vector2 = Vector2.DOWN
@@ -71,18 +74,18 @@ func _point_hand_arrow_to(card: RenderItem) -> bool:
 	_cached_hand_target = target_pos
 	_cached_hand_dir = dir
 	return true
-
+## 隐藏手牌箭头并清除缓存
 func _hide_hand_arrow() -> void:
 	_hand_arrow.hide_arrow()
 	_cached_hand_target = Vector2.INF
-
+## 隐藏玩家箭头并清除缓存和引用
 func _hide_player_arrow() -> void:
 	_player_arrow.hide_arrow()
 	_cached_player_target = Vector2.INF
 	_cached_player_dir = Vector2.UP
 	target_player = null
 	target_item = null
-
+## 解析玩家应指向的防御区牌（若无则返回玩家自身）
 func _resolve_target(player: RenderItem) -> RenderItem:
 	if not _render_context:
 		return player
@@ -97,7 +100,7 @@ func _resolve_target(player: RenderItem) -> RenderItem:
 		if last_item:
 			return last_item
 	return player
-
+## 清除所有缓存坐标
 func clear_cache() -> void:
 	_cached_hand_target = Vector2.INF
 	_cached_player_target = Vector2.INF

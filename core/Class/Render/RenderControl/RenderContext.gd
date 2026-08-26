@@ -6,7 +6,6 @@ const PUBLIC_PLAYER_ID: int = 1
 var area_manager: RenderAreaManager
 var item_manager: RenderItemManager
 var state_manager: RenderStateManager
-## 操作管理器
 var operation_manager: OperationManager
 
 func _init() -> void:
@@ -14,28 +13,28 @@ func _init() -> void:
 	item_manager = RenderItemManager.new()
 	state_manager = RenderStateManager.new()
 
-# ================= 新增主/临时阶段通知接口 =================
+# ================= 阶段通知接口 =================
 func notify_main_stage(stage_name: StringName, player_id: int, params: Dictionary = {}) -> void:
 	state_manager.notify_main_stage(stage_name, player_id, params)
 
 func notify_temp_stage(stage_name: StringName, turn_player_id: int, stage_owner_id: int, params: Dictionary = {}) -> void:
 	state_manager.notify_temp_stage(stage_name, turn_player_id, stage_owner_id, params)
 
-# 保留旧接口，内部不再使用（仅兼容）
 func notify_stage(stage_name: StringName, current_player_id: int, params: Dictionary = {}) -> void:
 	state_manager.notify_stage(stage_name, current_player_id, params)
 
-## 获取当前阶段名称（临时阶段优先）
 func get_current_stage_name() -> StringName:
-	return state_manager.current_stage_name if not state_manager.current_stage_name.is_empty() else state_manager.main_stage_name
+	if not state_manager.current_stage_name.is_empty():
+		return state_manager.current_stage_name
+	return state_manager.main_stage_name
 
-## 获取当前阶段所属玩家 ID（临时阶段优先）
 func get_current_stage_player_id() -> int:
 	if not state_manager.temp_stage_name.is_empty():
 		return state_manager.temp_stage_owner_id
 	return state_manager.main_stage_player_id
 
 # ================= 区域管理委托 =================
+## 注册区域回调（回调签名：func(new_area: RenderArea, old_area: RenderArea)）
 func connect_renderarea(area_name: StringName, callback: Callable, player_id: int = PUBLIC_PLAYER_ID) -> void:
 	area_manager.connect_renderarea(area_name, callback, player_id)
 
@@ -65,7 +64,7 @@ func delete_render_area(area: RenderArea) -> void:
 		if state_manager.card_on_drag.area == area:
 			state_manager.remove_card_on_drag()
 		else:
-			var dragged_card = state_manager.card_on_drag.card
+			var dragged_card: RenderItem = state_manager.card_on_drag.card
 			if dragged_card and dragged_card.get_parent() == area:
 				state_manager.remove_card_on_drag()
 	for child in area.get_children():
@@ -80,7 +79,7 @@ func delete_render_area(area: RenderArea) -> void:
 	area.queue_free()
 
 func remove_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID) -> void:
-	var area = get_render_area(area_name, player_id)
+	var area: RenderArea = get_render_area(area_name, player_id)
 	if not area:
 		push_warning("Attempted to remove non-existent render area: ", area_name, " for player ", player_id)
 		return
@@ -99,14 +98,14 @@ func request_recycle_item(item: RenderItem) -> void:
 
 func _recycle_item_deferred(item: RenderItem) -> void:
 	if item.data:
-		var item_type = item.data.get_class_name()
-		var item_id = item.data.get_id()
+		var item_type: StringName = item.data.get_class_name()
+		var item_id: int = item.data.get_id()
 		item_manager.unregister_render_item(item_type, item_id)
 	if item.area_name:
-		for player_id in area_manager.render_areas:
-			var areas = area_manager.render_areas[player_id]
+		for player_id: int in area_manager.render_areas:
+			var areas: Dictionary = area_manager.render_areas[player_id]
 			if areas.has(item.area_name):
-				var current_area = areas[item.area_name]
+				var current_area: RenderArea = areas[item.area_name]
 				if current_area:
 					current_area._disconnect_item_from_area(item)
 				break
@@ -134,7 +133,7 @@ func get_dragged_area() -> RenderArea:
 func get_dragged_card() -> RenderItem:
 	return state_manager.get_dragged_card()
 
-# ================= 其他 =================
+# ================= 操作管理 =================
 func set_operation_manager(manager: OperationManager) -> void:
 	operation_manager = manager
 

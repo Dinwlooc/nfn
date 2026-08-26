@@ -1,6 +1,5 @@
 ## 闪电连接线的数据与动画类，负责存储曲线点集、执行电光闪烁动画。
 extends RefCounted
-
 ## 曲线局部坐标点集
 var points: PackedVector2Array = PackedVector2Array()
 ## 内线颜色
@@ -23,13 +22,12 @@ var outer_color: Color = Color.WHITE
 var outer_width: float = 8.0
 ## 当前内线透明度
 var inner_alpha: float = 0.0
-
+## 线状态枚举
 enum State { HIDDEN, ANIMATING, STABLE }
 ## 当前线状态
 var state: State = State.HIDDEN
-
+## Tween 实例，用于控制电光动画的播放与停止
 var _tween: Tween = null
-
 ## 启动电光闪烁动画，host 用于创建 Tween
 func start_animation(host: Control) -> void:
 	if state == State.ANIMATING:
@@ -45,26 +43,25 @@ func start_animation(host: Control) -> void:
 	_tween.tween_method(_set_inner_alpha, 0.0, 1.0, inner_fadein_time).set_ease(Tween.EASE_IN)
 	_tween.chain()
 	_tween.tween_callback(_on_animation_finished)
-
 ## 停止动画并重置为隐藏状态，同时清除视觉属性
 func kill_animation() -> void:
 	kill_tween()
 	state = State.HIDDEN
 	outer_color.a = 0.0
 	inner_alpha = 0.0
-
+## 杀死当前 Tween 并置空
 func kill_tween() -> void:
 	if _tween:
 		_tween.kill()
 		_tween = null
-
+## 外线属性插值（颜色和宽度）
 func _set_outer_properties(progress: float) -> void:
 	outer_color = outer_start_color.lerp(inner_color, progress)
 	outer_width = lerpf(outer_start_width, outer_end_width, progress)
-
+## 内线透明度插值
 func _set_inner_alpha(alpha: float) -> void:
 	inner_alpha = alpha
-
+## 动画完成回调，切换为稳定状态
 func _on_animation_finished() -> void:
 	state = State.STABLE
 	outer_color = inner_color

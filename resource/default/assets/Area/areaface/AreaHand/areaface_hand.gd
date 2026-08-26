@@ -1,26 +1,18 @@
+## 手牌区面板，管理卡牌布局、排序、拖拽及操作按钮。
 extends AreaFace
 
 const HandSortManager = preload("hand_sort_manager.gd")
 const HandDragManager = preload("hand_drag_manager.gd")
 const HandAnimationManager = preload("hand_animation_manager.gd")
 
-## 原始位置（未展开时的锚点）
 var original_position: Vector2
-## 原始尺寸
 var original_size: Vector2
-## 目标位置（动画过渡用）
 var area_target_position: Vector2
-## 目标尺寸
 var area_target_size: Vector2
-## 当前卡牌总数决定的缩放因子（16张以下为1.0，32张时为0.75）
 var total_scale_factor: float = 1.0
-
-## 当前卡牌群组动画的 Tween 实例（由主类管理）
 var current_card_tween: Tween = null
-## 当前拖拽动画的 Tween 实例（由主类管理）
 var current_drag_tween: Tween = null
 
-## 管理器实例
 var _sort_manager: HandSortManager = null
 var _drag_manager: HandDragManager = null
 var _anim_manager: HandAnimationManager = null
@@ -45,17 +37,22 @@ func _ready() -> void:
 	area_target_position = original_position
 	area_target_size = original_size
 	quick_sort_button.pressed.connect(_on_quick_sort_button_pressed)
-	ui_container.hide()
-	_update_total_scale_factor()
 	play_card_button.pressed.connect(_on_play_card_button_pressed)
-	play_card_ui.visible = false
 	discard_button.pressed.connect(_on_discard_button_pressed)
 	abandon_response_button.pressed.connect(_on_abandon_response_button_pressed)
+	ui_container.hide()
+	_update_total_scale_factor()
+	play_card_ui.visible = false
 	discard_cards_ui.visible = false
-
-	# 初始排序（若已有卡牌）
 	if area and area.items_pool.size() > 0:
 		_request_sort()
+
+func _connect_to_area(target_area: RenderArea) -> void:
+	super._connect_to_area(target_area)
+	# 无需额外信号，基类已足够
+
+func _disconnect_from_area(target_area: RenderArea) -> void:
+	super._disconnect_from_area(target_area)
 
 func _update_total_scale_factor() -> void:
 	if not area:
@@ -66,15 +63,13 @@ func _update_total_scale_factor() -> void:
 func _physics_process(delta: float) -> void:
 	if in_area:
 		_anim_manager.card_move_expand(area.items_pool)
-	elif Engine.get_process_frames() % 2 == 0:
+		return
+	if Engine.get_process_frames() % 2 == 0:
 		_anim_manager.card_move_expand(area.items_pool)
-
-	# 处理缓存的交换请求
 	if _drag_manager.pending_swap and _drag_manager.can_swap_immediately(Time.get_ticks_msec()):
-		try_dragging_move()  # 父类方法，会触发拖拽逻辑
+		try_dragging_move()
 		_drag_manager.clear_pending()
 
-## 更新渲染目标位置
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type: StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.CARD_ADD:
@@ -84,8 +79,7 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 			_request_sort()
 	elif event_type == RenderEvent.DefaultType.CARD_REMOVE:
 		_update_total_scale_factor()
-
-	if area.items_pool.size() > 0:
+	if area and area.items_pool.size() > 0:
 		var scaled_card_size: Vector2 = Vector2(
 			area.items_pool[0].size.x * total_scale_factor,
 			area.items_pool[0].size.y * total_scale_factor
@@ -93,21 +87,24 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 		var virtual_pos: Vector2 = area_target_position - scaled_card_size / 2.0
 		var virtual_size: Vector2 = area_target_size
 		target_position = UIAnimationUtils.generate_coordinates(virtual_pos, virtual_size, area.items_pool.size())
-
 	tween_update(render_event)
 
-## 触发卡牌移动动画
 func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type: StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.SWAP_CARD:
 		_sort_manager.increment_counter()
 	if event_type == RenderEvent.DefaultType.CARD_SELECTION_CHANGED:
-		var has_selection: bool = not area.get_selected_items().is_empty()
-		play_card_ui.visible = has_selection
-		discard_cards_ui.visible = has_selection
+		_update_selection_ui()
 	card_move(render_event)
 
-## 进入区域时的展开动画
+## 根据选择状态更新操作按钮可见性
+func _update_selection_ui() -> void:
+	if not area:
+		return
+	var has_selection: bool = not area.get_selected_items().is_empty()
+	play_card_ui.visible = has_selection
+	discard_cards_ui.visible = has_selection
+
 func _into_area() -> void:
 	super._into_area()
 	area_target_position = original_position - Vector2(0, 180.0)
@@ -118,9 +115,9 @@ func _into_area() -> void:
 	}
 	UIAnimationUtils.tween_animations(self, list, 0.2)
 	ui_container.show()
-	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
+	if area:
+		area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.INTO_AREA))
 
-## 离开区域时的收起动画
 func _outto_area() -> void:
 	super._outto_area()
 	area_target_position = original_position
@@ -131,11 +128,12 @@ func _outto_area() -> void:
 	}
 	UIAnimationUtils.tween_animations(self, list, 0.2)
 	ui_container.hide()
-	area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
+	if area:
+		area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
 
-## 核心动画调度（使用管理器）
+## 核心卡牌移动动画
 func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
-	if area.items_pool.is_empty() or target_position.is_empty():
+	if not area or area.items_pool.is_empty() or target_position.is_empty():
 		return
 	var master_tween: Tween = create_tween()
 	_anim_manager.card_move(master_tween, area.items_pool, target_position, total_scale_factor, render_event)
@@ -143,7 +141,7 @@ func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 		current_card_tween.kill()
 	current_card_tween = master_tween
 
-## 拖拽卡牌的动画处理（由父类拖拽系统调用）
+## 拖拽移动处理（交换逻辑）
 func dragging_move(card: RenderItem) -> void:
 	var mouse_pos: Vector2 = get_global_mouse_position()
 	var drag_tween: Tween = create_tween()
@@ -160,14 +158,12 @@ func swap_cards(drag_card: RenderItem) -> void:
 	if success:
 		hovering_card = null
 
-## 请求一次排序（自动或手动）
 func _request_sort() -> void:
 	_sort_manager.request_sort(area,
 		func(): quick_sort_button.disabled = true,
 		func(): quick_sort_button.disabled = false
 	)
 
-## 排序按钮按下
 func _on_quick_sort_button_pressed() -> void:
 	if not _sort_manager.can_manual_sort():
 		return

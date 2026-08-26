@@ -83,6 +83,7 @@ func render_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var area: RenderArea
 	if not item:
 		return
+	_update_background_color()
 	if item.area_name == RenderArea.DefaultArea.HAND and item.render_context:
 		area = item.render_context.get_render_area(item.area_name)
 		var show_vertical: bool = area and area.items_pool.size() > 12 and vertical_name_label.text.length() <= 4
@@ -97,14 +98,10 @@ func render_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 
 ## 启动弃牌区循环闪烁（仅在动画不存在或无效时创建）
 func _start_discard_blink() -> void:
-	# 如果已有有效动画，直接返回，不重新创建
 	if _blink_tween and _blink_tween.is_valid():
 		return
-	# 先设置原色（基于当前交互状态）
-	_update_background_color()
 	var original_color: Color = _stylebox.bg_color
 	var target_color: Color = Color.WHITE
-	# 创建循环 Tween：原色 ↔ 白色
 	_blink_tween = create_tween()
 	_blink_tween.set_loops()
 	_blink_tween.tween_property(_stylebox, ^"bg_color", target_color, 0.3).set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_LINEAR)

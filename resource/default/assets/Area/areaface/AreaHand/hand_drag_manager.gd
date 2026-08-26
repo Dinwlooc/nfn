@@ -30,7 +30,6 @@ func try_swap(drag_card: RenderItem, hovering_card: RenderItem, area: RenderArea
 		return false
 	hovering_card.set_hovering(false)
 	area.move_item_to_index(drag_card.pool_id, hovering_card.pool_id, RenderEvent.new(RenderEvent.DefaultType.SWAP_CARD))
-	# 交换成功后重置悬停状态（由调用者负责清空hovering_card）
 	last_swap_time_ms = current_time_ms
 	return true
 
