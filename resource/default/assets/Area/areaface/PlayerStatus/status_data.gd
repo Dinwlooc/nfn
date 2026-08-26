@@ -29,7 +29,6 @@ func update_from_pack(pack: PlayerPack, initial: bool = false) -> void:
 	var old_attack = morale_attack
 	var old_defense = morale_defense
 	var old_required = morale_required
-
 	hp_max = pack.modified_HP_max
 	hp_current = pack.HP
 	mp_max = pack.modified_MP_max
@@ -40,7 +39,6 @@ func update_from_pack(pack: PlayerPack, initial: bool = false) -> void:
 	morale_attack = pack.morale_attack
 	morale_defense = pack.morale_defense
 	morale_required = _get_morale_required(morale_level)
-
 	if not initial:
 		if hp_current != old_hp or hp_max != old_hp_max:
 			hp_changed.emit(old_hp, hp_current, old_hp_max, hp_max)
@@ -50,12 +48,11 @@ func update_from_pack(pack: PlayerPack, initial: bool = false) -> void:
 			ap_changed.emit(old_ap, ap_current, old_init_ap, ap_init_max)
 		if morale_level != old_level or morale_attack != old_attack or morale_defense != old_defense or morale_required != old_required:
 			morale_changed.emit(old_level, morale_level, old_attack, morale_attack, old_defense, morale_defense, old_required, morale_required)
-	else:
-		# 首次初始化，直接发出信号触发UI构建
-		hp_changed.emit(0, hp_current, 0, hp_max)
-		mp_changed.emit(0, mp_current, 0, mp_max)
-		ap_changed.emit(0, ap_current, 0, ap_init_max)
-		morale_changed.emit(0, morale_level, 0, morale_attack, 0, morale_defense, 0, morale_required)
+		return
+	hp_changed.emit(0, hp_current, 0, hp_max)
+	mp_changed.emit(0, mp_current, 0, mp_max)
+	ap_changed.emit(0, ap_current, 0, ap_init_max)
+	morale_changed.emit(0, morale_level, 0, morale_attack, 0, morale_defense, 0, morale_required)
 
 func _get_morale_required(level: int) -> int:
 	const C = preload("status_constants.gd")

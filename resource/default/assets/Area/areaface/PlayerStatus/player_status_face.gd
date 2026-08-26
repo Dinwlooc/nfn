@@ -86,43 +86,35 @@ func _disconnect_from_area(target_area: RenderArea) -> void:
 
 func _on_local_player_received(local_player: RenderItem) -> void:
 	set_player(local_player)
-
 ## 设置当前绑定的玩家（自动监听数据更新）
 func set_player(player: RenderItem) -> void:
 	if _current_player == player:
 		return
 	if _current_player:
-		if _current_player.data_requested.is_connected(_on_player_data_requested):
-			_current_player.data_requested.disconnect(_on_player_data_requested)
+		_current_player.data_requested.disconnect(_on_player_data_requested)
 		_current_player = null
 		_cached_player_id = -1
 	_current_player = player
-	if _current_player and _current_player.data is PlayerPack:
-		if not _current_player.data_requested.is_connected(_on_player_data_requested):
-			_current_player.data_requested.connect(_on_player_data_requested)
-		_cached_player_id = _current_player.get_id()
-		_update_cached_stats(_current_player.data)
-	else:
+	if not _current_player or _current_player.data is not PlayerPack:
 		_clear_display()
+		return
+	_current_player.data_requested.connect(_on_player_data_requested)
+	_cached_player_id = _current_player.get_id()
+	_update_cached_stats(_current_player.data)
 
 func _on_player_data_requested(player: RenderItem) -> void:
 	if player == _current_player and player and player.data is PlayerPack:
 		_update_cached_stats(player.data)
-
 ## 更新统计数据，计算伤害并触发事件
 func _update_cached_stats(player_data: PlayerPack) -> void:
 	var old_hp = _data.hp_current if _initialized else 0
 	var old_mp = _data.mp_current if _initialized else 0
-	if not _initialized:
-		_initialized = true
-		_data.update_from_pack(player_data, true)
-	else:
-		_data.update_from_pack(player_data, false)
-	if _initialized:
-		var hp_damage = old_hp - _data.hp_current
-		var mp_damage = old_mp - _data.mp_current
-		if hp_damage != 0 or mp_damage != 0:
-			_trigger_damage_event(hp_damage, mp_damage)
+	_data.update_from_pack(player_data, not _initialized)
+	_initialized = true
+	var hp_damage = old_hp - _data.hp_current
+	var mp_damage = old_mp - _data.mp_current
+	if hp_damage != 0 or mp_damage != 0:
+		_trigger_damage_event(hp_damage, mp_damage)
 	_update_bleed_state()
 
 func _clear_display() -> void:
@@ -139,7 +131,6 @@ func _clear_display() -> void:
 	_data.morale_attack = 0
 	_data.morale_defense = 0
 	_data.morale_required = 0
-
 ## 向守区发送伤害事件（用于视觉反馈）
 func _trigger_damage_event(hp_damage: int, mp_damage: int) -> void:
 	if _cached_player_id == -1 or not render_context or not area:
@@ -149,16 +140,15 @@ func _trigger_damage_event(hp_damage: int, mp_damage: int) -> void:
 	event.config[&"hp_damage"] = hp_damage
 	event.config[&"mp_damage"] = mp_damage
 	area.tween_update(event)
-
 ## 根据血量比更新流血状态
 func _update_bleed_state() -> void:
-	if _data.hp_max <= 0:
+	if _data.hp_max <= 0 or _data.hp_current <= 0:
 		_bleed_active = false
 		return
 	var ratio: float = float(_data.hp_current) / float(_data.hp_max)
-	if _data.hp_current > 0 and ratio <= 0.5:
-		_bleed_active = true
-		var t: float = ratio * 2.0
-		_bleed_interval = int(lerp(float(C.BLEED_INTERVAL_AT_0), float(C.BLEED_INTERVAL_AT_50), t))
-	else:
+	if ratio > 0.5:
 		_bleed_active = false
+		return
+	_bleed_active = true
+	var t: float = ratio * 2.0
+	_bleed_interval = int(lerp(float(C.BLEED_INTERVAL_AT_0), float(C.BLEED_INTERVAL_AT_50), t))

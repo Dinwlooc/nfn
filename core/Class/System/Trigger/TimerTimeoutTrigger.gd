@@ -1,12 +1,12 @@
-## 定时器超时转发至阶段管理器。
 extends SystemTrigger
 class_name TimerTimeoutTrigger
 
-var _system: System
-
 func _init(system: System) -> void:
-	_system = system
+	super._init(system)
 	_system.timer.timeout.connect(_on_timeout)
-
+## @signal-listener 定时器超时转发给阶段管理器
 func _on_timeout() -> void:
-	_system.game_state.stage_manager.on_timer_timeout(_system.game_state,_system.command_bus)
+	_system.game_state.stage_manager.on_timer_timeout(_system.game_state, _system.command_bus)
+##
+func disconnect_all() -> void:
+	_system.timer.timeout.disconnect(_on_timeout)

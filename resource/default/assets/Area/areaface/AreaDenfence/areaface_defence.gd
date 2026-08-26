@@ -29,13 +29,10 @@ func _ready() -> void:
 	_preview_manager = DefencePreviewManager.new()
 	_preview_manager.preview_state_changed.connect(_on_preview_state_changed)
 	_preview_manager.request_preview_start.connect(_on_preview_start_requested)
-
 	_local_player_received_callback = _on_local_player_received
 	_select_limit_changed_callback = _on_player_area_limit_changed
-
 	if mode == Mode.AUTO:
 		request_area(RenderArea.DefaultArea.DEFENCE)
-
 	original_position = position
 	original_size = size
 	area_target_position = original_position
@@ -56,27 +53,24 @@ func _connect_to_area(target_area: RenderArea) -> void:
 				)
 
 func _disconnect_from_area(target_area: RenderArea) -> void:
-	if target_area is RenderAreaDefence:
-		if render_context and mode == Mode.AUTO:
-			render_context.disconnect_renderarea(
-				RenderAreaPlayers.get_area_name_static(),
-				_on_players_area_connected,
-				RenderContext.PUBLIC_PLAYER_ID
-			)
-		if _players_area:
-			if _players_area.local_player_received.is_connected(_local_player_received_callback):
-				_players_area.local_player_received.disconnect(_local_player_received_callback)
-			if _players_area.select_limit_changed.is_connected(_select_limit_changed_callback):
-				_players_area.select_limit_changed.disconnect(_select_limit_changed_callback)
-			_players_area = null
-		if _preview_manager.preview_state_changed.is_connected(_on_preview_state_changed):
-			_preview_manager.preview_state_changed.disconnect(_on_preview_state_changed)
-		if _preview_manager.request_preview_start.is_connected(_on_preview_start_requested):
-			_preview_manager.request_preview_start.disconnect(_on_preview_start_requested)
-		_preview_manager.cleanup()
-		_float_base_y.clear()
-		if area:
-			area.unregister_face_cache(&"nfn:preview_mode")
+	if target_area is not RenderAreaDefence:
+		return
+	if render_context and mode == Mode.AUTO:
+		render_context.disconnect_renderarea(
+			RenderAreaPlayers.get_area_name_static(),
+			_on_players_area_connected,
+			RenderContext.PUBLIC_PLAYER_ID
+		)
+	if _players_area:
+		_players_area.local_player_received.disconnect(_local_player_received_callback)
+		_players_area.select_limit_changed.disconnect(_select_limit_changed_callback)
+		_players_area = null
+	_preview_manager.preview_state_changed.disconnect(_on_preview_state_changed)
+	_preview_manager.request_preview_start.disconnect(_on_preview_start_requested)
+	_preview_manager.cleanup()
+	_float_base_y.clear()
+	if area:
+		area.unregister_face_cache(&"nfn:preview_mode")
 	super._disconnect_from_area(target_area)
 
 func _exit_tree() -> void:
@@ -152,13 +146,14 @@ func _on_tween_finished() -> void:
 func _update_floating() -> void:
 	var elapsed: float = (Time.get_ticks_msec() / 1000.0) - _float_start_time
 	var cards: Array[RenderItem] = area.items_pool
-	var size: int = cards.size()
-	var top_card: RenderItem = cards[size - 1]
-	if top_card and not top_card.dragged:
-		var offset: float = _anim_manager.get_float_offset(size - 1, elapsed)
-		if not _float_base_y.has(top_card.get_instance_id()):
-			_float_base_y[top_card.get_instance_id()] = top_card.global_position.y
-		top_card.global_position.y = _float_base_y[top_card.get_instance_id()] + offset
+	var pool_size: int = cards.size()
+	var top_card: RenderItem = cards[pool_size - 1]
+	if (not top_card) or top_card.dragged:
+		return
+	var offset: float = _anim_manager.get_float_offset(pool_size - 1, elapsed)
+	if not _float_base_y.has(top_card.get_instance_id()):
+		_float_base_y[top_card.get_instance_id()] = top_card.global_position.y
+	top_card.global_position.y = _float_base_y[top_card.get_instance_id()] + offset
 
 func _on_preview_state_changed(active: bool) -> void:
 	if not active:
@@ -179,17 +174,11 @@ func _on_players_area_connected(new_players: RenderArea, old_players: RenderArea
 	if not new_players is RenderAreaPlayers:
 		return
 	if old_players and old_players is RenderAreaPlayers:
-		if old_players.local_player_received.is_connected(_local_player_received_callback):
-			old_players.local_player_received.disconnect(_local_player_received_callback)
-		if old_players.select_limit_changed.is_connected(_select_limit_changed_callback):
-			old_players.select_limit_changed.disconnect(_select_limit_changed_callback)
-		if _players_area == old_players:
-			_players_area = null
+		old_players.local_player_received.disconnect(_local_player_received_callback)
+		old_players.select_limit_changed.disconnect(_select_limit_changed_callback)
 	var pa: RenderAreaPlayers = new_players as RenderAreaPlayers
-	if not pa.local_player_received.is_connected(_local_player_received_callback):
-		pa.local_player_received.connect(_local_player_received_callback)
-	if not pa.select_limit_changed.is_connected(_select_limit_changed_callback):
-		pa.select_limit_changed.connect(_select_limit_changed_callback)
+	pa.local_player_received.connect(_local_player_received_callback)
+	pa.select_limit_changed.connect(_select_limit_changed_callback)
 	_players_area = pa
 	if pa.local_player:
 		set_player(pa.local_player)

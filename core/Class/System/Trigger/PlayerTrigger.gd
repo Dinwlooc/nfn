@@ -1,29 +1,30 @@
-## 玩家触发器：处理战意升级、特殊牌充能、死亡轮询。
-## 注：玩家添加时的 peer_id 映射由 OperationTrigger 负责。
 extends GameStateTrigger
 class_name PlayerTrigger
 
 const UPGRADE_REQUIREMENTS: Array[int] = [7, 12, 15, 18]
 
 func _init(game_state: GameState, command_bus: CommandBus) -> void:
-	_game_state = game_state
-	_command_bus = command_bus
-	# 连接游戏逻辑相关信号
-	game_state.player_manager.player_added.connect(_on_player_added)
-	game_state.player_manager.player_added.connect(game_state.area_registry.create_areas_for_player)
-	game_state.stage_manager.round_ended.connect(_on_round_ended)
-	game_state.all_commands_completed.connect(_on_all_commands_completed)
-
+	super._init(game_state, command_bus)
+	_game_state.player_manager.player_added.connect(_on_player_added)
+	_game_state.stage_manager.round_ended.connect(_on_round_ended)
+	_game_state.all_commands_completed.connect(_on_all_commands_completed)
+	_setup_mediator_connections()
+## @signal-mediator 部署中介连接：player_added → area_registry.create_areas_for_player
+func _setup_mediator_connections() -> void:
+	_game_state.player_manager.player_added.connect(
+		_game_state.area_registry.create_areas_for_player,
+		CONNECT_REFERENCE_COUNTED
+	)
+## @signal-listener 玩家添加时连接战意信号
 func _on_player_added(player: Player) -> void:
 	GlobalConsole._print(["System: 新玩家加入,id:", player.get_id(), "，peer_id:", player.peer_id])
-	# 连接战意信号（纯游戏逻辑）
 	player.morale_attack_increased.connect(_on_morale_attack_increased.bind(player))
 	player.morale_defense_increased.connect(_on_morale_defense_increased.bind(player))
-
+## @signal-listener 回合结束时尝试升级所有玩家
 func _on_round_ended() -> void:
 	for player in _game_state.player_manager.players:
 		_try_upgrade_player(player)
-
+##
 func _try_upgrade_player(player: Player) -> void:
 	var total_morale: int = player.morale_attack + player.morale_defense
 	var current_level: int = player.morale_level
@@ -39,7 +40,7 @@ func _try_upgrade_player(player: Player) -> void:
 	_draw_one_card(player)
 	_handle_ability_selection(player, new_level)
 	RuleTrans.send_player_delta_updates([player])
-
+##
 func _apply_morale_bonus(player: Player, level: int) -> void:
 	match level:
 		1:
@@ -52,25 +53,24 @@ func _apply_morale_bonus(player: Player, level: int) -> void:
 			pass
 		_:
 			pass
-
+##
 func _draw_one_card(player: Player) -> void:
 	var draw_cmd := DrawCardsCommand.new(player, 1)
 	_command_bus.queue_behavior(draw_cmd)
-
+##
 func _handle_ability_selection(_player: Player, _new_level: int) -> void:
 	pass
-
+##
 func _on_morale_attack_increased(amount: int, player: Player) -> void:
 	_charge_special_cards(player, &"attack", amount)
-
+##
 func _on_morale_defense_increased(amount: int, player: Player) -> void:
 	_charge_special_cards(player, &"defense", amount)
-## 特殊牌充能（待实现）
+##
 func _charge_special_cards(player: Player, morale_type: StringName, base_amount: int) -> void:
 	var charge_amount: int = player.get_charge_amount(base_amount)
 	# TODO: 获取玩家拥有的特殊牌列表，筛选类型匹配的牌，调用其充能方法。
-	pass
-## 所有命令完成后的回调：检查并进入濒死阶段
+## @signal-listener 所有命令完成，检查濒死
 func _on_all_commands_completed(game_state: GameState) -> void:
 	if _is_in_dying_stage(game_state):
 		return
@@ -87,18 +87,27 @@ func _on_all_commands_completed(game_state: GameState) -> void:
 		if player.HP <= 0:
 			_enter_dying_stage(game_state, player)
 			return
-## 检查当前阶段是否为濒死阶段
+##
 func _is_in_dying_stage(game_state: GameState) -> bool:
 	var stage: Stage = game_state.stage_manager.current_stage
 	return stage != null and stage.stage_name == &"Dying"
-## 获取当前回合玩家的座位索引
+##
 func _get_current_player_seat_index(game_state: GameState) -> int:
 	var cur_player_id: int = game_state.stage_manager.current_player_id
 	if cur_player_id == 0:
 		return -1
 	var player: Player = game_state.player_manager.get_player_by_id(cur_player_id)
 	return player.seat_index if player else -1
-## 进入濒死阶段
+##
 func _enter_dying_stage(game_state: GameState, dying_player: Player) -> void:
 	var request_cmd := DyingStageRequestCommand.new(dying_player)
 	_command_bus.queue_behavior(request_cmd)
+##
+func disconnect_all() -> void:
+	_game_state.player_manager.player_added.disconnect(_on_player_added)
+	_game_state.stage_manager.round_ended.disconnect(_on_round_ended)
+	_game_state.all_commands_completed.disconnect(_on_all_commands_completed)
+	_game_state.player_manager.player_added.disconnect(_game_state.area_registry.create_areas_for_player)
+	for player in _game_state.player_manager.players:
+		player.morale_attack_increased.disconnect(_on_morale_attack_increased)
+		player.morale_defense_increased.disconnect(_on_morale_defense_increased)

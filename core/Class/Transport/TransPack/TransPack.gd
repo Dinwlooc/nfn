@@ -1,22 +1,20 @@
+## 所有数据包抽象基类，定义序列化、版本管理等公共接口。
 @abstract
 extends RefCounted
 class_name TransPack
-
-var version:int = 0
-
-##序列化接口
+## 版本号，用于增量更新时的顺序校验。
+var version: int = 0
+## 抽象序列化方法，由子类实现。
 @abstract func serialize_to_buffer(_buffer: StreamPeerBuffer) -> void
-
-static func deserialize_from_buffer(_buffer: StreamPeerBuffer , _pack_override:TransPack) -> TransPack:
+## 反序列化静态方法（子类必须重写），提供默认错误实现。
+static func deserialize_from_buffer(_buffer: StreamPeerBuffer, _pack_override: TransPack) -> TransPack:
 	push_error("TransPack.deserialize_from_buffer() must be overridden in subclass")
-	assert(false)
 	return null
-
-# 静态方法：获取类名字符串
+## 获取类名字符串（静态），子类必须重写。
 static func get_class_name_static() -> StringName:
 	push_error("Must override get_class_name_static() in subclass")
 	return &"TransPack"
-
-## 获取类名StringName
+## 实例方法，返回类名。
+## @pure
 func get_class_name() -> StringName:
-	return self.get_class_name_static()
+	return get_class_name_static()

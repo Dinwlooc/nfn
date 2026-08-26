@@ -47,13 +47,6 @@ func _ready() -> void:
 	if area and area.items_pool.size() > 0:
 		_request_sort()
 
-func _connect_to_area(target_area: RenderArea) -> void:
-	super._connect_to_area(target_area)
-	# 无需额外信号，基类已足够
-
-func _disconnect_from_area(target_area: RenderArea) -> void:
-	super._disconnect_from_area(target_area)
-
 func _update_total_scale_factor() -> void:
 	if not area:
 		return
@@ -130,7 +123,6 @@ func _outto_area() -> void:
 	ui_container.hide()
 	if area:
 		area.render_requested.emit(RenderEvent.new(RenderEvent.DefaultType.OUTTO_AREA))
-
 ## 核心卡牌移动动画
 func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	if not area or area.items_pool.is_empty() or target_position.is_empty():
@@ -140,7 +132,6 @@ func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	if current_card_tween:
 		current_card_tween.kill()
 	current_card_tween = master_tween
-
 ## 拖拽移动处理（交换逻辑）
 func dragging_move(card: RenderItem) -> void:
 	var mouse_pos: Vector2 = get_global_mouse_position()
@@ -150,7 +141,6 @@ func dragging_move(card: RenderItem) -> void:
 		current_drag_tween.kill()
 	current_drag_tween = drag_tween
 	swap_cards(card)
-
 ## 尝试交换拖拽卡牌与悬停卡牌
 func swap_cards(drag_card: RenderItem) -> void:
 	var current_time_ms: int = Time.get_ticks_msec()

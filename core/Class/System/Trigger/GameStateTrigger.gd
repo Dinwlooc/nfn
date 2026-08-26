@@ -1,10 +1,13 @@
-## 游戏状态触发器标记。子类构造函数必须接收 [GameState] 和 [CommandBus] 实例。
-## 用于仅依赖游戏状态的场景。
+## 游戏状态触发器基类。子类构造函数必须接收 [GameState] 和 [CommandBus]。
 @abstract
 extends RefCounted
 class_name GameStateTrigger
 
 var _game_state: GameState
 var _command_bus: CommandBus
-
-@abstract func _init(game_state: GameState, command_bus: CommandBus) -> void
+## 断开所有信号连接。子类必须覆盖此方法。
+@abstract func disconnect_all() -> void
+## 构造函数，自动持有依赖。
+func _init(game_state: GameState, command_bus: CommandBus) -> void:
+	_game_state = game_state
+	_command_bus = command_bus
