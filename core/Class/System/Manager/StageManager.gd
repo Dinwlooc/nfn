@@ -4,25 +4,34 @@ class_name StageManager
 
 #=== Signals ===
 ## 阶段完成信号
+## @emitter
 signal stage_completed(stage: Stage)
 ## 阶段回滚信号
+## @emitter
 signal stage_rolled_back(old_stage: Stage, new_stage: Stage)
 ## 临时阶段清空信号
+## @emitter
 signal temp_stages_cleared()
 ## 回合结束信号
+## @emitter
 signal round_ended()
 ## 阶段变更信号
+## @emitter
 signal stage_changed(old_stage: Stage, new_stage: Stage)
 ## 临时阶段启动信号
+## @emitter
 signal temp_stage_started(temp_stage: Stage)
 ## 回合完成信号
+## @emitter
 signal round_completed()
 ## 阶段进入信号
+## @emitter
 signal stage_entered(stage: Stage)
 ## 请求开始新一轮信号
+## @requester
 signal request_new_round(player_id: int)
 
-#=== Constants / Static ===
+#=== Constants & Static ===
 ## 主阶段名称列表（顺序循环）
 static var MAIN_STAGE_NAMES: PackedStringArray = [
 	&"Start",
@@ -58,49 +67,49 @@ var current_player_id: int = 0
 
 #=== Constructor ===
 ## 构造方法：初始化主阶段列表，并永久连接主阶段的 reset_timer 信号
+## @side-effect
 func _init() -> void:
 	main_stages.resize(MAIN_STAGES_SCRIPTS.size())
 	for i in MAIN_STAGES_SCRIPTS.size():
 		main_stages[i] = MAIN_STAGES_SCRIPTS[i].new()
-		# 主阶段信号在整个生命周期内保持连接，永不断开
 		_connect_request_reset_timer(main_stages[i])
 
 #=== Public Methods ===
 ## 设置游戏计时器
-## @side-effect
+## @endo
 func set_timer(_timer: GameTimer) -> void:
 	timer = _timer
 ## 处理已验证的操作请求
-## @stack-confined @side-effect
+## @stack-confined @endo
 func handle_validated_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if not current_stage:
 		push_error("StageManager: 当前阶段为空，无法处理操作请求")
 		return
 	current_stage.process_operation_request(request, game_state, command_bus)
 ## 结束当前阶段（发送命令方式）
-## @stack-confined @side-effect
+## @stack-confined @endo
 func complete_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
 ## 清空所有临时阶段（结束并清空栈）
-## @stack-confined @side-effect
+## @stack-confined @endo @emitter
 func complete_all_temp_stages(game_state: GameState, command_bus: CommandBus) -> void:
 	if temp_stage_stack.is_empty():
 		return
 	while not temp_stage_stack.is_empty():
 		var stage: Stage = temp_stage_stack.pop_back()
-		_disconnect_request_reset_timer(stage)   # 出栈时断开信号
+		_disconnect_request_reset_timer(stage)
 		if not stage.is_ended:
 			stage.end_stage(game_state, command_bus)
 	temp_stages_cleared.emit()
 ## 将临时阶段压入栈（不启动），若阶段已存在则忽略（由调用方保证）
-## @side-effect
+## @endo
 func push_temp_stage(stage: Stage) -> void:
 	if not stage.is_temporary():
 		stage.temporary_stage_player_id = Stage.PUBLIC_PLAYER_ID
 	temp_stage_stack.push_back(stage)
-	_connect_request_reset_timer(stage)          # 入栈时连接信号
+	_connect_request_reset_timer(stage)
 ## 启动栈尾的临时阶段（若尚未启动）
-## @stack-confined @side-effect
+## @endo
 func start_pending_temp_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if temp_stage_stack.is_empty():
 		return
@@ -109,10 +118,9 @@ func start_pending_temp_stage(game_state: GameState, command_bus: CommandBus) ->
 		return
 	_transition_to(top_stage, game_state, command_bus)
 ## 结束当前回合
-## @stack-confined @side-effect @emitter
+## @stack-confined @endo @emitter
 func end_round(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
-	# 清空临时阶段并断开其信号
 	for stage in temp_stage_stack:
 		_disconnect_request_reset_timer(stage)
 	temp_stage_stack.clear()
@@ -123,14 +131,14 @@ func end_round(game_state: GameState, command_bus: CommandBus) -> void:
 	round_ended.emit()
 	round_completed.emit()
 ## 回滚到上一个阶段（弹出栈顶临时阶段，恢复上一阶段）
-## @stack-confined @side-effect @emitter
+## @stack-confined @endo @emitter
 func rollback_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
 	if temp_stage_stack.is_empty():
 		push_error("回滚失败：临时阶段栈为空")
 		return
 	var ended_stage: Stage = temp_stage_stack.pop_back()
-	_disconnect_request_reset_timer(ended_stage)  # 出栈时断开信号
+	_disconnect_request_reset_timer(ended_stage)
 	if not ended_stage:
 		push_error("回滚的阶段无效")
 		return
@@ -138,7 +146,7 @@ func rollback_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	_transition_to(roll_stage, game_state, command_bus)
 	stage_rolled_back.emit(ended_stage, current_stage)
 ## 切换到下一个主阶段，可额外跳过若干阶段
-## @stack-confined @side-effect
+## @endo
 func switch_to_main_stage(game_state: GameState, skip_count: int = 0, disallowed_stages: Array[StringName] = [], command_bus: CommandBus = null) -> void:
 	end_current_stage(game_state, command_bus)
 	var actual_skip: int = skip_count
@@ -156,7 +164,7 @@ func switch_to_main_stage(game_state: GameState, skip_count: int = 0, disallowed
 	current_main_stage_index += actual_skip
 	_advance_to_next_main_stage(game_state, command_bus)
 ## 开始新回合
-## @stack-confined @side-effect @emitter
+## @endo @emitter
 func start_round(player_id: int, game_state: GameState, command_bus: CommandBus) -> void:
 	if current_stage:
 		end_round(game_state, command_bus)
@@ -178,7 +186,7 @@ func has_stage_with_name(stage_name: StringName) -> bool:
 			return true
 	return false
 ## 结束当前阶段（执行清理，发射 stage_completed）
-## @stack-confined @side-effect @emitter
+## @stack-confined @endo @emitter
 func end_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if not current_stage or current_stage.is_ended:
 		return
@@ -187,18 +195,18 @@ func end_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	current_stage.end_stage(game_state, command_bus)
 	stage_completed.emit(current_stage)
 ## 计时器超时回调（由外部定时器信号触发）
-## @stack-confined @signal-listener @side-effect
+## @stack-confined @signal-listener @endo
 func on_timer_timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if current_stage and not current_stage.is_ended:
 		current_stage.timeout(game_state, command_bus)
 
 #=== Private Methods ===
 ## 连接 request_reset_timer 信号
-## @signal-listener @side-effect
+## @signal-listener
 func _connect_request_reset_timer(stage: Stage) -> void:
 	stage.request_reset_timer.connect(_on_stage_reset_timer_requested)
 ## 断开 request_reset_timer 信号
-## @signal-listener @side-effect
+## @signal-listener
 func _disconnect_request_reset_timer(stage: Stage) -> void:
 	stage.request_reset_timer.disconnect(_on_stage_reset_timer_requested)
 ## 启动阶段：启动计时器，调用 enter/resume，发出 stage_entered 信号
@@ -213,7 +221,7 @@ func _start_stage(stage: Stage, game_state: GameState, command_bus: CommandBus) 
 	stage.enter(game_state, command_bus)
 	stage_entered.emit(stage)
 ## 切换到新阶段（不负责信号连接/断开，由外部栈操作管理）
-## @stack-confined @side-effect @emitter
+## @side-effect @emitter
 func _transition_to(new_stage: Stage, game_state: GameState, command_bus: CommandBus) -> void:
 	if not new_stage:
 		return
@@ -221,11 +229,11 @@ func _transition_to(new_stage: Stage, game_state: GameState, command_bus: Comman
 	current_stage = new_stage
 	if not new_stage.is_temporary():
 		current_main_stage_name = new_stage.stage_name
-		complete_all_temp_stages(game_state, command_bus)   # 清空临时阶段（内部会断开信号）
+		complete_all_temp_stages(game_state, command_bus)
 	stage_changed.emit(old_stage, new_stage)
 	_start_stage(new_stage, game_state, command_bus)
 ## 前进到下一个主阶段（内部使用，自动 +1）
-## @stack-confined @side-effect @emitter
+## @endo @emitter
 func _advance_to_next_main_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= main_stages.size():
@@ -233,7 +241,7 @@ func _advance_to_next_main_stage(game_state: GameState, command_bus: CommandBus)
 		return
 	_transition_to(main_stages[current_main_stage_index], game_state, command_bus)
 ## 重置计时器请求信号处理
-## @signal-listener @side-effect
+## @signal-listener @endo @stack-confined
 func _on_stage_reset_timer_requested(new_time_limit: float) -> void:
 	if timer and current_stage and not current_stage.is_ended:
 		timer.start(new_time_limit)

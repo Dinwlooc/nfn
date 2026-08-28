@@ -2,36 +2,40 @@
 extends RefCounted
 class_name ModifierManager
 
+#=== Public Methods ===
 ## 处理命令上下文，依次应用：
 ## 1. 主修饰卡牌（相关卡牌，第一优先）
 ## 2. 主修饰玩家（相关玩家，第二优先）
 ## 3. 其他在座玩家（从当前回合玩家开始，第三优先）
 ## 每个玩家仅处理一次，跳过已处理过的对象。
+## @exo
 func process_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int) -> void:
 	if not context:
 		return
-	var processed_player_ids :Dictionary[int,bool]= {}
+	var processed_player_ids: Dictionary[int, bool] = {}
 	_process_card_modifiers(context, game_state, command_bus, sequence)
 	_process_primary_player_modifiers(context, game_state, command_bus, sequence, processed_player_ids)
 	_process_other_player_modifiers(context, game_state, command_bus, sequence, processed_player_ids)
 
+#=== Private Methods ===
 ## 处理主修饰卡牌（第一优先）
+## @exo
 func _process_card_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int) -> void:
 	var cards: Array[Card] = context.get_primary_modifier_cards()
 	for card in cards:
 		if card.command_modifiers:
 			card.command_modifiers.process_modifiers(context, game_state, command_bus, card, sequence)
-
 ## 处理主修饰玩家（第二优先）
-func _process_primary_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary[int,bool]) -> void:
+## @exo
+func _process_primary_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary[int, bool]) -> void:
 	var players: Array[Player] = context.get_primary_modifier_players()
 	for player in players:
 		if player and player.command_modifiers:
 			player.command_modifiers.process_modifiers(context, game_state, command_bus, player, sequence)
 			processed[player.get_id()] = true
-
 ## 处理其他在座玩家（第三优先，从当前回合玩家开始轮询）
-func _process_other_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary[int,bool]) -> void:
+## @exo
+func _process_other_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary[int, bool]) -> void:
 	var current_turn_player_id: int = game_state.stage_manager.current_player_id if game_state.stage_manager else 0
 	var all_players: Array[Player] = game_state.player_manager.get_seated_players()
 	var start_index: int = game_state.player_manager.get_seat_index_by_player_id(current_turn_player_id)

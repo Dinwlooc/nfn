@@ -10,6 +10,7 @@ var merge_mask: int = 0
 var is_full_update: bool = false
 
 const VERSION_MAX: int = 65535
+
 ## @zero-value
 static var NULL_PACK = ItemPack.new()
 
