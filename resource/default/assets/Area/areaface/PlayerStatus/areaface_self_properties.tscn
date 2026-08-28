@@ -11,10 +11,6 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_ggemd"]
 shader = ExtResource("1_j7r54")
-shader_parameter/enable_flash = false
-shader_parameter/flash_color = Color(0, 0, 0, 1)
-shader_parameter/flash_intensity = 0.446
-shader_parameter/alpha = 1.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ggemd"]
 bg_color = Color(0.785329, 0.327489, 0, 0.470588)
@@ -35,7 +31,6 @@ anti_aliasing = false
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dri28"]
 shader = ExtResource("1_dri28")
-shader_parameter/distortion_intensity = 0.043
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dvwbm"]
 resource_local_to_scene = true
@@ -46,7 +41,6 @@ anti_aliasing = false
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_j7r54"]
 shader = ExtResource("1_dri28")
-shader_parameter/distortion_intensity = 3.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j7r54"]
 bg_color = Color(0.908206, 0.956616, 1.54018e-06, 1)

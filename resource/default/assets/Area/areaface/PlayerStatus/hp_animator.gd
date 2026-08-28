@@ -1,6 +1,8 @@
 ## HP 动画控制器：管理 HP 变化时的块更新、闪烁、渐变、背景、呼吸/颤动控制，以及粒子请求。
 extends RefCounted
 
+const C = preload("status_constants.gd")
+
 ## 信号：请求设置块容量（新容量）
 signal request_set_capacity(new_max: int)
 ## 信号：请求设置单个块颜色（索引，颜色，是否动画）
@@ -37,23 +39,18 @@ func set_hp(hp: int, max_hp: int) -> void:
 func apply_hp_change(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
-
 	# 1. 容量变化
 	if new_max != old_max:
 		request_set_capacity.emit(new_max)
-
 	# 2. 背景比例
 	var ratio: float = 1.0 if new_max == 0 else clamp(float(clamped_new_cur) / float(new_max), 0.0, 1.0)
 	request_set_background_ratio.emit(ratio, true)
-
 	# 3. 标签更新
 	request_update_label.emit(clamped_new_cur, new_max)
-
 	# 4. 处理新增块（全设为失去颜色）
 	if new_max > old_max:
 		for i in range(old_max, new_max):
 			request_set_block_color.emit(i, C.COLOR_HP_LOST, false)
-
 	# 5. 处理每个块的变化
 	var start: int = min(clamped_old_cur, clamped_new_cur)
 	var end: int = max(clamped_old_cur, clamped_new_cur) - 1
@@ -75,7 +72,6 @@ func apply_hp_change(old_max: int, old_cur: int, new_max: int, new_cur: int) -> 
 			request_two_step_gradient.emit(i, flash_color, new_color, C.HP_TWO_STEP_FLASH_DURATION, C.HP_TWO_STEP_GRADIENT_DURATION)
 		else:
 			request_blink_block.emit(i, old_color, new_color, blink_duration)
-
 	# 6. 呼吸/颤动控制
 	if ratio > 0.5:
 		request_breath_active.emit(true)
@@ -84,7 +80,6 @@ func apply_hp_change(old_max: int, old_cur: int, new_max: int, new_cur: int) -> 
 		request_breath_active.emit(false)
 		request_tremor_active.emit(clamped_new_cur > 0)
 		request_tremor_update.emit(clamped_new_cur, new_max)
-
 	# 7. 粒子发射（损失量）
 	var hp_loss: int = clamped_old_cur - clamped_new_cur
 	if hp_loss > 0:

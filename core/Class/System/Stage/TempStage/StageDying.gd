@@ -47,7 +47,7 @@ func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	_pending_stage_end = true
 	_stop_timer()
 	if _is_locked == false:
-		end_stage(game_state, command_bus)
+		request_end_stage(command_bus)
 
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused or _is_locked:
@@ -100,7 +100,7 @@ func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	if _pending_stage_end:
-		end_stage(game_state, command_bus)
+		request_end_stage(command_bus)
 		return
 	if _is_locked:
 		_unlock_response(game_state, command_bus)

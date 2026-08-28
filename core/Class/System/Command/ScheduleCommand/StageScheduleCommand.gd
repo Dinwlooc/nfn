@@ -1,4 +1,5 @@
-## 阶段调度命令：统一处理回滚、主阶段切换、启动临时阶段
+## 阶段调度命令：统一处理回滚、主阶段切换、启动临时阶段、结束当前阶段
+## @heritage-override
 extends ScheduleCommand
 class_name StageScheduleCommand
 
@@ -6,13 +7,16 @@ enum Operation {
 	ROLLBACK,
 	SWITCH_MAIN,
 	START_TEMP,
+	END_CURRENT,
 }
 
+## @deep-inherit
 class Context extends CommandContext:
 	var operation: Operation
 	var skip_count: int = 0
 	var disallowed_stages: Array[StringName] = []
 
+## @heritage-override
 func _init(
 	command_bus: CommandBus,
 	operation: Operation,
@@ -36,4 +40,6 @@ func execute(game_state: GameState) -> void:
 			game_state.stage_manager.switch_to_main_stage(game_state, ctx.skip_count, ctx.disallowed_stages, _command_bus)
 		Operation.START_TEMP:
 			game_state.stage_manager.start_pending_temp_stage(game_state, _command_bus)
+		Operation.END_CURRENT:
+			game_state.stage_manager.end_current_stage(game_state, _command_bus)
 	complete()

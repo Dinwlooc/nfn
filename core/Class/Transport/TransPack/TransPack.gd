@@ -4,13 +4,15 @@ extends RefCounted
 class_name TransPack
 ## 版本号，用于增量更新时的顺序校验。
 var version: int = 0
-## 抽象序列化方法，由子类实现。
+## 抽象序列化方法。
 @abstract func serialize_to_buffer(_buffer: StreamPeerBuffer) -> void
-## 反序列化静态方法（子类必须重写），提供默认错误实现。
+## 反序列化静态方法。
+## @heritage-override
 static func deserialize_from_buffer(_buffer: StreamPeerBuffer, _pack_override: TransPack) -> TransPack:
 	push_error("TransPack.deserialize_from_buffer() must be overridden in subclass")
 	return null
-## 获取类名字符串（静态），子类必须重写。
+## 获取类名字符串（静态）。
+## @force-override
 static func get_class_name_static() -> StringName:
 	push_error("Must override get_class_name_static() in subclass")
 	return &"TransPack"

@@ -7,4 +7,4 @@ func _init() -> void:
 
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	super.enter(game_state, command_bus)
-	end_stage(game_state, command_bus)
+	request_end_stage(command_bus)

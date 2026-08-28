@@ -161,7 +161,7 @@ func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	if _pending_stage_end:
-		end_stage(game_state, command_bus)
+		request_end_stage(command_bus)
 		return
 	if _need_regenerate_battle_command:
 		_need_regenerate_battle_command = false

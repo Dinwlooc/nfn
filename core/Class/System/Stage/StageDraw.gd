@@ -11,7 +11,7 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	var player: Player = game_state.player_manager.get_player_by_id(player_id)
 	if not player:
 		push_error("StageDraw: 未找到当前玩家")
-		end_stage(game_state, command_bus)
+		request_end_stage(command_bus)
 		return
 	var init_ap: int = player.get_attribute(&"init_AP")
 	var reset_ap_command := ActionPointCommand.new(
@@ -22,6 +22,6 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	)
 	var draw_count: int = player.get_attribute(&"draw_cards_count")
 	var draw_event := DrawCardsCommand.new(player, draw_count)
-	var callback: Callable = func(): end_stage(game_state, command_bus)
+	var callback: Callable = func(): request_end_stage(command_bus)
 	command_bus.queue_behavior_with_callback(draw_event, callback)
 	command_bus.queue_behavior(reset_ap_command)

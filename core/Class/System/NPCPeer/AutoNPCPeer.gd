@@ -97,7 +97,7 @@ static func _decision_task(data: DecisionData) -> Dictionary:
 						defense_cards.append(card)
 					_:
 						pass
-			if data.defense_area_empty and defense_cards.size() > 2:
+			if data.defense_area_empty and defense_cards.size() > 1:
 				defense_cards.shuffle()
 				result[&"type"] = &"play_card"
 				result[&"card_id"] = defense_cards[0][&"id"]

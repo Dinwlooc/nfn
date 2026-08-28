@@ -44,7 +44,7 @@ func _reset_to_data() -> void:
 	for modifier_script: Modifier in data.modifiers:
 		add_modifier(modifier_script)
 	rule_overrides = data.rule_overrides.duplicate(true)
-## 添加运行时修饰器（不影响蓝本）
+## 添加运行时修饰器
 func add_modifier(modifier_script: Modifier) -> void:
 	command_modifiers.add_modifier(modifier_script)
 	modifier_script.init(self)
@@ -60,17 +60,17 @@ func get_rule_overrides() -> Dictionary:
 ## 设置规则覆盖字典（运行时临时覆盖）
 func set_rule_overrides(overrides: Dictionary) -> void:
 	rule_overrides = overrides
-## 虚方法：返回所有者类型字符串，用于 BuffModifiers 的 set_owner。
-## 子类应重写此方法返回对应的类型，例如 &"card" 或 &"player"。
+## 返回所有者类型字符串。
+## @force-override
 static func get_item_type() -> StringName:
 	return &"item"
 
 func get_pack() -> ItemPack:
-	if last_pack == null:
-		last_pack = _create_pack()
-		last_pack.update_merge_mask()
-	else:
+	if last_pack:
 		last_pack._update_and_calculate_delta(self)
+		return last_pack
+	last_pack = _create_pack()
+	last_pack.update_merge_mask()
 	return last_pack
 
 func get_full_pack() -> ItemPack:

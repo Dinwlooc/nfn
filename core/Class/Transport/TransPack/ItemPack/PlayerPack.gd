@@ -1,8 +1,9 @@
 ## 玩家数据包，包含玩家所有状态属性。
 extends ItemPack
 class_name PlayerPack
+
 ## 玩家主要属性枚举，使用 END 作为继承锚点（当前无子类扩展，但保留范式）。
-## @end-inheritance
+## @end-inherit
 enum MainProperty {
 	SEAT_INDEX,
 	HP,
@@ -19,6 +20,7 @@ enum MainProperty {
 	MORALE_LEVEL,
 	END
 }
+
 const STANDARD_SEAT_INDEX: int = 0
 const STANDARD_HP: int = 20
 const STANDARD_MP: int = 20
@@ -31,6 +33,7 @@ const STANDARD_PEER_ID: int = 0
 const STANDARD_MORALE_ATTACK: int = 0
 const STANDARD_MORALE_DEFENSE: int = 0
 const STANDARD_MORALE_LEVEL: int = 0
+
 var seat_index: int
 var HP: int
 var MP: int
@@ -44,28 +47,29 @@ var peer_id: int
 var morale_attack: int
 var morale_defense: int
 var morale_level: int
-## 根据玩家实例创建全量数据包。
-## @override @factory
-static func init_from_item(item: Item) -> PlayerPack:
+
+## 根据玩家实例创建数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充玩家特有属性。
+## @factory @heritage-override
+static func init_from_item(item: Item, pack_overriding: ItemPack = PlayerPack.new()) -> PlayerPack:
 	var player := item as Player
-	if not player:
+	if player == null:
 		return null
-	return PlayerPack.new(
-		player.get_id(),
-		player.seat_index,
-		player.HP,
-		player.MP,
-		player.AP,
-		player.disallowed_operations,
-		player.get_attribute(&"HP_max"),
-		player.get_attribute(&"MP_max"),
-		player.get_attribute(&"init_AP"),
-		player.get_attribute(&"draw_cards_count"),
-		player.peer_id,
-		player.morale_attack,
-		player.morale_defense,
-		player.morale_level
-	)
+	var base_pack := ItemPack.init_from_item(item, pack_overriding) as PlayerPack
+	base_pack.seat_index = player.seat_index
+	base_pack.HP = player.HP
+	base_pack.MP = player.MP
+	base_pack.AP = player.AP
+	base_pack.disallowed_operations = player.disallowed_operations.duplicate()
+	base_pack.modified_HP_max = player.get_attribute(&"HP_max")
+	base_pack.modified_MP_max = player.get_attribute(&"MP_max")
+	base_pack.modified_init_AP = player.get_attribute(&"init_AP")
+	base_pack.modified_draw_cards_count = player.get_attribute(&"draw_cards_count")
+	base_pack.peer_id = player.peer_id
+	base_pack.morale_attack = player.morale_attack
+	base_pack.morale_defense = player.morale_defense
+	base_pack.morale_level = player.morale_level
+	base_pack.update_merge_mask()
+	return base_pack
 ## 构造器，初始化所有字段。
 ## @factory
 func _init(
@@ -99,7 +103,7 @@ func _init(
 	morale_defense = init_morale_defense
 	morale_level = init_morale_level
 ## 序列化自身属性。
-## @override @flow-override @side-effect
+## @flow-override @side-effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	super.serialize_to_buffer(buffer)
 	if merge_mask & (1 << MainProperty.SEAT_INDEX):
@@ -129,38 +133,38 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	if merge_mask & (1 << MainProperty.MORALE_LEVEL):
 		SerializationUtil.write(buffer, morale_level)
 ## 反序列化自身属性。
-## @override @flow-override @side-effect
-static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = PlayerPack.new()) -> PlayerPack:
-	super.deserialize_from_buffer(buffer, pack)
-	if pack.merge_mask & (1 << MainProperty.SEAT_INDEX):
-		pack.seat_index = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.HP):
-		pack.HP = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.MP):
-		pack.MP = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.AP):
-		pack.AP = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.DISALLOWED_OPERATIONS):
-		pack.disallowed_operations = SerializationUtil.read(buffer, TYPE_ARRAY)
-	if pack.merge_mask & (1 << MainProperty.MODIFIED_HP_MAX):
-		pack.modified_HP_max = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.MODIFIED_MP_MAX):
-		pack.modified_MP_max = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.MODIFIED_INIT_AP):
-		pack.modified_init_AP = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.MODIFIED_DRAW_CARDS_COUNT):
-		pack.modified_draw_cards_count = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.PEER_ID):
-		pack.peer_id = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.MORALE_ATTACK):
-		pack.morale_attack = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.MORALE_DEFENSE):
-		pack.morale_defense = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.MORALE_LEVEL):
-		pack.morale_level = SerializationUtil.read(buffer, TYPE_INT)
-	return pack
+## @side-effect @heritage-override
+static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: TransPack = PlayerPack.new()) -> PlayerPack:
+	super.deserialize_from_buffer(buffer, pack_overriding)
+	if pack_overriding.merge_mask & (1 << MainProperty.SEAT_INDEX):
+		pack_overriding.seat_index = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.HP):
+		pack_overriding.HP = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.MP):
+		pack_overriding.MP = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.AP):
+		pack_overriding.AP = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.DISALLOWED_OPERATIONS):
+		pack_overriding.disallowed_operations = SerializationUtil.read(buffer, TYPE_ARRAY)
+	if pack_overriding.merge_mask & (1 << MainProperty.MODIFIED_HP_MAX):
+		pack_overriding.modified_HP_max = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.MODIFIED_MP_MAX):
+		pack_overriding.modified_MP_max = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.MODIFIED_INIT_AP):
+		pack_overriding.modified_init_AP = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.MODIFIED_DRAW_CARDS_COUNT):
+		pack_overriding.modified_draw_cards_count = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.PEER_ID):
+		pack_overriding.peer_id = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.MORALE_ATTACK):
+		pack_overriding.morale_attack = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.MORALE_DEFENSE):
+		pack_overriding.morale_defense = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.MORALE_LEVEL):
+		pack_overriding.morale_level = SerializationUtil.read(buffer, TYPE_INT)
+	return pack_overriding
 ## 合并更新包。
-## @override @flow-override @side-effect
+## @flow-override @side-effect
 func merge(update_pack: ItemPack) -> void:
 	super.merge(update_pack)
 	if update_pack.merge_mask & (1 << MainProperty.SEAT_INDEX):
@@ -190,7 +194,7 @@ func merge(update_pack: ItemPack) -> void:
 	if update_pack.merge_mask & (1 << MainProperty.MORALE_LEVEL):
 		morale_level = update_pack.morale_level
 ## 重置所有属性为标准态。
-## @override @flow-override @side-effect
+## @flow-override @side-effect
 func reset_to_standard() -> void:
 	super.reset_to_standard()
 	seat_index = STANDARD_SEAT_INDEX
@@ -238,7 +242,7 @@ func calculate_delta_mask(old_pack: PlayerPack) -> int:
 		delta_mask |= 1 << MainProperty.MORALE_LEVEL
 	return delta_mask
 ## 更新合并掩码。
-## @override @flow-override @side-effect
+## @flow-override @side-effect
 func update_merge_mask() -> void:
 	super.update_merge_mask()
 	if is_full_update:
@@ -275,7 +279,7 @@ static func get_class_name_static() -> StringName:
 	return &"PlayerPack"
 ## 以下为私有方法。
 ## 根据玩家实例更新自身并计算增量掩码（用于缓存增量包）。
-## @super @side-effect
+## @flow-override @side-effect
 func _update_and_calculate_delta(player: Player) -> void:
 	merge_mask = 0
 	_compare_update_seat_index(player)

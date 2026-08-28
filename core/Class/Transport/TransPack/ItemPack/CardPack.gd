@@ -2,7 +2,7 @@
 extends ItemPack
 class_name CardPack
 ## 主要属性枚举，使用 END 作为继承锚点，供子类枚举扩展。
-## @end-inheritance
+## @end-inherit
 enum MainProperty {
 	NAME,
 	TYPE,
@@ -17,13 +17,18 @@ var type: int
 var player_id: int
 const ItemType = GlobalConstants.KEY_ITEM_TYPE
 const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
-## 根据物品实例创建全量数据包（统一工厂方法）。
-## @factory
-static func init_from_item(item: Item) -> CardPack:
+## 根据卡片实例创建数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充卡片特有属性。
+## @factory @heritage-override
+static func init_from_item(item: Item, pack_overriding: ItemPack = CardPack.new()) -> CardPack:
 	var card := item as Card
 	if card == null:
 		return null
-	return init_from_card(card)
+	var base_pack := ItemPack.init_from_item(item, pack_overriding) as CardPack
+	base_pack.name = card.get_name()
+	base_pack.type = GlobalRegistry.get_constant_index(ItemType, card.type)
+	base_pack.player_id = card.get_owner_id()
+	base_pack.update_merge_mask()
+	return base_pack
 ## 从 Card 对象创建数据包。
 ## @factory
 static func init_from_card(card: Card) -> CardPack:
@@ -42,7 +47,7 @@ func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: String
 	if player_id != 0:
 		merge_mask |= 1 << MainProperty.PLAYER_ID
 ## 序列化自身属性到缓冲区。
-## @override @flow-override @side-effect
+## @flow-override @side-effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	super.serialize_to_buffer(buffer)
 	if merge_mask & (1 << MainProperty.NAME):
@@ -52,18 +57,18 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	if merge_mask & (1 << MainProperty.PLAYER_ID):
 		SerializationUtil.write(buffer, player_id)
 ## 反序列化自身属性。
-## @override @flow-override @side-effect
-static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = CardPack.new()) -> CardPack:
-	super.deserialize_from_buffer(buffer, pack)
-	if pack.merge_mask & (1 << MainProperty.NAME):
-		pack.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-	if pack.merge_mask & (1 << MainProperty.TYPE):
-		pack.type = SerializationUtil.read(buffer, TYPE_INT)
-	if pack.merge_mask & (1 << MainProperty.PLAYER_ID):
-		pack.player_id = SerializationUtil.read(buffer, TYPE_INT)
-	return pack
+## @side-effect @heritage-override
+static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: TransPack = CardPack.new()) -> CardPack:
+	super.deserialize_from_buffer(buffer, pack_overriding)
+	if pack_overriding.merge_mask & (1 << MainProperty.NAME):
+		pack_overriding.name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
+	if pack_overriding.merge_mask & (1 << MainProperty.TYPE):
+		pack_overriding.type = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.PLAYER_ID):
+		pack_overriding.player_id = SerializationUtil.read(buffer, TYPE_INT)
+	return pack_overriding
 ## 合并更新包。
-## @override @flow-override @side-effect
+## @flow-override @side-effect
 func merge(update_pack: ItemPack) -> void:
 	super.merge(update_pack)
 	if update_pack.merge_mask & (1 << MainProperty.NAME):
@@ -73,7 +78,7 @@ func merge(update_pack: ItemPack) -> void:
 	if update_pack.merge_mask & (1 << MainProperty.PLAYER_ID):
 		player_id = update_pack.player_id
 ## 重置所有属性为标准态。
-## @override @flow-override @side-effect
+## @flow-override @side-effect
 func reset_to_standard() -> void:
 	super.reset_to_standard()
 	name = STANDARD_NAME
@@ -91,7 +96,7 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 		delta_mask |= 1 << MainProperty.PLAYER_ID
 	return delta_mask
 ## 更新合并掩码，标记与标准值不同的属性。
-## @override @flow-override @side-effect
+## @flow-override @side-effect
 func update_merge_mask() -> void:
 	super.update_merge_mask()
 	if is_full_update:
@@ -112,7 +117,7 @@ func get_card_type() -> StringName:
 	return GlobalRegistry.get_constant_name(ItemType, type)
 ## 以下为私有方法，按规则置于公开方法之后。
 ## 根据 Card 更新自身并计算增量掩码（用于缓存增量包）。
-## @super @side-effect
+## @flow-override @side-effect
 func _update_and_calculate_delta(card: Card) -> void:
 	merge_mask = 0
 	_compare_update_name(card)

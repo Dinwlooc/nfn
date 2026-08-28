@@ -39,7 +39,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 		&"play_card":
 			_process_play_card_request(request as OperationRequest.PlayCard, game_state, command_bus)
 		&"abandon_response":
-			end_stage(game_state, command_bus)
+			request_end_stage(command_bus)
 			request.complete()
 			GlobalConsole._print(["主阶段：放弃响应，结束阶段"])
 		_:

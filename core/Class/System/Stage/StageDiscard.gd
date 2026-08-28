@@ -22,7 +22,7 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 			responsive_players.append(player.get_id())
 			GlobalConsole._print(["玩家", player.get_id(), "需要弃置", need_discard, "张牌（手牌", hand_count, "，上限", hand_limit, "）"])
 	if responsive_players.is_empty():
-		end_stage(game_state, command_bus)
+		request_end_stage(command_bus)
 		return
 	command_bus.set_responsive_players(responsive_players)
 	_reset_timer()
@@ -31,7 +31,7 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	super.resume(game_state, command_bus)
 	if _players_to_discard.is_empty():
-		end_stage(game_state, command_bus)
+		request_end_stage(command_bus)
 		return
 	_reset_timer()
 	GlobalConsole._print(["弃牌阶段恢复，剩余需弃牌玩家：", _players_to_discard.keys()])
@@ -54,7 +54,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 			request.cancel()
 			GlobalConsole._print(["弃牌阶段：不支持的操作类型", request.get_class_name_static()])
 	if _players_to_discard.is_empty():
-		end_stage(game_state, command_bus)
+		request_end_stage(command_bus)
 
 func _process_discard_request(request: OperationRequest.DiscardCards, game_state: GameState, command_bus: CommandBus) -> void:
 	var player_id: int = request.source_player_id
@@ -137,7 +137,7 @@ func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	_force_discard_for_all(game_state, command_bus)
-	end_stage(game_state, command_bus)
+	request_end_stage(command_bus)
 
 func _force_discard_for_all(game_state: GameState, command_bus: CommandBus) -> void:
 	if _players_to_discard.is_empty():
