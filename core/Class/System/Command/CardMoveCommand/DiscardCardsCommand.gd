@@ -1,16 +1,18 @@
+## 弃牌命令：将手牌中指定卡牌移至弃牌堆。
 extends CardMoveCommand
 class_name DiscardCardsCommand
-## 弃牌命令上下文类
+
+## 弃牌命令上下文。
+## @context @deep_inherit
 class Context extends CardMoveCommand.Context:
 	var card_ids: PackedInt32Array = PackedInt32Array()
-	## 设置卡牌ID数组
+
 	func set_card_ids(ids: PackedInt32Array) -> void:
 		card_ids = ids
-	## 检查卡牌ID数组是否有效
+
 	func are_card_ids_valid() -> bool:
 		return not card_ids.is_empty()
-
-## 弃牌命令
+## @seam_override
 func _init(
 	player: Player,
 	card_ids: PackedInt32Array,
@@ -20,33 +22,20 @@ func _init(
 	super._init(player, name_overriding, context_overriding)
 	_context.set_card_ids(card_ids)
 	_context.set_event_type(RenderRequest.ItemSet.EventType.DISCARD)
-## 覆盖父类的初始化阶段方法
-func _on_init_phase(game_state: GameState) -> void:
-	if not _context is Context:
-		push_error("DiscardCardsCommand: 上下文类型错误")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
+## @hook @seam_override
+func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
+	var err := RuleGuard.ErrorMessage.new()
+	var source_player: Player = context_overriding.get_source_player()
+	if not (
+		RuleGuard.has_valid_card_ids(context_overriding.card_ids, err, "无效的卡牌ID数组") and
+		RuleGuard.has_valid_player(source_player, err, "未找到源玩家") and
+		RuleGuard.has_valid_area(game_state.get_hand_area(source_player.get_id()), err, "无法获取源玩家手牌区域") and
+		RuleGuard.has_valid_area(game_state.get_discard_area(), err, "无法获取弃牌堆区域")
+	):
+		_fail(err.text, context_overriding)
 		return
-	if not _context.are_card_ids_valid():
-		push_error("DiscardCardsCommand: 无效的卡牌ID数组")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
-		return
-	var source_player: Player = _context.get_source_player()
-	if not source_player:
-		push_error("DiscardCardsCommand: 未找到源玩家")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
-		return
-	# 获取源手牌区域（必须存在）
 	var hand_area: AreaHand = game_state.get_hand_area(source_player.get_id())
-	if not hand_area:
-		push_error("DiscardCardsCommand: 无法获取源玩家手牌区域")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
-		return
-	_context.source_area = hand_area
-	# 获取目标弃牌堆（必须存在）
 	var discard_area: AreaDiscard = game_state.get_discard_area()
-	if not discard_area:
-		push_error("DiscardCardsCommand: 无法获取弃牌堆区域")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
-		return
-	_context.target_area = discard_area
-	_context.set_id_mode(_context.card_ids)
+	context_overriding.source_area = hand_area
+	context_overriding.target_area = discard_area
+	context_overriding.set_id_mode(context_overriding.card_ids)

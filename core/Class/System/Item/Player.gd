@@ -1,7 +1,7 @@
 ## 玩家类，存储玩家数据，继承自 Item。
 extends Item
 class_name Player
-## @zero-value
+## @zero_instance
 static var PUBLIC_PLAYER: Player = Player.new(PlayerData.new(),true).set_id(1)
 
 var peer_id: int = -1

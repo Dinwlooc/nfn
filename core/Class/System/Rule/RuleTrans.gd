@@ -1,6 +1,7 @@
 ## 规则传输工具类，负责根据区域可见性将卡牌、玩家等数据打包并发送给客户端。
 ## 所有方法均为静态纯函数，不持有状态。
-extends RefCounted
+@abstract
+extends Object
 class_name RuleTrans
 
 ## 发送区域卡牌数量变化通知（不传输具体卡牌包）

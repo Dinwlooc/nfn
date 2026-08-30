@@ -27,13 +27,13 @@ var _render_context: RenderContext = null
 
 # ==================== 公开方法 ====================
 ## 设置渲染上下文（由主类注入）。
-## @side-effect
+## @side_effect
 func set_render_context(context: RenderContext) -> void:
 	_render_context = context
 	if _associated_player and _render_context:
 		check_condition(_render_context)
 ## 设置关联玩家，自动连接/断开选中信号。
-## @side-effect
+## @side_effect
 func set_player(player: RenderItem) -> void:
 	if _associated_player == player:
 		return
@@ -47,11 +47,11 @@ func set_player(player: RenderItem) -> void:
 func get_player() -> RenderItem:
 	return _associated_player
 ## 设置 _process 状态（由主类调用）。
-## @side-effect
+## @side_effect
 func set_processing_active(active: bool) -> void:
 	_is_processing = active
 ## 每帧更新，处理延迟启动预览。
-## @side-effect
+## @side_effect
 func update(_delta: float) -> void:
 	if _preview_delay_start_ms <= 0:
 		return
@@ -60,7 +60,7 @@ func update(_delta: float) -> void:
 		if not preview_mode:
 			_activate_preview()
 ## 由主类调用，传入 render_context 进行条件判断，决定激活/取消预览。
-## @side-effect
+## @side_effect
 func check_condition(render_context: RenderContext) -> void:
 	var can_preview: bool = should_preview(render_context)
 	if can_preview and not preview_mode:
@@ -69,7 +69,7 @@ func check_condition(render_context: RenderContext) -> void:
 	elif not can_preview and preview_mode:
 		_deactivate_preview()
 ## 延迟进入预览（当首张卡牌加入时调用）。
-## @side-effect
+## @side_effect
 func trigger_delayed_preview(render_context: RenderContext) -> void:
 	if not should_preview(render_context):
 		return
@@ -80,7 +80,7 @@ func trigger_delayed_preview(render_context: RenderContext) -> void:
 	_is_processing = true
 	request_preview_start.emit()
 ## 清理所有状态与信号。
-## @side-effect
+## @side_effect
 func cleanup() -> void:
 	_disconnect_player_selection_signal()
 	preview_mode = false
@@ -102,13 +102,13 @@ func should_preview(render_context: RenderContext) -> bool:
 
 # ==================== 私有方法 ====================
 ## 激活预览（发射信号）。
-## @side-effect
+## @side_effect
 func _activate_preview() -> void:
 	preview_mode = true
 	preview_state_changed.emit(true)
 	request_preview_start.emit()
 ## 取消预览（发射信号）。
-## @side-effect
+## @side_effect
 func _deactivate_preview() -> void:
 	preview_mode = false
 	_preview_delay_start_ms = 0
@@ -116,19 +116,19 @@ func _deactivate_preview() -> void:
 	preview_state_changed.emit(false)
 	request_preview_start.emit()
 ## 连接玩家选中信号（追踪范式）。
-## @side-effect
+## @side_effect
 func _connect_player_selection_signal() -> void:
 	if not _associated_player:
 		return
 	_associated_player.selected_changed.connect(_on_player_selection_changed)
 ## 断开玩家选中信号（追踪范式）。
-## @side-effect
+## @side_effect
 func _disconnect_player_selection_signal() -> void:
 	if _associated_player:
 		if _associated_player.selected_changed.is_connected(_on_player_selection_changed):
 			_associated_player.selected_changed.disconnect(_on_player_selection_changed)
 ## 玩家选中状态变更回调（转发到 check_condition）。
-## @side-effect
+## @side_effect
 func _on_player_selection_changed(_selected: bool) -> void:
 	if _render_context:
 		check_condition(_render_context)

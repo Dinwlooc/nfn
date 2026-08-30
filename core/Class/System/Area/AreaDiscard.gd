@@ -8,7 +8,7 @@ func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	visibility = Visibility.INVISIBLE
 	area_card_added.connect(_on_area_card_added)
 ## 回调：当卡牌添加时，清除其玩家和物品引用
-## @signal-listener @exo
+## @signal_listener @external
 func _on_area_card_added(card: Card, _area: Area) -> void:
 	card.clear_player()
 	card.reset_item()

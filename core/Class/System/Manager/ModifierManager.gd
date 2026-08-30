@@ -8,7 +8,7 @@ class_name ModifierManager
 ## 2. 主修饰玩家（相关玩家，第二优先）
 ## 3. 其他在座玩家（从当前回合玩家开始，第三优先）
 ## 每个玩家仅处理一次，跳过已处理过的对象。
-## @exo
+## @external
 func process_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int) -> void:
 	if not context:
 		return
@@ -19,14 +19,14 @@ func process_modifiers(context: CommandContext, game_state: GameState, command_b
 
 #=== Private Methods ===
 ## 处理主修饰卡牌（第一优先）
-## @exo
+## @external
 func _process_card_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int) -> void:
 	var cards: Array[Card] = context.get_primary_modifier_cards()
 	for card in cards:
 		if card.command_modifiers:
 			card.command_modifiers.process_modifiers(context, game_state, command_bus, card, sequence)
 ## 处理主修饰玩家（第二优先）
-## @exo
+## @external
 func _process_primary_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary[int, bool]) -> void:
 	var players: Array[Player] = context.get_primary_modifier_players()
 	for player in players:
@@ -34,7 +34,7 @@ func _process_primary_player_modifiers(context: CommandContext, game_state: Game
 			player.command_modifiers.process_modifiers(context, game_state, command_bus, player, sequence)
 			processed[player.get_id()] = true
 ## 处理其他在座玩家（第三优先，从当前回合玩家开始轮询）
-## @exo
+## @external
 func _process_other_player_modifiers(context: CommandContext, game_state: GameState, command_bus: CommandBus, sequence: int, processed: Dictionary[int, bool]) -> void:
 	var current_turn_player_id: int = game_state.stage_manager.current_player_id if game_state.stage_manager else 0
 	var all_players: Array[Player] = game_state.player_manager.get_seated_players()

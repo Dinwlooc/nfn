@@ -1,5 +1,6 @@
 ## 守区结算规则类（纯函数/验证器模式）
-extends RefCounted
+@abstract
+extends Object
 class_name RuleSettle
 
 ## 验证器名称常量

@@ -7,14 +7,14 @@ var _unordered_pool: Dictionary[int, Card] = {}
 
 #==公开方法（重写抽象）=======================================================
 ## 添加卡牌
-## @override @endo
+## @override @internal
 func cards_add(new_cardpool: Array[Card]) -> void:
 	for card in new_cardpool:
 		_unordered_pool[card.id] = card
 		card.set_area(self)
 		area_card_added.emit(card, self)
 ## 按ID移除卡牌
-## @override @endo
+## @override @internal
 func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 	var removed: Array[Card] = []
 	for id in ids:
@@ -29,7 +29,7 @@ func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 func card_count() -> int:
 	return _unordered_pool.size()
 ## 按ID获取卡牌
-## @override @semi-pure
+## @override @nullable_pure
 func get_card_by_id(card_id: int) -> Card:
 	return _unordered_pool.get(card_id, null)
 ## 获取所有卡牌
@@ -58,7 +58,7 @@ func get_top_cards(count: int) -> Array[Card]:
 	var selected_ids: PackedInt32Array = PackedInt32Array(id_list.slice(0, count))
 	return get_cards_by_ids(selected_ids)
 ## 随机移除指定数量的卡牌（顶端移除，即随机移除）
-## @override @endo
+## @override @internal
 func remove_top_cards(count: int) -> Array[Card]:
 	if count <= 0:
 		return []

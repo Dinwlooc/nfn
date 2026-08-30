@@ -18,19 +18,19 @@ signal operation_requested(request: OperationRequest)
 
 #=== Constructor ===
 ## 构造函数
-## @endo
+## @internal
 func _init(game_state: GameState) -> void:
 	_game_state = game_state
 	_game_state.player_manager.player_added.connect(_on_player_added)
 
 #=== Public Methods ===
 ## 当权限更新时，尝试为相关玩家发送 NPC 请求
-## @endo
+## @internal
 func on_permissions_updated(player_ids: PackedInt32Array) -> void:
 	for player_id in player_ids:
 		_try_send_npc_request(player_id)
 ## 清理所有 NPC 对等端
-## @endo
+## @internal
 func clear() -> void:
 	for npc in _npc_peers.values():
 		npc.cleanup()
@@ -44,7 +44,7 @@ func emit_operation_requested(request: OperationRequest) -> void:
 
 #=== Private Methods ===
 ## 玩家添加回调（仅当为 AI 玩家时创建 NPC 对等端）
-## @endo
+## @internal
 func _on_player_added(player: Player) -> void:
 	if player.peer_id != PlayersManager.ai_peer_id:
 		return
@@ -54,7 +54,7 @@ func _on_player_added(player: Player) -> void:
 	var npc = AutoNPCPeer.new(_game_state, player_id)
 	_npc_peers[player_id] = npc
 ## 请求取消时的重试逻辑
-## @endo
+## @internal
 func _on_request_cancelled(player_id: int) -> void:
 	var count = _retry_counts.get(player_id, 0)
 	if count < MAX_RETRIES:
@@ -65,14 +65,14 @@ func _on_request_cancelled(player_id: int) -> void:
 		_retry_counts.erase(player_id)
 		call_deferred(&"emit_operation_requested", abandon_req)
 ## 重试请求
-## @endo
+## @internal
 func _retry_request(player_id: int) -> void:
 	if not _npc_peers.has(player_id):
 		return
 	var npc = _npc_peers[player_id]
 	_request_decision_async(player_id, npc)
 ## 尝试发送 NPC 请求（等待 NPC 就绪）
-## @endo
+## @internal
 func _try_send_npc_request(player_id: int) -> void:
 	if not _npc_peers.has(player_id):
 		return
@@ -81,7 +81,7 @@ func _try_send_npc_request(player_id: int) -> void:
 	_retry_counts.erase(player_id)
 	_request_decision_async(player_id, npc)
 ## 异步请求决策
-## @endo
+## @internal
 func _request_decision_async(player_id: int, npc: NPCPeer) -> void:
 	var serial = _decision_serial.get(player_id, 0) + 1
 	_decision_serial[player_id] = serial
@@ -89,7 +89,7 @@ func _request_decision_async(player_id: int, npc: NPCPeer) -> void:
 		_on_npc_decision(player_id, serial, request)
 	)
 ## NPC 决策回调
-## @endo
+## @internal
 func _on_npc_decision(player_id: int, serial: int, request: OperationRequest) -> void:
 	if _decision_serial.get(player_id) != serial:
 		return

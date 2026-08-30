@@ -9,6 +9,6 @@ func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	area_card_added.connect(_on_area_card_added)
 
 ## 回调：当卡牌添加时，设置所属玩家
-## @signal-listener @exo
+## @signal_listener @external
 func _on_area_card_added(card: Card, _area: Area) -> void:
 	card.set_player(player)

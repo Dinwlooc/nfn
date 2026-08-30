@@ -61,7 +61,7 @@ func get_rule_overrides() -> Dictionary:
 func set_rule_overrides(overrides: Dictionary) -> void:
 	rule_overrides = overrides
 ## 返回所有者类型字符串。
-## @force-override
+## @force_override
 static func get_item_type() -> StringName:
 	return &"item"
 

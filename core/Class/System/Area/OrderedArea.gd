@@ -8,7 +8,7 @@ var _card_id_to_index: Dictionary[int, int] = {}
 
 #==公开方法=======================================================
 ## 添加卡牌至尾部
-## @override @endo
+## @override @internal
 func cards_add(new_cardpool: Array[Card]) -> void:
 	var start_index = _ordered_pool.size()
 	_ordered_pool.resize(_ordered_pool.size() + new_cardpool.size())
@@ -19,7 +19,7 @@ func cards_add(new_cardpool: Array[Card]) -> void:
 		card.set_area(self)
 		area_card_added.emit(card, self)
 ## 按ID移除卡牌
-## @override @endo
+## @override @internal
 func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 	var indices = PackedInt32Array()
 	for id in ids:
@@ -27,7 +27,7 @@ func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 			indices.append(_card_id_to_index[id])
 	return remove_cards_at_indices(indices)
 ## 按索引移除卡牌
-##  @override @endo
+##  @override @internal
 func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 	if indices.is_empty():
 		return []
@@ -48,7 +48,7 @@ func remove_cards_at_indices(indices: PackedInt32Array) -> Array[Card]:
 		after_cards_removed.emit()
 	return removed
 ## 移除顶部N张卡牌
-## @override @endo
+## @override @internal
 func remove_top_cards(count: int) -> Array[Card]:
 	var removed: Array[Card] = []
 	count = min(count, card_count())
@@ -66,7 +66,7 @@ func remove_top_cards(count: int) -> Array[Card]:
 func card_count() -> int:
 	return _ordered_pool.size()
 ## 按ID获取卡牌（可能返回 null）
-## @override @semi-pure
+## @override @nullable_pure
 func get_card_by_id(card_id: int) -> Card:
 	if _card_id_to_index.has(card_id):
 		return _ordered_pool[_card_id_to_index[card_id]]
@@ -83,7 +83,7 @@ func get_card_ids() -> PackedInt32Array:
 		ids.append(card.id)
 	return ids
 ## 洗牌
-## @override @endo
+## @override @internal
 func shuffle_card_pool() -> void:
 	_ordered_pool.shuffle()
 	_rebuild_index_map()
@@ -112,14 +112,14 @@ func is_empty() -> bool:
 
 #==私有方法===================================================================
 ## 重建索引映射
-## @endo
+## @internal
 func _rebuild_index_map() -> void:
 	_card_id_to_index.clear()
 	for idx in range(_ordered_pool.size()):
 		_card_id_to_index[_ordered_pool[idx].id] = idx
 
 ## 压缩有序池（从指定起始位置开始，填补空位）
-## @endo
+## @internal
 func _compress_ordered_pool(start_index: int) -> void:
 	var write_index = start_index
 	for read_index in range(start_index, _ordered_pool.size()):

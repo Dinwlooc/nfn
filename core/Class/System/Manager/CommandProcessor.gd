@@ -31,13 +31,13 @@ signal command_popped(behavior: BehaviorCommand)
 
 #=== Constructor ===
 ## 构造函数
-## @side-effect
+## @side_effect
 func _init(p_game_state: GameState) -> void:
 	game_state = p_game_state
 
 #=== Public Methods ===
 ## 处理命令堆栈
-## @endo @emitter
+## @internal @emitter
 func process() -> void:
 	if behavior_stack.is_empty():
 		if not is_empty:
@@ -54,7 +54,7 @@ func process() -> void:
 	command_processing.emit(current_behavior, _action_sequence)
 	current_behavior.execute(game_state)
 ## 添加新命令到堆栈
-## @endo @emitter
+## @internal @emitter
 func queue_behavior(event: BehaviorCommand) -> void:
 	event.companion_command_requested.connect(_on_companion_command_requested)
 	behavior_stack.push_back(event)
@@ -65,6 +65,6 @@ func queue_behavior(event: BehaviorCommand) -> void:
 
 #=== Private Methods ===
 ## 伴生命令请求处理
-## @endo
+## @internal
 func _on_companion_command_requested(command: BehaviorCommand) -> void:
 	queue_behavior(command)

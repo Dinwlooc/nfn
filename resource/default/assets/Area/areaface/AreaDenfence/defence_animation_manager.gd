@@ -52,7 +52,7 @@ class PreviewParams:
 
 # ==================== 公开方法 ====================
 ## 生成卡牌移动动画（普通牌用局部坐标，预览牌用全局坐标）。
-## @side-effect
+## @side_effect
 ## @param master_tween 已创建的 Tween 实例
 ## @param cards 卡牌数组
 ## @param target_local_positions 正常守区位置的局部坐标数组（普通牌用）

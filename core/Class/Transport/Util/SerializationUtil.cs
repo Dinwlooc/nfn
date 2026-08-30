@@ -8,14 +8,14 @@ using System;
 ///   - write_generic / read_generic ：自描述（带类型标记），自动处理类型
 /// 注意：本工具不对 Vector2、Vector3、Quaternion 等几何类型做特殊兼容，
 /// 直接使用引擎原生序列化（put_var/get_var）或自行扩展。
-/// @facade
+/// @delegates
 /// </summary>
 [GlobalClass]
 public partial class SerializationUtil : GodotObject
 {
 	/// <summary>
 	/// 自定义优化写入（不带类型标记），从 Variant 中自动识别类型。
-	/// @side-effect
+	/// @side_effect
 	/// </summary>
 	/// <param name="buffer">目标缓冲区。</param>
 	/// <param name="value">待写入的值。</param>
@@ -24,7 +24,7 @@ public partial class SerializationUtil : GodotObject
 
 	/// <summary>
 	/// 自定义优化读取（需显式传入类型标记）。
-	/// @side-effect
+	/// @side_effect
 	/// </summary>
 	/// <param name="buffer">源缓冲区。</param>
 	/// <param name="type">Variant.Type 的整数值，指定期望读取的类型。</param>
@@ -34,7 +34,7 @@ public partial class SerializationUtil : GodotObject
 
 	/// <summary>
 	/// 自描述写入（写入类型标记 + 值）。
-	/// @side-effect
+	/// @side_effect
 	/// </summary>
 	/// <param name="buffer">目标缓冲区。</param>
 	/// <param name="value">待写入的值。</param>
@@ -43,7 +43,7 @@ public partial class SerializationUtil : GodotObject
 
 	/// <summary>
 	/// 自描述读取（先读类型标记，再读值）。
-	/// @side-effect
+	/// @side_effect
 	/// </summary>
 	/// <param name="buffer">源缓冲区。</param>
 	/// <returns>读取到的 Variant 值（自动恢复类型）。</returns>

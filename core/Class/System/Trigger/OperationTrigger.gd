@@ -9,16 +9,16 @@ func _init(system: System) -> void:
 	_system.operation_handler.operation_validated.connect(_on_operation_validated)
 	_system.game_state.player_manager.player_added.connect(_on_player_added)
 	_setup_mediator_connections()
-## @signal-mediator 部署中介连接：permissions_updated → npc_peer_manager
+## @signal_mediator 部署中介连接：permissions_updated → npc_peer_manager
 func _setup_mediator_connections() -> void:
 	_system.operation_handler.permissions_updated.connect(
 		_system.npc_peer_manager.on_permissions_updated,
 		CONNECT_REFERENCE_COUNTED
 	)
-## @signal-listener 玩家添加时更新映射
+## @signal_listener 玩家添加时更新映射
 func _on_player_added(player: Player) -> void:
 	_system.operation_handler.update_verification_mapping(player.peer_id, player.get_id())
-## @signal-listener 操作验证通过后交由阶段管理器处理
+## @signal_listener 操作验证通过后交由阶段管理器处理
 func _on_operation_validated(request: OperationRequest) -> void:
 	_system.game_state.stage_manager.handle_validated_request(request, _system.game_state, _system.command_bus)
 ##

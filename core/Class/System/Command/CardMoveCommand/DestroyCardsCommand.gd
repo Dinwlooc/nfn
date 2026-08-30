@@ -1,29 +1,24 @@
+## 摧毁命令：将目标守区中的一张卡牌移至弃牌堆。
 extends CardMoveCommand
 class_name DestroyCardsCommand
 
-## 摧毁命令上下文类
+## 摧毁命令上下文。
+## @context @deep_inherit
 class Context extends CardMoveCommand.Context:
-	var source_card: Card = null             ## 实施摧毁的卡牌（可为空）
-	var target_card_id: int = 0              ## 要摧毁的目标卡牌ID
-	var target_defense_area: AreaDefence = null  ## 目标守区
-	## 设置实施摧毁的卡牌
+	var source_card: Card = null
+	var target_card_id: int = 0
+	var target_defense_area: AreaDefence = null
+
 	func set_source_card(card: Card) -> void:
 		source_card = card
-	## 设置目标卡牌ID
+
 	func set_target_card_id(id: int) -> void:
 		target_card_id = id
-	## 设置目标守区
+
 	func set_target_defense_area(area: AreaDefence) -> void:
 		target_defense_area = area
 
-## 摧毁命令：将目标守区中的一张卡牌移至弃牌堆
-## @param player: 命令发起者玩家实例
-## @param target_defense_area: 目标守区
-## @param target_card_id: 要摧毁的卡牌ID
-## @param executor_player: 实施摧毁的玩家（可选，可为空）
-## @param source_card: 实施摧毁的卡牌（可选，可为空）
-## @param name_overriding: 命令名称
-## @param context_overriding: 外部传入的上下文（通常不传）
+## @seam_override
 func _init(
 	target_defense_area: AreaDefence,
 	target_card_id: int,
@@ -38,25 +33,16 @@ func _init(
 	_context.set_source_card(source_card)
 	_context.set_event_type(RenderRequest.ItemSet.EventType.DEATH)
 
-## 初始化阶段：检查目标卡牌所在，若不在目标守区则取消命令
-func _on_init_phase(game_state: GameState) -> void:
-	var ctx := _context as Context
-	if not ctx:
-		push_error("DestroyCardsCommand: 上下文类型错误")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
+## @hook @seam_override
+func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
+	if not context_overriding.target_defense_area:
+		_fail("目标守区未设置", context_overriding)
 		return
-	if not ctx.target_defense_area:
-		push_error("DestroyCardsCommand: 目标守区未设置")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
-		return
-	# 从目标守区查询目标卡牌
-	var cards: Array[Card] = ctx.target_defense_area.get_cards_by_ids(PackedInt32Array([ctx.target_card_id]))
+	var cards: Array[Card] = context_overriding.target_defense_area.get_cards_by_ids(PackedInt32Array([context_overriding.target_card_id]))
 	if cards.is_empty():
-		# 卡牌不在目标守区，摧毁取消，直接完成
-		GlobalConsole._print(["DestroyCardsCommand: 目标卡牌不在目标守区，取消摧毁。"])
-		_context.phase = CardMoveCommand.Context.Phase.DONE
+		GlobalConsole._print(["[%s] 目标卡牌不在目标守区，取消摧毁。" % context_overriding.command_name])
+		context_overriding.phase = CardMoveCommand.Context.Phase.DONE
 		return
-	# 设置源区域与移出模式
-	_context.source_area = ctx.target_defense_area
-	_context.target_area = game_state.get_discard_area()
-	_context.set_id_mode(PackedInt32Array([ctx.target_card_id]))
+	context_overriding.source_area = context_overriding.target_defense_area
+	context_overriding.target_area = game_state.get_discard_area()
+	context_overriding.set_id_mode(PackedInt32Array([context_overriding.target_card_id]))

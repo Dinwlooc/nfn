@@ -44,7 +44,7 @@ var _select_limit_changed_callback: Callable
 
 # ==================== 公开方法 ====================
 ## 设置关联玩家，并触发预览条件检查。
-## @side-effect
+## @side_effect
 func set_player(player: RenderItem) -> void:
 	_preview_manager.set_player(player)
 	_preview_manager.check_condition(render_context)
@@ -54,12 +54,12 @@ func set_player(player: RenderItem) -> void:
 func get_associated_player() -> RenderItem:
 	return _preview_manager.get_player()
 ## 检查当前预览条件，更新预览状态。
-## @side-effect
+## @side_effect
 func check_preview_condition() -> void:
 	_preview_manager.check_condition(render_context)
 	_update_face_cache(_preview_manager.preview_mode)
 ## 执行卡牌移动动画（由父类调用）。
-## @side-effect
+## @side_effect
 func card_move(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	if not area or area.items_pool.is_empty() or target_position.is_empty():
 		return
@@ -79,7 +79,7 @@ func card_move(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	current_card_tween = master_tween
 	master_tween.finished.connect(_on_tween_finished)
 ## 接收渲染更新事件。
-## @side-effect
+## @side_effect
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	var event_type: StringName = render_event.get_type()
 	if event_type == RenderEvent.DefaultType.CARD_ADD or event_type == RenderEvent.DefaultType.CARD_REMOVE:
@@ -94,13 +94,13 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 		_preview_manager.trigger_delayed_preview(render_context)
 	tween_update(render_event)
 ## 补间更新（委托给 card_move）。
-## @side-effect
+## @side_effect
 func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	card_move(render_event)
 
 # ==================== 私有方法 ====================
 ## 对象就绪回调。
-## @side-effect
+## @side_effect
 func _ready() -> void:
 	_anim_manager = DefenceAnimationManager.new()
 	_preview_manager = DefencePreviewManager.new()
@@ -116,7 +116,7 @@ func _ready() -> void:
 	area_target_size = original_size
 	_update_total_scale_factor()
 ## 连接区域（由父类调用）。
-## @side-effect
+## @side_effect
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
 	if target_area is RenderAreaDefence:
@@ -130,7 +130,7 @@ func _connect_to_area(target_area: RenderArea) -> void:
 					RenderContext.PUBLIC_PLAYER_ID
 				)
 ## 断开区域连接（由父类调用）。
-## @side-effect
+## @side_effect
 func _disconnect_from_area(target_area: RenderArea) -> void:
 	if target_area is not RenderAreaDefence:
 		return
@@ -152,25 +152,25 @@ func _disconnect_from_area(target_area: RenderArea) -> void:
 		area.unregister_face_cache(&"nfn:preview_mode")
 	super._disconnect_from_area(target_area)
 ## 退出场景树。
-## @side-effect
+## @side_effect
 func _exit_tree() -> void:
 	super._exit_tree()
 ## 每帧更新，处理浮动画和预览管理器。
-## @side-effect
+## @side_effect
 func _process(_delta: float) -> void:
 	_preview_manager.update(_delta)
 	if _preview_manager.preview_mode and area and not area.items_pool.is_empty():
 		_update_floating()
 ## 进入区域（父类回调）。
-## @side-effect
+## @side_effect
 func _into_area() -> void:
 	super._into_area()
 ## 离开区域（父类回调）。
-## @side-effect
+## @side_effect
 func _outto_area() -> void:
 	super._outto_area()
 ## 补间完成回调，记录顶层卡片的基准Y坐标。
-## @side-effect
+## @side_effect
 func _on_tween_finished() -> void:
 	_float_base_y.clear()
 	if not _preview_manager.preview_mode or not area or area.items_pool.is_empty():
@@ -179,7 +179,7 @@ func _on_tween_finished() -> void:
 	if top_card:
 		_float_base_y[top_card.get_instance_id()] = top_card.global_position.y
 ## 更新浮动画效果。
-## @side-effect
+## @side_effect
 func _update_floating() -> void:
 	var elapsed: float = (Time.get_ticks_msec() / 1000.0) - _float_start_time
 	var cards: Array[RenderItem] = area.items_pool
@@ -192,25 +192,25 @@ func _update_floating() -> void:
 		_float_base_y[top_card.get_instance_id()] = top_card.global_position.y
 	top_card.global_position.y = _float_base_y[top_card.get_instance_id()] + offset
 ## 预览状态变更回调。
-## @side-effect
+## @side_effect
 func _on_preview_state_changed(active: bool) -> void:
 	if not active:
 		_float_base_y.clear()
 	_update_face_cache(active)
 ## 请求预览启动回调。
-## @side-effect
+## @side_effect
 func _on_preview_start_requested() -> void:
 	_float_start_time = Time.get_ticks_msec() / 1000.0
 	card_move()
 	_update_face_cache(_preview_manager.preview_mode)
 ## 更新区域缓存中的预览标志。
-## @side-effect
+## @side_effect
 func _update_face_cache(active: bool) -> void:
 	if not area:
 		return
 	area.register_face_cache(&"nfn:preview_mode", active)
 ## 玩家区域连接回调。
-## @side-effect
+## @side_effect
 func _on_players_area_connected(new_players: RenderArea, old_players: RenderArea) -> void:
 	if not new_players is RenderAreaPlayers:
 		return
@@ -224,15 +224,15 @@ func _on_players_area_connected(new_players: RenderArea, old_players: RenderArea
 	if pa.local_player:
 		set_player(pa.local_player)
 ## 本地玩家接收回调。
-## @side-effect
+## @side_effect
 func _on_local_player_received(player: RenderItem) -> void:
 	set_player(player)
 ## 玩家区域选择限制变更回调。
-## @side-effect
+## @side_effect
 func _on_player_area_limit_changed(_new_limit: int) -> void:
 	_preview_manager.check_condition(render_context)
 ## 更新总缩放因子（根据卡牌数量与区域尺寸）。
-## @side-effect
+## @side_effect
 func _update_total_scale_factor() -> void:
 	if not area or area.items_pool.is_empty():
 		total_scale_factor = 1.0

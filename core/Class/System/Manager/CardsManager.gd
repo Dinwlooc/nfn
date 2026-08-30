@@ -25,7 +25,7 @@ func get_card_by_id(card_id: int) -> Card:
 		return card_instances[card_id]
 	return null
 ## 为单张卡牌分配 ID（添加到数组末尾）
-## @side-effect
+## @side_effect
 func assign_id(card: Card) -> void:
 	if next_id == card_instances.size():
 		card_instances.append(card)
@@ -34,7 +34,7 @@ func assign_id(card: Card) -> void:
 	_add_card_to_array(card, next_id)
 	next_id += 1
 ## 批量分配 ID 到卡牌数组（优化版本，预先调整数组大小）
-## @side-effect
+## @side_effect
 func assign_ids_to_cards(cards: Array[Card]) -> void:
 	if cards.is_empty():
 		return
@@ -42,14 +42,14 @@ func assign_ids_to_cards(cards: Array[Card]) -> void:
 	_add_cards_to_array(cards, next_id)
 	next_id += cards.size()
 ## 创建新卡牌并分配 ID
-## @side-effect
+## @side_effect
 func create_new_card(template_path: String, suit: int) -> Card:
 	var card: Card = _create_card_instance(template_path, suit)
 	if card:
 		assign_id(card)
 	return card
 ## 创建所有花色的手牌（四种花色）
-## @side-effect
+## @side_effect
 func create_handcards_all_suit(template_path: String) -> Array[Card]:
 	var cards: Array[Card] = []
 	var card_data: CardData = load(template_path) as CardData
@@ -66,7 +66,7 @@ func create_handcards_all_suit(template_path: String) -> Array[Card]:
 	next_id += SUITS.size()
 	return cards
 ## 加载所有卡牌（从 GlobalConfig 获取模板路径，为每个模板生成四种花色）
-## @side-effect
+## @side_effect
 func load_all_cards() -> Array[Card]:
 	var card_templates: PackedStringArray = GlobalConfig.get_cards_list()
 	var all_cards: Array[Card] = []
@@ -85,7 +85,7 @@ func load_all_cards() -> Array[Card]:
 			next_id += 1
 	return all_cards
 ## 清除所有卡牌
-## @endo
+## @internal
 func clear_all_cards() -> void:
 	card_instances.clear()
 	next_id = 0
@@ -107,19 +107,19 @@ func has_card_id(card_id: int) -> bool:
 
 #=== Private Methods ===
 ## 内部方法：将卡牌添加到数组并分配 ID
-## @side-effect
+## @side_effect
 func _add_card_to_array(card: Card, card_id: int) -> void:
 	card.set_card_id(card_id)
 	if card_id >= card_instances.size():
 		card_instances.resize(card_id + 1)
 	card_instances[card_id] = card
 ## 内部方法：批量添加卡牌到数组
-## @side-effect
+## @side_effect
 func _add_cards_to_array(cards: Array[Card], start_id: int) -> void:
 	for i in range(cards.size()):
 		_add_card_to_array(cards[i], start_id + i)
 ## 内部方法：确保数组容量足够
-## @endo
+## @internal
 func _ensure_capacity(additional_count: int) -> void:
 	var needed_size: int = next_id + additional_count
 	if needed_size > card_instances.size():

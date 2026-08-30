@@ -7,7 +7,7 @@ func _init(system: System) -> void:
 		_stage_manager.stage_completed.connect(_on_stage_completed)
 		_stage_manager.request_new_round.connect(_on_request_new_round)
 		system.game_state.all_commands_completed.connect(_on_all_commands_completed)
-## @signal-listener 阶段完成：临时阶段回滚，否则切主阶段
+## @signal_listener 阶段完成：临时阶段回滚，否则切主阶段
 func _on_stage_completed(ended_stage: Stage) -> void:
 	if ended_stage.is_temporary():
 		var rollback_cmd := StageScheduleCommand.new(
@@ -19,7 +19,7 @@ func _on_stage_completed(ended_stage: Stage) -> void:
 		_system.command_bus,StageScheduleCommand.Operation.SWITCH_MAIN
 	)
 	_system.command_bus.queue_behavior(switch_cmd)
-## @signal-listener 请求新回合
+## @signal_listener 请求新回合
 func _on_request_new_round(player_id: int) -> void:
 	var game_state: GameState = _system.game_state
 	var player_manager: PlayersManager = game_state.player_manager
@@ -35,7 +35,7 @@ func _on_request_new_round(player_id: int) -> void:
 		return
 	var new_round_cmd := NewRoundCommand.new(_system.command_bus, next_player.get_id())
 	_system.command_bus.queue_behavior(new_round_cmd)
-## @signal-listener 所有命令完成后恢复或刷新阶段
+## @signal_listener 所有命令完成后恢复或刷新阶段
 func _on_all_commands_completed(_game_state: GameState) -> void:
 	var stack: Array[Stage] = _system.game_state.stage_manager.temp_stage_stack
 	if not stack.is_empty():

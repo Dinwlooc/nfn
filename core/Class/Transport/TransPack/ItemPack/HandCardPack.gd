@@ -2,7 +2,7 @@
 extends CardPack
 class_name HandCardPack
 ## 手牌特有属性枚举，继承自 CardPack.MainProperty.END。
-## @end-inherit
+## @end_marker
 enum Property {
 	POWER = CardPack.MainProperty.END,
 	COST,
@@ -21,7 +21,7 @@ var suit: int
 var modified_power: int
 var modified_cost: int
 ## 根据卡片实例创建手牌数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充手牌特有属性。
-## @factory @heritage-override
+## @factory @seam_override
 static func init_from_item(item: Item, pack_overriding: ItemPack = HandCardPack.new()) -> HandCardPack:
 	var card := item as Card
 	if card == null:
@@ -80,7 +80,7 @@ func _init(
 	if modified_cost != STANDARD_MODIFIED_COST:
 		merge_mask |= 1 << Property.MODIFIED_COST
 ## 序列化自身属性。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	super.serialize_to_buffer(buffer)
 	if merge_mask & (1 << Property.POWER):
@@ -94,7 +94,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	if merge_mask & (1 << Property.MODIFIED_COST):
 		SerializationUtil.write(buffer, modified_cost)
 ## 反序列化自身属性。
-## @side-effect @heritage-override
+## @side_effect @seam_override
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: TransPack = HandCardPack.new()) -> HandCardPack:
 	super.deserialize_from_buffer(buffer, pack_overriding)
 	if pack_overriding.merge_mask & (1 << Property.POWER):
@@ -109,7 +109,7 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: T
 		pack_overriding.modified_cost = SerializationUtil.read(buffer, TYPE_INT)
 	return pack_overriding
 ## 合并更新包（需类型检查）。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func merge(update_pack: ItemPack) -> void:
 	super.merge(update_pack)
 	if not update_pack is HandCardPack:
@@ -126,7 +126,7 @@ func merge(update_pack: ItemPack) -> void:
 	if hm.merge_mask & (1 << Property.MODIFIED_COST):
 		modified_cost = hm.modified_cost
 ## 重置所有属性为标准态。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func reset_to_standard() -> void:
 	super.reset_to_standard()
 	power = STANDARD_POWER
@@ -153,7 +153,7 @@ func calculate_delta_mask(old_pack: CardPack) -> int:
 		delta_mask |= 1 << Property.MODIFIED_COST
 	return delta_mask
 ## 更新合并掩码。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func update_merge_mask() -> void:
 	super.update_merge_mask()
 	if is_full_update:
@@ -174,7 +174,7 @@ static func get_class_name_static() -> StringName:
 	return &"HandCardPack"
 ## 以下为私有方法。
 ## 根据 Card 更新自身并计算增量掩码（调用父类后再扩展）。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func _update_and_calculate_delta(card: Card) -> void:
 	super._update_and_calculate_delta(card)
 	_compare_update_power(card)

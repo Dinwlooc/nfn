@@ -10,24 +10,24 @@ func _init(system: System) -> void:
 	_system.command_processor.command_processing.connect(_on_command_processing)
 	_system.command_processor.command_pushed.connect(_on_command_pushed)
 	_system.command_processor.command_popped.connect(_on_command_popped)
-## @signal-listener 带回调的命令压入
+## @signal_listener 带回调的命令压入
 func _on_new_behavior_with_callback(command: BehaviorCommand, callback: Callable) -> void:
 	_system.command_processor.all_completed.connect(callback, CONNECT_ONE_SHOT)
 	_system.command_processor.queue_behavior(command)
-## @signal-listener 处理开关
+## @signal_listener 处理开关
 func _on_enable_processing(enable: bool) -> void:
 	_system.game_state._process_active = enable
 	_system.set_process(enable)
-## @signal-listener 所有命令完成
+## @signal_listener 所有命令完成
 func _on_all_completed() -> void:
 	_system.game_state.all_commands_completed.emit(_system.game_state)
-## @signal-listener 命令处理时触发修饰器
+## @signal_listener 命令处理时触发修饰器
 func _on_command_processing(command: BehaviorCommand, sequence: int) -> void:
 	_system.modifier_manager.process_modifiers(command._context, _system.game_state, _system.command_bus, sequence)
-## @signal-listener 命令压入上下文栈
+## @signal_listener 命令压入上下文栈
 func _on_command_pushed(behavior: BehaviorCommand) -> void:
 	_system.game_state.push_command_context(behavior._context)
-## @signal-listener 命令弹出上下文栈
+## @signal_listener 命令弹出上下文栈
 func _on_command_popped(_behavior: BehaviorCommand) -> void:
 	_system.game_state.pop_command_context()
 ##

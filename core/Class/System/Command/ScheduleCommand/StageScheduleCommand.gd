@@ -1,5 +1,5 @@
 ## 阶段调度命令：统一处理回滚、主阶段切换、启动临时阶段、结束当前阶段
-## @heritage-override
+## @seam_override
 extends ScheduleCommand
 class_name StageScheduleCommand
 
@@ -10,13 +10,13 @@ enum Operation {
 	END_CURRENT,
 }
 
-## @deep-inherit
+## @deep_inherit
 class Context extends CommandContext:
 	var operation: Operation
 	var skip_count: int = 0
 	var disallowed_stages: Array[StringName] = []
 
-## @heritage-override
+## @seam_override
 func _init(
 	command_bus: CommandBus,
 	operation: Operation,

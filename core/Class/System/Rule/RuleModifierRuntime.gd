@@ -1,5 +1,6 @@
 ## 修饰运行时规则，提供基于 ModifierContext 的决策。
-extends RefCounted
+@abstract
+extends Object
 class_name RuleModifierRuntime
 
 ## 根据上下文判断是否应跳过本次修饰器执行。

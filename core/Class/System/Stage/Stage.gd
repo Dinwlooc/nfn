@@ -34,24 +34,24 @@ func _init() -> void:
 func is_temporary() -> bool:
 	return temporary_stage_player_id != 0
 ## 进入阶段（由管理器调用）
-## @stack-confined @side-effect
+## @stack_local @side_effect
 func enter(_game_state: GameState, _command_bus: CommandBus) -> void:
 	is_ended = false
 	GlobalConsole._print(["Stage:进入", stage_name, "阶段"])
 ## 暂停阶段
-## @hook @stack-confined @side-effect
+## @hook @stack_local @side_effect
 func pause(_game_state: GameState, _command_bus: CommandBus) -> void:
 	is_paused = true
 ## 恢复阶段
-## @hook @stack-confined @side-effect
+## @hook @stack_local @side_effect
 func resume(_game_state: GameState, _command_bus: CommandBus) -> void:
 	is_paused = false
 ## 阶段结束时的清理效果
-## @hook @stack-confined
+## @hook @stack_local
 func end_stage_effect(_game_state: GameState, _command_bus: CommandBus) -> void:
 	pass
 ## 超时处理（默认发送结束命令）
-## @hook @stack-confined @side-effect
+## @hook @stack_local @side_effect
 func timeout(_game_state: GameState, command_bus: CommandBus) -> void:
 	var cmd := StageScheduleCommand.new(
 		command_bus,
@@ -59,7 +59,7 @@ func timeout(_game_state: GameState, command_bus: CommandBus) -> void:
 	)
 	command_bus.queue_behavior(cmd)
 ## 结束阶段（由管理器调用，仅变更内部状态，不触发信号）
-## @side-effect @stack-confined
+## @side_effect @stack_local
 func end_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended:
 		return
@@ -67,7 +67,7 @@ func end_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	is_paused = false
 	end_stage_effect(game_state, command_bus)
 ## 请求结束当前阶段（发送命令）
-## @stack-confined
+## @stack_local
 func request_end_stage(command_bus: CommandBus) -> void:
 	var cmd := StageScheduleCommand.new(
 		command_bus,
@@ -79,10 +79,10 @@ func request_end_stage(command_bus: CommandBus) -> void:
 func reset_timer(new_time_limit: float) -> void:
 	request_reset_timer.emit(new_time_limit)
 ## 处理玩家操作请求（由管理器转发，子类按需重写）
-## @hook @stack-confined
+## @hook @stack_local
 func process_operation_request(_request: OperationRequest, _game_state: GameState, _command_bus: CommandBus) -> void:
 	pass
 ## 刷新响应权：在命令全部完成后由触发器调用，
-## @hook @stack-confined
+## @hook @stack_local
 func refresh_response(_game_state: GameState, _command_bus: CommandBus) -> void:
 	pass

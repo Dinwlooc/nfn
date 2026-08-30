@@ -3,7 +3,7 @@ extends ItemPack
 class_name PlayerPack
 
 ## 玩家主要属性枚举，使用 END 作为继承锚点（当前无子类扩展，但保留范式）。
-## @end-inherit
+## @end_marker
 enum MainProperty {
 	SEAT_INDEX,
 	HP,
@@ -49,7 +49,7 @@ var morale_defense: int
 var morale_level: int
 
 ## 根据玩家实例创建数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充玩家特有属性。
-## @factory @heritage-override
+## @factory @seam_override
 static func init_from_item(item: Item, pack_overriding: ItemPack = PlayerPack.new()) -> PlayerPack:
 	var player := item as Player
 	if player == null:
@@ -103,7 +103,7 @@ func _init(
 	morale_defense = init_morale_defense
 	morale_level = init_morale_level
 ## 序列化自身属性。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	super.serialize_to_buffer(buffer)
 	if merge_mask & (1 << MainProperty.SEAT_INDEX):
@@ -133,7 +133,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	if merge_mask & (1 << MainProperty.MORALE_LEVEL):
 		SerializationUtil.write(buffer, morale_level)
 ## 反序列化自身属性。
-## @side-effect @heritage-override
+## @side_effect @seam_override
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: TransPack = PlayerPack.new()) -> PlayerPack:
 	super.deserialize_from_buffer(buffer, pack_overriding)
 	if pack_overriding.merge_mask & (1 << MainProperty.SEAT_INDEX):
@@ -164,7 +164,7 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: T
 		pack_overriding.morale_level = SerializationUtil.read(buffer, TYPE_INT)
 	return pack_overriding
 ## 合并更新包。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func merge(update_pack: ItemPack) -> void:
 	super.merge(update_pack)
 	if update_pack.merge_mask & (1 << MainProperty.SEAT_INDEX):
@@ -194,7 +194,7 @@ func merge(update_pack: ItemPack) -> void:
 	if update_pack.merge_mask & (1 << MainProperty.MORALE_LEVEL):
 		morale_level = update_pack.morale_level
 ## 重置所有属性为标准态。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func reset_to_standard() -> void:
 	super.reset_to_standard()
 	seat_index = STANDARD_SEAT_INDEX
@@ -242,7 +242,7 @@ func calculate_delta_mask(old_pack: PlayerPack) -> int:
 		delta_mask |= 1 << MainProperty.MORALE_LEVEL
 	return delta_mask
 ## 更新合并掩码。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func update_merge_mask() -> void:
 	super.update_merge_mask()
 	if is_full_update:
@@ -279,7 +279,7 @@ static func get_class_name_static() -> StringName:
 	return &"PlayerPack"
 ## 以下为私有方法。
 ## 根据玩家实例更新自身并计算增量掩码（用于缓存增量包）。
-## @flow-override @side-effect
+## @chain_override @side_effect
 func _update_and_calculate_delta(player: Player) -> void:
 	merge_mask = 0
 	_compare_update_seat_index(player)

@@ -23,7 +23,7 @@ const PLAYER_AREA: StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaT
 
 #=== Public Methods ===
 ## 添加玩家并分配 ID 和座位
-## @endo @emitter
+## @internal @emitter
 func add_player(peer_id: int) -> Player:
 	var player: Player = Player.new()
 	player.peer_id = peer_id
@@ -36,7 +36,7 @@ func add_player(peer_id: int) -> Player:
 	_next_player_id += 1
 	return player
 ## 通过座位索引移除玩家
-## @endo
+## @internal
 func remove_player_from_seat(seat_index: int) -> Player:
 	if seat_index < 0 or seat_index >= players.size():
 		return null
@@ -45,7 +45,7 @@ func remove_player_from_seat(seat_index: int) -> Player:
 		players[i].seat_index = i
 	return removed_player
 ## 通过玩家 ID 移除座位上的玩家
-## @endo
+## @internal
 func remove_player_by_id(player_id: int) -> Player:
 	var player: Player = _players_by_id.get(player_id)
 	if player == null:
@@ -55,7 +55,7 @@ func remove_player_by_id(player_id: int) -> Player:
 		return null
 	return remove_player_from_seat(seat_idx)
 ## 将已有玩家插入到指定座位
-## @endo
+## @internal
 func insert_player_at_seat(player: Player, seat_index: int) -> bool:
 	if player == null:
 		return false
@@ -70,7 +70,7 @@ func insert_player_at_seat(player: Player, seat_index: int) -> bool:
 		players[i].seat_index = i
 	return true
 ## 确保至少有 min_players 个玩家（不够时用 AI 补齐）
-## @endo
+## @internal
 func ensure_min_players(min_players: int) -> void:
 	while players.size() < min_players:
 		add_player(ai_peer_id)
@@ -114,7 +114,7 @@ func get_operation_disallowed(player_id: int) -> Array[StringName]:
 	var player: Player = _players_by_id.get(player_id)
 	return player.disallowed_operations
 ## 清除所有玩家的增量包缓存
-## @endo
+## @internal
 func clear_all_players_cache() -> void:
 	for player: Player in players:
 		player.clear_pack_cache()

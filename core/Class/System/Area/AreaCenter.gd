@@ -12,15 +12,15 @@ func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 
 #==公开方法===================================================================
 ## 设置技能目标玩家列表
-## @endo
+## @internal
 func set_skill_targets(players: Array[Player]) -> void:
 	skill_target_players = players
 ## 清除技能目标
-## @endo
+## @internal
 func clear_skill_targets() -> void:
 	skill_target_players = []
 ## 重写移除卡牌方法，当中心区变空时自动清除技能目标
-## @override @endo
+## @override @internal
 func remove_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 	var removed = super.remove_cards_by_ids(ids)
 	if card_count() == 0:

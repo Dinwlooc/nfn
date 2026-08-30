@@ -1,5 +1,6 @@
 ## 中心区技能触发规则，判断卡牌应触发技能、群体攻击还是无效果
-extends RefCounted
+@abstract
+extends Object
 class_name RuleCenterSkill
 ## 触发类型枚举
 enum TriggerType {

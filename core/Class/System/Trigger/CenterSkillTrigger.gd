@@ -8,7 +8,7 @@ func _init(game_state: GameState, command_bus: CommandBus) -> void:
 	_center_area = game_state.area_registry.get_center_area()
 	if _center_area:
 		_center_area.area_card_added.connect(_on_card_added_to_center)
-## @signal-listener 中央区卡牌添加回调。
+## @signal_listener 中央区卡牌添加回调。
 func _on_card_added_to_center(card: Card, _area: Area) -> void:
 	var trigger_type: RuleCenterSkill.TriggerType = RuleCenterSkill.get_trigger_type(card)
 	match trigger_type:

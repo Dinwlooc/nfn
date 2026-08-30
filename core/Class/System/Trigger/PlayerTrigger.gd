@@ -9,18 +9,18 @@ func _init(game_state: GameState, command_bus: CommandBus) -> void:
 	_game_state.stage_manager.round_ended.connect(_on_round_ended)
 	_game_state.all_commands_completed.connect(_on_all_commands_completed)
 	_setup_mediator_connections()
-## @signal-mediator 部署中介连接：player_added → area_registry.create_areas_for_player
+## @signal_mediator 部署中介连接：player_added → area_registry.create_areas_for_player
 func _setup_mediator_connections() -> void:
 	_game_state.player_manager.player_added.connect(
 		_game_state.area_registry.create_areas_for_player,
 		CONNECT_REFERENCE_COUNTED
 	)
-## @signal-listener 玩家添加时连接战意信号
+## @signal_listener 玩家添加时连接战意信号
 func _on_player_added(player: Player) -> void:
 	GlobalConsole._print(["System: 新玩家加入,id:", player.get_id(), "，peer_id:", player.peer_id])
 	player.morale_attack_increased.connect(_on_morale_attack_increased.bind(player))
 	player.morale_defense_increased.connect(_on_morale_defense_increased.bind(player))
-## @signal-listener 回合结束时尝试升级所有玩家
+## @signal_listener 回合结束时尝试升级所有玩家
 func _on_round_ended() -> void:
 	for player in _game_state.player_manager.players:
 		_try_upgrade_player(player)
@@ -70,7 +70,7 @@ func _on_morale_defense_increased(amount: int, player: Player) -> void:
 func _charge_special_cards(player: Player, morale_type: StringName, base_amount: int) -> void:
 	var charge_amount: int = player.get_charge_amount(base_amount)
 	# TODO: 获取玩家拥有的特殊牌列表，筛选类型匹配的牌，调用其充能方法。
-## @signal-listener 所有命令完成，检查濒死
+## @signal_listener 所有命令完成，检查濒死
 func _on_all_commands_completed(game_state: GameState) -> void:
 	if _is_in_dying_stage(game_state):
 		return

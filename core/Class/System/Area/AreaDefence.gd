@@ -15,13 +15,13 @@ signal battle_formation_detected(top_card: Card, second_card: Card)
 func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	super._init(_player)
 	area_name = GlobalConstants.DefaultArea.DEFENCE
-	# 连接自身信号监听 @signal-listener
+	# 连接自身信号监听 @signal_listener
 	area_card_added.connect(_on_cards_changed)
 	area_card_removed.connect(_on_cards_changed)
 
 #==公开方法（重写）===========================================================
 ## 添加卡牌
-## @override @endo
+## @override @internal
 func cards_add(cards: Array[Card]) -> void:
 	if cards.is_empty():
 		return
@@ -33,31 +33,31 @@ func check_battle_formation() -> bool:
 	var second: Card = get_second_card()
 	return top != null and second != null and top.player != second.player
 ## 获取顶层牌
-## @semi-pure
+## @nullable_pure
 func get_top_card() -> Card:
 	var cards: Array[Card] = get_all_cards()
 	return cards[-1] if not cards.is_empty() else null
 ## 获取次层牌（可能返回 null）
-## @semi-pure
+## @nullable_pure
 func get_second_card() -> Card:
 	var cards: Array[Card] = get_all_cards()
 	return cards[-2] if cards.size() >= 2 else null
 ## 结算守区
-## @endo
+## @internal
 func settle_defense_area() -> void:
 	settle_count += 1
 ## 仅重置结算次数
-## @endo
+## @internal
 func reset_settle_count() -> void:
 	settle_count = 0
 ## 重置守区状态
-## @endo
+## @internal
 func reset() -> void:
 	settle_count = 0
 
 #==信号监听回调===============================================================
 ## 卡牌变化时检查斗牌
-## @signal-listener
+## @signal_listener
 func _on_cards_changed(_card: Card, _area: Area) -> void:
 	_check_and_emit_battle_formation()
 ## 检查并发射斗牌信号

@@ -1,4 +1,5 @@
-extends RefCounted
+@abstract
+extends Object
 class_name RuleModifierTiming
 
 ## 时机枚举

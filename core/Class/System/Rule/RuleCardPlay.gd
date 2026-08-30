@@ -1,5 +1,6 @@
 ## 出牌规则类
-extends RefCounted
+@abstract
+extends Object
 class_name RuleCardPlay
 
 ## 规则检查结果

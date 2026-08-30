@@ -2,10 +2,12 @@ extends CardMoveCommand
 class_name CardTransferCommand
 
 ## 卡牌转移命令上下文（继承移动上下文，无需额外字段）
+## @context @deep_inherit
 class Context extends CardMoveCommand.Context:
 	pass
 
 ## 卡牌转移命令
+## @seam_override
 ## @param player: 发起者玩家实例
 ## @param source_area: 源区域
 ## @param target_area: 目标区域

@@ -2,6 +2,7 @@ extends CardMoveCommand
 class_name PlayCardsCommand
 
 ## 出牌命令上下文类
+## @context @deep_inherit
 class Context extends CardMoveCommand.Context:
 	enum TargetAreaType {
 		CENTER,
@@ -11,7 +12,6 @@ class Context extends CardMoveCommand.Context:
 	var target_area_type: TargetAreaType = TargetAreaType.PLAYER_DEF
 	var card_ids: PackedInt32Array = PackedInt32Array()
 	var ap_source_player: Player = null
-
 	func set_ap_source_player(player: Player) -> void:
 		ap_source_player = player
 	func set_target_player_id(id: int) -> void:
@@ -23,6 +23,7 @@ class Context extends CardMoveCommand.Context:
 	func are_card_ids_valid() -> bool:
 		return card_ids.size() > 0
 
+## @seam_override
 func _init(
 	player: Player,
 	card_ids: PackedInt32Array,
@@ -39,31 +40,27 @@ func _init(
 	_context.set_ap_source_player(ap_source_player)
 	_context.set_event_type(RenderRequest.ItemSet.EventType.TRANSFER)
 
-func _on_init_phase(game_state: GameState) -> void:
-	if not _context is Context:
-		push_error("PlayCardsCommand: 上下文类型错误")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
+## @hook @seam_override
+func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
+	if context_overriding is not Context:
+		_fail("上下文类型错误", context_overriding)
 		return
-	if not _context.are_card_ids_valid():
-		push_error("PlayCardsCommand: 无效的卡牌ID数组")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
+	var err := RuleGuard.ErrorMessage.new()
+	var source_player: Player = context_overriding.get_source_player()
+	# 合并检查：卡牌ID、源玩家、源手牌区（利用短路确保 get_id 安全）
+	if not (
+		RuleGuard.has_valid_card_ids(context_overriding.card_ids, err, "无效的卡牌ID数组") and
+		RuleGuard.has_valid_player(source_player, err, "源玩家无效") and
+		RuleGuard.has_valid_area(game_state.get_hand_area(source_player.get_id()), err, "无法获取源玩家手牌区域")
+	):
+		_fail(err.text, context_overriding)
 		return
-	var source_player: Player = _context.get_source_player()
-	if not source_player:
-		push_error("PlayCardsCommand: 源玩家无效")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
-		return
-	# 统一获取源区域（手牌），仅获取一次
 	var source_area: AreaHand = game_state.get_hand_area(source_player.get_id())
-	if not source_area:
-		push_error("PlayCardsCommand: 无法获取源玩家手牌区域")
-		_context.phase = CardMoveCommand.Context.Phase.DONE
-		return
-	_context.source_area = source_area
-	# 行动点消耗（源区域已确保存在，可直接使用）
-	if _context.ap_source_player:
-		var ap_player: Player = _context.ap_source_player
-		var cards: Array[Card] = source_area.get_cards_by_ids(_context.card_ids)
+	context_overriding.source_area = source_area
+	# 行动点消耗
+	if context_overriding.ap_source_player:
+		var ap_player: Player = context_overriding.ap_source_player
+		var cards: Array[Card] = source_area.get_cards_by_ids(context_overriding.card_ids)
 		var total_cost: int = 0
 		for card in cards:
 			total_cost += card.get_attribute(&"cost")
@@ -74,30 +71,26 @@ func _on_init_phase(game_state: GameState) -> void:
 			&"play_card"
 		)
 		append_companion_command(ap_cmd)
-	# 目标区域处理
-	match _context.target_area_type:
+	# 目标区域处理（分支内也可合并检查）
+	match context_overriding.target_area_type:
 		Context.TargetAreaType.CENTER:
 			var center_area: AreaCenter = game_state.get_center_area()
-			if not center_area:
-				push_error("PlayCardsCommand: 无法获取中央区")
-				_context.phase = CardMoveCommand.Context.Phase.DONE
-				return
-			var target_player: Player = game_state.player_manager.get_player_by_id(_context.target_player_id)
-			if not target_player:
-				push_error("PlayCardsCommand: 无效的目标玩家ID")
-				_context.phase = CardMoveCommand.Context.Phase.DONE
+			var target_player: Player = game_state.player_manager.get_player_by_id(context_overriding.target_player_id)
+			if not (
+				RuleGuard.has_valid_area(center_area, err, "无法获取中央区") and
+				RuleGuard.has_valid_player(target_player, err, "无效的目标玩家ID")
+			):
+				_fail(err.text, context_overriding)
 				return
 			center_area.set_skill_targets([target_player])
-			_context.target_area = center_area
+			context_overriding.target_area = center_area
 		Context.TargetAreaType.PLAYER_DEF:
-			var def_area: AreaDefence = game_state.get_defense_area(_context.target_player_id)
-			if not def_area:
-				push_error("PlayCardsCommand: 无法获取目标玩家守备区域")
-				_context.phase = CardMoveCommand.Context.Phase.DONE
+			var def_area: AreaDefence = game_state.get_defense_area(context_overriding.target_player_id)
+			if not RuleGuard.has_valid_area(def_area, err, "无法获取目标玩家守备区域"):
+				_fail(err.text, context_overriding)
 				return
-			_context.target_area = def_area
+			context_overriding.target_area = def_area
 		_:
-			push_error("PlayCardsCommand: 无效的目标区域类型")
-			_context.phase = CardMoveCommand.Context.Phase.DONE
+			_fail("无效的目标区域类型", context_overriding)
 			return
-	_context.set_id_mode(_context.card_ids)
+	context_overriding.set_id_mode(context_overriding.card_ids)

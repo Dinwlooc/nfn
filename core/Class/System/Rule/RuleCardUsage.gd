@@ -1,5 +1,6 @@
 ## 卡牌使用规则静态工具类（调用方需传入守区实例）
-extends RefCounted
+@abstract
+extends Object
 class_name RuleCardUsage
 
 enum ErrorCode {

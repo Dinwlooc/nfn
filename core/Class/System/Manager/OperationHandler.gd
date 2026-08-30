@@ -20,7 +20,7 @@ enum RequestState { CANCELLED, COMPLETED }
 
 #=== Public Methods ===
 ## 更新对等端到玩家 ID 的映射
-## @endo
+## @internal
 func update_verification_mapping(peer_id: int, player_id: int) -> void:
 	_peer_player_map[peer_id] = player_id
 ## 验证请求来源是否合法
@@ -33,7 +33,7 @@ func verify_operation(request: OperationRequest) -> bool:
 	var source_player_id = _peer_player_map.get(request.source_peer_id, -1)
 	return source_player_id == request.source_player_id
 ## 处理请求（验证并分发）
-## @endo @emitter
+## @internal @emitter
 func handle_request(request: OperationRequest) -> void:
 	GlobalConsole._print(["OperationHandler:接受到请求：", request.get_class_name()])
 	if not verify_operation(request):
@@ -46,7 +46,7 @@ func handle_request(request: OperationRequest) -> void:
 	_setup_request_tracking(player_id, request)
 	operation_validated.emit(request)
 ## 设置玩家响应状态（启用/禁用）
-## @endo @emitter
+## @internal @emitter
 func set_player_responsive(player_id: int, can_respond: bool) -> void:
 	if can_respond:
 		_enable_player_response(player_id)
@@ -54,7 +54,7 @@ func set_player_responsive(player_id: int, can_respond: bool) -> void:
 		_disable_player_response(player_id)
 	permissions_updated.emit(_get_responsive_player_ids())
 ## 批量设置响应玩家
-## @endo @emitter
+## @internal @emitter
 func set_responsive_players(player_ids: PackedInt32Array) -> void:
 	var current_players = _pending_requests.keys().duplicate()
 	for pid in current_players:
@@ -85,22 +85,22 @@ func get_player_request(player_id: int) -> OperationRequest:
 func _can_accept_new_request(player_id: int) -> bool:
 	return _pending_requests.get(player_id) == _null_request
 ## 设置请求跟踪（连接信号）
-## @endo @signal-listener
+## @internal @signal_listener
 func _setup_request_tracking(player_id: int, request: OperationRequest) -> void:
 	_pending_requests[player_id] = request
 	request.cancelled.connect(_on_request_cancelled.bind(request))
 	request.completed.connect(_on_request_completed.bind(request))
 ## 请求取消回调
-## @endo @signal-listener
+## @internal @signal_listener
 func _on_request_cancelled(request: OperationRequest) -> void:
 	_cleanup_request(request.source_player_id)
 	GlobalConsole._print(["请求取消，玩家ID：%d" % request.source_player_id])
 ## 请求完成回调
-## @signal-listener
+## @signal_listener
 func _on_request_completed(request: OperationRequest) -> void:
 	GlobalConsole._print(["请求处理完成，玩家ID：%d，等待响应权重新授予" % request.source_player_id])
 ## 清理请求槽位（重置为 _null_request）
-## @endo
+## @internal
 func _cleanup_request(player_id: int) -> void:
 	if not _pending_requests.has(player_id):
 		return
@@ -112,12 +112,12 @@ func _cleanup_request(player_id: int) -> void:
 	_disconnect_request_signals(request)
 	_pending_requests[player_id] = _null_request
 ## 断开请求信号连接
-## @signal-listener
+## @signal_listener
 func _disconnect_request_signals(request: OperationRequest) -> void:
 	request.cancelled.disconnect(_on_request_cancelled)
 	request.completed.disconnect(_on_request_completed)
 ## 启用玩家响应权
-## @endo
+## @internal
 func _enable_player_response(player_id: int) -> void:
 	if not _pending_requests.has(player_id):
 		_pending_requests[player_id] = _null_request
@@ -126,7 +126,7 @@ func _enable_player_response(player_id: int) -> void:
 	if current != _null_request:
 		_cleanup_request(player_id)
 ## 禁用玩家响应权
-## @endo
+## @internal
 func _disable_player_response(player_id: int) -> void:
 	if not _pending_requests.has(player_id):
 		return

@@ -67,7 +67,7 @@ var current_player_id: int = 0
 
 #=== Constructor ===
 ## 构造方法：初始化主阶段列表，并永久连接主阶段的 reset_timer 信号
-## @side-effect
+## @side_effect
 func _init() -> void:
 	main_stages.resize(MAIN_STAGES_SCRIPTS.size())
 	for i in MAIN_STAGES_SCRIPTS.size():
@@ -76,22 +76,22 @@ func _init() -> void:
 
 #=== Public Methods ===
 ## 设置游戏计时器
-## @endo
+## @internal
 func set_timer(_timer: GameTimer) -> void:
 	timer = _timer
 ## 处理已验证的操作请求
-## @stack-confined @endo
+## @stack_local @internal
 func handle_validated_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if not current_stage:
 		push_error("StageManager: 当前阶段为空，无法处理操作请求")
 		return
 	current_stage.process_operation_request(request, game_state, command_bus)
 ## 结束当前阶段（发送命令方式）
-## @stack-confined @endo
+## @stack_local @internal
 func complete_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
 ## 清空所有临时阶段（结束并清空栈）
-## @stack-confined @endo @emitter
+## @stack_local @internal @emitter
 func complete_all_temp_stages(game_state: GameState, command_bus: CommandBus) -> void:
 	if temp_stage_stack.is_empty():
 		return
@@ -102,14 +102,14 @@ func complete_all_temp_stages(game_state: GameState, command_bus: CommandBus) ->
 			stage.end_stage(game_state, command_bus)
 	temp_stages_cleared.emit()
 ## 将临时阶段压入栈（不启动），若阶段已存在则忽略（由调用方保证）
-## @endo
+## @internal
 func push_temp_stage(stage: Stage) -> void:
 	if not stage.is_temporary():
 		stage.temporary_stage_player_id = Stage.PUBLIC_PLAYER_ID
 	temp_stage_stack.push_back(stage)
 	_connect_request_reset_timer(stage)
 ## 启动栈尾的临时阶段（若尚未启动）
-## @endo
+## @internal
 func start_pending_temp_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if temp_stage_stack.is_empty():
 		return
@@ -118,7 +118,7 @@ func start_pending_temp_stage(game_state: GameState, command_bus: CommandBus) ->
 		return
 	_transition_to(top_stage, game_state, command_bus)
 ## 结束当前回合
-## @stack-confined @endo @emitter
+## @stack_local @internal @emitter
 func end_round(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
 	for stage in temp_stage_stack:
@@ -131,7 +131,7 @@ func end_round(game_state: GameState, command_bus: CommandBus) -> void:
 	round_ended.emit()
 	round_completed.emit()
 ## 回滚到上一个阶段（弹出栈顶临时阶段，恢复上一阶段）
-## @stack-confined @endo @emitter
+## @stack_local @internal @emitter
 func rollback_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
 	if temp_stage_stack.is_empty():
@@ -146,7 +146,7 @@ func rollback_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	_transition_to(roll_stage, game_state, command_bus)
 	stage_rolled_back.emit(ended_stage, current_stage)
 ## 切换到下一个主阶段，可额外跳过若干阶段
-## @endo
+## @internal
 func switch_to_main_stage(game_state: GameState, skip_count: int = 0, disallowed_stages: Array[StringName] = [], command_bus: CommandBus = null) -> void:
 	end_current_stage(game_state, command_bus)
 	var actual_skip: int = skip_count
@@ -164,7 +164,7 @@ func switch_to_main_stage(game_state: GameState, skip_count: int = 0, disallowed
 	current_main_stage_index += actual_skip
 	_advance_to_next_main_stage(game_state, command_bus)
 ## 开始新回合
-## @endo @emitter
+## @internal @emitter
 func start_round(player_id: int, game_state: GameState, command_bus: CommandBus) -> void:
 	if current_stage:
 		end_round(game_state, command_bus)
@@ -186,7 +186,7 @@ func has_stage_with_name(stage_name: StringName) -> bool:
 			return true
 	return false
 ## 结束当前阶段（执行清理，发射 stage_completed）
-## @stack-confined @endo @emitter
+## @stack_local @internal @emitter
 func end_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if not current_stage or current_stage.is_ended:
 		return
@@ -195,22 +195,22 @@ func end_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	current_stage.end_stage(game_state, command_bus)
 	stage_completed.emit(current_stage)
 ## 计时器超时回调（由外部定时器信号触发）
-## @stack-confined @signal-listener @endo
+## @stack_local @signal_listener @internal
 func on_timer_timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if current_stage and not current_stage.is_ended:
 		current_stage.timeout(game_state, command_bus)
 
 #=== Private Methods ===
 ## 连接 request_reset_timer 信号
-## @signal-listener
+## @signal_listener
 func _connect_request_reset_timer(stage: Stage) -> void:
 	stage.request_reset_timer.connect(_on_stage_reset_timer_requested)
 ## 断开 request_reset_timer 信号
-## @signal-listener
+## @signal_listener
 func _disconnect_request_reset_timer(stage: Stage) -> void:
 	stage.request_reset_timer.disconnect(_on_stage_reset_timer_requested)
 ## 启动阶段：启动计时器，调用 enter/resume，发出 stage_entered 信号
-## @stack-confined @side-effect @emitter
+## @stack_local @side_effect @emitter
 func _start_stage(stage: Stage, game_state: GameState, command_bus: CommandBus) -> void:
 	timer.stop()
 	if stage.time_limit > 0.0:
@@ -221,7 +221,7 @@ func _start_stage(stage: Stage, game_state: GameState, command_bus: CommandBus) 
 	stage.enter(game_state, command_bus)
 	stage_entered.emit(stage)
 ## 切换到新阶段（不负责信号连接/断开，由外部栈操作管理）
-## @side-effect @emitter
+## @side_effect @emitter
 func _transition_to(new_stage: Stage, game_state: GameState, command_bus: CommandBus) -> void:
 	if not new_stage:
 		return
@@ -233,7 +233,7 @@ func _transition_to(new_stage: Stage, game_state: GameState, command_bus: Comman
 	stage_changed.emit(old_stage, new_stage)
 	_start_stage(new_stage, game_state, command_bus)
 ## 前进到下一个主阶段（内部使用，自动 +1）
-## @endo @emitter
+## @internal @emitter
 func _advance_to_next_main_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	current_main_stage_index += 1
 	if current_main_stage_index >= main_stages.size():
@@ -241,7 +241,7 @@ func _advance_to_next_main_stage(game_state: GameState, command_bus: CommandBus)
 		return
 	_transition_to(main_stages[current_main_stage_index], game_state, command_bus)
 ## 重置计时器请求信号处理
-## @signal-listener @endo @stack-confined
+## @signal_listener @internal @stack_local
 func _on_stage_reset_timer_requested(new_time_limit: float) -> void:
 	if timer and current_stage and not current_stage.is_ended:
 		timer.start(new_time_limit)

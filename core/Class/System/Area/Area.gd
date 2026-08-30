@@ -39,7 +39,7 @@ signal after_cards_removed()
 ## 卡牌总数
 @abstract func card_count() -> int
 ## 按ID获取单张卡牌
-## @semi-pure
+## @nullable_pure
 @abstract func get_card_by_id(_card_id: int) -> Card
 ## 获取所有卡牌
 ## @pure
@@ -61,7 +61,7 @@ signal after_cards_removed()
 @abstract func is_empty() -> bool
 
 #==构造函数===================================================================
-## @endo
+## @internal
 func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	player = _player
 #==公开方法===================================================================
@@ -87,7 +87,7 @@ func get_cards_by_ids(ids: PackedInt32Array) -> Array[Card]:
 			result.append(card)
 	return result
 ## 洗牌（默认空实现，子类按需重写）
-## @endo
+## @internal
 func shuffle_card_pool() -> void:
 	pass
 ## 获取所属玩家

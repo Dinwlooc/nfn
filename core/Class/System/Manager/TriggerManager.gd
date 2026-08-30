@@ -27,7 +27,7 @@ static var gamestate_trigger_classes: Array[Script] = [
 
 #=== Public Methods ===
 ## 初始化所有触发器
-## @endo
+## @internal
 func initialize(system: System) -> void:
 	system_triggers.resize(system_trigger_classes.size())
 	for i in system_trigger_classes.size():
@@ -42,7 +42,7 @@ func initialize(system: System) -> void:
 		if trigger:
 			gamestate_triggers.set(i, trigger)
 ## 清理所有触发器
-## @endo
+## @internal
 func clear() -> void:
 	for trigger in system_triggers:
 		if trigger:
