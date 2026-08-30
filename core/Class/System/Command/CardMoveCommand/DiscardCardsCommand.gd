@@ -35,6 +35,18 @@ func _on_init_phase(game_state: GameState) -> void:
 		push_error("DiscardCardsCommand: 未找到源玩家")
 		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
-	_context.source_area = game_state.get_hand_area(source_player.get_id())
-	_context.target_area = game_state.get_discard_area()
+	# 获取源手牌区域（必须存在）
+	var hand_area: AreaHand = game_state.get_hand_area(source_player.get_id())
+	if not hand_area:
+		push_error("DiscardCardsCommand: 无法获取源玩家手牌区域")
+		_context.phase = CardMoveCommand.Context.Phase.DONE
+		return
+	_context.source_area = hand_area
+	# 获取目标弃牌堆（必须存在）
+	var discard_area: AreaDiscard = game_state.get_discard_area()
+	if not discard_area:
+		push_error("DiscardCardsCommand: 无法获取弃牌堆区域")
+		_context.phase = CardMoveCommand.Context.Phase.DONE
+		return
+	_context.target_area = discard_area
 	_context.set_id_mode(_context.card_ids)

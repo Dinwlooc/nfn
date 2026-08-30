@@ -49,11 +49,21 @@ func _on_init_phase(game_state: GameState) -> void:
 		_context.phase = CardMoveCommand.Context.Phase.DONE
 		return
 	var source_player: Player = _context.get_source_player()
-	# 行动点检查与消耗
+	if not source_player:
+		push_error("PlayCardsCommand: 源玩家无效")
+		_context.phase = CardMoveCommand.Context.Phase.DONE
+		return
+	# 统一获取源区域（手牌），仅获取一次
+	var source_area: AreaHand = game_state.get_hand_area(source_player.get_id())
+	if not source_area:
+		push_error("PlayCardsCommand: 无法获取源玩家手牌区域")
+		_context.phase = CardMoveCommand.Context.Phase.DONE
+		return
+	_context.source_area = source_area
+	# 行动点消耗（源区域已确保存在，可直接使用）
 	if _context.ap_source_player:
 		var ap_player: Player = _context.ap_source_player
-		_context.source_area = game_state.get_hand_area(source_player.get_id())
-		var cards: Array[Card] = _context.source_area.get_cards_by_ids(_context.card_ids)
+		var cards: Array[Card] = source_area.get_cards_by_ids(_context.card_ids)
 		var total_cost: int = 0
 		for card in cards:
 			total_cost += card.get_attribute(&"cost")
@@ -64,19 +74,28 @@ func _on_init_phase(game_state: GameState) -> void:
 			&"play_card"
 		)
 		append_companion_command(ap_cmd)
-	# 设置源区域（手牌）
-	_context.source_area = game_state.get_hand_area(source_player.get_id())
+	# 目标区域处理
 	match _context.target_area_type:
 		Context.TargetAreaType.CENTER:
-			game_state.get_center_area().set_skill_targets([game_state.player_manager.get_player_by_id(_context.target_player_id)])
-			_context.target_area = game_state.get_center_area()
-		Context.TargetAreaType.PLAYER_DEF:
-			var target_player: Player = game_state.player_manager.get_player_by_id(_context.target_player_id)
-			if not target_player:
-				push_error("PlayCardsCommand: 未找到目标玩家")
+			var center_area: AreaCenter = game_state.get_center_area()
+			if not center_area:
+				push_error("PlayCardsCommand: 无法获取中央区")
 				_context.phase = CardMoveCommand.Context.Phase.DONE
 				return
-			_context.target_area = game_state.get_defense_area(_context.target_player_id)
+			var target_player: Player = game_state.player_manager.get_player_by_id(_context.target_player_id)
+			if not target_player:
+				push_error("PlayCardsCommand: 无效的目标玩家ID")
+				_context.phase = CardMoveCommand.Context.Phase.DONE
+				return
+			center_area.set_skill_targets([target_player])
+			_context.target_area = center_area
+		Context.TargetAreaType.PLAYER_DEF:
+			var def_area: AreaDefence = game_state.get_defense_area(_context.target_player_id)
+			if not def_area:
+				push_error("PlayCardsCommand: 无法获取目标玩家守备区域")
+				_context.phase = CardMoveCommand.Context.Phase.DONE
+				return
+			_context.target_area = def_area
 		_:
 			push_error("PlayCardsCommand: 无效的目标区域类型")
 			_context.phase = CardMoveCommand.Context.Phase.DONE

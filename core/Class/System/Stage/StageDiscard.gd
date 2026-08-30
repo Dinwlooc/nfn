@@ -117,6 +117,10 @@ func _process_abandon_response(request: OperationRequest.AbandonResponse, game_s
 		return
 	var need_count: int = _players_to_discard[player_id]
 	var hand_area: AreaHand = game_state.get_hand_area(player_id)
+	if not hand_area:
+		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "的手牌区"])
+		request.cancel()
+		return
 	var hand_card_ids: PackedInt32Array = hand_area.get_card_ids()
 	if hand_card_ids.size() < need_count:
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "手牌不足", need_count, "张，将弃置所有手牌"])
@@ -145,26 +149,30 @@ func _force_discard_for_all(game_state: GameState, command_bus: CommandBus) -> v
 	for player_id in _players_to_discard.keys():
 		var need_count: int = _players_to_discard[player_id]
 		var hand_area: AreaHand = game_state.get_hand_area(player_id)
+		if not hand_area:
+			GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "的手牌区，跳过强制弃牌"])
+			_players_to_discard.erase(player_id)
+			continue
 		if hand_area.is_empty():
 			_players_to_discard.erase(player_id)
 			continue
 		var selected: PackedInt32Array = _random_select(hand_area, need_count)
 		var player: Player = game_state.player_manager.get_player_by_id(player_id)
 		if not player:
-			GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "实例"])
+			GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "实例，跳过"])
+			_players_to_discard.erase(player_id)
 			continue
 		var discard_command := DiscardCardsCommand.new(player, selected)
 		command_bus.queue_behavior(discard_command)
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "超时，随机弃牌完成"])
 	_players_to_discard.clear()
 
+## 从手牌中随机选择指定数量的卡牌ID（纯读取，不修改区域）
+## @atomic @pure
 func _random_select(hand_area: AreaHand, count: int) -> PackedInt32Array:
 	if count <= 0 or hand_area.is_empty():
 		return PackedInt32Array()
-	var temp_area := UnorderedArea.new()
-	var cards: Array[Card] = hand_area.get_all_cards()
-	temp_area.cards_add(cards)
-	var selected_cards: Array[Card] = temp_area.get_top_cards(count)
+	var selected_cards: Array[Card] = hand_area.get_top_cards(count)
 	var result: PackedInt32Array = []
 	for card in selected_cards:
 		result.append(card.id)

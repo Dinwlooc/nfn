@@ -2,15 +2,15 @@
 extends RefCounted
 class_name AreaManager
 
-#=== Variables ===
+#== Variables ==
 ## 双层字典：player_id -> { area_name : Area }
 var _areas: Dictionary[int, Dictionary] = {}
 
-#=== Constants ===
+#== Constants ==
 ## 公共区域使用的玩家 ID
 const PUBLIC_PLAYER_ID: int = GameState.PUBLIC_PLAYER_ID
 
-#=== Signals ===
+#== Signals ==
 ## 区域添加信号
 ## @emitter
 signal area_added(area: Area)
@@ -18,13 +18,13 @@ signal area_added(area: Area)
 ## @emitter
 signal area_removed(area: Area)
 
-#=== Constructor ===
+#== Constructor ==
 ## 构造函数：初始化公共区域
 ## @endo
 func _init() -> void:
 	_init_public_areas()
 
-#=== Public Methods ===
+#== Public Methods ==
 ## 为新玩家创建所有私有区域实例
 ## @endo @emitter
 func create_areas_for_player(player: Player) -> void:
@@ -49,15 +49,13 @@ func remove_areas_for_player(player_id: int) -> void:
 	if not _areas.has(player_id):
 		return
 	var player_areas: Dictionary = _areas[player_id]
-	for area_name in player_areas.keys():
-		area_removed.emit(get_area(player_id, area_name))
+	for area in player_areas.values():  # 优化：直接遍历值，避免二次查找
+		area_removed.emit(area)
 	_areas.erase(player_id)
 ## 获取指定玩家、指定名称的区域
-## @pure
+## @semi-pure
 func get_area(player_id: int, area_name: StringName) -> Area:
-	if not _areas.has(player_id):
-		return null
-	return _areas[player_id].get(area_name)
+	return _areas[player_id].get(area_name,null)
 ## 设置（添加或替换）指定玩家、指定名称的区域
 ## @endo @emitter
 func set_area(player_id: int, area_name: StringName, area: Area) -> void:
@@ -67,33 +65,39 @@ func set_area(player_id: int, area_name: StringName, area: Area) -> void:
 	if old_area:
 		area_removed.emit(old_area)
 	area_added.emit(area)
+## 获取指定玩家的所有区域名称列表
+## @pure
+func get_area_names_for_player(player_id: int) -> Array[StringName]:
+	if not _areas.has(player_id):
+		return []
+	return _areas[player_id].keys()
 ## 获取手牌区域（便捷方法）
-## @facade
+## @facade @semi-pure。
 func get_hand_area(player_id: int) -> AreaHand:
 	return get_area(player_id, GlobalConstants.DefaultArea.HAND)
 ## 获取守备区域（便捷方法）
-## @facade
+## @facade @semi-pure。
 func get_defense_area(player_id: int) -> AreaDefence:
 	return get_area(player_id, GlobalConstants.DefaultArea.DEFENCE)
 ## 获取技能区域（便捷方法）
-## @facade
+## @facade @semi-pure。
 func get_ability_area(player_id: int) -> AreaAbility:
 	return get_area(player_id, GlobalConstants.DefaultArea.ABILITY)
 ## 获取公共中央区
-## @facade
+## @facade @semi-pure。
 func get_center_area() -> AreaCenter:
 	return get_area(PUBLIC_PLAYER_ID, GlobalConstants.DefaultArea.CENTER)
 ## 获取公共牌堆区
-## @facade
+## @facade @semi-pure。
 func get_drawing_area() -> AreaDrawing:
 	return get_area(PUBLIC_PLAYER_ID, GlobalConstants.DefaultArea.DRAWING)
 ## 获取公共弃牌堆区
-## @facade
+## @facade @semi-pure。
 func get_discard_area() -> AreaDiscard:
 	return get_area(PUBLIC_PLAYER_ID, GlobalConstants.DefaultArea.DISCARD)
 
-#=== Private Methods ===
-## 初始化公共区域（应在 GameState 初始化时调用一次）
+#== Private Methods ==
+## 初始化公共区域
 ## @endo @emitter
 func _init_public_areas() -> void:
 	_ensure_player_dict(PUBLIC_PLAYER_ID)
@@ -110,8 +114,7 @@ func _init_public_areas() -> void:
 		var discard := AreaDiscard.new()
 		public_areas[GlobalConstants.DefaultArea.DISCARD] = discard
 		area_added.emit(discard)
-## 确保某个玩家的区域字典存在
-## @endo
+## 确保某个玩家的区域字典存在。
 func _ensure_player_dict(player_id: int) -> void:
 	if not _areas.has(player_id):
 		_areas[player_id] = {}
