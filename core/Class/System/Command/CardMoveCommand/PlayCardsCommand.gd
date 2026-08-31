@@ -45,15 +45,14 @@ func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.C
 	if context_overriding is not Context:
 		_fail("上下文类型错误", context_overriding)
 		return
-	var err := RuleGuard.ErrorMessage.new()
 	var source_player: Player = context_overriding.get_source_player()
 	# 合并检查：卡牌ID、源玩家、源手牌区（利用短路确保 get_id 安全）
 	if not (
-		RuleGuard.has_valid_card_ids(context_overriding.card_ids, err, "无效的卡牌ID数组") and
-		RuleGuard.has_valid_player(source_player, err, "源玩家无效") and
-		RuleGuard.has_valid_area(game_state.get_hand_area(source_player.get_id()), err, "无法获取源玩家手牌区域")
+		RuleGuard.has_valid_card_ids(context_overriding.card_ids, _guard_error, "无效的卡牌ID数组") and
+		RuleGuard.has_valid_player(source_player, _guard_error, "源玩家无效") and
+		RuleGuard.has_valid_area(game_state.get_hand_area(source_player.get_id()), _guard_error, "无法获取源玩家手牌区域")
 	):
-		_fail(err.text, context_overriding)
+		_fail(_guard_error.text, context_overriding)
 		return
 	var source_area: AreaHand = game_state.get_hand_area(source_player.get_id())
 	context_overriding.source_area = source_area
@@ -77,17 +76,17 @@ func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.C
 			var center_area: AreaCenter = game_state.get_center_area()
 			var target_player: Player = game_state.player_manager.get_player_by_id(context_overriding.target_player_id)
 			if not (
-				RuleGuard.has_valid_area(center_area, err, "无法获取中央区") and
-				RuleGuard.has_valid_player(target_player, err, "无效的目标玩家ID")
+				RuleGuard.has_valid_area(center_area, _guard_error, "无法获取中央区") and
+				RuleGuard.has_valid_player(target_player, _guard_error, "无效的目标玩家ID")
 			):
-				_fail(err.text, context_overriding)
+				_fail(_guard_error.text, context_overriding)
 				return
 			center_area.set_skill_targets([target_player])
 			context_overriding.target_area = center_area
 		Context.TargetAreaType.PLAYER_DEF:
 			var def_area: AreaDefence = game_state.get_defense_area(context_overriding.target_player_id)
-			if not RuleGuard.has_valid_area(def_area, err, "无法获取目标玩家守备区域"):
-				_fail(err.text, context_overriding)
+			if not RuleGuard.has_valid_area(def_area, _guard_error, "无法获取目标玩家守备区域"):
+				_fail(_guard_error.text, context_overriding)
 				return
 			context_overriding.target_area = def_area
 		_:

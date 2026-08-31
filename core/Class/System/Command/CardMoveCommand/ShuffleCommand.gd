@@ -16,16 +16,15 @@ func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.C
 	if context_overriding is not Context:
 		_fail("上下文类型错误", context_overriding)
 		return
-	var err := RuleGuard.ErrorMessage.new()
 	var discard: AreaDiscard = game_state.get_discard_area()
 	var drawing: AreaDrawing = game_state.get_drawing_area()
 	# 合并检查：弃牌区、抽牌区、以及从弃牌区获取的 ID 数组（短路确保 discard 有效）
 	if not (
-		RuleGuard.has_valid_area(discard, err, "无法获取弃牌区") and
-		RuleGuard.has_valid_area(drawing, err, "无法获取抽牌区") and
-		RuleGuard.has_valid_card_ids(discard.get_card_ids(), err, "弃牌区为空，无需洗牌")
+		RuleGuard.has_valid_area(discard, _guard_error, "无法获取弃牌区") and
+		RuleGuard.has_valid_area(drawing, _guard_error, "无法获取抽牌区") and
+		RuleGuard.has_valid_card_ids(discard.get_card_ids(), _guard_error, "弃牌区为空，无需洗牌")
 	):
-		_fail(err.text, context_overriding)
+		_fail(_guard_error.text, context_overriding)
 		return
 	var ids: PackedInt32Array = discard.get_card_ids()
 	context_overriding.set_id_mode(ids)

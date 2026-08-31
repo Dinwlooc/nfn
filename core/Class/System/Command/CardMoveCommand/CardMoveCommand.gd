@@ -143,6 +143,6 @@ func _on_done_phase(_game_state: GameState, context_overriding: Context = _conte
 	complete()
 ## 错误退出，自动将 phase 置为 DONE，并输出包含命令名的错误信息。
 ## @seam
-func _fail(msg: String, context: Context = _context) -> void:
+func _fail(msg: String = _guard_error.text, context: CommandContext = _context) -> void:
+	super._fail(msg,context)
 	context.phase = context.Phase.DONE
-	push_error("[%s] %s" % [context.command_name, msg])

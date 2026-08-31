@@ -24,15 +24,14 @@ func _init(
 	_context.set_event_type(RenderRequest.ItemSet.EventType.DISCARD)
 ## @hook @seam_override
 func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
-	var err := RuleGuard.ErrorMessage.new()
 	var source_player: Player = context_overriding.get_source_player()
 	if not (
-		RuleGuard.has_valid_card_ids(context_overriding.card_ids, err, "无效的卡牌ID数组") and
-		RuleGuard.has_valid_player(source_player, err, "未找到源玩家") and
-		RuleGuard.has_valid_area(game_state.get_hand_area(source_player.get_id()), err, "无法获取源玩家手牌区域") and
-		RuleGuard.has_valid_area(game_state.get_discard_area(), err, "无法获取弃牌堆区域")
+		RuleGuard.has_valid_card_ids(context_overriding.card_ids, _guard_error, "无效的卡牌ID数组") and
+		RuleGuard.has_valid_player(source_player, _guard_error, "未找到源玩家") and
+		RuleGuard.has_valid_area(game_state.get_hand_area(source_player.get_id()), _guard_error, "无法获取源玩家手牌区域") and
+		RuleGuard.has_valid_area(game_state.get_discard_area(), _guard_error, "无法获取弃牌堆区域")
 	):
-		_fail(err.text, context_overriding)
+		_fail(_guard_error.text, context_overriding)
 		return
 	var hand_area: AreaHand = game_state.get_hand_area(source_player.get_id())
 	var discard_area: AreaDiscard = game_state.get_discard_area()

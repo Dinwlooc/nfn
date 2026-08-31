@@ -5,6 +5,7 @@ extends RefCounted
 class_name BehaviorCommand
 
 var _is_completed: bool = false
+var _guard_error := RuleGuard.ErrorMessage.new()
 var _context: CommandContext
 signal companion_command_requested(command: BehaviorCommand)
 signal command_completed()
@@ -30,3 +31,8 @@ func cancel()->void:
 			return
 		_context.cancel()
 	complete()
+## 错误退出，输出包含命令名的错误信息。
+## @seam
+func _fail(msg: String = _guard_error.text , context: CommandContext = _context) -> void:
+	_guard_error.text = msg
+	push_error("[%s] %s" % [context.command_name, msg])

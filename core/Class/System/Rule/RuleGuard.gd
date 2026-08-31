@@ -9,13 +9,6 @@ class_name RuleGuard
 ## @record
 class ErrorMessage:
 	var text: String = ""
-	## @internal
-	func set_text(msg: String) -> ErrorMessage:
-		text = msg
-		return self
-	## @internal
-	func clear() -> void:
-		text = ""
 
 # === 通用有效性检查 ===
 ## @external

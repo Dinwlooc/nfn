@@ -9,7 +9,7 @@
 extends RefCounted
 class_name CommandContext
 
-var player_id: int
+var player_id: int = 0
 var command_name: StringName
 var phase: int = 0
 var is_completed: bool = false
@@ -17,30 +17,33 @@ var is_cancelled: bool = false
 var is_virtual: bool = false
 var can_be_cancelled: bool = true
 var companion_source: WeakRef
+
+## @zero_instance
 static var NULL_CONTEXT: CommandContext = CommandContext.new()
 
+## @internal @atomic
 func cancel() -> void:
 	if can_be_cancelled:
 		is_cancelled = true
-
+## @internal @atomic
 func uncancel() -> void:
 	if can_be_cancelled:
 		is_cancelled = false
-
+## @internal @atomic
 func virtualize() -> void:
 	is_virtual = true
-
-## 获取主修饰卡牌列表（第一优先），默认空，子类可重写
+## 获取主修饰卡牌列表（第一优先）
+## @hook @pure
 func get_primary_modifier_cards() -> Array[Card]:
 	return []
-
-## 获取主修饰玩家列表（第二优先），默认空，子类可重写
+## 获取主修饰玩家列表（第二优先）
+## @hook @pure
 func get_primary_modifier_players() -> Array[Player]:
 	return []
-
+## @internal @atomic
 func set_companion_source(new_companion_source: CommandContext) -> CommandContext:
 	companion_source = weakref(new_companion_source)
 	return self
-
+## @pure
 func get_companion_source() -> CommandContext:
 	return companion_source.get_ref()
