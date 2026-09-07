@@ -84,10 +84,17 @@ class Context extends CommandContext:
 		if phase < Phase.MOVE_OUT:
 			return []
 		return moved_cards
+
+	## 重写 complete，将阶段设为 DONE
+	func complete() -> void:
+		phase = Phase.DONE
+		super.complete()
+
 ## @seam_override
 func _init(player: Player = Player.PUBLIC_PLAYER, name_overriding: StringName = &"Move", context_overriding: Context = Context.new()) -> void:
 	super._init(player.get_id(), name_overriding, context_overriding)
 	_context.set_source_player(player)
+
 ## @template
 func execute(game_state: GameState) -> void:
 	match _context.phase:
@@ -102,14 +109,29 @@ func execute(game_state: GameState) -> void:
 			_on_move_in_phase(game_state)
 		Context.Phase.DONE:
 			_on_done_phase(game_state)
+
 ## @hook @seam_override
 func _on_init_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
 	pass
+
 ## @hook @seam_override
 func _on_move_out_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
 	if not context_overriding.source_area:
-		_fail("移出区域未设置", context_overriding)
+		BehaviorCommand.fail(context_overriding, "移出区域未设置")
 		return
+
+	match context_overriding.move_out_mode:
+		Context.MoveOutMode.TOP:
+			var count: int = context_overriding.move_out_param
+			if count <= 0:
+				BehaviorCommand.fail(context_overriding, "移出数量必须大于 0")
+				return
+		Context.MoveOutMode.INDICES, Context.MoveOutMode.BY_ID:
+			var arr: PackedInt32Array = context_overriding.move_out_param
+			if arr.is_empty():
+				BehaviorCommand.fail(context_overriding, "索引或 ID 数组不能为空")
+				return
+
 	var moved_cards: Array[Card]
 	match context_overriding.move_out_mode:
 		Context.MoveOutMode.TOP:
@@ -122,7 +144,7 @@ func _on_move_out_phase(_game_state: GameState, context_overriding: Context = _c
 			var ids: PackedInt32Array = context_overriding.move_out_param
 			moved_cards = context_overriding.source_area.get_cards_by_ids(ids) if context_overriding.is_virtual else context_overriding.source_area.remove_cards_by_ids(ids)
 		_:
-			_fail("无效的移出模式", context_overriding)
+			BehaviorCommand.fail(context_overriding, "无效的移出模式")
 			return
 	context_overriding.moved_cards = moved_cards
 	if context_overriding.moved_cards.is_empty():
@@ -141,8 +163,3 @@ func _on_move_in_phase(_game_state: GameState, context_overriding: Context = _co
 ## @hook @seam_override
 func _on_done_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
 	complete()
-## 错误退出，自动将 phase 置为 DONE，并输出包含命令名的错误信息。
-## @seam
-func _fail(msg: String = _guard_error.text, context: CommandContext = _context) -> void:
-	super._fail(msg,context)
-	context.phase = context.Phase.DONE

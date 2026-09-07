@@ -5,25 +5,31 @@ extends RefCounted
 class_name BehaviorCommand
 
 var _is_completed: bool = false
-var _guard_error := RuleGuard.ErrorMessage.new()
 var _context: CommandContext
+## @requester
 signal companion_command_requested(command: BehaviorCommand)
 signal command_completed()
+
 @abstract func execute(game_state: GameState) -> void
 
 func _init(init_player_id: int = 1 ,name_overriding:StringName = &"" ,context_overriding:CommandContext = CommandContext.NULL_CONTEXT):
 	_context = context_overriding
 	_context.command_name = name_overriding
 	_context.player_id = init_player_id
+
+## 完成命令，调用上下文的 complete()
 func complete() -> void:
 	_is_completed = true
+	_context.complete()
 	command_completed.emit()
-	_context.is_completed = true
+
 ## 伴生一个命令
+## @requester
 func append_companion_command(command: BehaviorCommand,companion_source_overriding:CommandContext = _context) -> void:
 	if command._context:
 		command._context.set_companion_source(companion_source_overriding)
 	companion_command_requested.emit(command)
+
 ## 取消命令
 func cancel()->void:
 	if _context:
@@ -31,8 +37,15 @@ func cancel()->void:
 			return
 		_context.cancel()
 	complete()
-## 错误退出，输出包含命令名的错误信息。
-## @seam
-func _fail(msg: String = _guard_error.text , context: CommandContext = _context) -> void:
-	_guard_error.text = msg
-	push_error("[%s] %s" % [context.command_name, msg])
+## 静态失败处理方法：设置错误、打印并调用上下文的 complete()
+static func fail(context: CommandContext, msg: String = "") -> void:
+	if not msg.is_empty():
+		context.error = msg
+		print("[%s] %s" % [context.command_name, msg])
+		context.complete()
+## 静态卫语句：若对象为空，则调用 fail 并返回 true
+static func fail_if_null(obj: Object, context: CommandContext, msg: String) -> bool:
+	if obj == null:
+		fail(context, msg)
+		return true
+	return false

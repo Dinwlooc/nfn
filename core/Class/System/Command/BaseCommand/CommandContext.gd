@@ -17,9 +17,14 @@ var is_cancelled: bool = false
 var is_virtual: bool = false
 var can_be_cancelled: bool = true
 var companion_source: WeakRef
+var error: String = ""
 
 ## @zero_instance
 static var NULL_CONTEXT: CommandContext = CommandContext.new()
+
+## 完成上下文，子类可重写以添加额外结束逻辑
+func complete() -> void:
+	is_completed = true
 
 ## @internal @atomic
 func cancel() -> void:
@@ -44,6 +49,6 @@ func get_primary_modifier_players() -> Array[Player]:
 func set_companion_source(new_companion_source: CommandContext) -> CommandContext:
 	companion_source = weakref(new_companion_source)
 	return self
-## @pure
+## @nullable_pure
 func get_companion_source() -> CommandContext:
 	return companion_source.get_ref()

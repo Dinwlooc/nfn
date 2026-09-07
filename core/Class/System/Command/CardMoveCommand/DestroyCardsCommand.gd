@@ -35,14 +35,19 @@ func _init(
 
 ## @hook @seam_override
 func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
-	if not context_overriding.target_defense_area:
-		_fail("目标守区未设置", context_overriding)
+	if BehaviorCommand.fail_if_null(context_overriding.target_defense_area, context_overriding, "目标守区未设置"):
 		return
+
 	var cards: Array[Card] = context_overriding.target_defense_area.get_cards_by_ids(PackedInt32Array([context_overriding.target_card_id]))
 	if cards.is_empty():
 		GlobalConsole._print(["[%s] 目标卡牌不在目标守区，取消摧毁。" % context_overriding.command_name])
 		context_overriding.phase = CardMoveCommand.Context.Phase.DONE
 		return
+
+	var discard_area: AreaDiscard = game_state.get_discard_area()
+	if BehaviorCommand.fail_if_null(discard_area, context_overriding, "无法获取弃牌区"):
+		return
+
 	context_overriding.source_area = context_overriding.target_defense_area
-	context_overriding.target_area = game_state.get_discard_area()
+	context_overriding.target_area = discard_area
 	context_overriding.set_id_mode(PackedInt32Array([context_overriding.target_card_id]))
