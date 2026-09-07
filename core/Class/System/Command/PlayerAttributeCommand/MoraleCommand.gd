@@ -1,6 +1,7 @@
 extends PlayerAttributeCommand
 class_name MoraleCommand
 
+## @context
 class Context extends PlayerAttributeCommand.Context:
 	var attack_delta: int = 0
 	var defense_delta: int = 0
@@ -27,6 +28,7 @@ class Context extends PlayerAttributeCommand.Context:
 		event_name = name
 		return self
 
+## @seam_override
 func _init(
 	target: Player,
 	attack_delta: int,
@@ -36,17 +38,23 @@ func _init(
 	name_overriding: StringName = &"MoraleChange",
 	context_overriding: Context = Context.new()
 ) -> void:
-	context_overriding.set_target_player(target)
-	context_overriding.set_attack_delta(attack_delta)
-	context_overriding.set_defense_delta(defense_delta)
-	context_overriding.set_source_player_id(source_id)
-	context_overriding.set_event_name(event_name)
+	context_overriding.set_target_player(target).set_attack_delta(attack_delta).set_defense_delta(defense_delta).set_source_player_id(source_id).set_event_name(event_name)
 	super._init(target, name_overriding, context_overriding)
 
-func _on_apply_phase(game_state: GameState, ctx: PlayerAttributeCommand.Context) -> void:
-	if not ctx.target_player:
+## 静态应用：修改士气相关属性
+static func do_apply(context: Context, _game_state: GameState) -> void:
+	if context.is_virtual:
 		return
-	if ctx.cached_attack_delta > 0:
-		ctx.target_player.add_morale_attack(ctx.cached_attack_delta)
-	if ctx.cached_defense_delta > 0:
-		ctx.target_player.add_morale_defense(ctx.cached_defense_delta)
+	if not context.target_player:
+		return
+	if context.cached_attack_delta > 0:
+		context.target_player.add_morale_attack(context.cached_attack_delta)
+	if context.cached_defense_delta > 0:
+		context.target_player.add_morale_defense(context.cached_defense_delta)
+
+## @hook
+func _on_apply_phase(_game_state: GameState, context_overriding: PlayerAttributeCommand.Context = _context as Context) -> void:
+	var ctx := context_overriding as Context
+	if not ctx:
+		return
+	do_apply(ctx, _game_state)

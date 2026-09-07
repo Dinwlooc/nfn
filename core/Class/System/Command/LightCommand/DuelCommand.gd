@@ -2,13 +2,18 @@
 extends BehaviorCommand
 class_name DuelCommand
 
-## 拼点上下文类
+## @context
 class Context extends CommandContext:
 	enum Phase {
-		INIT,           # 初始化阶段
-		CALCULATE_POWER, # 计算点数
-		EVALUATE_RESULT, # 评估结果
-		DONE            # 完成
+		INIT,
+		CALCULATE_POWER,
+		EVALUATE_RESULT,
+		DONE
+	}
+	enum Result {
+		A_WIN,
+		B_WIN,
+		TIE
 	}
 
 	var card1: Card
@@ -19,17 +24,11 @@ class Context extends CommandContext:
 	var result: int = Result.TIE
 	var point_difference: int = 0
 
-	## 枚举：拼点结果
-	enum Result {
-		A_WIN,
-		B_WIN,
-		TIE
-	}
-	## 工具方法：设置拼点卡片
-	func set_cards(card_a: Card, card_b: Card, source_event_name: StringName) -> void:
+	func set_cards(card_a: Card, card_b: Card, source_event_name: StringName) -> Context:
 		card1 = card_a
 		card2 = card_b
 		event_name = source_event_name
+		return self
 
 	func get_primary_modifier_player_ids() -> PackedInt32Array:
 		var ids: PackedInt32Array = [player_id]
@@ -39,7 +38,6 @@ class Context extends CommandContext:
 				ids.append(other_id)
 		return ids
 
-	## 重写：主修饰卡牌数组（发起者卡牌在前，对手卡牌在后）
 	func get_primary_modifier_cards() -> Array[Card]:
 		if not card1 or not card2:
 			return []
@@ -47,51 +45,75 @@ class Context extends CommandContext:
 			return [card1, card2]
 		else:
 			return [card2, card1]
-## 拼点命令
-func _init(player_id: int,name_overriding = &"Duel", context_overriding: Context = Context.new()) -> void:
-	super._init(player_id,name_overriding, context_overriding)
-
-## 外部修饰接口：修改缓存点数
-func modify_cached_power(card_id: int, new_power: float) -> void:
-	if _context.phase < Context.Phase.EVALUATE_RESULT:
-		return
-	match card_id:
-		1: _context.cached_power1 = new_power
-		2: _context.cached_power2 = new_power
-
-func execute(game_state: GameState) -> void:
-	match _context.phase:
-		Context.Phase.INIT:
-			_on_init_phase(game_state, _context)
-		Context.Phase.CALCULATE_POWER:
-			_on_calculate_power_phase(game_state, _context)
-		Context.Phase.EVALUATE_RESULT:
-			_on_evaluate_result_phase(game_state, _context)
-		Context.Phase.DONE:
-			_on_done_phase(game_state, _context)
-
-func _on_init_phase(game_state: GameState, _context: Context) -> void:
-	_context.phase = Context.Phase.CALCULATE_POWER
-
-func _on_calculate_power_phase(game_state: GameState, _context: Context) -> void:
-	_context.cached_power1 = _context.card1.get_attribute(&"power")
-	_context.cached_power2 = _context.card2.get_attribute(&"power")
-	_context.phase = Context.Phase.EVALUATE_RESULT
-
-func _on_evaluate_result_phase(game_state: GameState, _context: Context) -> void:
-	_context.point_difference = abs(_context.cached_power1 - _context.cached_power2)
-	if _context.cached_power1 > _context.cached_power2:
-		_context.result = Context.Result.A_WIN
-	elif _context.cached_power2 > _context.cached_power1:
-		_context.result = Context.Result.B_WIN
-	else:
-		_context.result = Context.Result.TIE
-	_context.phase = Context.Phase.DONE
-
-func _on_done_phase(game_state: GameState, _context: Context) -> void:
-	# 触发完成信号
-	duel_completed.emit(_context.result, _context.point_difference)
-	complete()
 
 ## 信号：拼点完成
 signal duel_completed(result: int, point_difference: int)
+
+## @seam_override
+## 构造函数：卡牌1、卡牌2、事件名（可选）、发起玩家（默认为卡牌1的持有者或公共玩家）、命令名称、上下文
+func _init(
+	card1: Card,
+	card2: Card,
+	event_name: StringName = &"",
+	player: Player = card1.player if card1 and card1.player else Player.PUBLIC_PLAYER,
+	name_overriding: StringName = &"Duel",
+	context_overriding: Context = Context.new()
+) -> void:
+	context_overriding.set_cards(card1, card2, event_name)
+	super._init(player.get_id(), name_overriding, context_overriding)
+
+## @template
+func execute(game_state: GameState) -> void:
+	var ctx: Context = _context
+	match ctx.phase:
+		Context.Phase.INIT:
+			ctx.phase = Context.Phase.CALCULATE_POWER
+			_on_init_phase(game_state, ctx)
+		Context.Phase.CALCULATE_POWER:
+			ctx.phase = Context.Phase.EVALUATE_RESULT
+			_on_calculate_power_phase(game_state, ctx)
+		Context.Phase.EVALUATE_RESULT:
+			ctx.phase = Context.Phase.DONE
+			_on_evaluate_result_phase(game_state, ctx)
+		Context.Phase.DONE:
+			_on_done_phase(game_state, ctx)
+
+## 静态计算点数
+static func do_calculate_power(context: Context, _game_state: GameState) -> void:
+	if context.is_virtual:
+		return
+	context.cached_power1 = context.card1.get_attribute(&"power")
+	context.cached_power2 = context.card2.get_attribute(&"power")
+
+## 静态评估结果
+static func do_evaluate_result(context: Context, _game_state: GameState) -> void:
+	if context.is_virtual:
+		return
+	context.point_difference = abs(context.cached_power1 - context.cached_power2)
+	if context.cached_power1 > context.cached_power2:
+		context.result = Context.Result.A_WIN
+	elif context.cached_power2 > context.cached_power1:
+		context.result = Context.Result.B_WIN
+	else:
+		context.result = Context.Result.TIE
+
+## @emitter
+func _emit_completed(result: int, diff: int) -> void:
+	duel_completed.emit(result, diff)
+
+## @hook
+func _on_init_phase(_game_state: GameState, _context: Context) -> void:
+	pass
+
+## @hook
+func _on_calculate_power_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	do_calculate_power(context_overriding as Context, game_state)
+
+## @hook
+func _on_evaluate_result_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	do_evaluate_result(context_overriding as Context, game_state)
+
+## @hook
+func _on_done_phase(_game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	_emit_completed((context_overriding as Context).result, (context_overriding as Context).point_difference)
+	complete()

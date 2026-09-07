@@ -1,20 +1,30 @@
 ## 请求启动濒死临时阶段（仅入栈，延迟启动）
-class_name DyingStageRequestCommand
 extends StageRequestCommand
+class_name DyingStageRequestCommand
 
+## @context
 class Context extends StageRequestCommand.Context:
 	var dying_player: Player
 
-func _init(dying_player: Player, name_overriding: StringName = &"RequestDyingStage", context_overriding: Context = Context.new()) -> void:
+## @seam_override
+func _init(
+	dying_player: Player,
+	name_overriding: StringName = &"RequestDyingStage",
+	context_overriding: Context = Context.new()
+) -> void:
 	super._init(dying_player.get_id(), name_overriding, context_overriding)
-	var ctx = _context as Context
-	ctx.dying_player = dying_player
+	context_overriding.dying_player = dying_player
 
-## 重写初始化阶段进行校验
-func _on_init_phase(game_state: GameState) -> void:
-	var ctx = _context as Context
+## 静态初始化：校验并设置 stage，若已存在则完成
+static func do_init(context: Context, game_state: GameState) -> void:
+	if context.is_virtual:
+		return
 	for stage in game_state.stage_manager.temp_stage_stack:
 		if stage is StageDying:
-			complete()
+			context.phase = Context.Phase.DONE
 			return
-	ctx.stage = StageDying.new(ctx.dying_player)
+	context.stage = StageDying.new(context.dying_player)
+
+## @hook
+func _on_init_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	do_init(context_overriding as Context, game_state)

@@ -1,7 +1,7 @@
 extends BehaviorCommand
 class_name SettleCommand
 
-## 结算上下文类
+## @context
 class Context extends CommandContext:
 	enum Phase {
 		PREPARE,
@@ -18,7 +18,6 @@ class Context extends CommandContext:
 	var is_unilateral: bool = false
 	var duel_result: int = DuelCommand.Context.Result.TIE
 	var duel_diff: int = 0
-	## 预计算的结算结果（攻击判断阶段创建，拼点后衰减更新）
 	var settle_result: RuleSettle.Result = null
 
 	func get_settle_card() -> Card:
@@ -26,6 +25,34 @@ class Context extends CommandContext:
 
 	func get_oppose_card() -> Card:
 		return oppose_card
+
+	func set_defensive_area(area: AreaDefence) -> Context:
+		if phase != Phase.PREPARE:
+			push_error("只能在预备阶段设置守区")
+			return self
+		defensive_area = area
+		return self
+
+	func set_attacker(player: Player) -> Context:
+		if phase != Phase.PREPARE:
+			push_error("只能在预备阶段设置攻击者")
+			return self
+		attacker = player
+		return self
+
+	func set_settle_card(card: Card) -> Context:
+		if phase != Phase.PREPARE and phase != Phase.ATTACK_JUDGE:
+			push_error("只能在预备阶段或攻击判断阶段重设结算牌")
+			return self
+		settle_card = card
+		return self
+
+	func set_oppose_card(card: Card) -> Context:
+		if phase != Phase.PREPARE and phase != Phase.ATTACK_JUDGE:
+			push_error("只能在预备阶段或攻击判断阶段重设对抗牌")
+			return self
+		oppose_card = card
+		return self
 
 	func get_primary_modifier_player_ids() -> PackedInt32Array:
 		var ids: PackedInt32Array = []
@@ -47,89 +74,201 @@ class Context extends CommandContext:
 			cards.append(oppose_card)
 		return cards
 
-	func set_defensive_area(area: AreaDefence) -> void:
-		if phase != Phase.PREPARE:
-			push_error("只能在预备阶段设置守区")
-			return
-		defensive_area = area
-
-	func set_attacker(player: Player) -> void:
-		if phase != Phase.PREPARE:
-			push_error("只能在预备阶段设置攻击者")
-			return
-		attacker = player
-
-	func set_settle_card(card: Card) -> void:
-		if phase != Phase.PREPARE and phase != Phase.ATTACK_JUDGE:
-			push_error("只能在预备阶段或攻击判断阶段重设结算牌")
-			return
-		settle_card = card
-
-	func set_oppose_card(card: Card) -> void:
-		if phase != Phase.PREPARE and phase != Phase.ATTACK_JUDGE:
-			push_error("只能在预备阶段或攻击判断阶段重设对抗牌")
-			return
-		oppose_card = card
-
-func _init(player_id: int, target_defensive_area: AreaDefence, attacker: Player, name_overriding: StringName = &"Settle", context_overriding: Context = Context.new()) -> void:
+## @seam_override
+func _init(
+	player_id: int,
+	target_defensive_area: AreaDefence,
+	attacker: Player,
+	name_overriding: StringName = &"Settle",
+	context_overriding: Context = Context.new()
+) -> void:
+	context_overriding.set_defensive_area(target_defensive_area).set_attacker(attacker)
 	super._init(player_id, name_overriding, context_overriding)
-	_context.defensive_area = target_defensive_area
-	_context.attacker = attacker
 
+## @template
 func execute(game_state: GameState) -> void:
-	match _context.phase:
+	if _context.is_cancelled:
+		complete()
+		return
+	var ctx: Context = _context
+	match ctx.phase:
 		Context.Phase.PREPARE:
-			_on_prepare_phase(game_state, _context)
+			ctx.phase = Context.Phase.ATTACK_JUDGE
+			_on_prepare_phase(game_state, ctx)
 		Context.Phase.ATTACK_JUDGE:
-			_on_attack_judge_phase(game_state, _context)
+			ctx.phase = Context.Phase.DAMAGE
+			_on_attack_judge_phase(game_state, ctx)
 		Context.Phase.DAMAGE:
-			_on_damage_phase(game_state, _context)
+			ctx.phase = Context.Phase.EFFECT
+			_on_damage_phase(game_state, ctx)
 		Context.Phase.EFFECT:
-			_on_effect_phase(game_state, _context)
+			ctx.phase = Context.Phase.CLEAR
+			_on_effect_phase(game_state, ctx)
 		Context.Phase.CLEAR:
-			_on_clear_phase(game_state, _context)
+			ctx.phase = Context.Phase.DONE
+			_on_clear_phase(game_state, ctx)
 		Context.Phase.DONE:
-			_on_done_phase(game_state, _context)
+			_on_done_phase(game_state, ctx)
 
-func _on_prepare_phase(game_state: GameState, ctx: Context) -> void:
-	if not ctx.defensive_area:
+## 静态准备阶段：初始化守区，获取结算牌和对抗牌，连接监听
+static func do_prepare(context: Context, game_state: GameState, command_owner: SettleCommand) -> void:
+	if context.is_virtual:
+		context.phase = Context.Phase.DONE
+		return
+	if not context.defensive_area:
 		push_error("防御区域未设置")
-		ctx.phase = Context.Phase.DONE
+		context.phase = Context.Phase.DONE
 		return
-	ctx.defensive_area.settle_defense_area()
-	ctx.settle_card = ctx.defensive_area.get_top_card()
-	if ctx.defensive_area.get_second_card() and ctx.defensive_area.get_second_card().player != ctx.settle_card.player:
-		ctx.oppose_card = ctx.defensive_area.get_second_card()
-	ctx.is_unilateral = (ctx.oppose_card == null)
-	if ctx.settle_card:
-		if not ctx.settle_card.area_changed.is_connected(_on_card_area_changed):
-			ctx.settle_card.area_changed.connect(_on_card_area_changed)
-	if ctx.oppose_card:
-		if not ctx.oppose_card.area_changed.is_connected(_on_card_area_changed):
-			ctx.oppose_card.area_changed.connect(_on_card_area_changed)
-	ctx.phase = Context.Phase.ATTACK_JUDGE
+	context.defensive_area.settle_defense_area()
+	context.settle_card = context.defensive_area.get_top_card()
+	if context.defensive_area.get_second_card() and context.defensive_area.get_second_card().player != context.settle_card.player:
+		context.oppose_card = context.defensive_area.get_second_card()
+	context.is_unilateral = (context.oppose_card == null)
 
-func _on_attack_judge_phase(game_state: GameState, ctx: Context) -> void:
-	if not ctx.settle_card:
-		ctx.phase = Context.Phase.DONE
+	if context.settle_card:
+		if not context.settle_card.area_changed.is_connected(command_owner._on_card_area_changed):
+			context.settle_card.area_changed.connect(command_owner._on_card_area_changed)
+	if context.oppose_card:
+		if not context.oppose_card.area_changed.is_connected(command_owner._on_card_area_changed):
+			context.oppose_card.area_changed.connect(command_owner._on_card_area_changed)
+
+## 静态攻击判断阶段：创建拼点命令（双边）并连接回调
+static func do_attack_judge(context: Context, game_state: GameState, command_owner: SettleCommand) -> void:
+	if context.is_virtual:
+		context.phase = Context.Phase.DONE
 		return
-	ctx.settle_result = RuleSettle.get_initial_info(
-		ctx.settle_card, ctx.oppose_card, ctx.is_unilateral,
-		ctx.attacker, ctx.defensive_area.player, {}
+	if not context.settle_card:
+		context.phase = Context.Phase.DONE
+		return
+	context.settle_result = RuleSettle.get_initial_info(
+		context.settle_card, context.oppose_card, context.is_unilateral,
+		context.attacker, context.defensive_area.player, {}
 	)
-	if not ctx.is_unilateral and ctx.oppose_card.player != ctx.settle_card.player:
-		var duel: DuelCommand = DuelCommand.new(ctx.player_id)
-		duel._context.set_cards(ctx.settle_card, ctx.oppose_card, &"Settle")
-		duel.duel_completed.connect(_on_opponent_duel_completed)
-		append_companion_command(duel)
-	ctx.phase = Context.Phase.DAMAGE
+	if not context.is_unilateral and context.oppose_card.player != context.settle_card.player:
+		var duel: DuelCommand = DuelCommand.new(context.settle_card, context.oppose_card, &"Settle")
+		duel.duel_completed.connect(command_owner._on_opponent_duel_completed)
+		command_owner.append_companion_command(duel)
 
+## 静态伤害阶段：应用伤害和战意，创建 DamageCommand 和 MoraleCommand
+static func do_damage(context: Context, game_state: GameState, command_owner: SettleCommand) -> void:
+	if context.is_virtual:
+		context.phase = Context.Phase.DONE
+		return
+	if not context.settle_card or not context.settle_result:
+		context.phase = Context.Phase.DONE
+		return
+
+	# 处理战意
+	var rules: Dictionary = RuleSettle._get_merged_rules(context.settle_card, {})
+	var mask: int = rules.get(RuleSettle.Validator.COMBAT_WILL_MODE, 0)
+	var grants: Array[RuleSettle.CombatWillGrant] = RuleSettle.generate_combat_will_grants(
+		context.settle_card,
+		context.oppose_card,
+		context.duel_result,
+		context.duel_diff,
+		context.is_unilateral,
+		mask,
+		context.attacker,
+		context.defensive_area.player
+	)
+	_apply_combat_will_grants_with_command(grants, context, command_owner)
+
+	# 处理伤害
+	if not context.settle_result.target:
+		return
+	var damage_cmd := DamageCommand.new(
+		context.settle_result.target,
+		context.settle_result.health_damage_value,
+		context.settle_result.mental_damage_value,
+		DamageCommand.SourceMechanism.GENERAL,
+		context.settle_card.get_owner_id()
+	)
+	command_owner.append_companion_command(damage_cmd)
+
+## 静态清理阶段：将防御区所有牌移到弃牌堆
+static func do_clear(context: Context, game_state: GameState, command_owner: SettleCommand) -> void:
+	if context.is_virtual:
+		context.phase = Context.Phase.DONE
+		return
+	var transfer_cmd := CardTransferCommand.new(
+		game_state.get_player_by_id(context.player_id),
+		context.defensive_area,
+		game_state.get_discard_area(),
+		CardTransferCommand.Context.MoveOutMode.TOP,
+		context.defensive_area.card_count()
+	)
+	command_owner.append_companion_command(transfer_cmd)
+
+## 静态完成：断开所有信号监听
+static func do_done(context: Context, command_owner: SettleCommand) -> void:
+	if context.settle_card and context.settle_card.area_changed.is_connected(command_owner._on_card_area_changed):
+		context.settle_card.area_changed.disconnect(command_owner._on_card_area_changed)
+	if context.oppose_card and context.oppose_card.area_changed.is_connected(command_owner._on_card_area_changed):
+		context.oppose_card.area_changed.disconnect(command_owner._on_card_area_changed)
+
+## 辅助静态方法：将战意授予转换为 MoraleCommand
+static func _apply_combat_will_grants_with_command(
+	grants: Array[RuleSettle.CombatWillGrant],
+	context: Context,
+	command_owner: SettleCommand
+) -> void:
+	var player_deltas: Dictionary = {}
+	for grant in grants:
+		var player: Player = grant.target_player
+		if not player:
+			continue
+		var total_value: int = grant.base_value + grant.extra_value
+		if total_value <= 0:
+			continue
+		if not player_deltas.has(player):
+			player_deltas[player] = {&"attack": 0, &"defense": 0}
+		if grant.is_defense:
+			player_deltas[player][&"defense"] += total_value
+		else:
+			player_deltas[player][&"attack"] += total_value
+
+	var source_id: int = context.settle_card.get_owner_id() if context.settle_card else 0
+	for player: Player in player_deltas:
+		var attack_delta: int = player_deltas[player][&"attack"]
+		var defense_delta: int = player_deltas[player][&"defense"]
+		if attack_delta == 0 and defense_delta == 0:
+			continue
+		var morale_cmd := MoraleCommand.new(player, attack_delta, defense_delta, source_id, &"SettleCommand")
+		command_owner.append_companion_command(morale_cmd)
+
+## @hook
+func _on_prepare_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	do_prepare(context_overriding as Context, game_state, self)
+
+## @hook
+func _on_attack_judge_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	do_attack_judge(context_overriding as Context, game_state, self)
+
+## @hook
+func _on_damage_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	do_damage(context_overriding as Context, game_state, self)
+## 纯修饰位点。设计如此。
+## @hook
+func _on_effect_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	pass
+
+## @hook
+func _on_clear_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	do_clear(context_overriding as Context, game_state, self)
+
+## @hook
+func _on_done_phase(_game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	do_done(context_overriding as Context, self)
+	complete()
+
+## @signal_listener
 func _on_opponent_duel_completed(result: int, diff: int) -> void:
 	var ctx := _context as Context
 	if not ctx:
 		return
 	ctx.duel_result = result
 	ctx.duel_diff = diff
+	# 仅当 attacker 不是守区玩家且非单边时进行衰减计算
 	if ctx.attacker == ctx.defensive_area.player or ctx.is_unilateral:
 		return
 	var settle_card := ctx.settle_card
@@ -149,81 +288,7 @@ func _on_opponent_duel_completed(result: int, diff: int) -> void:
 		mental_mode
 	)
 
-func _on_damage_phase(game_state: GameState, ctx: Context) -> void:
-	if not ctx.settle_card or not ctx.settle_result:
-		ctx.phase = Context.Phase.DONE
-		return
-	var rules: Dictionary = RuleSettle._get_merged_rules(ctx.settle_card, {})
-	var mask: int = rules.get(RuleSettle.Validator.COMBAT_WILL_MODE, 0)
-	var grants: Array[RuleSettle.CombatWillGrant] = RuleSettle.generate_combat_will_grants(
-		ctx.settle_card,
-		ctx.oppose_card,
-		ctx.duel_result,
-		ctx.duel_diff,
-		ctx.is_unilateral,
-		mask,
-		ctx.attacker,
-		ctx.defensive_area.player
-	)
-	# 不再直接应用，而是收集后创建 MoraleCommand
-	_apply_combat_will_grants_with_command(grants)
-	if not ctx.settle_result.target:
-		ctx.phase = Context.Phase.EFFECT
-		return
-	var damage_cmd := DamageCommand.new(
-		ctx.settle_result.target,
-		ctx.settle_result.health_damage_value,
-		ctx.settle_result.mental_damage_value,
-		DamageCommand.SourceMechanism.GENERAL,
-		ctx.settle_card.get_owner_id()
-	)
-	append_companion_command(damage_cmd)
-	ctx.phase = Context.Phase.EFFECT
-
-## 将战意授予列表转换为每个玩家的战意命令
-func _apply_combat_will_grants_with_command(grants: Array[RuleSettle.CombatWillGrant]) -> void:
-	var player_deltas: Dictionary = {}
-	for grant in grants:
-		var player: Player = grant.target_player
-		if not player:
-			continue
-		var total_value: int = grant.base_value + grant.extra_value
-		if total_value <= 0:
-			continue
-		if not player_deltas.has(player):
-			player_deltas[player] = {&"attack": 0, &"defense": 0}
-		if grant.is_defense:
-			player_deltas[player][&"defense"] += total_value
-		else:
-			player_deltas[player][&"attack"] += total_value
-	for player: Player in player_deltas:
-		var attack_delta: int = player_deltas[player][&"attack"]
-		var defense_delta: int = player_deltas[player][&"defense"]
-		if attack_delta == 0 and defense_delta == 0:
-			continue
-		var source_id: int = 0
-		if _context.settle_card:
-			source_id = _context.settle_card.get_owner_id()
-		var morale_cmd := MoraleCommand.new(player, attack_delta, defense_delta, source_id, &"SettleCommand")
-		append_companion_command(morale_cmd)
-
-func _on_effect_phase(game_state: GameState, ctx: Context) -> void:
-	ctx.phase = Context.Phase.CLEAR
-
-func _on_clear_phase(game_state: GameState, ctx: Context) -> void:
-	var transfer_cmd := CardTransferCommand.new(game_state.get_player_by_id(ctx.player_id),
-		ctx.defensive_area,
-		game_state.get_discard_area(),
-		CardTransferCommand.Context.MoveOutMode.TOP,
-		ctx.defensive_area.card_count()
-	)
-	append_companion_command(transfer_cmd)
-	ctx.phase = Context.Phase.DONE
-
-func _on_done_phase(_game_state: GameState, ctx: Context) -> void:
-	_disconnect_card_listeners(ctx)
-	complete()
-
+## @signal_listener
 func _on_card_area_changed(card: Card) -> void:
 	var ctx := _context as Context
 	if not ctx:
@@ -234,9 +299,3 @@ func _on_card_area_changed(card: Card) -> void:
 	elif card == ctx.oppose_card:
 		ctx.oppose_card = null
 		card.area_changed.disconnect(_on_card_area_changed)
-
-func _disconnect_card_listeners(ctx: Context) -> void:
-	if ctx.settle_card and ctx.settle_card.area_changed.is_connected(_on_card_area_changed):
-		ctx.settle_card.area_changed.disconnect(_on_card_area_changed)
-	if ctx.oppose_card and ctx.oppose_card.area_changed.is_connected(_on_card_area_changed):
-		ctx.oppose_card.area_changed.disconnect(_on_card_area_changed)

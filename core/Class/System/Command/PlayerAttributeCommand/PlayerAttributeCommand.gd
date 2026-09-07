@@ -3,6 +3,7 @@
 extends BehaviorCommand
 class_name PlayerAttributeCommand
 
+## @context
 class Context extends CommandContext:
 	enum Phase {
 		INIT,
@@ -16,16 +17,20 @@ class Context extends CommandContext:
 			return [target_player]
 		return []
 
-	func set_target_player(player: Player) -> void:
+	func set_target_player(player: Player) -> Context:
 		target_player = player
+		return self
 
+## @seam_override
 func _init(player: Player, name_overriding: StringName = &"PlayerAttribute", context_overriding: Context = Context.new()) -> void:
 	if not player:
+		_context.phase = Context.Phase.DONE
 		complete()
 		return
 	context_overriding.set_target_player(player)
 	super._init(player.get_id(), name_overriding, context_overriding)
 
+## @template
 func execute(game_state: GameState) -> void:
 	var ctx: Context = _context
 	match ctx.phase:
@@ -38,19 +43,20 @@ func execute(game_state: GameState) -> void:
 		Context.Phase.DONE:
 			_on_done_phase(game_state, ctx)
 
-## 初始化阶段：默认切换到 APPLY，子类可重写并自行设置下一阶段
-func _on_init_phase(game_state: GameState, ctx: Context) -> void:
+## @hook
+func _on_init_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
 	pass
 
-## 应用阶段：子类必须重写，并最终设置 ctx.phase = Context.Phase.DONE
-func _on_apply_phase(game_state: GameState, ctx: Context) -> void:
+## @hook
+## 子类必须重写此方法，并在完成时设置 context_overriding.phase = Context.Phase.DONE
+func _on_apply_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
 	push_error("子类必须实现 _on_apply_phase()")
-	ctx.phase = Context.Phase.DONE
+	context_overriding.phase = Context.Phase.DONE
 
-## 完成阶段：发送更新并结束
-func _on_done_phase(game_state: GameState, ctx: Context) -> void:
-	if ctx.target_player:
-		_send_update(game_state, ctx)
+## @hook
+func _on_done_phase(game_state: GameState, context_overriding: Context = _context as Context) -> void:
+	if not context_overriding.is_virtual and context_overriding.target_player:
+		_send_update(game_state, context_overriding)
 	complete()
 
 func get_update_event_type() -> RenderRequest.ItemSet.EventType:

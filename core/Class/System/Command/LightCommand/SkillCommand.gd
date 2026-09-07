@@ -1,11 +1,22 @@
-class_name SkillCommand
 extends BehaviorCommand
+class_name SkillCommand
 
+## @context
 class Context extends CommandContext:
 	enum Phase { INIT, SKILL, DONE }
 	var skill_card: Card
 	var target_area: Area
 	var target_players: Array[Player] = []
+
+	func set_skill_card(card: Card) -> Context:
+		skill_card = card
+		return self
+	func set_target_area(area: Area) -> Context:
+		target_area = area
+		return self
+	func set_target_players(players: Array[Player]) -> Context:
+		target_players = players
+		return self
 
 	func get_primary_modifier_cards() -> Array[Card]:
 		if skill_card:
@@ -21,6 +32,7 @@ class Context extends CommandContext:
 				players.append(p)
 		return players
 
+## @seam_override
 func _init(
 	card: Card,
 	target_area: Area,
@@ -28,26 +40,30 @@ func _init(
 	name_overriding: StringName = &"Skill",
 	context_overriding: Context = Context.new()
 ) -> void:
-	context_overriding.skill_card = card
-	context_overriding.target_area = target_area
-	context_overriding.target_players = target_players
+	context_overriding.set_skill_card(card).set_target_area(target_area).set_target_players(target_players)
 	super._init(card.get_owner_id(), name_overriding, context_overriding)
 
+## @template
 func execute(game_state: GameState) -> void:
-	var ctx = _context as Context
+	var ctx: Context = _context
 	match ctx.phase:
 		Context.Phase.INIT:
+			ctx.phase = Context.Phase.SKILL
 			_on_init_phase(game_state, ctx)
 		Context.Phase.SKILL:
+			ctx.phase = Context.Phase.DONE
 			_on_skill_phase(game_state, ctx)
 		Context.Phase.DONE:
 			_on_done_phase(game_state, ctx)
-
-func _on_init_phase(_game_state: GameState, ctx: Context) -> void:
-	ctx.phase = Context.Phase.SKILL
-
-func _on_skill_phase(_game_state: GameState, ctx: Context) -> void:
-	ctx.phase = Context.Phase.DONE
-
-func _on_done_phase(_game_state: GameState, _ctx: Context) -> void:
+## 技能命令本身不产生任何逻辑，仅作为修饰占位。设计如此。
+## @hook
+func _on_init_phase(_game_state: GameState, _context: Context) -> void:
+	pass
+## 技能命令本身不产生任何逻辑，仅作为修饰占位。设计如此。
+## @hook
+func _on_skill_phase(_game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+	# 无操作
+	pass
+## @hook
+func _on_done_phase(_game_state: GameState, _context: CommandContext = _context as Context) -> void:
 	complete()
