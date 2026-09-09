@@ -1,6 +1,6 @@
 ## 出牌规则类
 @abstract
-extends Object
+extends Rule
 class_name RuleCardPlay
 
 ## 规则检查结果
@@ -15,12 +15,13 @@ class RuleResult:
 		message = p_message
 
 ## 验证器名称常量
-class Validator:
-	const TARGET_PERMISSION := &"target_permission"      # 目标许可验证器
-	const DISTANCE_PERMISSION := &"distance_permission"  # 距离许可验证器
-	const PLAY_AREA_MODE := &"play_area_mode"            # 出牌区域模式验证器
-	const CONSUME_MODE := &"consume_mode"                # 消耗模式验证器
-	const TARGET_SEATED := &"target_seated"              # 目标必须在座验证器
+## @deep_inherit
+@abstract class Validator:
+	const TARGET_PERMISSION := &"target_permission"
+	const DISTANCE_PERMISSION := &"distance_permission"
+	const PLAY_AREA_MODE := &"play_area_mode"
+	const CONSUME_MODE := &"consume_mode"
+	const TARGET_SEATED := &"target_seated"
 
 ## 目标许可掩码枚举
 enum TargetPermissionFlags {
@@ -36,13 +37,22 @@ enum PlayAreaMode {
 
 ## 消耗模式枚举
 enum ConsumeMode {
-	CONSUME_CHECK,   # 消耗且检查（默认）
-	NO_COST,         # 无消耗
-	CONSUME_NO_CHECK # 消耗但不检查
+	CONSUME_CHECK,
+	NO_COST,
+	CONSUME_NO_CHECK
 }
 
-## 卡牌类型预设规则（键为卡牌类型 StringName）
-static var _card_rules: Dictionary = {
+## 允许合并的验证器键列表
+static var _allowed_validator_keys: Array[StringName] = [
+	Validator.TARGET_PERMISSION,
+	Validator.DISTANCE_PERMISSION,
+	Validator.PLAY_AREA_MODE,
+	Validator.CONSUME_MODE,
+	Validator.TARGET_SEATED,
+]
+
+## 卡牌类型预设规则
+static var _card_rules: Dictionary[StringName, Dictionary] = {
 	GlobalConstants.DefaultCard.ATTACK: {
 		&"target_permission": TargetPermissionFlags.OTHER,
 		&"distance_check": true,
@@ -67,13 +77,12 @@ static var _card_rules: Dictionary = {
 }
 
 ## 主要入口：检查并创建出牌命令
-## @param override_rules 卡牌内置覆盖规则字典，键为验证器名（如 Validator.TARGET_PERMISSION），值为对应规则值
 static func check_and_create_command(
 	card: Card,
 	source_player: Player,
 	target_player: Player,
 	game_state: GameState,
-	override_rules: Dictionary = {}
+	override_rules: Dictionary[StringName, Variant] = {}
 ) -> RuleResult:
 	if not card:
 		return RuleResult.new(false, null, "卡牌实例为空")
@@ -83,15 +92,17 @@ static func check_and_create_command(
 	if not hand_area or not hand_area.get_card_by_id(card.id):
 		return RuleResult.new(false, null, "玩家不拥有该卡牌")
 	var card_type: StringName = card.type
-	var base_rule_config = _card_rules.get(card_type)
+	var base_rule_config: Dictionary[StringName, Variant]
+	base_rule_config.assign(_card_rules.get(card_type))
 	if not base_rule_config:
 		return RuleResult.new(false, null, "不支持的卡牌类型: %s" % card_type)
-	var card_overrides: Dictionary = card.get_rule_overrides()
-	# 合并卡牌覆盖与参数覆盖，卡牌优先级最高
-	var merged_overrides = card_overrides.duplicate()
-	for key in override_rules:
-		merged_overrides[key] = override_rules[key]
-	var rule_config: Dictionary = _merge_rule_config(base_rule_config, merged_overrides)
+	var card_overrides: Dictionary[StringName, Variant] = card.get_rule_overrides()
+	var rule_config := Rule.merge_rules(
+		base_rule_config,
+		card_overrides,
+		override_rules,
+		_allowed_validator_keys
+	)
 	# 验证目标许可
 	var target_result: RuleResult = _validate_target_permission(
 		rule_config[Validator.TARGET_PERMISSION],
@@ -101,17 +112,14 @@ static func check_and_create_command(
 	)
 	if not target_result.is_valid:
 		return target_result
-	# 验证目标必须在座位（如果存在目标玩家且卡牌要求目标在座）
 	if target_player != null and rule_config.get(Validator.TARGET_SEATED, true):
 		var seat_idx: int = game_state.player_manager.get_seat_index_by_player_id(target_player.get_id())
 		if seat_idx == -1:
 			return RuleResult.new(false, null, "目标玩家已不在座位上，无法对其使用卡牌")
-	# 距离验证
 	if rule_config.get(&"distance_check", false):
 		var distance_result: RuleResult = _validate_distance(card, source_player, target_player, game_state)
 		if not distance_result.is_valid:
 			return distance_result
-	# 消耗验证
 	var consume_mode: int = rule_config.get(Validator.CONSUME_MODE, ConsumeMode.CONSUME_CHECK)
 	if consume_mode == ConsumeMode.CONSUME_CHECK:
 		var total_cost: int = _calculate_total_cost(card, source_player)
@@ -121,24 +129,8 @@ static func check_and_create_command(
 	var command: BehaviorCommand = _build_command(source_player, card, target_player, rule_config[Validator.PLAY_AREA_MODE], ap_source)
 	return RuleResult.new(true, command, "卡牌使用检查通过")
 
-## 计算单张卡牌的总消耗
 static func _calculate_total_cost(card: Card, _source_player: Player) -> int:
 	return card.get_attribute(&"cost")
-
-## 合并基础规则与覆盖规则（仅处理已知验证器）
-static func _merge_rule_config(base: Dictionary, overrides: Dictionary) -> Dictionary:
-	var has_override := false
-	for key in overrides:
-		if key in [Validator.TARGET_PERMISSION, Validator.DISTANCE_PERMISSION, Validator.PLAY_AREA_MODE, Validator.CONSUME_MODE, Validator.TARGET_SEATED]:
-			has_override = true
-			break
-	if not has_override:
-		return base
-	var merged: Dictionary = base.duplicate()
-	for key in overrides:
-		if key in [Validator.TARGET_PERMISSION, Validator.DISTANCE_PERMISSION, Validator.PLAY_AREA_MODE, Validator.CONSUME_MODE, Validator.TARGET_SEATED]:
-			merged[key] = overrides[key]
-	return merged
 
 ## 验证目标许可
 static func _validate_target_permission(
@@ -151,7 +143,7 @@ static func _validate_target_permission(
 		return RuleResult.new(true)
 	if area_mode != PlayAreaMode.CENTER and target == null:
 		return RuleResult.new(false, null, "此卡牌需要指定一个目标玩家")
-	var is_self :bool= (target.get_id() == source.get_id())
+	var is_self: bool = (target.get_id() == source.get_id())
 	if is_self:
 		if not (permission_mask & TargetPermissionFlags.SELF):
 			return RuleResult.new(false, null, "此卡牌不能对自己使用")

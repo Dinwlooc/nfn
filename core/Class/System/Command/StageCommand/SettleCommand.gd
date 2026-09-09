@@ -157,9 +157,8 @@ static func do_damage(context: Context, game_state: GameState, command_owner: Se
 	if not context.settle_card or not context.settle_result:
 		context.phase = Context.Phase.DONE
 		return
-
 	# 处理战意
-	var rules: Dictionary = RuleSettle._get_merged_rules(context.settle_card, {})
+	var rules: Dictionary[StringName,Variant] = RuleSettle._get_merged_rules(context.settle_card, {})
 	var mask: int = rules.get(RuleSettle.Validator.COMBAT_WILL_MODE, 0)
 	var grants: Array[RuleSettle.CombatWillGrant] = RuleSettle.generate_combat_will_grants(
 		context.settle_card,
@@ -212,7 +211,7 @@ static func _apply_combat_will_grants_with_command(
 	context: Context,
 	command_owner: SettleCommand
 ) -> void:
-	var player_deltas: Dictionary = {}
+	var source_id: int = context.settle_card.get_owner_id() if context.settle_card else 0
 	for grant in grants:
 		var player: Player = grant.target_player
 		if not player:
@@ -220,20 +219,16 @@ static func _apply_combat_will_grants_with_command(
 		var total_value: int = grant.base_value + grant.extra_value
 		if total_value <= 0:
 			continue
-		if not player_deltas.has(player):
-			player_deltas[player] = {&"attack": 0, &"defense": 0}
-		if grant.is_defense:
-			player_deltas[player][&"defense"] += total_value
-		else:
-			player_deltas[player][&"attack"] += total_value
-
-	var source_id: int = context.settle_card.get_owner_id() if context.settle_card else 0
-	for player: Player in player_deltas:
-		var attack_delta: int = player_deltas[player][&"attack"]
-		var defense_delta: int = player_deltas[player][&"defense"]
-		if attack_delta == 0 and defense_delta == 0:
-			continue
-		var morale_cmd := MoraleCommand.new(player, attack_delta, defense_delta, source_id, &"SettleCommand")
+		# 根据攻防类型决定增量赋值
+		var attack_delta: int = total_value if not grant.is_defense else 0
+		var defense_delta: int = total_value if grant.is_defense else 0
+		var morale_cmd := MoraleCommand.new(
+			player,
+			attack_delta,
+			defense_delta,
+			source_id,
+			&"SettleCommand"
+		)
 		command_owner.append_companion_command(morale_cmd)
 
 ## @hook

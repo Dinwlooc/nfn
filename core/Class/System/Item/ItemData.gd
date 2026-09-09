@@ -7,7 +7,7 @@ class_name ItemData
 ## 预置修饰器脚本列表
 @export var modifiers: Array[Modifier] = []
 ## 规则覆盖字典
-@export var rule_overrides: Dictionary = {}
+@export var rule_overrides: Dictionary[StringName,Variant] = {}
 ## 指定对应的 ItemPack 子类
 @export var pack_class: Script
 ## 编辑器重置按钮：勾选后立即重置 attribute_defaults 为默认配置

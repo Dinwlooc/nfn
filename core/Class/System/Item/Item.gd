@@ -8,7 +8,7 @@ var data: ItemData
 var attributeModifiers: AttributeModifiers = AttributeModifiers.new()
 var command_modifiers: CommandModifiers
 var buff_modifiers: BuffModifiers
-var rule_overrides: Dictionary
+var rule_overrides: Dictionary[StringName,Variant] = {}
 ## 构造函数，接收一个 ItemData 蓝图
 func _init(item_data: ItemData,is_virtual:bool = false) -> void:
 	data = item_data
@@ -55,10 +55,10 @@ func remove_modifier(modifier_script: Modifier) -> void:
 func get_attribute(attribute: StringName) -> int:
 	return attributeModifiers.get_final_value(attribute)
 ## 获取规则覆盖字典
-func get_rule_overrides() -> Dictionary:
+func get_rule_overrides() -> Dictionary[StringName,Variant]:
 	return rule_overrides
 ## 设置规则覆盖字典（运行时临时覆盖）
-func set_rule_overrides(overrides: Dictionary) -> void:
+func set_rule_overrides(overrides: Dictionary[StringName,Variant]) -> void:
 	rule_overrides = overrides
 ## 返回所有者类型字符串。
 ## @force_override

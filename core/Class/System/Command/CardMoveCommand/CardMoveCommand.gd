@@ -1,7 +1,7 @@
 ## 卡牌移动命令基类
 extends BehaviorCommand
 class_name CardMoveCommand
-
+## @context @deep_inherit
 class Context extends CommandContext:
 	enum Phase { INIT, MOVE_OUT, MOVE_IN, DONE }
 	enum MoveOutMode { TOP, INDICES, BY_ID }

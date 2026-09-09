@@ -12,6 +12,10 @@ signal command_completed()
 
 @abstract func execute(game_state: GameState) -> void
 
+# ## 子类需要定义该内部类。
+# ## @context @deep_inherit
+# class Context
+
 func _init(init_player_id: int = 1 ,name_overriding:StringName = &"" ,context_overriding:CommandContext = CommandContext.NULL_CONTEXT):
 	_context = context_overriding
 	_context.command_name = name_overriding

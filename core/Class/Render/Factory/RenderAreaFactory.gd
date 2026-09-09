@@ -1,4 +1,5 @@
-extends RefCounted
+@abstract
+extends Object
 class_name RenderAreaFactory
 
 static var area_classes: Array[Script] = [RenderAreaHand,RenderAreaDefence]

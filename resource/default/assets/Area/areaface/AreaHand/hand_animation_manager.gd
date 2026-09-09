@@ -33,7 +33,7 @@ func _generate_sine_table() -> void:
 	_sine_table = MathUtils.generate_sine_table(TABLE_SIZE)
 
 ## 卡牌浮动扩展效果（基于正弦表）
-func card_move_expand(cards: Array) -> void:
+func card_move_expand(cards: Array[RenderItem]) -> void:
 	_global_phase_index = (_global_phase_index + PHASE_INCREMENT) % TABLE_SIZE
 	var card_count: int = cards.size()
 	for i in card_count:
@@ -44,7 +44,7 @@ func card_move_expand(cards: Array) -> void:
 		card.position.y += AMPLITUDE * _sine_table[phase_index]
 
 ## 核心动画调度函数（传入已创建的 master_tween）
-func card_move(master_tween: Tween, cards: Array, target_position: Array, total_scale_factor: float, render_event: RenderEvent) -> void:
+func card_move(master_tween: Tween, cards: Array[RenderItem], target_position: PackedVector2Array, total_scale_factor: float, render_event: RenderEvent) -> void:
 	if cards.is_empty() or target_position.is_empty():
 		return
 	master_tween.set_parallel(true)
@@ -76,7 +76,7 @@ func dragging_move(drag_tween: Tween, card: RenderItem, mouse_pos: Vector2, tota
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 ## 为所有非拖拽卡牌添加基础位置移动动画（含总数缩放动画）
-func _add_base_movement_tweens(master_tween: Tween, cards: Array, target_position: Array, total_scale_factor: float) -> void:
+func _add_base_movement_tweens(master_tween: Tween, cards: Array[RenderItem], target_position: PackedVector2Array, total_scale_factor: float) -> void:
 	for i in cards.size():
 		var card: RenderItem = cards[i]
 		if card.dragged:
@@ -93,7 +93,7 @@ func _add_base_movement_tweens(master_tween: Tween, cards: Array, target_positio
 				.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_OUT)
 
 ## 为交换事件添加旋转和缩放特效动画（scale.x 叠加总数因子）
-func _add_swap_effect_tweens(master_tween: Tween, cards: Array, target_position: Array, total_scale_factor: float) -> void:
+func _add_swap_effect_tweens(master_tween: Tween, cards: Array[RenderItem], target_position: PackedVector2Array, total_scale_factor: float) -> void:
 	for i in cards.size():
 		var card: RenderItem = cards[i]
 		if card.dragged:
@@ -108,7 +108,7 @@ func _add_swap_effect_tweens(master_tween: Tween, cards: Array, target_position:
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 
 ## 恢复所有卡牌的默认旋转和缩放（恢复到总数因子）
-func _add_reset_tweens(master_tween: Tween, cards: Array, total_scale_factor: float) -> void:
+func _add_reset_tweens(master_tween: Tween, cards: Array[RenderItem], total_scale_factor: float) -> void:
 	for card in cards:
 		if card.dragged:
 			continue

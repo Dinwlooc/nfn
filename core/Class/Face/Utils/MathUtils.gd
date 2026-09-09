@@ -1,4 +1,5 @@
-extends RefCounted
+@abstract
+extends Object
 class_name MathUtils
 
 static func generate_sine_table(table_size: int) -> Array:

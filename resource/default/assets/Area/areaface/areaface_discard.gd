@@ -88,6 +88,7 @@ func _on_item_added(render_item: RenderItem) -> void:
 func _on_animation_finished(render_item: RenderItem) -> void:
 	if not is_instance_valid(render_item):
 		return
+	area.remove_item(render_item)
 	if render_item.get_parent():
 		render_item.get_parent().remove_child(render_item)
 	if _discard_area:

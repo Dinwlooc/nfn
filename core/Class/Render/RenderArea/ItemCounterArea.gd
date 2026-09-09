@@ -41,10 +41,10 @@ func add_item(item: RenderItem, index: int = -1) -> void:
 
 func remove_item(item: RenderItem) -> void:
 	remove_item_count(1)
+	items_removed.emit(item)
 
 func remove_item_count(count: int) -> void:
 	item_count = max(0, item_count - count)
-	items_removed.emit(null)
 
 func add_item_count(count: int) -> void:
 	item_count += count
