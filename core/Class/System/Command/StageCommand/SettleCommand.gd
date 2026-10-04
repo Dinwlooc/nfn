@@ -171,7 +171,6 @@ static func do_damage(context: Context, game_state: GameState, command_owner: Se
 		context.defensive_area.player
 	)
 	_apply_combat_will_grants_with_command(grants, context, command_owner)
-
 	# 处理伤害
 	if not context.settle_result.target:
 		return
@@ -200,9 +199,9 @@ static func do_clear(context: Context, game_state: GameState, command_owner: Set
 
 ## 静态完成：断开所有信号监听
 static func do_done(context: Context, command_owner: SettleCommand) -> void:
-	if context.settle_card and context.settle_card.area_changed.is_connected(command_owner._on_card_area_changed):
+	if context.settle_card:
 		context.settle_card.area_changed.disconnect(command_owner._on_card_area_changed)
-	if context.oppose_card and context.oppose_card.area_changed.is_connected(command_owner._on_card_area_changed):
+	if context.oppose_card:
 		context.oppose_card.area_changed.disconnect(command_owner._on_card_area_changed)
 
 ## 辅助静态方法：将战意授予转换为 MoraleCommand

@@ -1,37 +1,71 @@
+## 主阶段：当前玩家出牌与响应。
 extends Stage
 class_name StageMain
 
+#== Constants ==
 const ENTER_TIME_LIMIT: float = 60.0
 const RESUME_TIME_LIMIT: float = 30.0
 
+#== Properties ==
 var _current_attacker_id: int = 0
 var _current_attacker: Player = null
 var last_timer_reset_time: int = 0
+var _has_entered_refresh: bool = false
 
+#== Constructor ==
 func _init() -> void:
 	super._init()
 	stage_name = &"Main"
 	time_limit = ENTER_TIME_LIMIT
 
+#== Static Methods ==
+## 获取当前阶段玩家
+## @nullable_pure
+static func get_current_attacker(game_state: GameState) -> Player:
+	return game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
+## 创建仅包含指定玩家的响应玩家数组
+## @pure
+static func create_responsive_players(player_id: int) -> PackedInt32Array:
+	return PackedInt32Array([player_id])
+## 获取目标玩家的守区
+## @nullable_pure
+static func get_target_defense(game_state: GameState, target_player: Player, target_id: int) -> AreaDefence:
+	return game_state.get_defense_area(target_id) if target_player else null
+## 检查主阶段卡牌使用限制
+## @pure
+static func check_main_stage_restrictions(
+	card: Card,
+	source_player: Player,
+	target_defense: AreaDefence,
+	game_state: GameState
+) -> RuleCardUsage.UsageResult:
+	return RuleCardUsage.can_use_card_in_main(card, source_player, target_defense, game_state)
+
+#== Public Methods ==
+## 进入阶段
+## @override @hook @stack_local @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
-	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
+	_current_attacker = get_current_attacker(game_state)
 	_current_attacker_id = _current_attacker.get_id()
-	command_bus.set_responsive_players(PackedInt32Array([_current_attacker_id]))
-	_reset_timer_for_current_player(ENTER_TIME_LIMIT)
+	command_bus.set_responsive_players(create_responsive_players(_current_attacker_id))
+	_has_entered_refresh = false
 	super.enter(game_state, command_bus)
-
+## 恢复阶段
+## @override @hook @stack_local @side_effect
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
-	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
+	_current_attacker = get_current_attacker(game_state)
 	_current_attacker_id = _current_attacker.get_id()
-	command_bus.set_responsive_players(PackedInt32Array([_current_attacker_id]))
-	_reset_timer_for_current_player(ENTER_TIME_LIMIT / 2)
+	command_bus.set_responsive_players(create_responsive_players(_current_attacker_id))
+	_reset_timer_for_current_player(RESUME_TIME_LIMIT)
 	super.resume(game_state, command_bus)
-
+## 阶段结束时的清理效果
+## @override @hook @stack_local
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = null
 	command_bus.set_responsive_players(PackedInt32Array())
 	super.end_stage_effect(game_state, command_bus)
-
+## 处理玩家操作请求
+## @override @hook @stack_local @side_effect
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
@@ -45,7 +79,23 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 		_:
 			request.cancel()
 			GlobalConsole._print(["主阶段：不支持的操作类型", request.get_class_name_static()])
+## 刷新响应权：轮转命令结束后由触发器调用，统一管理计时
+## @override @hook @stack_local @side_effect
+func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
+	if is_ended or is_paused:
+		return
+	command_bus.set_responsive_players(create_responsive_players(_current_attacker_id))
+	if not _has_entered_refresh:
+		_has_entered_refresh = true
+		_reset_timer_for_current_player(ENTER_TIME_LIMIT)
+		GlobalConsole._print(["主阶段：首次刷新响应权，计时", ENTER_TIME_LIMIT])
+		return
+	_reset_timer_for_current_player(RESUME_TIME_LIMIT)
+	GlobalConsole._print(["主阶段：所有命令完成，已刷新响应权为玩家", _current_attacker_id])
 
+#== Private Methods ==
+## 处理出牌请求
+## @side_effect
 func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState, command_bus: CommandBus) -> void:
 	if request.source_player_id != _current_attacker_id:
 		GlobalConsole._print(["主阶段：非当前玩家操作，忽略"])
@@ -58,13 +108,13 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["主阶段：卡牌或玩家实例获取失败"])
 		request.cancel()
 		return
-	var rule_result = RuleCardPlay.check_and_create_command(card, source_player, target_player, game_state)
+	var rule_result: RuleCardPlay.RuleResult = RuleCardPlay.check_and_create_command(card, source_player, target_player, game_state)
 	if not rule_result.is_valid:
 		GlobalConsole._print(["主阶段：", rule_result.message])
 		request.cancel()
 		return
-	var target_defense: AreaDefence = game_state.get_defense_area(request._target_id) if target_player else null
-	var usage_result = _check_main_stage_restrictions(card, source_player, target_player, target_defense, game_state)
+	var target_defense: AreaDefence = get_target_defense(game_state, target_player, request._target_id)
+	var usage_result: RuleCardUsage.UsageResult = check_main_stage_restrictions(card, source_player, target_defense, game_state)
 	if not usage_result.is_valid:
 		GlobalConsole._print(["主阶段：", usage_result.message])
 		request.cancel()
@@ -72,18 +122,8 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 	command_bus.queue_behavior(rule_result.command)
 	GlobalConsole._print(["主阶段：卡牌使用成功"])
 	request.complete()
-
-func _check_main_stage_restrictions(card: Card, source_player: Player, target_player: Player, target_defense: AreaDefence, game_state: GameState) -> RuleCardUsage.UsageResult:
-	return RuleCardUsage.can_use_card_in_main(card, source_player, target_defense, game_state)
-
-func _reset_timer_for_current_player(new_time_limit: int) -> void:
+## 请求重置计时器并记录时间
+## @side_effect @requester
+func _reset_timer_for_current_player(new_time_limit: float) -> void:
 	request_reset_timer.emit(new_time_limit)
 	last_timer_reset_time = Time.get_ticks_msec()
-
-## 由触发器在命令完成后调用，刷新响应权
-func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
-	if is_ended or is_paused:
-		return
-	command_bus.set_responsive_players(PackedInt32Array([_current_attacker_id]))
-	_reset_timer_for_current_player(ENTER_TIME_LIMIT / 2)
-	GlobalConsole._print(["主阶段：所有命令完成，已刷新响应权为玩家", _current_attacker_id])

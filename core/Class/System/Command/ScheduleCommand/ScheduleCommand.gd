@@ -4,9 +4,7 @@ extends BehaviorCommand
 class_name ScheduleCommand
 
 var _command_bus: CommandBus
-
 @abstract func execute(game_state: GameState) -> void
-
 ## 构造函数：第一个参数为 command_bus
 func _init(
 	command_bus: CommandBus,
