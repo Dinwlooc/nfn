@@ -62,7 +62,7 @@ static func build_ap_companion(context: Context) -> ActionPointCommand:
 		&"play_card"
 	)
 
-## @seam_override
+## @internal @seam_override
 func _init(
 	player: Player,
 	card_ids: PackedInt32Array,
@@ -79,7 +79,7 @@ func _init(
 	_context.set_ap_source_player(ap_source_player)
 	_context.set_event_type(RenderRequest.ItemSet.EventType.TRANSFER)
 ## 伴生行动点消耗命令，但不依赖于它。
-## @hook
+## @hook @operation(fail,init,build_ap_companion) @delegates(append_companion_command)
 func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
 	if context_overriding is not Context:
 		BehaviorCommand.fail(context_overriding, "上下文类型错误")

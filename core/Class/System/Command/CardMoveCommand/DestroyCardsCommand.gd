@@ -30,7 +30,7 @@ static func init(context: Context, game_state: GameState) -> void:
 	context.target_area = discard_area
 	context.set_id_mode(PackedInt32Array([context.target_card_id]))
 
-## @seam_override
+## @internal @seam_override
 func _init(
 	target_defense_area: AreaDefence,
 	target_card_id: int,
@@ -45,6 +45,6 @@ func _init(
 	_context.set_source_card(source_card)
 	_context.set_event_type(RenderRequest.ItemSet.EventType.DEATH)
 
-## @hook
+## @hook @delegates(init)
 func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
 	DestroyCardsCommand.init(context_overriding, game_state)

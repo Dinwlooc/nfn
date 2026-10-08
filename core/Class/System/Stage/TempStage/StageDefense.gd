@@ -8,6 +8,13 @@ const MIN_TIME_LIMIT: float = 5.0
 const TIME_PENALTY_STEP: float = 10.0
 const TIME_PENALTY_DECREMENT: float = 5.0
 
+#== Nested Classes ==
+## 时间记录（累计用时与动态时间限制）
+## @context
+class TimeRecords:
+	var total_time_used: Dictionary[int, float] = {}
+	var dynamic_time_limit: Dictionary[int, float] = {}
+
 #== Properties ==
 ## 守区区域
 var defense_area: AreaDefence
@@ -42,17 +49,7 @@ func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	stage_name = &"DefenseBattle"
 	time_limit = DEFAULT_TIME_LIMIT
 
-#== Static Methods ==
-## 根据攻防与顶牌玩家计算响应玩家 ID
-## @pure
-static func get_responsive_player_id(attacker_id: int, defender_id: int, top_card: Card, defender: Player) -> int:
-	if not top_card:
-		return attacker_id
-	return attacker_id if top_card.player == defender else defender_id
-## 创建仅包含指定玩家的响应玩家数组
-## @pure
-static func create_responsive_players(player_id: int) -> PackedInt32Array:
-	return PackedInt32Array([player_id])
+#== 计时能力 ==
 ## 计算自上次重置以来的耗时（秒）
 ## @pure
 static func calculate_elapsed_time(now_msec: int, last_reset_time: int) -> float:
@@ -64,42 +61,39 @@ static func calculate_new_time_limit(new_total: float, default_limit: float, ste
 	var steps: int = int(new_total / step)
 	var new_limit: float = default_limit - steps * decrement
 	return max(new_limit, min_limit)
+## 根据玩家 ID 列表构造时间记录
+## @factory
+static func build_time_records(player_ids: Array[int]) -> TimeRecords:
+	var records := TimeRecords.new()
+	for player_id: int in player_ids:
+		records.total_time_used[player_id] = 0.0
+		records.dynamic_time_limit[player_id] = DEFAULT_TIME_LIMIT
+	return records
 ## 更新玩家累计用时与动态时间限制
 ## @atomic
-static func update_total_time_used(
-	total_time_used: Dictionary[int, float],
-	dynamic_time_limit: Dictionary[int, float],
-	player_id: int,
-	elapsed: float
-) -> void:
+func update_total_time_used(player_id: int, elapsed: float) -> void:
 	var new_total: float = total_time_used[player_id] + elapsed
 	total_time_used[player_id] = new_total
 	var new_limit: float = calculate_new_time_limit(new_total, DEFAULT_TIME_LIMIT, TIME_PENALTY_STEP, TIME_PENALTY_DECREMENT, MIN_TIME_LIMIT)
 	dynamic_time_limit[player_id] = new_limit
 	GlobalConsole._print(["玩家", player_id, "总用时", new_total, "s，动态时间限", new_limit, "s"])
-## 检查守区攻防阶段卡牌使用限制
+## 获取自上次重置以来的耗时（秒）
 ## @pure
-static func check_defense_battle_restrictions(
-	card: Card,
-	source_player: Player,
-	target_player: Player,
-	defense_area: AreaDefence,
-	attacker: Player,
-	defender: Player,
-	game_state: GameState
-) -> RuleCardUsage.UsageResult:
-	return RuleCardUsage.can_use_card_in_defense(
-		card,
-		source_player,
-		target_player,
-		defense_area,
-		attacker,
-		defender,
-		game_state
-	)
+func get_elapsed_time_since_last_reset() -> float:
+	return calculate_elapsed_time(Time.get_ticks_msec(), last_timer_reset_time)
+
+#== 响应能力 ==
+## 根据攻防与顶牌玩家计算响应玩家 ID
+## @pure
+static func calculate_responsive_player_id(attacker_id: int, defender_id: int, top_card: Card, defender: Player) -> int:
+	if not top_card:
+		return attacker_id
+	return attacker_id if top_card.player == defender else defender_id
+
+#== 命令能力 ==
 ## 创建斗牌命令，无法形成斗牌时返回 null
 ## @nullable_pure
-static func create_battle_command(defense_area: AreaDefence) -> BattleCommand:
+static func build_battle_command(defense_area: AreaDefence) -> BattleCommand:
 	if not defense_area.check_battle_formation():
 		return null
 	var top_card: Card = defense_area.get_top_card()
@@ -107,21 +101,20 @@ static func create_battle_command(defense_area: AreaDefence) -> BattleCommand:
 	return BattleCommand.new(defense_area, top_card, second_card)
 ## 创建结算命令
 ## @factory
-static func create_settle_command(responsive_player_id: int, defense_area: AreaDefence, attacker: Player) -> SettleCommand:
+static func build_settle_command(responsive_player_id: int, defense_area: AreaDefence, attacker: Player) -> SettleCommand:
 	return SettleCommand.new(responsive_player_id, defense_area, attacker)
 ## 创建放弃响应请求
 ## @factory
-static func create_abandon_response(player_id: int) -> OperationRequest.AbandonResponse:
+static func build_abandon_response(player_id: int) -> OperationRequest.AbandonResponse:
 	return OperationRequest.AbandonResponse.new(player_id)
 
 #== Public Methods ==
 ## 进入阶段（计时由 refresh_response 统一管理）
 ## @override @hook @stack_local @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
-	var player_ids: Array[int] = [attacker.get_id(), defender.get_id()]
-	for p: int in player_ids:
-		total_time_used[p] = 0.0
-		dynamic_time_limit[p] = DEFAULT_TIME_LIMIT
+	var records: TimeRecords = build_time_records([attacker.get_id(), defender.get_id()])
+	total_time_used = records.total_time_used
+	dynamic_time_limit = records.dynamic_time_limit
 	_update_responsive_player(game_state, command_bus)
 	_connect_defense_area_signals(game_state)
 	_generate_and_queue_battle_command(game_state, command_bus, true)
@@ -163,7 +156,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
-	var abandon_request: OperationRequest.AbandonResponse = create_abandon_response(current_responsive_player_id)
+	var abandon_request: OperationRequest.AbandonResponse = build_abandon_response(current_responsive_player_id)
 	process_operation_request(abandon_request, game_state, command_bus)
 ## 刷新响应权：轮转命令结束后统一重设计时器
 ## @override @hook @stack_local @side_effect
@@ -182,10 +175,6 @@ func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	_update_responsive_player(game_state, command_bus)
 	_reset_timer_for_current_player()
 	GlobalConsole._print(["守区攻防阶段：命令全部完成，已更新玩家响应权"])
-## 获取自上次重置以来的耗时（秒）
-## @pure
-func get_elapsed_time_since_last_reset() -> float:
-	return calculate_elapsed_time(Time.get_ticks_msec(), last_timer_reset_time)
 
 #== Private Methods ==
 ## 处理出牌请求
@@ -203,7 +192,7 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["守区攻防阶段：", rule_result.message])
 		request.cancel()
 		return
-	var usage_result: RuleCardUsage.UsageResult = check_defense_battle_restrictions(card, source_player, target_player, defense_area, attacker, defender, game_state)
+	var usage_result: RuleCardUsage.UsageResult = RuleCardUsage.can_use_card_in_defense(card, source_player, target_player, defense_area, attacker, defender, game_state)
 	if not usage_result.is_valid:
 		GlobalConsole._print(["守区攻防阶段：", usage_result.message])
 		request.cancel()
@@ -215,14 +204,14 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		return
 	var elapsed: float = get_elapsed_time_since_last_reset()
 	command_bus.queue_behavior_with_callback(command, func() -> void:
-		update_total_time_used(total_time_used, dynamic_time_limit, current_responsive_player_id, elapsed)
+		update_total_time_used(current_responsive_player_id, elapsed)
 		GlobalConsole._print(["守区攻防阶段：出牌成功，等待所有命令完成后更新响应权"])
 	)
 	request.complete()
 ## 处理结算请求
 ## @side_effect
 func _process_settle_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
-	var settle_cmd: SettleCommand = create_settle_command(current_responsive_player_id, defense_area, attacker)
+	var settle_cmd: SettleCommand = build_settle_command(current_responsive_player_id, defense_area, attacker)
 	command_bus.queue_behavior(settle_cmd)
 	_pending_stage_end = true
 	request.complete()
@@ -230,13 +219,13 @@ func _process_settle_request(request: OperationRequest, game_state: GameState, c
 ## @side_effect
 func _update_responsive_player(game_state: GameState, command_bus: CommandBus) -> void:
 	var top: Card = defense_area.get_top_card()
-	current_responsive_player_id = get_responsive_player_id(attacker.get_id(), defender.get_id(), top, defender)
-	command_bus.set_responsive_players(create_responsive_players(current_responsive_player_id))
+	current_responsive_player_id = calculate_responsive_player_id(attacker.get_id(), defender.get_id(), top, defender)
+	command_bus.set_responsive_players(PackedInt32Array([current_responsive_player_id]))
 	GlobalConsole._print(["守区攻防阶段：更新响应权为玩家", current_responsive_player_id])
 ## 生成并排队斗牌命令
 ## @side_effect
 func _generate_and_queue_battle_command(game_state: GameState, command_bus: CommandBus, save_reference: bool = false) -> BattleCommand:
-	var battle_command: BattleCommand = create_battle_command(defense_area)
+	var battle_command: BattleCommand = build_battle_command(defense_area)
 	if not battle_command:
 		return null
 	command_bus.queue_behavior(battle_command)

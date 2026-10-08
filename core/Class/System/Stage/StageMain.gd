@@ -18,44 +18,27 @@ func _init() -> void:
 	stage_name = &"Main"
 	time_limit = ENTER_TIME_LIMIT
 
-#== Static Methods ==
-## 获取当前阶段玩家
-## @nullable_pure
-static func get_current_attacker(game_state: GameState) -> Player:
-	return game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
+#== 响应能力 ==
 ## 创建仅包含指定玩家的响应玩家数组
 ## @pure
-static func create_responsive_players(player_id: int) -> PackedInt32Array:
+static func build_responsive_players(player_id: int) -> PackedInt32Array:
 	return PackedInt32Array([player_id])
-## 获取目标玩家的守区
-## @nullable_pure
-static func get_target_defense(game_state: GameState, target_player: Player, target_id: int) -> AreaDefence:
-	return game_state.get_defense_area(target_id) if target_player else null
-## 检查主阶段卡牌使用限制
-## @pure
-static func check_main_stage_restrictions(
-	card: Card,
-	source_player: Player,
-	target_defense: AreaDefence,
-	game_state: GameState
-) -> RuleCardUsage.UsageResult:
-	return RuleCardUsage.can_use_card_in_main(card, source_player, target_defense, game_state)
 
 #== Public Methods ==
 ## 进入阶段
 ## @override @hook @stack_local @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
-	_current_attacker = get_current_attacker(game_state)
+	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.get_id()
-	command_bus.set_responsive_players(create_responsive_players(_current_attacker_id))
+	command_bus.set_responsive_players(build_responsive_players(_current_attacker_id))
 	_has_entered_refresh = false
 	super.enter(game_state, command_bus)
 ## 恢复阶段
 ## @override @hook @stack_local @side_effect
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
-	_current_attacker = get_current_attacker(game_state)
+	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.get_id()
-	command_bus.set_responsive_players(create_responsive_players(_current_attacker_id))
+	command_bus.set_responsive_players(build_responsive_players(_current_attacker_id))
 	_reset_timer_for_current_player(RESUME_TIME_LIMIT)
 	super.resume(game_state, command_bus)
 ## 阶段结束时的清理效果
@@ -84,7 +67,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
-	command_bus.set_responsive_players(create_responsive_players(_current_attacker_id))
+	command_bus.set_responsive_players(build_responsive_players(_current_attacker_id))
 	if not _has_entered_refresh:
 		_has_entered_refresh = true
 		_reset_timer_for_current_player(ENTER_TIME_LIMIT)
@@ -113,8 +96,8 @@ func _process_play_card_request(request: OperationRequest.PlayCard, game_state: 
 		GlobalConsole._print(["主阶段：", rule_result.message])
 		request.cancel()
 		return
-	var target_defense: AreaDefence = get_target_defense(game_state, target_player, request._target_id)
-	var usage_result: RuleCardUsage.UsageResult = check_main_stage_restrictions(card, source_player, target_defense, game_state)
+	var target_defense: AreaDefence = game_state.get_defense_area(request._target_id) if target_player else null
+	var usage_result: RuleCardUsage.UsageResult = RuleCardUsage.can_use_card_in_main(card, source_player, target_defense, game_state)
 	if not usage_result.is_valid:
 		GlobalConsole._print(["主阶段：", usage_result.message])
 		request.cancel()

@@ -48,7 +48,7 @@ class Context extends CommandContext:
 		else:
 			push_error("Cannot set custom event name when event_type is not CUSTOM")
 		return self
-
+	## @hook @override
 	func get_primary_modifier_players() -> Array[Player]:
 		var players: Array[Player] = []
 		if source_player:
@@ -58,22 +58,53 @@ class Context extends CommandContext:
 		if target_area and target_area.player and not target_area.player in players:
 			players.append(target_area.player)
 		return players
-
+	## @hook @override
 	func get_primary_modifier_cards() -> Array[Card]:
 		if phase < Phase.MOVE_OUT:
 			return []
 		return moved_cards
-
+	## @override
 	func complete() -> void:
 		phase = Phase.DONE
 		super.complete()
+
+
+## @internal @seam_override
+func _init(player: Player = Player.PUBLIC_PLAYER, name_overriding: StringName = &"Move", context_overriding: Context = Context.new()) -> void:
+	super._init(player.get_id(), name_overriding, context_overriding)
+	_context.set_source_player(player)
+## @facade @template
+func execute(game_state: GameState) -> void:
+	match _context.phase:
+		Context.Phase.INIT:
+			_context.phase = Context.Phase.MOVE_OUT
+			_on_init_phase(game_state)
+		Context.Phase.MOVE_OUT:
+			_context.phase = Context.Phase.MOVE_IN
+			_on_move_out_phase(game_state)
+		Context.Phase.MOVE_IN:
+			_context.phase = Context.Phase.DONE
+			_on_move_in_phase(game_state)
+		Context.Phase.DONE:
+			_on_done_phase(game_state)
+## @hook
+func _on_init_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
+	pass
+## @hook @operation(do_move_out)
+func _on_move_out_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
+	CardMoveCommand.do_move_out(context_overriding, _game_state)
+## @hook @operation(do_move_in)
+func _on_move_in_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
+	CardMoveCommand.do_move_in(context_overriding, _game_state)
+## @hook @delegates(complete)
+func _on_done_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
+	complete()
 
 ## 静态移出。默认可以对空的合法类型参数进行生成空的移出卡牌数组，但将跳过移入阶段。行为设计如此。
 static func do_move_out(context: Context, game_state: GameState) -> void:
 	if not context.source_area:
 		BehaviorCommand.fail(context, "移出区域未设置")
 		return
-
 	var moved: Array[Card]
 	match context.move_out_mode:
 		Context.MoveOutMode.TOP:
@@ -94,7 +125,6 @@ static func do_move_out(context: Context, game_state: GameState) -> void:
 	context.moved_cards = moved
 	if context.moved_cards.is_empty():
 		context.phase = Context.Phase.DONE
-
 ## 静态移入
 static func do_move_in(context: Context, game_state: GameState) -> void:
 	if context.is_virtual:
@@ -105,36 +135,3 @@ static func do_move_in(context: Context, game_state: GameState) -> void:
 	context.target_area.cards_add(context.moved_cards)
 	RuleTrans.send_cards(context.source_area, context.target_area, context.moved_cards)
 	GlobalConsole._print(["CardMoveCommand:卡牌移动完成"])
-
-## @seam_override
-func _init(player: Player = Player.PUBLIC_PLAYER, name_overriding: StringName = &"Move", context_overriding: Context = Context.new()) -> void:
-	super._init(player.get_id(), name_overriding, context_overriding)
-	_context.set_source_player(player)
-
-## @template
-func execute(game_state: GameState) -> void:
-	match _context.phase:
-		Context.Phase.INIT:
-			_context.phase = Context.Phase.MOVE_OUT
-			_on_init_phase(game_state)
-		Context.Phase.MOVE_OUT:
-			_context.phase = Context.Phase.MOVE_IN
-			_on_move_out_phase(game_state)
-		Context.Phase.MOVE_IN:
-			_context.phase = Context.Phase.DONE
-			_on_move_in_phase(game_state)
-		Context.Phase.DONE:
-			_on_done_phase(game_state)
-
-## @hook
-func _on_init_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
-	pass
-## @hook
-func _on_move_out_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
-	CardMoveCommand.do_move_out(context_overriding, _game_state)
-## @hook
-func _on_move_in_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
-	CardMoveCommand.do_move_in(context_overriding, _game_state)
-## @hook
-func _on_done_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
-	complete()

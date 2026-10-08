@@ -2,6 +2,15 @@
 extends RefCounted
 class_name Stage
 
+#== Constants ==
+## 公共玩家 ID，用于表示非专有阶段（如主阶段）或公开临时阶段
+const PUBLIC_PLAYER_ID: int = 1
+
+#== Signals ==
+## 请求重置计时器，新时限通过参数传递
+## @requester
+signal request_reset_timer(new_time_limit: float)
+
 #== Properties ==
 ## 阶段名称，用于标识阶段类型
 var stage_name: StringName = &"Null"
@@ -14,19 +23,19 @@ var is_ended: bool = false
 ## 阶段是否暂停
 var is_paused: bool = false
 
-#== Constants ==
-## 公共玩家 ID，用于表示非专有阶段（如主阶段）或公开临时阶段
-const PUBLIC_PLAYER_ID: int = 1
-
-#== Signals ==
-## 请求重置计时器，新时限通过参数传递
-## @requester
-signal request_reset_timer(new_time_limit: float)
-
 #== Constructor ==
 ## 构造函数（无特殊初始化）
 func _init() -> void:
 	pass
+
+#== 命令能力 ==
+## 创建结束当前阶段的调度命令
+## @factory
+static func build_end_current_command(command_bus: CommandBus) -> StageScheduleCommand:
+	return StageScheduleCommand.new(
+		command_bus,
+		StageScheduleCommand.Operation.END_CURRENT
+	)
 
 #== Public Methods ==
 ## 根据临时阶段归属玩家 ID 判断是否为临时阶段
@@ -34,16 +43,9 @@ func _init() -> void:
 static func is_temporary_by_player_id(p_temporary_stage_player_id: int) -> bool:
 	return p_temporary_stage_player_id != 0
 ## 返回当前阶段是否为临时阶段
-## @delegates @pure
+## @operation_facade @pure
 func is_temporary() -> bool:
 	return is_temporary_by_player_id(temporary_stage_player_id)
-## 创建结束当前阶段的调度命令
-## @factory
-static func create_end_current_command(command_bus: CommandBus) -> StageScheduleCommand:
-	return StageScheduleCommand.new(
-		command_bus,
-		StageScheduleCommand.Operation.END_CURRENT
-	)
 ## 进入阶段（由管理器调用）
 ## @hook @stack_local @side_effect
 func enter(_game_state: GameState, _command_bus: CommandBus) -> void:
@@ -58,16 +60,16 @@ func pause(_game_state: GameState, _command_bus: CommandBus) -> void:
 func resume(_game_state: GameState, _command_bus: CommandBus) -> void:
 	is_paused = false
 ## 阶段结束时的清理效果
-## @hook @stack_local
+## @hook @side_effect
 func end_stage_effect(_game_state: GameState, _command_bus: CommandBus) -> void:
 	pass
 ## 超时处理（默认发送结束命令）
 ## @hook @stack_local @side_effect
 func timeout(_game_state: GameState, command_bus: CommandBus) -> void:
-	var cmd: StageScheduleCommand = create_end_current_command(command_bus)
+	var cmd: StageScheduleCommand = build_end_current_command(command_bus)
 	command_bus.queue_behavior(cmd)
 ## 结束阶段（由管理器调用，仅变更内部状态，不触发信号）
-## @side_effect @stack_local
+## @facade @stack_local @side_effect
 func end_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended:
 		return
@@ -75,9 +77,9 @@ func end_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	is_paused = false
 	end_stage_effect(game_state, command_bus)
 ## 请求结束当前阶段（发送命令）
-## @external @stack_local
+## @facade @external
 func request_end_stage(command_bus: CommandBus) -> void:
-	var cmd: StageScheduleCommand = create_end_current_command(command_bus)
+	var cmd: StageScheduleCommand = build_end_current_command(command_bus)
 	command_bus.queue_behavior(cmd)
 ## 请求重置计时器（发射信号）。
 ## 等待响应的阶段，其响应计时建议由 refresh_response 管理。

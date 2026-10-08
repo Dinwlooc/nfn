@@ -21,7 +21,7 @@ static func init(context: Context, game_state: GameState) -> void:
 	context.target_area = discard_area
 	context.set_id_mode(context.card_ids)
 
-## @seam_override
+## @internal @seam_override
 func _init(
 	player: Player,
 	card_ids: PackedInt32Array,
@@ -32,6 +32,6 @@ func _init(
 	_context.set_card_ids(card_ids)
 	_context.set_event_type(RenderRequest.ItemSet.EventType.DISCARD)
 
-## @hook
+## @hook @delegates(init)
 func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
 	DiscardCardsCommand.init(context_overriding, game_state)

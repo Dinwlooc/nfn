@@ -47,9 +47,10 @@ class Context extends CommandContext:
 			return [card2, card1]
 
 ## 信号：拼点完成
+## @emitter
 signal duel_completed(result: int, point_difference: int)
 
-## @seam_override
+## @internal @seam_override
 ## 构造函数：卡牌1、卡牌2、事件名（可选）、发起玩家（默认为卡牌1的持有者或公共玩家）、命令名称、上下文
 func _init(
 	card1: Card,
@@ -61,7 +62,6 @@ func _init(
 ) -> void:
 	context_overriding.set_cards(card1, card2, event_name)
 	super._init(player.get_id(), name_overriding, context_overriding)
-
 ## @template
 func execute(game_state: GameState) -> void:
 	var ctx: Context = _context
@@ -77,14 +77,12 @@ func execute(game_state: GameState) -> void:
 			_on_evaluate_result_phase(game_state, ctx)
 		Context.Phase.DONE:
 			_on_done_phase(game_state, ctx)
-
 ## 静态计算点数
 static func do_calculate_power(context: Context, _game_state: GameState) -> void:
 	if context.is_virtual:
 		return
 	context.cached_power1 = context.card1.get_attribute(&"power")
 	context.cached_power2 = context.card2.get_attribute(&"power")
-
 ## 静态评估结果
 static func do_evaluate_result(context: Context, _game_state: GameState) -> void:
 	if context.is_virtual:
@@ -96,23 +94,18 @@ static func do_evaluate_result(context: Context, _game_state: GameState) -> void
 		context.result = Context.Result.B_WIN
 	else:
 		context.result = Context.Result.TIE
-
 ## @emitter
 func _emit_completed(result: int, diff: int) -> void:
 	duel_completed.emit(result, diff)
-
 ## @hook
 func _on_init_phase(_game_state: GameState, _context: Context) -> void:
 	pass
-
 ## @hook
 func _on_calculate_power_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
 	do_calculate_power(context_overriding as Context, game_state)
-
 ## @hook
 func _on_evaluate_result_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
 	do_evaluate_result(context_overriding as Context, game_state)
-
 ## @hook
 func _on_done_phase(_game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
 	_emit_completed((context_overriding as Context).result, (context_overriding as Context).point_difference)

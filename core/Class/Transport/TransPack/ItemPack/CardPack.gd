@@ -17,6 +17,19 @@ var type: int
 var player_id: int
 const ItemType = GlobalConstants.KEY_ITEM_TYPE
 const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
+
+## 构造器，初始化所有字段。
+func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL, init_player_id: int = 0) -> void:
+	super._init(init_id)
+	name = init_name
+	type = GlobalRegistry.get_constant_index(ItemType, init_type_name)
+	player_id = init_player_id
+	if name != &"":
+		merge_mask |= 1 << MainProperty.NAME
+	if type != GlobalConstants.CardType.NULL:
+		merge_mask |= 1 << MainProperty.TYPE
+	if player_id != 0:
+		merge_mask |= 1 << MainProperty.PLAYER_ID
 ## 根据卡片实例创建数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充卡片特有属性。
 ## @factory @seam_override
 static func init_from_item(item: Item, pack_overriding: ItemPack = CardPack.new()) -> CardPack:
@@ -33,19 +46,6 @@ static func init_from_item(item: Item, pack_overriding: ItemPack = CardPack.new(
 ## @factory
 static func init_from_card(card: Card) -> CardPack:
 	return CardPack.new(card.id, card.get_name(), card.type, card.get_owner_id())
-## 构造器，初始化所有字段。
-## @factory
-func _init(init_id: int = 0, init_name: StringName = &"", init_type_name: StringName = NULL, init_player_id: int = 0) -> void:
-	super._init(init_id)
-	name = init_name
-	type = GlobalRegistry.get_constant_index(ItemType, init_type_name)
-	player_id = init_player_id
-	if name != &"":
-		merge_mask |= 1 << MainProperty.NAME
-	if type != GlobalConstants.CardType.NULL:
-		merge_mask |= 1 << MainProperty.TYPE
-	if player_id != 0:
-		merge_mask |= 1 << MainProperty.PLAYER_ID
 ## 序列化自身属性到缓冲区。
 ## @chain_override @side_effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:

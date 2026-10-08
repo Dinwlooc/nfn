@@ -23,9 +23,9 @@ var error: String = ""
 static var NULL_CONTEXT: CommandContext = CommandContext.new()
 
 ## 完成上下文，子类可重写以添加额外结束逻辑
+## @internal @atomic
 func complete() -> void:
 	is_completed = true
-
 ## @internal @atomic
 func cancel() -> void:
 	if can_be_cancelled:
@@ -38,14 +38,14 @@ func uncancel() -> void:
 func virtualize() -> void:
 	is_virtual = true
 ## 获取主修饰卡牌列表（第一优先）
-## @hook @pure
+## @hook
 func get_primary_modifier_cards() -> Array[Card]:
 	return []
 ## 获取主修饰玩家列表（第二优先）
-## @hook @pure
+## @hook
 func get_primary_modifier_players() -> Array[Player]:
 	return []
-## @internal @atomic
+## @atomic
 func set_companion_source(new_companion_source: CommandContext) -> CommandContext:
 	companion_source = weakref(new_companion_source)
 	return self

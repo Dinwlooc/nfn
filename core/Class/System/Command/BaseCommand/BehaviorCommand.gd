@@ -6,48 +6,52 @@ class_name BehaviorCommand
 
 var _is_completed: bool = false
 var _context: CommandContext
+
 ## @requester
 signal companion_command_requested(command: BehaviorCommand)
+## @emitter
 signal command_completed()
-
-@abstract func execute(game_state: GameState) -> void
 
 # ## 子类需要定义该内部类。
 # ## @context @deep_inherit
 # class Context
 
+## @facade
+@abstract func execute(game_state: GameState) -> void
+## @internal @seam_override
 func _init(init_player_id: int = 1 ,name_overriding:StringName = &"" ,context_overriding:CommandContext = CommandContext.NULL_CONTEXT):
 	_context = context_overriding
 	_context.command_name = name_overriding
 	_context.player_id = init_player_id
-
 ## 完成命令，调用上下文的 complete()
+## @internal @emitter
 func complete() -> void:
 	_is_completed = true
 	_context.complete()
 	command_completed.emit()
-
 ## 伴生一个命令
-## @requester
+## @facade @seam @external @requester
 func append_companion_command(command: BehaviorCommand,companion_source_overriding:CommandContext = _context) -> void:
 	if command._context:
 		command._context.set_companion_source(companion_source_overriding)
 	companion_command_requested.emit(command)
-
 ## 取消命令
+## @facade @internal
 func cancel()->void:
 	if _context:
 		if not _context.can_be_cancelled:
 			return
 		_context.cancel()
 	complete()
-## 静态失败处理方法：设置错误、打印并调用上下文的 complete()
-static func fail(context: CommandContext, msg: String = "") -> void:
-	if not msg.is_empty():
-		context.error = msg
-		print("[%s] %s" % [context.command_name, msg])
+## 失败处理方法：设置错误、打印并调用上下文的 complete()
+## @seam
+static func fail(context: CommandContext, msg_overriding: String = "") -> void:
+	if not msg_overriding.is_empty():
+		context.error = msg_overriding
+		print("[%s] %s" % [context.command_name, context.error])
 		context.complete()
-## 静态卫语句：若对象为空，则调用 fail 并返回 true
+## 卫语句：若对象为空，则调用 fail 并返回 true
+## @operation(fail)
 static func fail_if_null(obj: Object, context: CommandContext, msg: String) -> bool:
 	if obj == null:
 		fail(context, msg)

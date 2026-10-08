@@ -14,7 +14,7 @@ func _init() -> void:
 	stage_name = &"Discard"
 	time_limit = TIME_LIMIT
 
-#== Static Methods ==
+#== 响应能力 ==
 ## 判断手牌数是否超过上限
 ## @pure
 static func is_discard_required(hand_count: int, hand_limit: int) -> bool:
@@ -23,6 +23,29 @@ static func is_discard_required(hand_count: int, hand_limit: int) -> bool:
 ## @pure
 static func calculate_need_discard(hand_count: int, hand_limit: int) -> int:
 	return hand_count - hand_limit
+## 根据玩家属性构造需弃牌字典
+## @pure
+static func build_players_to_discard(game_state: GameState) -> Dictionary[int, int]:
+	var players_to_discard: Dictionary[int, int] = {}
+	for player: Player in game_state.player_manager.players:
+		var hand_area: AreaHand = game_state.get_hand_area(player.get_id())
+		var hand_count: int = hand_area.get_all_cards().size() if hand_area else 0
+		var hand_limit: int = player.get_hand_limit()
+		if not is_discard_required(hand_count, hand_limit):
+			continue
+		players_to_discard[player.get_id()] = calculate_need_discard(hand_count, hand_limit)
+	return players_to_discard
+## 从字典内计算指定玩家剩余的弃牌需求（返回 0 表示无需弃牌）
+## @pure
+func calculate_remaining_need_for_player(player_id: int) -> int:
+	return _players_to_discard.get(player_id, 0)
+## 根据新的弃牌输入更新字典
+## @atomic
+func update_players_to_discard(player_id: int, new_need: int) -> void:
+	if new_need <= 0:
+		_players_to_discard.erase(player_id)
+		return
+	_players_to_discard[player_id] = new_need
 ## 从无序手牌区域中选择指定数量的卡牌 ID（区域无序，等效随机）
 ## @atomic @pure
 static func select_random_card_ids(hand_area: AreaHand, count: int) -> PackedInt32Array:
@@ -39,27 +62,23 @@ static func resolve_actual_discard(valid_ids: PackedInt32Array, need_count: int)
 	if valid_ids.size() > need_count:
 		return valid_ids.slice(valid_ids.size() - need_count, valid_ids.size())
 	return valid_ids
-## 计算剩余需要弃置的卡牌数量
-## @pure
-static func calculate_remaining_need(need_count: int, discarded_count: int) -> int:
-	return need_count - discarded_count
+
+#== 命令能力 ==
+## 创建弃牌命令
+## @factory
+static func build_discard_command(player: Player, card_ids: PackedInt32Array) -> DiscardCardsCommand:
+	return DiscardCardsCommand.new(player, card_ids)
 
 #== Public Methods ==
 ## 进入阶段
-## @override @stack_local @side_effect
+## @override @hook @stack_local @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	super.enter(game_state, command_bus)
+	_players_to_discard = build_players_to_discard(game_state)
 	var responsive_players: PackedInt32Array = []
-	for player: Player in game_state.player_manager.players:
-		var hand_area: AreaHand = game_state.get_hand_area(player.get_id())
-		var hand_count: int = hand_area.get_all_cards().size() if hand_area else 0
-		var hand_limit: int = player.get_hand_limit()
-		if not is_discard_required(hand_count, hand_limit):
-			continue
-		var need_discard: int = calculate_need_discard(hand_count, hand_limit)
-		_players_to_discard[player.get_id()] = need_discard
-		responsive_players.append(player.get_id())
-		GlobalConsole._print(["玩家", player.get_id(), "需要弃置", need_discard, "张牌（手牌", hand_count, "，上限", hand_limit, "）"])
+	for player_id: int in _players_to_discard.keys():
+		responsive_players.append(player_id)
+		GlobalConsole._print(["玩家", player_id, "需要弃置", _players_to_discard[player_id], "张牌"])
 	if responsive_players.is_empty():
 		request_end_stage(command_bus)
 		return
@@ -67,7 +86,7 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_reset_timer()
 	GlobalConsole._print(["弃牌阶段开始，响应玩家：", responsive_players])
 ## 恢复阶段
-## @override @stack_local @side_effect
+## @override @hook @stack_local @side_effect
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	super.resume(game_state, command_bus)
 	if _players_to_discard.is_empty():
@@ -76,14 +95,14 @@ func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_reset_timer()
 	GlobalConsole._print(["弃牌阶段恢复，剩余需弃牌玩家：", _players_to_discard.keys()])
 ## 阶段结束时的清理效果
-## @override @stack_local
+## @override @hook @stack_local
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_force_discard_for_all(game_state, command_bus)
 	command_bus.set_responsive_players(PackedInt32Array())
 	_players_to_discard.clear()
 	GlobalConsole._print(["弃牌阶段结束"])
 ## 处理玩家操作请求
-## @override @stack_local @side_effect
+## @override @hook @stack_local @side_effect
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
@@ -98,7 +117,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 	if _players_to_discard.is_empty():
 		request_end_stage(command_bus)
 ## 超时处理
-## @override @stack_local @side_effect
+## @override @hook @facade @side_effect
 func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
@@ -110,11 +129,11 @@ func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 ## @side_effect
 func _process_discard_request(request: OperationRequest.DiscardCards, game_state: GameState, command_bus: CommandBus) -> void:
 	var player_id: int = request.source_player_id
-	if not _players_to_discard.has(player_id):
+	var need_count: int = calculate_remaining_need_for_player(player_id)
+	if need_count <= 0:
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "不在弃牌列表中"])
 		request.complete()
 		return
-	var need_count: int = _players_to_discard[player_id]
 	var hand_area: AreaHand = game_state.get_hand_area(player_id)
 	if not hand_area:
 		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "的手牌区"])
@@ -145,26 +164,25 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "实例"])
 		request.cancel()
 		return
-	var discard_command: DiscardCardsCommand = DiscardCardsCommand.new(player, actual_discard)
+	var discard_command: DiscardCardsCommand = build_discard_command(player, actual_discard)
 	command_bus.queue_behavior(discard_command)
-	var new_need: int = calculate_remaining_need(need_count, actual_discard.size())
-	if new_need == 0:
-		_players_to_discard.erase(player_id)
+	var new_need: int = need_count - actual_discard.size()
+	update_players_to_discard(player_id, new_need)
+	if new_need <= 0:
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "弃牌完成"])
 		request.complete()
 		return
-	_players_to_discard[player_id] = new_need
 	GlobalConsole._print(["弃牌阶段：玩家", player_id, "还需弃置", new_need, "张牌"])
 	request.cancel()
 ## 处理放弃响应请求
 ## @side_effect
 func _process_abandon_response(request: OperationRequest.AbandonResponse, game_state: GameState, command_bus: CommandBus) -> void:
 	var player_id: int = request.source_player_id
-	if not _players_to_discard.has(player_id):
+	var need_count: int = calculate_remaining_need_for_player(player_id)
+	if need_count <= 0:
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "不在弃牌列表中，忽略放弃响应"])
 		request.complete()
 		return
-	var need_count: int = _players_to_discard[player_id]
 	var hand_area: AreaHand = game_state.get_hand_area(player_id)
 	if not hand_area:
 		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "的手牌区"])
@@ -180,9 +198,9 @@ func _process_abandon_response(request: OperationRequest.AbandonResponse, game_s
 		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "实例"])
 		request.cancel()
 		return
-	var discard_command: DiscardCardsCommand = DiscardCardsCommand.new(player, selected)
+	var discard_command: DiscardCardsCommand = build_discard_command(player, selected)
 	command_bus.queue_behavior(discard_command)
-	_players_to_discard.erase(player_id)
+	update_players_to_discard(player_id, 0)
 	GlobalConsole._print(["弃牌阶段：玩家", player_id, "放弃响应，随机弃牌完成"])
 	request.complete()
 ## 请求重置计时器
@@ -207,7 +225,7 @@ func _force_discard_for_all(game_state: GameState, command_bus: CommandBus) -> v
 		if not player:
 			GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "实例，跳过"])
 			continue
-		var discard_command: DiscardCardsCommand = DiscardCardsCommand.new(player, selected)
+		var discard_command: DiscardCardsCommand = build_discard_command(player, selected)
 		command_bus.queue_behavior(discard_command)
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "超时，随机弃牌完成"])
 	_players_to_discard.clear()

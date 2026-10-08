@@ -37,7 +37,7 @@ class Context extends CommandContext:
 		source_player = p_player
 		return self
 
-## @seam_override
+## @internal @seam_override
 func _init(
 	modifiers: BuffModifiers,
 	buff: Buff,
@@ -51,7 +51,7 @@ func _init(
 	context_overriding.set_buff_modifiers(modifiers).set_buff(buff).set_mode(mode).set_stack_count(stack_count).set_source_card(source_card).set_source_player(source_player)
 	super._init(source_player.get_id(), name_overriding, context_overriding)
 
-## @template
+## @facade @template
 func execute(game_state: GameState) -> void:
 	var ctx: Context = _context
 	match ctx.phase:
@@ -140,16 +140,13 @@ static func do_send_update(context: Context, game_state: GameState) -> void:
 	if context.is_virtual:
 		return
 	RuleTrans.send_buff_modifiers_update(game_state, context.buff_modifiers, RenderRequest.ItemSet.EventType.UPDATE)
-
 ## @hook
 func _on_init_phase(_game_state: GameState, _context: Context) -> void:
 	pass
-
-## @hook
+## @hook @operation(do_apply)
 func _on_apply_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
-	do_apply(context_overriding as Context, game_state)
-
-## @hook
+	BuffCommand.do_apply(context_overriding as Context, game_state)
+## @hook @operation(do_send_update) @delegates(complete)
 func _on_done_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
-	do_send_update(context_overriding as Context, game_state)
+	BuffCommand.do_send_update(context_overriding as Context, game_state)
 	complete()

@@ -10,6 +10,24 @@ class Context extends CardMoveCommand.Context:
 			return 0
 		return min(draw_count, source_area.card_count())
 
+
+
+## @internal @seam_override
+func _init(player: Player, draw_count: int, name_overriding: StringName = &"DrawCards", context_overriding: Context = Context.new()) -> void:
+	super._init(player, name_overriding, context_overriding)
+	_context.set_draw_count(draw_count)
+
+## @hook @operation(fail,init,build_shuffle_companion) @delegates(append_companion_command)
+func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
+	if context_overriding is not Context:
+		BehaviorCommand.fail(context_overriding, "上下文类型错误")
+		return
+	DrawCardsCommand.init(context_overriding, game_state)
+	var shuffle_cmd := DrawCardsCommand.build_shuffle_companion(context_overriding, game_state)
+	if not shuffle_cmd:
+		return
+	append_companion_command(shuffle_cmd)
+
 ## 静态初始化：校验并设置源/目标区域，计算实际抽牌数并设置模式
 static func init(context: Context, game_state: GameState) -> void:
 	var source_player: Player = context.get_source_player()
@@ -39,19 +57,3 @@ static func build_shuffle_companion(context: Context, game_state: GameState) -> 
 	if not source_player:
 		return null
 	return ShuffleCommand.new(source_player)
-
-## @seam_override
-func _init(player: Player, draw_count: int, name_overriding: StringName = &"DrawCards", context_overriding: Context = Context.new()) -> void:
-	super._init(player, name_overriding, context_overriding)
-	_context.set_draw_count(draw_count)
-
-## @hook
-func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
-	if context_overriding is not Context:
-		BehaviorCommand.fail(context_overriding, "上下文类型错误")
-		return
-	DrawCardsCommand.init(context_overriding, game_state)
-	var shuffle_cmd := DrawCardsCommand.build_shuffle_companion(context_overriding, game_state)
-	if not shuffle_cmd:
-		return
-	append_companion_command(shuffle_cmd)

@@ -7,7 +7,7 @@ class Context extends CardMoveCommand.Context:
 	pass
 
 ## 卡牌转移命令
-## @seam_override
+## @internal @seam_override
 ## @param player: 发起者玩家实例
 ## @param source_area: 源区域
 ## @param target_area: 目标区域

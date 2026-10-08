@@ -20,6 +20,35 @@ var cost: int
 var suit: int
 var modified_power: int
 var modified_cost: int
+
+## 构造器，初始化所有字段。
+func _init(
+	init_id: int = 0,
+	init_name: StringName = &"",
+	init_type: StringName = NULL,
+	init_player_id: int = 0,
+	init_power: int = STANDARD_POWER,
+	init_cost: int = STANDARD_COST,
+	init_suit: int = STANDARD_SUIT,
+	init_modified_power: int = STANDARD_MODIFIED_POWER,
+	init_modified_cost: int = STANDARD_MODIFIED_COST
+) -> void:
+	super._init(init_id, init_name, init_type, init_player_id)
+	power = init_power
+	cost = init_cost
+	suit = init_suit
+	modified_power = init_modified_power
+	modified_cost = init_modified_cost
+	if power != STANDARD_POWER:
+		merge_mask |= 1 << Property.POWER
+	if cost != STANDARD_COST:
+		merge_mask |= 1 << Property.COST
+	if suit != STANDARD_SUIT:
+		merge_mask |= 1 << Property.SUIT
+	if modified_power != STANDARD_MODIFIED_POWER:
+		merge_mask |= 1 << Property.MODIFIED_POWER
+	if modified_cost != STANDARD_MODIFIED_COST:
+		merge_mask |= 1 << Property.MODIFIED_COST
 ## 根据卡片实例创建手牌数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充手牌特有属性。
 ## @factory @seam_override
 static func init_from_item(item: Item, pack_overriding: ItemPack = HandCardPack.new()) -> HandCardPack:
@@ -50,35 +79,7 @@ static func init_from_card(card: Card) -> HandCardPack:
 			card.get_cost()
 		)
 	return null
-## 构造器，初始化所有字段。
-## @factory
-func _init(
-	init_id: int = 0,
-	init_name: StringName = &"",
-	init_type: StringName = NULL,
-	init_player_id: int = 0,
-	init_power: int = STANDARD_POWER,
-	init_cost: int = STANDARD_COST,
-	init_suit: int = STANDARD_SUIT,
-	init_modified_power: int = STANDARD_MODIFIED_POWER,
-	init_modified_cost: int = STANDARD_MODIFIED_COST
-) -> void:
-	super._init(init_id, init_name, init_type, init_player_id)
-	power = init_power
-	cost = init_cost
-	suit = init_suit
-	modified_power = init_modified_power
-	modified_cost = init_modified_cost
-	if power != STANDARD_POWER:
-		merge_mask |= 1 << Property.POWER
-	if cost != STANDARD_COST:
-		merge_mask |= 1 << Property.COST
-	if suit != STANDARD_SUIT:
-		merge_mask |= 1 << Property.SUIT
-	if modified_power != STANDARD_MODIFIED_POWER:
-		merge_mask |= 1 << Property.MODIFIED_POWER
-	if modified_cost != STANDARD_MODIFIED_COST:
-		merge_mask |= 1 << Property.MODIFIED_COST
+
 ## 序列化自身属性。
 ## @chain_override @side_effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:

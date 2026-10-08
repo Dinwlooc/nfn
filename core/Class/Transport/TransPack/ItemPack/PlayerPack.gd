@@ -48,30 +48,7 @@ var morale_attack: int
 var morale_defense: int
 var morale_level: int
 
-## 根据玩家实例创建数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充玩家特有属性。
-## @factory @seam_override
-static func init_from_item(item: Item, pack_overriding: ItemPack = PlayerPack.new()) -> PlayerPack:
-	var player := item as Player
-	if player == null:
-		return null
-	var base_pack := ItemPack.init_from_item(item, pack_overriding) as PlayerPack
-	base_pack.seat_index = player.seat_index
-	base_pack.HP = player.HP
-	base_pack.MP = player.MP
-	base_pack.AP = player.AP
-	base_pack.disallowed_operations = player.disallowed_operations.duplicate()
-	base_pack.modified_HP_max = player.get_attribute(&"HP_max")
-	base_pack.modified_MP_max = player.get_attribute(&"MP_max")
-	base_pack.modified_init_AP = player.get_attribute(&"init_AP")
-	base_pack.modified_draw_cards_count = player.get_attribute(&"draw_cards_count")
-	base_pack.peer_id = player.peer_id
-	base_pack.morale_attack = player.morale_attack
-	base_pack.morale_defense = player.morale_defense
-	base_pack.morale_level = player.morale_level
-	base_pack.update_merge_mask()
-	return base_pack
 ## 构造器，初始化所有字段。
-## @factory
 func _init(
 	init_id: int = 0,
 	init_seat_index: int = STANDARD_SEAT_INDEX,
@@ -102,6 +79,28 @@ func _init(
 	morale_attack = init_morale_attack
 	morale_defense = init_morale_defense
 	morale_level = init_morale_level
+## 根据玩家实例创建数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充玩家特有属性。
+## @factory @seam_override
+static func init_from_item(item: Item, pack_overriding: ItemPack = PlayerPack.new()) -> PlayerPack:
+	var player := item as Player
+	if player == null:
+		return null
+	var base_pack := ItemPack.init_from_item(item, pack_overriding) as PlayerPack
+	base_pack.seat_index = player.seat_index
+	base_pack.HP = player.HP
+	base_pack.MP = player.MP
+	base_pack.AP = player.AP
+	base_pack.disallowed_operations = player.disallowed_operations.duplicate()
+	base_pack.modified_HP_max = player.get_attribute(&"HP_max")
+	base_pack.modified_MP_max = player.get_attribute(&"MP_max")
+	base_pack.modified_init_AP = player.get_attribute(&"init_AP")
+	base_pack.modified_draw_cards_count = player.get_attribute(&"draw_cards_count")
+	base_pack.peer_id = player.peer_id
+	base_pack.morale_attack = player.morale_attack
+	base_pack.morale_defense = player.morale_defense
+	base_pack.morale_level = player.morale_level
+	base_pack.update_merge_mask()
+	return base_pack
 ## 序列化自身属性。
 ## @chain_override @side_effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:

@@ -5,6 +5,22 @@ class_name ShuffleCommand
 class Context extends CardMoveCommand.Context:
 	pass
 
+## @internal @seam_override
+func _init(player: Player = Player.PUBLIC_PLAYER, name_overriding: StringName = &"Shuffle", context_overriding: Context = Context.new()) -> void:
+	super._init(player, name_overriding, context_overriding)
+## @hook @operation(fail,init)
+func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
+	if context_overriding is not Context:
+		BehaviorCommand.fail(context_overriding, "上下文类型错误")
+		return
+	ShuffleCommand.init(context_overriding, game_state)
+## @hook @operation(fail,shuffle_drawing_card) @delegates(super._on_move_in_phase)
+func _on_move_in_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
+	if context_overriding is not Context:
+		BehaviorCommand.fail(context_overriding, "上下文类型错误")
+		return
+	super._on_move_in_phase(game_state, context_overriding)
+	shuffle_drawing_card(game_state)
 ## 静态初始化。弃牌区为空时直接完成。行为设计如此。
 static func init(context: Context, game_state: GameState) -> void:
 	var discard: AreaDiscard = game_state.get_discard_area()
@@ -19,21 +35,7 @@ static func init(context: Context, game_state: GameState) -> void:
 	context.set_source_area(discard)
 	context.set_target_area(drawing)
 
-## @seam_override
-func _init(player: Player = Player.PUBLIC_PLAYER, name_overriding: StringName = &"Shuffle", context_overriding: Context = Context.new()) -> void:
-	super._init(player, name_overriding, context_overriding)
-## @hook
-func _on_init_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
-	if context_overriding is not Context:
-		BehaviorCommand.fail(context_overriding, "上下文类型错误")
-		return
-	ShuffleCommand.init(context_overriding, game_state)
-## @hook
-func _on_move_in_phase(game_state: GameState, context_overriding: CardMoveCommand.Context = _context as Context) -> void:
-	if context_overriding is not Context:
-		BehaviorCommand.fail(context_overriding, "上下文类型错误")
-		return
-	super._on_move_in_phase(game_state, context_overriding)
+static func shuffle_drawing_card(game_state: GameState) -> void:
 	var drawing: AreaDrawing = game_state.get_drawing_area()
 	if drawing:
 		drawing.shuffle_card_pool()
