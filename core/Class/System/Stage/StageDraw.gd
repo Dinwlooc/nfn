@@ -26,7 +26,7 @@ static func build_draw_cards_command(player: Player) -> DrawCardsCommand:
 
 #== Public Methods ==
 ## 进入阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	super.enter(game_state, command_bus)
 	var player: Player = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)

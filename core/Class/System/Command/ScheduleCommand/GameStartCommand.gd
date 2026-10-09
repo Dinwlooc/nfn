@@ -22,7 +22,7 @@ func _init(
 
 ## @template
 func execute(game_state: GameState) -> void:
-	if _context.is_cancelled:
+	if _context.is_cancelled or _context.is_virtual:
 		complete()
 		return
 	var ctx: Context = _context

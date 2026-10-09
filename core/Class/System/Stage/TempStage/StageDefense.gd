@@ -110,7 +110,7 @@ static func build_abandon_response(player_id: int) -> OperationRequest.AbandonRe
 
 #== Public Methods ==
 ## 进入阶段（计时由 refresh_response 统一管理）
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	var records: TimeRecords = build_time_records([attacker.get_id(), defender.get_id()])
 	total_time_used = records.total_time_used
@@ -120,26 +120,26 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_generate_and_queue_battle_command(game_state, command_bus, true)
 	super.enter(game_state, command_bus)
 ## 恢复阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_update_responsive_player(game_state, command_bus)
 	_reset_timer_for_current_player()
 	_connect_defense_area_signals(game_state)
 	super.resume(game_state, command_bus)
 ## 暂停阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func pause(game_state: GameState, command_bus: CommandBus) -> void:
 	_disconnect_defense_area_signals()
 	super.pause(game_state, command_bus)
 ## 阶段结束时的清理效果
-## @override @hook @stack_local
+## @override @hook @no_escape
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_disconnect_defense_area_signals()
 	_pending_stage_end = false
 	_current_battle_command = null
 	super.end_stage_effect(game_state, command_bus)
 ## 处理玩家操作请求
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
@@ -152,14 +152,14 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 			GlobalConsole._print(["守区攻防阶段：不支持的操作类型", request.get_class_name_static()])
 			request.cancel()
 ## 超时处理
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	var abandon_request: OperationRequest.AbandonResponse = build_abandon_response(current_responsive_player_id)
 	process_operation_request(abandon_request, game_state, command_bus)
 ## 刷新响应权：轮转命令结束后统一重设计时器
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return

@@ -1,5 +1,7 @@
 ## 行为命令基类
 ## 很多下级命令基类会预设execute结构、传输行为和样板方法。在重写位于execute的业务方法时，请注意需要显式切换状态机。
+## 虚拟化时，命令只执行纯函数。当纯函数用于向context缓存数值、依赖时，需在虚拟化的断点前执行。
+## 非持久化地获取、检查依赖以辅助业务执行的纯函数，则在虚拟化时也不执行。
 @abstract
 extends RefCounted
 class_name BehaviorCommand

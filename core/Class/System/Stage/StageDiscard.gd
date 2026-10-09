@@ -71,7 +71,7 @@ static func build_discard_command(player: Player, card_ids: PackedInt32Array) ->
 
 #== Public Methods ==
 ## 进入阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	super.enter(game_state, command_bus)
 	_players_to_discard = build_players_to_discard(game_state)
@@ -86,7 +86,7 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_reset_timer()
 	GlobalConsole._print(["弃牌阶段开始，响应玩家：", responsive_players])
 ## 恢复阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	super.resume(game_state, command_bus)
 	if _players_to_discard.is_empty():
@@ -95,14 +95,14 @@ func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_reset_timer()
 	GlobalConsole._print(["弃牌阶段恢复，剩余需弃牌玩家：", _players_to_discard.keys()])
 ## 阶段结束时的清理效果
-## @override @hook @stack_local
+## @override @hook @no_escape
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_force_discard_for_all(game_state, command_bus)
 	command_bus.set_responsive_players(PackedInt32Array())
 	_players_to_discard.clear()
 	GlobalConsole._print(["弃牌阶段结束"])
 ## 处理玩家操作请求
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return

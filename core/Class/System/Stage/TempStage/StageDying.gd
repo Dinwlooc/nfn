@@ -49,25 +49,25 @@ static func create_player_death_command(player: Player) -> PlayerDeathCommand:
 
 #== Public Methods ==
 ## 进入阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_grant_response_permission_to_all_players(game_state, command_bus)
 	_reset_timer()
 	super.enter(game_state, command_bus)
 ## 暂停阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func pause(game_state: GameState, command_bus: CommandBus) -> void:
 	_revoke_response_permission(command_bus)
 	_stop_timer()
 	super.pause(game_state, command_bus)
 ## 恢复阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_grant_response_permission_to_all_players(game_state, command_bus)
 	_reset_timer()
 	super.resume(game_state, command_bus)
 ## 阶段结束时的清理效果
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_revoke_response_permission(command_bus)
 	_stop_timer()
@@ -75,7 +75,7 @@ func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 		_generate_player_death_command(game_state, command_bus)
 	super.end_stage_effect(game_state, command_bus)
 ## 超时处理
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
@@ -85,7 +85,7 @@ func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 		return
 	request_end_stage(command_bus)
 ## 处理玩家操作请求
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused or _is_locked:
 		return
@@ -96,7 +96,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 			GlobalConsole._print(["濒死阶段：不支持的操作类型", request.get_class_name_static()])
 			request.cancel()
 ## 刷新响应权
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return

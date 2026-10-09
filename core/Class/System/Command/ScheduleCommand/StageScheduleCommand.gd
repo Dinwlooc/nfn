@@ -43,10 +43,7 @@ static func do_execute(context: Context, game_state: GameState, command_bus: Com
 
 ## @hook
 func execute(game_state: GameState) -> void:
-	if _context.is_cancelled:
-		complete()
-		return
-	if _context.is_virtual:
+	if _context.is_cancelled or _context.is_virtual:
 		complete()
 		return
 	var ctx: Context = _context

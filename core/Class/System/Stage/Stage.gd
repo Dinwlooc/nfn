@@ -43,20 +43,20 @@ static func build_end_current_command(command_bus: CommandBus) -> StageScheduleC
 static func is_temporary_by_player_id(p_temporary_stage_player_id: int) -> bool:
 	return p_temporary_stage_player_id != 0
 ## 返回当前阶段是否为临时阶段
-## @operation_facade @pure
+## @operation @facade @pure
 func is_temporary() -> bool:
 	return is_temporary_by_player_id(temporary_stage_player_id)
 ## 进入阶段（由管理器调用）
-## @hook @stack_local @side_effect
+## @hook @no_escape @side_effect
 func enter(_game_state: GameState, _command_bus: CommandBus) -> void:
 	is_ended = false
 	GlobalConsole._print(["Stage:进入", stage_name, "阶段"])
 ## 暂停阶段
-## @hook @stack_local @side_effect
+## @hook @no_escape @side_effect
 func pause(_game_state: GameState, _command_bus: CommandBus) -> void:
 	is_paused = true
 ## 恢复阶段
-## @hook @stack_local @side_effect
+## @hook @no_escape @side_effect
 func resume(_game_state: GameState, _command_bus: CommandBus) -> void:
 	is_paused = false
 ## 阶段结束时的清理效果
@@ -64,12 +64,12 @@ func resume(_game_state: GameState, _command_bus: CommandBus) -> void:
 func end_stage_effect(_game_state: GameState, _command_bus: CommandBus) -> void:
 	pass
 ## 超时处理（默认发送结束命令）
-## @hook @stack_local @side_effect
+## @hook @no_escape @side_effect
 func timeout(_game_state: GameState, command_bus: CommandBus) -> void:
 	var cmd: StageScheduleCommand = build_end_current_command(command_bus)
 	command_bus.queue_behavior(cmd)
 ## 结束阶段（由管理器调用，仅变更内部状态，不触发信号）
-## @facade @stack_local @side_effect
+## @facade @no_escape @side_effect
 func end_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended:
 		return
@@ -87,11 +87,11 @@ func request_end_stage(command_bus: CommandBus) -> void:
 func reset_timer(new_time_limit: float) -> void:
 	request_reset_timer.emit(new_time_limit)
 ## 处理玩家操作请求（由管理器转发，子类按需重写）
-## @hook @stack_local
+## @hook @no_escape
 func process_operation_request(_request: OperationRequest, _game_state: GameState, _command_bus: CommandBus) -> void:
 	pass
 ## 刷新响应权：在命令全部完成后由触发器调用一次。
 ## 阶段进入或恢复后，通常伴随调度命令结束，使该方法被固定调用一次，时机晚于enter与resume。
-## @hook @stack_local
+## @hook @no_escape
 func refresh_response(_game_state: GameState, _command_bus: CommandBus) -> void:
 	pass

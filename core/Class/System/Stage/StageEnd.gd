@@ -10,7 +10,7 @@ func _init() -> void:
 
 #== Public Methods ==
 ## 进入阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	super.enter(game_state, command_bus)
 	request_end_stage(command_bus)

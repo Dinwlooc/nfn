@@ -26,7 +26,7 @@ static func build_responsive_players(player_id: int) -> PackedInt32Array:
 
 #== Public Methods ==
 ## 进入阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.get_id()
@@ -34,7 +34,7 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_has_entered_refresh = false
 	super.enter(game_state, command_bus)
 ## 恢复阶段
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = game_state.player_manager.get_player_by_id(game_state.stage_manager.current_player_id)
 	_current_attacker_id = _current_attacker.get_id()
@@ -42,13 +42,13 @@ func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_reset_timer_for_current_player(RESUME_TIME_LIMIT)
 	super.resume(game_state, command_bus)
 ## 阶段结束时的清理效果
-## @override @hook @stack_local
+## @override @hook @no_escape
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker = null
 	command_bus.set_responsive_players(PackedInt32Array())
 	super.end_stage_effect(game_state, command_bus)
 ## 处理玩家操作请求
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
@@ -63,7 +63,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 			request.cancel()
 			GlobalConsole._print(["主阶段：不支持的操作类型", request.get_class_name_static()])
 ## 刷新响应权：轮转命令结束后由触发器调用，统一管理计时
-## @override @hook @stack_local @side_effect
+## @override @hook @no_escape @side_effect
 func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return

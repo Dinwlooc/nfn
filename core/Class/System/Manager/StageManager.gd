@@ -80,18 +80,18 @@ func _init() -> void:
 func set_timer(_timer: GameTimer) -> void:
 	timer = _timer
 ## 处理已验证的操作请求
-## @stack_local @internal
+## @no_escape @internal
 func handle_validated_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if not current_stage:
 		push_error("StageManager: 当前阶段为空，无法处理操作请求")
 		return
 	current_stage.process_operation_request(request, game_state, command_bus)
 ## 结束当前阶段（发送命令方式）
-## @stack_local @internal
+## @no_escape @internal
 func complete_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
 ## 清空所有临时阶段（结束并清空栈）
-## @stack_local @internal @emitter
+## @no_escape @internal @emitter
 func complete_all_temp_stages(game_state: GameState, command_bus: CommandBus) -> void:
 	if temp_stage_stack.is_empty():
 		return
@@ -118,7 +118,7 @@ func start_pending_temp_stage(game_state: GameState, command_bus: CommandBus) ->
 		return
 	_transition_to(top_stage, game_state, command_bus)
 ## 结束当前回合
-## @stack_local @internal @emitter
+## @no_escape @internal @emitter
 func end_round(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
 	for stage in temp_stage_stack:
@@ -131,7 +131,7 @@ func end_round(game_state: GameState, command_bus: CommandBus) -> void:
 	round_ended.emit()
 	round_completed.emit()
 ## 回滚到上一个阶段（弹出栈顶临时阶段，恢复上一阶段）
-## @stack_local @internal @emitter
+## @no_escape @internal @emitter
 func rollback_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	end_current_stage(game_state, command_bus)
 	if temp_stage_stack.is_empty():
@@ -186,7 +186,7 @@ func has_stage_with_name(stage_name: StringName) -> bool:
 			return true
 	return false
 ## 结束当前阶段（执行清理，发射 stage_completed）
-## @stack_local @internal @emitter
+## @no_escape @internal @emitter
 func end_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	if not current_stage or current_stage.is_ended:
 		return
@@ -195,7 +195,7 @@ func end_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
 	current_stage.end_stage(game_state, command_bus)
 	stage_completed.emit(current_stage)
 ## 计时器超时回调（由外部定时器信号触发）
-## @stack_local @signal_listener @internal
+## @no_escape @signal_listener @internal
 func on_timer_timeout(game_state: GameState, command_bus: CommandBus) -> void:
 	if current_stage and not current_stage.is_ended:
 		current_stage.timeout(game_state, command_bus)
@@ -210,7 +210,7 @@ func _connect_request_reset_timer(stage: Stage) -> void:
 func _disconnect_request_reset_timer(stage: Stage) -> void:
 	stage.request_reset_timer.disconnect(_on_stage_reset_timer_requested)
 ## 启动阶段：启动计时器，调用 enter/resume，发出 stage_entered 信号
-## @stack_local @side_effect @emitter
+## @no_escape @side_effect @emitter
 func _start_stage(stage: Stage, game_state: GameState, command_bus: CommandBus) -> void:
 	timer.stop()
 	if stage.time_limit > 0.0:
@@ -241,7 +241,7 @@ func _advance_to_next_main_stage(game_state: GameState, command_bus: CommandBus)
 		return
 	_transition_to(main_stages[current_main_stage_index], game_state, command_bus)
 ## 重置计时器请求信号处理
-## @signal_listener @internal @stack_local
+## @signal_listener @internal @no_escape
 func _on_stage_reset_timer_requested(new_time_limit: float) -> void:
 	if timer and current_stage and not current_stage.is_ended:
 		timer.start(new_time_limit)
