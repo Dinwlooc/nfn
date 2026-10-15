@@ -33,7 +33,11 @@ func _ready() -> void:
 		if child is RenderArea:
 			render_context.register_render_area(child)
 			_initialize_render_area(child)
+	GlobalConsole.c_select_hand_card.connect(_on_select_hand_card)
+	GlobalConsole.c_select_target.connect(_on_select_target)
 	GlobalConsole.c_play_selected_card.connect(_on_play_a_card)
+	GlobalConsole.c_discard_cards.connect(_on_discard_cards)
+	GlobalConsole.c_abandon_response.connect(_on_abandon_response)
 	render_context.item_manager.item_created.connect(face_manager.connect_to_item)
 	render_context.area_manager.area_created.connect(_on_render_context_area_created)
 
@@ -74,8 +78,54 @@ func _init_preset_item(item: RenderItem, area: RenderArea, pool_index: int) -> v
 	if item.get_child_count() == 0 and item.data != null:
 		item.data_requested.emit()
 
-func _on_play_a_card() -> void:
-	operation_manager.upload_play_card()
+## 控制台指令：追加选择渲染位次对应的手牌。
+## @delegates(on_select)
+func _on_select_hand_card(card_index: int) -> void:
+	var hand_area: ItemRenderArea = render_context.get_render_area(RenderArea.DefaultArea.HAND) as ItemRenderArea
+	if not hand_area:
+		print_request_error(&"c_select_hand_card", OperationManager.RequestError.HAND_AREA_MISSING)
+		return
+	var card_item: RenderItem = hand_area.get_item_by_index(card_index)
+	if not card_item:
+		print_request_error(&"c_select_hand_card", OperationManager.RequestError.INVALID_CARD_INDEX)
+		return
+	hand_area.on_select(card_item)
+## 控制台指令：追加选择玩家 id 对应的目标。
+## @delegates(on_select)
+func _on_select_target(target_player_id: int) -> void:
+	var players_area: ItemRenderArea = render_context.get_render_area(RenderArea.DefaultArea.PLAYERS) as ItemRenderArea
+	if not players_area:
+		print_request_error(&"c_select_target", OperationManager.RequestError.PLAYERS_AREA_MISSING)
+		return
+	var target_item: RenderItem = render_context.get_render_item_by_id(PlayerPack.get_class_name_static(), target_player_id)
+	if not target_item:
+		print_request_error(&"c_select_target", OperationManager.RequestError.INVALID_TARGET_ID)
+		return
+	players_area.on_select(target_item)
+## 控制台指令：打出卡牌。不传参走已选牌与已选目标，传索引时交给业务方法按索引出牌。
+## @delegates(play_card_by_index)
+func _on_play_a_card(card_index: int = -1, target_player_id: int = 0) -> void:
+	if card_index < 0:
+		operation_manager.upload_play_card()
+		return
+	var error:OperationManager.RequestError = operation_manager.play_card_by_index(card_index, target_player_id)
+	print_request_error(&"c_play_a_card", error)
+## 控制台指令：弃牌。不传参走已选手牌，传索引时交给业务方法按索引弃置。
+## @delegates(discard_card_by_index)
+func _on_discard_cards(card_index: int = -1) -> void:
+	if card_index < 0:
+		operation_manager.upload_discard_cards()
+		return
+	var error:OperationManager.RequestError = operation_manager.discard_card_by_index(card_index)
+	print_request_error(&"c_discard_cards", error)
+## 控制台指令：放弃响应。
+## @delegates(upload_abandon_response)
+func _on_abandon_response() -> void:
+	operation_manager.upload_abandon_response()
+## 向游戏内控制台播报请求错误。
+## @operation
+func print_request_error(source: StringName, error: OperationManager.RequestError) -> void:
+	GlobalConsole._print("%s：%s" % [source, OperationManager.ERROR_MESSAGES.get(error, "未知错误")])
 
 ## 立即处理渲染请求（由队列调用，不对外暴露）
 func _handle_request_immediate(request: RenderRequest) -> void:

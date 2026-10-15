@@ -6,6 +6,7 @@ export_presets.cfg
 addons/
 .idea/
 Unused/
+.dsh_demo/
 # Imported translations (automatically generated from CSV files)
 *.translation
 .vs

@@ -38,7 +38,7 @@ func append_companion_command(command: BehaviorCommand,companion_source_overridi
 		command._context.set_companion_source(companion_source_overriding)
 	companion_command_requested.emit(command)
 ## 取消命令
-## @facade @internal
+## @internal
 func cancel()->void:
 	if _context:
 		if not _context.can_be_cancelled:

@@ -1,17 +1,21 @@
-[gd_resource type="Resource" load_steps=2 format=3 uid="uid://dpxcwv07hadg7"]
+[gd_resource type="Resource" format=3 uid="uid://dpxcwv07hadg7"]
 
 [sub_resource type="GDScript" id="GDScript_4ovph"]
 script/source = "const command:Dictionary = {
 		&\"c_start\":{&\"min\":0,&\"max\":0,&\"mes\":\"start()-服务器指令。开始游戏。\"},
  		&\"c_draw\":{&\"min\":0,&\"max\":0,&\"mes\":\"\"},
 		&\"c_help\":{&\"min\":0,&\"max\":1,&\"mes\":\"help(command)-查看目标指令的描述。\"},
-		&\"c_play_selected_card\":{&\"min\":0,&\"max\":0,&\"mes\":\"c_play_selected_card()-客户端指令。打出当前选定的手牌\"},
+		&\"c_select_hand_card\":{&\"min\":1,&\"max\":1,&\"mes\":\"c_select_hand_card(card_index)-客户端指令。选择渲染位次对应的手牌，第一张为0。\"},
+		&\"c_select_target\":{&\"min\":1,&\"max\":1,&\"mes\":\"c_select_target(player_id)-客户端指令。选择玩家id对应的目标。\"},
+		&\"c_play_selected_card\":{&\"min\":0,&\"max\":2,&\"mes\":\"c_play_selected_card(card_index,player_id)-客户端指令。不传参：打出已选牌至已选目标；传1参：直接打出该索引手牌至已选目标；传2参：直接打出该索引手牌至该玩家id。\"},
+		&\"c_discard_cards\":{&\"min\":0,&\"max\":1,&\"mes\":\"c_discard_cards(card_index)-客户端指令。不传参：弃掉已选手牌；传参：仅弃掉该索引手牌。\"},
+		&\"c_abandon_response\":{&\"min\":0,&\"max\":0,&\"mes\":\"c_abandon_response()-客户端指令。放弃响应。\"},
 		&\"c_connect_to\":{&\"min\":1,&\"max\":1,&\"mes\":\"\"},
 		&\"c_damage\":{&\"min\":0,&\"max\":3,&\"mes\":\"c_damage()-服务器指令。强制生成对目标的伤害命令。\"},
 		&\"c_close\":{&\"min\":0,&\"max\":0,&\"mes\":\"\"}
 	}
 
-const command_name:PackedStringArray = [\"c_start\",\"c_draw\",\"c_help\",\"c_play_selected_card\",\"c_connect_to\",\"c_damage\",\"c_close\"]
+const command_name:PackedStringArray = [\"c_start\",\"c_draw\",\"c_help\",\"c_select_hand_card\",\"c_select_target\",\"c_play_selected_card\",\"c_discard_cards\",\"c_abandon_response\",\"c_connect_to\",\"c_damage\",\"c_close\"]
 "
 
 [resource]

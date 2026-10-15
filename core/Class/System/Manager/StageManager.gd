@@ -244,4 +244,4 @@ func _advance_to_next_main_stage(game_state: GameState, command_bus: CommandBus)
 ## @signal_listener @internal @no_escape
 func _on_stage_reset_timer_requested(new_time_limit: float) -> void:
 	if timer and current_stage and not current_stage.is_ended:
-		timer.start(new_time_limit)
+		timer.timer_create(new_time_limit)

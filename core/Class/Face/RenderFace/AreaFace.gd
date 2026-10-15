@@ -1,6 +1,7 @@
 extends Control
 class_name AreaFace
 
+#==vars==
 ## 当前鼠标悬停的卡牌（只读引用）
 var hovering_card: RenderItem = null
 ## 目标位置数组（由子类计算）
@@ -19,6 +20,8 @@ var _requested_player_id: int = RenderContext.PUBLIC_PLAYER_ID
 var _area_requested: bool = false
 ## 区域变更回调引用（内部状态）
 var _area_changed_callback: Callable
+
+#==signals==
 ## 进入区域时触发的广播信号
 ## @emitter
 signal into_area
@@ -73,9 +76,6 @@ func _connect_to_area(target_area: RenderArea) -> void:
 	area.items_added.connect(connect_cards_signals)
 	area.items_removed.connect(_on_item_removed)
 	area.context_ready.connect(_on_context_ready)
-	#for child in area.get_children():
-		#if child is RenderItem:
-			#connect_cards_signals(child)
 ## 断开与旧区域的所有信号连接。
 ## @signal_listener
 func _disconnect_from_area(target_area: RenderArea) -> void:
@@ -102,7 +102,7 @@ func _exit_tree() -> void:
 func _on_item_removed(card: RenderItem) -> void:
 	disconnect_card_signals(card)
 ## 渲染更新钩子，由区域触发。默认调用 tween_update。
-## @hook
+## @hook @delegates(tween_update)
 func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	tween_update(render_event)
 ## Tween 更新钩子，由区域触发。子类可重写。
@@ -110,7 +110,7 @@ func render_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 func tween_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	pass
 ## 输入事件处理：检测鼠标进入/离开，并触发拖拽更新。
-## @side_effect
+## @override
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		try_dragging_move()
@@ -124,7 +124,7 @@ func _input(event: InputEvent) -> void:
 				in_area = false
 				_outto_area()
 ## 尝试处理当前拖拽的卡牌移动（转发给 dragging_move）。
-## @delegates
+## @delegates(dragging_move)
 func try_dragging_move() -> bool:
 	if not area:
 		return false
@@ -137,16 +137,16 @@ func try_dragging_move() -> bool:
 ## 连接单张卡牌的鼠标信号。
 ## @signal_listener
 func connect_cards_signals(card: RenderItem) -> void:
-	card.mouse_entered.connect(_on_card_mouse_entered.bind(card))
-	card.mouse_exited.connect(_on_card_mouse_exited.bind(card))
+	card.mouse_entered_item.connect(_on_card_mouse_entered)
+	card.mouse_exited_item.connect(_on_card_mouse_exited)
 ## 断开单张卡牌的鼠标信号，并清理悬停状态。
 ## @signal_listener
 func disconnect_card_signals(card: RenderItem) -> void:
 	if hovering_card == card:
 		card.set_hovering(false)
 		hovering_card = null
-	card.mouse_entered.disconnect(_on_card_mouse_entered)
-	card.mouse_exited.disconnect(_on_card_mouse_exited)
+	card.mouse_entered_item.disconnect(_on_card_mouse_entered)
+	card.mouse_exited_item.disconnect(_on_card_mouse_exited)
 ## 卡牌鼠标进入回调：更新悬停状态。
 ## @signal_listener
 func _on_card_mouse_entered(card: RenderItem) -> void:

@@ -101,6 +101,7 @@ func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
 	hp_indicator.set_capacity(new_max)
+	hp_indicator.update_label_text(clamped_new_cur, new_max)
 	_breath_anim.set_block_count(new_max)
 	_tremor_anim.set_block_count(new_max)
 
@@ -152,6 +153,7 @@ func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
 	mp_indicator.set_capacity(new_max)
+	mp_indicator.update_label_text(clamped_new_cur, new_max)
 
 	if new_max > old_max:
 		for i in range(old_max, new_max):

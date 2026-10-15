@@ -13,7 +13,11 @@ signal c_draw
 signal c_connect_to(url:String)
 signal c_close
 signal c_help(command:StringName)
-signal c_play_selected_card()
+signal c_select_hand_card(card_index: int)
+signal c_select_target(target_player_id: int)
+signal c_play_selected_card(card_index: int, target_player_id: int)
+signal c_discard_cards(card_index: int)
+signal c_abandon_response()
 signal c_reload()
 
 func _ready() -> void:

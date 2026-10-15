@@ -195,6 +195,6 @@ func _on_abandon_response_button_pressed() -> void:
 ## @internal
 func _handle_operation_event(event: RenderEvent) -> void:
 	var status: int = event.config.get(&"status", -1)
-	if status == OperationManager.RequestStatus.SUCCESS:
+	if status == OperationManager.RequestError.OK:
 		return
 	print("操作失败，状态码: ", status)
