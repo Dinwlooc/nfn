@@ -41,6 +41,8 @@ static func check(ctx: CommandContext, card: Card, timing: Timing) -> bool:
 
 ## ----- 原有静态方法（保持不变）-----
 
+## 是否处于该牌的结算效果阶段
+## @pure
 static func is_settle_effect(ctx: CommandContext, card: Card) -> bool:
 	if not (ctx is SettleCommand.Context):
 		return false
@@ -49,6 +51,8 @@ static func is_settle_effect(ctx: CommandContext, card: Card) -> bool:
 		return false
 	return sctx.get_settle_card() == card
 
+## 是否正在压制（斗牌预拼点阶段的顶部牌）
+## @pure
 static func is_suppressing(ctx: CommandContext, source_card: Card) -> bool:
 	if not (ctx is BattleCommand.Context):
 		return false
@@ -57,6 +61,8 @@ static func is_suppressing(ctx: CommandContext, source_card: Card) -> bool:
 		return false
 	return bctx.top_card == source_card
 
+## 是否正被压制（斗牌预拼点阶段的第二张牌）
+## @pure
 static func is_being_suppressed(ctx: CommandContext, target_card: Card) -> bool:
 	if not (ctx is BattleCommand.Context):
 		return false
@@ -65,6 +71,8 @@ static func is_being_suppressed(ctx: CommandContext, target_card: Card) -> bool:
 		return false
 	return bctx.second_card == target_card
 
+## 是否由斗牌发起的拼点开始
+## @pure
 static func is_duel_start_from_battle(ctx: CommandContext, _card: Card) -> bool:
 	if not (ctx is DuelCommand.Context):
 		return false
@@ -73,6 +81,8 @@ static func is_duel_start_from_battle(ctx: CommandContext, _card: Card) -> bool:
 		return false
 	return dctx.event_name == &"BattleCommand"
 
+## 是否由结算发起的拼点开始
+## @pure
 static func is_duel_start_from_settle(ctx: CommandContext, _card: Card) -> bool:
 	if not (ctx is DuelCommand.Context):
 		return false
@@ -81,12 +91,16 @@ static func is_duel_start_from_settle(ctx: CommandContext, _card: Card) -> bool:
 		return false
 	return dctx.event_name == &"Settle"
 
+## 是否为任意拼点的开始阶段
+## @pure
 static func is_any_duel_start(ctx: CommandContext, _card: Card) -> bool:
 	if not (ctx is DuelCommand.Context):
 		return false
 	var dctx: DuelCommand.Context = ctx as DuelCommand.Context
 	return dctx.phase == DuelCommand.Context.Phase.INIT
 
+## 是否正处于该牌的弃置移动中
+## @pure
 static func is_discard(ctx: CommandContext, card: Card) -> bool:
 	if not (ctx is DiscardCardsCommand.Context):
 		return false
@@ -97,6 +111,8 @@ static func is_discard(ctx: CommandContext, card: Card) -> bool:
 		return false
 	return true
 
+## 是否正处于该牌的打牌移动中
+## @pure
 static func is_play(ctx: CommandContext, card: Card) -> bool:
 	if not (ctx is PlayCardsCommand.Context):
 		return false
@@ -107,6 +123,8 @@ static func is_play(ctx: CommandContext, card: Card) -> bool:
 		return false
 	return true
 
+## 是否处于该技能牌的技能阶段
+## @pure
 static func is_skill_phase(ctx: CommandContext, card: Card) -> bool:
 	if not (ctx is SkillCommand.Context):
 		return false

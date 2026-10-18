@@ -18,6 +18,7 @@ static func create_attribute_buff(
 	buff.inborn_stack = inborn_stack
 	return buff
 
+## 取属性类型的字符串标识
 static func _get_type_string(type: int) -> StringName:
 	match type:
 		AttributeModifiers.TYPE_BASE_ADD:

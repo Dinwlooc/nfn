@@ -1,6 +1,7 @@
 extends SystemTrigger
 class_name OperationTrigger
 
+## 构造：接管系统并连接操作请求信号
 func _init(system: System) -> void:
 	super._init(system)
 	_system.transport.operation_request_received.connect(_system.operation_handler.handle_request)

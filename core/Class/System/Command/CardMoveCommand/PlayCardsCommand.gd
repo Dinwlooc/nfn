@@ -1,21 +1,33 @@
 extends CardMoveCommand
 class_name PlayCardsCommand
 
+## 出牌命令的上下文：目标玩家、目标区域与要打出的牌
+## @context
 class Context extends CardMoveCommand.Context:
+	## 目标区域类型
 	enum TargetAreaType { CENTER, PLAYER_DEF }
+	## 目标玩家 id
 	var target_player_id: int = 0
+	## 目标区域类型（中央区或玩家守备区）
 	var target_area_type: TargetAreaType = TargetAreaType.PLAYER_DEF
+	## 要打出的卡牌 id 列表
 	var card_ids: PackedInt32Array = PackedInt32Array()
+	## 行动点消耗的承担玩家
 	var ap_source_player: Player = null
 
+	## 设置行动点承担玩家
 	func set_ap_source_player(player: Player) -> void:
 		ap_source_player = player
+	## 设置目标玩家 id
 	func set_target_player_id(id: int) -> void:
 		target_player_id = id
+	## 设置目标区域类型
 	func set_target_area_type(area_type: TargetAreaType) -> void:
 		target_area_type = area_type
+	## 设置要打出的卡牌 id 列表
 	func set_card_ids(ids: PackedInt32Array) -> void:
 		card_ids = ids
+	## 卡牌 id 列表是否有效
 	func are_card_ids_valid() -> bool:
 		return card_ids.size() > 0
 

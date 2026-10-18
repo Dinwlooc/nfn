@@ -18,5 +18,5 @@ func _process_stage_notify(notify: RenderRequest.StageNotifyRequest) -> void:
 		return
 	if notify.temporary_stage_player_id != 0:
 		render_context.notify_temp_stage(notify.stage_name, notify.current_player_id, notify.temporary_stage_player_id, notify.custom_params)
-	else:
-		render_context.notify_main_stage(notify.stage_name, notify.current_player_id, notify.custom_params)
+		return
+	render_context.notify_main_stage(notify.stage_name, notify.current_player_id, notify.custom_params)

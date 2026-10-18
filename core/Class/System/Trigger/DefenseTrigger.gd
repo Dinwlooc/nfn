@@ -1,6 +1,7 @@
 extends GameStateTrigger
 class_name DefenseTrigger
 
+## 构造：连接区域添加信号，用于接管守备区
 func _init(game_state: GameState, command_bus: CommandBus) -> void:
 	super._init(game_state, command_bus)
 	game_state.area_registry.area_added.connect(_on_defense_area_created)

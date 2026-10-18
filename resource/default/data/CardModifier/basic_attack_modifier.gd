@@ -1,5 +1,7 @@
 extends Modifier
 
+## 结算效果阶段：把该牌从守区移回手牌
+## @side_effect
 func process(context: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
 	if RuleModifierRuntime.should_skip(modifier_ctx):
 		return modifier_ctx

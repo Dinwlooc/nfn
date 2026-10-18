@@ -4,6 +4,7 @@ extends RefCounted
 ## 返回组件名称（同时用作属性修饰器名）
 static func get_component_name() -> StringName:
 	return &"DestroyX"
+## 「摧毁 x」施加的减益 Buff 名
 const  buff_name: StringName = &"DestroyX_Debuff"
 ## 生成「摧毁 x」效果的命令。
 ## 若 x >= 目标牌威力，返回一个 DestroyCardsCommand；否则返回一个 BuffCommand。

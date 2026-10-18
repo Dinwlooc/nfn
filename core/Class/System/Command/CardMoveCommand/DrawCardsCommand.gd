@@ -1,10 +1,15 @@
 extends CardMoveCommand
 class_name DrawCardsCommand
 
+## 抽牌命令的上下文：抽牌张数
+## @context
 class Context extends CardMoveCommand.Context:
+	## 请求抽取的张数
 	var draw_count: int = 0
+	## 设置请求抽取的张数
 	func set_draw_count(count: int) -> void:
 		draw_count = count
+	## 按源区域剩余张数裁剪后的实际抽取张数
 	func get_actual_draw_count(source_area: Area) -> int:
 		if not source_area:
 			return 0

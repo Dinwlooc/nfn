@@ -3,16 +3,23 @@ extends Stage
 class_name StageMain
 
 #== Constants ==
+## 进入阶段时的时限（秒）
 const ENTER_TIME_LIMIT: float = 60.0
+## 恢复阶段（响应后返回）时的时限（秒）
 const RESUME_TIME_LIMIT: float = 30.0
 
 #== Properties ==
+## 当前攻击者玩家 id，也是响应权归属
 var _current_attacker_id: int = 0
+## 当前攻击者实例，阶段结束时置空
 var _current_attacker: Player = null
+## 上次重置计时器的时刻（毫秒）
 var last_timer_reset_time: int = 0
+## 本阶段是否已做过首次响应刷新
 var _has_entered_refresh: bool = false
 
 #== Constructor ==
+## 构造：设定阶段名与进入时限
 func _init() -> void:
 	super._init()
 	stage_name = &"Main"

@@ -10,15 +10,25 @@ enum Property {
 	MODIFIED_POWER,
 	MODIFIED_COST
 }
+## 标准基础力量
 const STANDARD_POWER: int = 3
+## 标准修正后力量
 const STANDARD_MODIFIED_POWER: int = 3
+## 标准花色
 const STANDARD_SUIT: int = 0
+## 标准基础费用
 const STANDARD_COST: int = 1
+## 标准修正后费用
 const STANDARD_MODIFIED_COST: int = 1
+## 基础力量
 var power: int
+## 基础费用
 var cost: int
+## 花色
 var suit: int
+## 含修饰的力量
 var modified_power: int
+## 含修饰的费用
 var modified_cost: int
 
 ## 构造器，初始化所有字段。

@@ -1,6 +1,7 @@
 extends GameStateTrigger
 class_name ShuffleWhenEmptyTrigger
 
+## 构造：连接“命令全部完成”信号
 func _init(game_state: GameState, command_bus: CommandBus) -> void:
 	super._init(game_state, command_bus)
 	game_state.all_commands_completed.connect(_on_idle)

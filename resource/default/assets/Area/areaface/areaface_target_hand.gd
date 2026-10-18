@@ -11,10 +11,13 @@ const MOVE_TRANS: Tween.TransitionType = Tween.TRANS_QUAD
 ## 目标全局位置（动画终点）
 var target_global_position: Vector2
 
+## 就绪：登记手牌区并记录动画目标位置
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.HAND)
 	target_global_position = global_position
 
+## 接入区域：额外监听「移除时创建」与「添加」信号
+## @override
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
 	if not target_area.item_created_for_removing.is_connected(_on_item_created_for_removing):
@@ -22,6 +25,8 @@ func _connect_to_area(target_area: RenderArea) -> void:
 	if not target_area.items_added.is_connected(_on_item_added):
 		target_area.items_added.connect(_on_item_added)
 
+## 断开区域连接
+## @override
 func _disconnect_from_area(target_area: RenderArea) -> void:
 	if target_area.item_created_for_removing.is_connected(_on_item_created_for_removing):
 		target_area.item_created_for_removing.disconnect(_on_item_created_for_removing)
@@ -51,5 +56,6 @@ func _on_move_finished(item: RenderItem) -> void:
 func render_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	pass
 
+## 本类不参与补间更新
 func tween_update(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	pass

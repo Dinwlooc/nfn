@@ -1,13 +1,22 @@
 extends ItemFace
 
+## 卡面底板
 @onready var background_panel: Panel = $Backgound
+## 竖排名称标签
 @onready var vertical_name_label: Label = $VerticalName
+## 主图标
 @onready var texture_rect: TextureRect = $CenterContainer/TextureRect
+## 消耗标签
 @onready var cost_label: Label = $Cost
+## 伤害数值标签
 @onready var damage_label: Label = $Damage
+## 描述标签
 @onready var description_label: Label = $Description
+## 卡名标签
 @onready var name_label: Label = $Name
+## 花色精灵
 @onready var suit_sprite: Sprite2D = $Suit
+## 颜色块容器
 @onready var color_rect_parent: Node = $ColorRectParent
 
 ## 背景颜色定义（带透明度）
@@ -28,12 +37,17 @@ const TYPE_COLORS: Dictionary[StringName, Dictionary] = {
 		&"select": Color(0.3, 0.8, 0.3, 1.0)
 	}
 }
+## 默认底色
 const DEFAULT_COLOR: Color = Color(0.8, 0.8, 0.8, 0.3)
 
+## 当前卡面样式
 var _stylebox: StyleBoxFlat
+## 当前卡牌类型
 var _current_type: StringName
+## 弃牌区闪烁动画
 var _blink_tween: Tween = null          # 弃牌区闪烁动画
 
+## 就绪：接线并初始化卡面
 func _ready() -> void:
 	_stylebox = background_panel.get_theme_stylebox(&"panel") as StyleBoxFlat
 	_stylebox.bg_color = DEFAULT_COLOR

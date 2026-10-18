@@ -6,6 +6,7 @@ class_name AreaCenter
 ## 技能目标玩家列表（用于即将放入的技能卡牌） @context
 var skill_target_players: Array[Player] = []
 
+## 构造：设定区域名为中央区
 func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	super._init(_player)
 	area_name = GlobalConstants.DefaultArea.CENTER

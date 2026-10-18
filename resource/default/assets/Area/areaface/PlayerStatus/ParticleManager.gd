@@ -2,13 +2,17 @@
 ## 所有粒子节点在发射完成后自动销毁。
 extends Node2D
 
+## 常量配置脚本
 const C = preload("status_constants.gd")
 
 ## ---- 发射器 ----
 var _hit_emitter: GPUParticles2D = null
+## 流血粒子发射器
 var _bleed_emitter: GPUParticles2D = null
+## 升级粒子发射器
 var _levelup_emitter: GPUParticles2D = null
 
+## 就绪：创建两个常驻粒子发射器
 func _ready() -> void:
 	_hit_emitter = _create_blood_particle()
 	_hit_emitter.emitting = false
@@ -90,6 +94,7 @@ func _create_blood_particle() -> GPUParticles2D:
 	config.scale_max = C.BLOOD_PARTICLE_SIZE
 	return ParticleFactory.create_particles(1, C.BLOOD_LIFETIME, config)
 
+## 创建流血粒子发射器
 func _create_bleed_particle() -> GPUParticles2D:
 	var gradient: Gradient = Gradient.new()
 	gradient.colors = [Color.RED, Color.DARK_RED]
@@ -110,6 +115,7 @@ func _create_bleed_particle() -> GPUParticles2D:
 	config.damping_max = C.BLEED_DAMPING
 	return ParticleFactory.create_particles(1, C.BLEED_LIFETIME, config)
 
+## 创建升级粒子发射器
 func _create_levelup_particle() -> GPUParticles2D:
 	var gradient: Gradient = Gradient.new()
 	gradient.colors = [Color(0.6, 0.0, 0.8), Color(1.0, 1.0, 1.0)]

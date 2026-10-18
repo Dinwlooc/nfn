@@ -2,6 +2,7 @@
 extends ScheduleCommand
 class_name StageScheduleCommand
 
+## 阶段调度操作类型
 enum Operation {
 	ROLLBACK,
 	SWITCH_MAIN,
@@ -11,8 +12,11 @@ enum Operation {
 
 ## @context @deep_inherit
 class Context extends CommandContext:
+	## 本次调度要执行的操作
 	var operation: Operation
+	## 主阶段切换时额外跳过的阶段数
 	var skip_count: int = 0
+	## 主阶段切换时禁止停留的阶段名
 	var disallowed_stages: Array[StringName] = []
 
 ## @seam_override

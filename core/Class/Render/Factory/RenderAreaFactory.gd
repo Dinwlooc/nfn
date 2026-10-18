@@ -2,9 +2,12 @@
 extends Object
 class_name RenderAreaFactory
 
+## 可创建的渲染区域类表
 static var area_classes: Array[Script] = [RenderAreaHand,RenderAreaDefence]
+## 区域名 → 区域类 的注册表
 static var registry: Dictionary[StringName, Script] = build_registry(area_classes)
 
+## 由区域类表构建 区域名 → 区域类 的注册表
 static func build_registry(classes: Array[Script]) -> Dictionary[StringName, Script]:
 	var dict: Dictionary[StringName, Script] = {}
 	for script in classes:

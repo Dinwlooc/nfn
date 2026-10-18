@@ -2,8 +2,11 @@
 extends AreaFace
 
 # ==================== 常量与枚举 ====================
+## 防御动画管理器脚本
 const DefenceAnimationManager = preload("defence_animation_manager.gd")
+## 防御预览管理器脚本
 const DefencePreviewManager = preload("defence_preview_manager.gd")
+## 展示模式：自动/手动
 enum Mode { AUTO, MANUAL }
 ## 补间动画时长（秒）
 const TWEEN_TIME: float = 0.2

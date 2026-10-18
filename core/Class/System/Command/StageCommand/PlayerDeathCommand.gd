@@ -3,11 +3,13 @@ class_name PlayerDeathCommand
 
 ## @context
 class Context extends CommandContext:
+	## 玩家死亡命令的阶段状态
 	enum Phase {
 		TRANSFER_CARDS,
 		REMOVE_PLAYER,
 		DONE
 	}
+	## 待处理死亡的玩家
 	var dying_player: Player
 
 ## @seam_override

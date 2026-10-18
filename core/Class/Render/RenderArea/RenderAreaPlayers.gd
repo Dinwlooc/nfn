@@ -1,13 +1,20 @@
+## 玩家区：为每个入区的玩家建卡面；识别出本地玩家后，为非本地玩家动态创建手牌区与守区并挂在玩家卡面下。
 extends ItemRenderArea
 class_name RenderAreaPlayers
 
+## 本地玩家卡实例（识别到本地玩家后写入）
 var local_player:RenderItem
+## 本地玩家被识别并记录
+## @emitter
 signal local_player_received(local_player:RenderItem)
 
+## 就绪：接入玩家添加信号
+## @override
 func _ready()->void:
 	super._ready()
 	items_added.connect(_on_player_added)
 
+## 玩家入区：识别本地玩家；其余玩家挂载其手牌区与守区
 func _on_player_added(new_player:RenderItem)->void:
 	if new_player.data.get_class_name() != PlayerPack.get_class_name_static():
 		return
@@ -22,5 +29,6 @@ func _on_player_added(new_player:RenderItem)->void:
 	new_player.add_child(hand_area)
 	new_player.add_child(defence_area)
 
+## 静态区域名：供工厂在无实例时查询
 static func get_area_name_static()->StringName:
 	return DefaultArea.PLAYERS

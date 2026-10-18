@@ -3,28 +3,34 @@
 extends RefCounted
 class_name RenderAreaManager
 
+## 公共视角的玩家 id
 const PUBLIC_PLAYER_ID: int = RenderContext.PUBLIC_PLAYER_ID
+
+#==signals==
+## 区域注册完成广播
+## @emitter
+signal render_area_registered(area_name: StringName, area: RenderArea, player_id: int)
+## 区域注销完成广播
+## @emitter
+signal render_area_unregistered(area_name: StringName, player_id: int)
+## 新建区域广播：监听者负责初始化该区域
+## @requester
+signal area_created(area: RenderArea, player_id: int)
+
+#==vars==
 ## 渲染区域注册表：player_id -> { area_name -> RenderArea }
 var render_areas: Dictionary[int, Dictionary] = {}
 ## 区域创建回调表：player_id -> { area_name -> Dictionary[Callable, bool] }
 var callback_map: Dictionary[int, Dictionary] = {}
-
-signal render_area_registered(area_name: StringName, area: RenderArea, player_id: int)
-signal render_area_unregistered(area_name: StringName, player_id: int)
-signal area_created(area: RenderArea, player_id: int)
-
+## 本地玩家 id，0 表示未知（此时不做公共视角归一化）
 var local_player_id: int = 0
 
+#==lifecycle==
+## 构造：设定本地玩家 id（0 表示未知）
 func _init(p_local_player_id: int = 0) -> void:
 	local_player_id = p_local_player_id
 
-func _get_actual_player_id(player_id: int) -> int:
-	if local_player_id == 0:
-		return player_id
-	if player_id == local_player_id:
-		return PUBLIC_PLAYER_ID
-	return player_id
-
+#==public==
 ## 注册区域创建/替换回调（回调签名：func(new_area: RenderArea, old_area: RenderArea)）
 func connect_renderarea(area_name: StringName, callback: Callable, player_id: int = PUBLIC_PLAYER_ID) -> void:
 	var actual_id: int = _get_actual_player_id(player_id)
@@ -104,6 +110,15 @@ func create_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID
 	register_render_area(area, player_id)
 	area_created.emit(area, player_id)
 	return area
+
+#==internal==
+## 玩家 id 归一化：本地玩家映射为公共视角 PUBLIC_PLAYER_ID；local_player_id 为 0（未知）时原样返回
+func _get_actual_player_id(player_id: int) -> int:
+	if local_player_id == 0:
+		return player_id
+	if player_id == local_player_id:
+		return PUBLIC_PLAYER_ID
+	return player_id
 
 ## 触发指定区域的所有回调（内部使用）
 func _emit_callbacks(player_id: int, area_name: StringName, new_area: RenderArea, old_area: RenderArea) -> void:

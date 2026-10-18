@@ -3,45 +3,65 @@ extends BehaviorCommand
 class_name CardMoveCommand
 ## @context @deep_inherit
 class Context extends CommandContext:
+	## 卡牌移动的四阶段状态
 	enum Phase { INIT, MOVE_OUT, MOVE_IN, DONE }
+	## 移出模式：顶部 N 张 / 指定下标 / 指定 id
 	enum MoveOutMode { TOP, INDICES, BY_ID }
+	## 移出区域
 	var source_area: Area = null
+	## 当前移出模式
 	var move_out_mode: MoveOutMode = MoveOutMode.TOP
+	## 移出参数：TOP 为张数，INDICES/BY_ID 为 id 或下标数组
 	var move_out_param = null
+	## 移入区域
 	var target_area: Area = null
+	## 本次实际移出的卡牌
 	var moved_cards: Array[Card] = []
+	## 发起移动的玩家
 	var source_player: Player = null
+	## 渲染更新事件类型
 	var event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.DRAW
+	## 自定义事件名（event_type 为 CUSTOM 时使用）
 	var custom_event_name: StringName = &""
 
+	## 链式设置发起玩家
 	func set_source_player(player: Player) -> Context:
 		source_player = player
 		return self
+	## 取发起玩家
 	func get_source_player() -> Player:
 		return source_player
+	## 取本次移出的卡牌
 	func get_moved_cards() -> Array[Card]:
 		return moved_cards
+	## 链式设为顶部 N 张模式
 	func set_top_mode(count: int) -> Context:
 		move_out_mode = MoveOutMode.TOP
 		move_out_param = count
 		return self
+	## 链式设为下标模式
 	func set_indices_mode(indices: PackedInt32Array) -> Context:
 		move_out_mode = MoveOutMode.INDICES
 		move_out_param = indices
 		return self
+	## 链式设为按 id 模式
 	func set_id_mode(ids: PackedInt32Array) -> Context:
 		move_out_mode = MoveOutMode.BY_ID
 		move_out_param = ids
 		return self
+	## 链式设置移入区域
 	func set_target_area(area: Area) -> Context:
 		target_area = area
 		return self
+	## 链式设置移出区域
 	func set_source_area(area: Area) -> Context:
 		source_area = area
 		return self
+	## 链式设置渲染事件类型
 	func set_event_type(type: RenderRequest.ItemSet.EventType) -> Context:
 		event_type = type
 		return self
+	## 链式设置自定义事件名（仅 CUSTOM 类型可用，否则报错）
 	func set_custom_event_name(name: StringName) -> Context:
 		if event_type == RenderRequest.ItemSet.EventType.CUSTOM:
 			custom_event_name = name

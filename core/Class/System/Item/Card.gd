@@ -2,7 +2,10 @@
 extends Item
 class_name Card
 
+## 卡牌所在区域变更（区域名或所属玩家变化时发出）
+## @emitter
 signal area_changed(card: Card)
+## 花色枚举；VOID 表示无花色
 enum Suit {
 	HEART,
 	DIAMOND,
@@ -90,6 +93,7 @@ func get_settlement_damage(damage_base: int = -1) -> int:
 	var settlement_damage: int = attributeModifiers.compute_with_temporary_bonus(&"settlement_damage_bonus", float(damage_base))
 	return settlement_damage
 ## 设置卡牌所在区域，仅当区域数据发生变化时才更新并发射 area_changed 信号
+## @side_effect @emitter
 func set_area(area: Area) -> void:
 	var new_area_name: StringName = area.area_name
 	var new_area_player_id: int = area.get_player().get_id()
@@ -99,10 +103,12 @@ func set_area(area: Area) -> void:
 	area_player_id = new_area_player_id
 	area_changed.emit(self)
 ## 清除区域缓存（用于强制重建数据包）
+## @side_effect
 func clear_area_cache() -> void:
 	area_name = &""
 	area_player_id = 0
 ## 供 CardsManager 在分配 ID 后调用，设置 BuffModifiers 所有者
+## @delegates
 func set_card_id(new_id: int) -> void:
 	set_id(new_id)
 ## 返回物品类型标识

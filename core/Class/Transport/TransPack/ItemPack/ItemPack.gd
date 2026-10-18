@@ -9,6 +9,7 @@ var merge_mask: int = 0
 ## 是否为全量更新包（若为 true，merge_mask 将被置为 -1）。
 var is_full_update: bool = false
 
+## 版本号取模上限
 const VERSION_MAX: int = 65535
 
 ## @zero_instance

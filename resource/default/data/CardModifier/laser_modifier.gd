@@ -1,9 +1,13 @@
 ## 激光修饰器：压制时对被压制牌造成「摧毁4」并摧毁自身。
 extends Modifier
 
+## 摧毁组件脚本
 const ComponentDestroyX: Script = preload("Component/ComponentDestroyX.gd")
+## 摧毁值 x
 @export var destroy_x: int = 4
 
+## 压制时：自身进弃牌堆，并对被压制牌施加「摧毁 x」
+## @side_effect
 func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
 	if RuleModifierRuntime.should_skip(modifier_ctx):
 		return modifier_ctx
@@ -16,6 +20,8 @@ func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContex
 	_apply_suppress(source_card, bctx.second_card, bctx.defensive_area, state, modifier_ctx)
 	return modifier_ctx
 
+## 执行压制效果：先自毁，再对被压制牌施加摧毁
+## @side_effect
 func _apply_suppress(source_card: Card, target_card: Card, src_area: AreaDefence, state: GameState, modifier_ctx: ModifierContext) -> void:
 	var owner: Player = source_card.get_player()
 	var self_destroy_cmd := DestroyCardsCommand.new(

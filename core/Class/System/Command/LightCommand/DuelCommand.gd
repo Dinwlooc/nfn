@@ -4,31 +4,43 @@ class_name DuelCommand
 
 ## @context
 class Context extends CommandContext:
+	## 拼点命令的三阶段状态
 	enum Phase {
 		INIT,
 		EVALUATE_RESULT,
 		DONE
 	}
+	## 拼点结果
 	enum Result {
 		A_WIN,
 		B_WIN,
 		TIE
 	}
 
+	## 参与拼点的第一张卡牌
 	var card1: Card
+	## 参与拼点的第二张卡牌
 	var card2: Card
+	## 拼点事件名
 	var event_name: StringName
+	## 准备阶段缓存的第一张卡牌威力
 	var cached_power1: float = 0.0
+	## 准备阶段缓存的第二张卡牌威力
 	var cached_power2: float = 0.0
+	## 拼点结果（Result 枚举）
 	var result: int = Result.TIE
+	## 双方点数差（绝对值）
 	var point_difference: int = 0
 
+	## 链式设置两张拼点卡牌与事件名
 	func set_cards(card_a: Card, card_b: Card, source_event_name: StringName) -> Context:
 		card1 = card_a
 		card2 = card_b
 		event_name = source_event_name
 		return self
 
+	## 两张拼点卡的持有者都参与修饰
+	## @hook @override
 	func get_primary_modifier_players() -> Array[Player]:
 		var players: Array[Player] = []
 		if card1 and card1.player:
@@ -37,6 +49,8 @@ class Context extends CommandContext:
 			players.append(card2.player)
 		return players
 
+	## 按发起方视角返回两张卡的修饰顺序
+	## @hook @override
 	func get_primary_modifier_cards() -> Array[Card]:
 		if not card1 or not card2:
 			return []

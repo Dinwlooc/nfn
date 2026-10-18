@@ -4,7 +4,9 @@ class_name DefenseStageRequestCommand
 
 ## @context
 class Context extends StageRequestCommand.Context:
+	## 触发本次防御请求的守区
 	var defense_area: AreaDefence
+	## 攻击方玩家
 	var attacker: Player
 
 ## @seam_override

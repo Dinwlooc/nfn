@@ -1,18 +1,25 @@
 extends TransPack
 class_name RenderRequest
 
+## 公共区域玩家 id（非专有归属）
 const PUBLIC_AREA_PLAYER_ID: int = 1
+## 目标区域名
 var target_area: StringName
+## 目标区域的所属玩家 id
 var target_area_player_id: int = PUBLIC_AREA_PLAYER_ID
 ## 自定义参数字典（所有子类通用）
 var custom_params: Dictionary[StringName,Variant]
 @warning_ignore("assert_always_true")
+## 把本请求发送给指定对等体
+## @side_effect
 func send_to_player(peer_id: int) -> void:
 	GlobalTransport.send_render_request(peer_id, self)
 ## 设置自定义参数字典（基类默认实现，不限制事件类型）
 func set_custom_params(params: Dictionary[StringName,Variant]) -> void:
 	custom_params = params
 
+## 序列化：区域名、掩码与自定义参数
+## @override @side_effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, target_area)
 	var mask: int = 0
@@ -23,6 +30,8 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, target_area_player_id)
 	SerializationUtil.write(buffer, custom_params)
 
+## 反序列化：区域名、掩码与自定义参数
+## @override
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = RenderRequest.new()) -> RenderRequest:
 	pack.target_area = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 	var mask: int = SerializationUtil.read(buffer, TYPE_INT)
@@ -36,22 +45,32 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = 
 
 
 # ========== ItemSet ==========
+## 一组物品的整包更新请求
 class ItemSet extends RenderRequest:
+	## 物品事件类型
 	enum EventType {
 		CUSTOM, DRAW, ACQUIRE, GENERATE, DISCARD, DEATH, HIDE, UPDATE, STRIKE, ATTACK, TRANSFER
 	}
+	## 事件类型
 	var event_type: EventType
+	## 事件来源玩家 id
 	var event_source_player_id: int = PUBLIC_AREA_PLAYER_ID
+	## 随请求下发的物品数据包
 	var items: Array[ItemPack] = []
+	## 来源区域名
 	var source_area_name: StringName
+	## 来源区域的所属玩家 id
 	var source_area_player_id: int
+	## 本次序列化的来源字段掩码
 	var _mask: int = 0
+	## 来源字段掩码位
 	enum SourceMask {
 		NONE = 0,
 		AREA_NAME = 1 << 0,
 		PLAYER_ID = 1 << 1,
 	}
 
+	## 构造：绑定目标区域、事件与物品列表
 	func _init(
 		target_area_name: StringName = &"",
 		event_type_val: EventType = EventType.CUSTOM,
@@ -68,6 +87,8 @@ class ItemSet extends RenderRequest:
 		source_area_name = override_source_area_name
 		source_area_player_id = override_source_area_player_id
 
+	## 序列化：先写基类字段，再写事件、物品与来源掩码
+	## @override @side_effect
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)
 		SerializationUtil.write(buffer, event_type)
@@ -84,6 +105,8 @@ class ItemSet extends RenderRequest:
 		if _mask & SourceMask.PLAYER_ID:
 			SerializationUtil.write(buffer, source_area_player_id)
 
+	## 反序列化：读回事件、物品与来源掩码
+	## @override
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = ItemSet.new()) -> RenderRequest:
 		super.deserialize_from_buffer(buffer, pack)
 		var item_set = pack as ItemSet
@@ -102,24 +125,35 @@ class ItemSet extends RenderRequest:
 				item_set.source_area_player_id = item_set.target_area_player_id
 		return pack
 
+	## 包类名标识
+	## @override
 	static func get_class_name_static() -> StringName:
 		return &"ItemSet"
 
 
 # ========== ItemCountSet ==========
+## 物品数量更新请求（不携带物品数据包）
 class ItemCountSet extends RenderRequest:
+	## 区域当前物品总数
 	var total_count: int = 0
+	## 物品事件类型
 	var event_type: ItemSet.EventType = ItemSet.EventType.CUSTOM
+	## 事件来源玩家 id
 	var event_source_player_id: int = PUBLIC_AREA_PLAYER_ID
+	## 来源区域名
 	var source_area_name: StringName
+	## 来源区域的所属玩家 id
 	var source_area_player_id: int
+	## 本次序列化的来源字段掩码
 	var _mask: int = 0
+	## 来源字段掩码位
 	enum SourceMask {
 		NONE = 0,
 		AREA_NAME = 1 << 0,
 		PLAYER_ID = 1 << 1,
 	}
 
+	## 构造：绑定目标区域、数量与事件
 	func _init(
 		target_area_name: StringName = &"",
 		count: int = 0,
@@ -136,6 +170,8 @@ class ItemCountSet extends RenderRequest:
 		source_area_name = override_source_area_name
 		source_area_player_id = override_source_area_player_id
 
+	## 序列化：先写基类字段，再写数量、事件与来源掩码
+	## @override @side_effect
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)
 		SerializationUtil.write(buffer, total_count)
@@ -153,6 +189,8 @@ class ItemCountSet extends RenderRequest:
 		if _mask & SourceMask.PLAYER_ID:
 			SerializationUtil.write(buffer, source_area_player_id)
 
+	## 反序列化：读回数量、事件与来源掩码
+	## @override
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = ItemCountSet.new()) -> RenderRequest:
 		super.deserialize_from_buffer(buffer, pack)
 		var count_set = pack as ItemCountSet
@@ -171,15 +209,21 @@ class ItemCountSet extends RenderRequest:
 				count_set.source_area_player_id = count_set.target_area_player_id
 		return pack
 
+	## 包类名标识
+	## @override
 	static func get_class_name_static() -> StringName:
 		return &"ItemCountSet"
 # ========== StageNotifyRequest ==========
+## 阶段变更通知请求
 class StageNotifyRequest extends RenderRequest:
+	## 当前行动玩家 id
 	var current_player_id: int
+	## 阶段名
 	var stage_name: StringName
 	## 临时阶段归属玩家 ID（0 表示主阶段，非 0 表示临时阶段并属于该玩家）
 	var temporary_stage_player_id: int
 
+	## 构造：绑定玩家、阶段与临时归属
 	func _init(player_id: int = 0, stage: StringName = &"", temp_owner_id: int = 0, params: Dictionary[StringName,Variant] = {}) -> void:
 		target_area = GlobalConstants.DefaultArea.CENTER
 		target_area_player_id = PUBLIC_AREA_PLAYER_ID
@@ -188,12 +232,16 @@ class StageNotifyRequest extends RenderRequest:
 		temporary_stage_player_id = temp_owner_id
 		custom_params = params
 
+	## 序列化：先写基类字段，再写玩家、阶段与临时归属
+	## @override @side_effect
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)   # 基类已写入 custom_params
 		SerializationUtil.write(buffer, current_player_id)
 		SerializationUtil.write(buffer, stage_name)
 		SerializationUtil.write(buffer, temporary_stage_player_id)
 
+	## 反序列化：读回玩家、阶段与临时归属
+	## @override
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = StageNotifyRequest.new()) -> RenderRequest:
 		super.deserialize_from_buffer(buffer, pack)   # 基类已读取 custom_params
 		pack.current_player_id = SerializationUtil.read(buffer, TYPE_INT)
@@ -201,5 +249,7 @@ class StageNotifyRequest extends RenderRequest:
 		pack.temporary_stage_player_id = SerializationUtil.read(buffer, TYPE_INT)
 		return pack
 
+	## 包类名标识
+	## @override
 	static func get_class_name_static() -> StringName:
 		return &"StageNotifyRequest"

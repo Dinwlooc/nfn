@@ -2,8 +2,14 @@
 extends RefCounted
 class_name CommandBus
 
+## 命令已入队（无回调）
+## @emitter
 signal new_behavior(command: BehaviorCommand)
+## 命令已入队（带完成回调）
+## @emitter
 signal new_behavior_with_callback(command: BehaviorCommand, callback: Callable)
+## 传唤：设置可响应玩家集合（由操作处理器接管）
+## @requester
 signal request_set_responsive_players(player_ids: PackedInt32Array)
 
 ## 入队不带回调的命令

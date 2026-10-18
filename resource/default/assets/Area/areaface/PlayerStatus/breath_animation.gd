@@ -11,15 +11,23 @@ var frame_interval: int = 4
 ## 块间相位偏移（整数）
 var phase_offset: int = 4
 
+## 是否启用
 var _active: bool = false
+## 正弦表
 var _sine_table: PackedFloat64Array = PackedFloat64Array()
+## 全局相位索引
 var _global_phase_index: int = 0
+## 目标块数量
 var _block_count: int = 0
 
+## 正弦表长度
 const TABLE_SIZE: int = 64
+## 每帧相位增量
 const PHASE_INCREMENT: int = 1
+## 相位掩码（TABLE_SIZE-1）
 const MASK: int = TABLE_SIZE - 1
 
+## 构造：生成正弦表
 func _init() -> void:
 	_generate_sine_table()
 
@@ -49,6 +57,7 @@ func update() -> void:
 		var brightness: float = 1.0 + amplitude * _sine_table[phase]
 		brightness_updated.emit(i, brightness)
 
+## 生成呼吸用正弦表
 func _generate_sine_table() -> void:
 	_sine_table.resize(TABLE_SIZE)
 	for i in range(TABLE_SIZE):

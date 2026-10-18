@@ -61,6 +61,7 @@ const FLUSH_INTERVAL: float = 1.0
 ## 缓冲区立即刷新阈值
 const BATCH_FLUSH_THRESHOLD: int = 20
 
+## 就绪：加载命令/输入/建议标签并隐藏面板
 func _ready():
 	command_load()
 	input_load()
@@ -135,24 +136,29 @@ func toggle_panel_display():
 	else:
 		hide_panel()
 
+## 显示控制台面板并聚焦输入框
 func show_panel():
 	animate_panel_position(display_position)
 	input_line_edit.call_deferred(&"grab_focus")
 
+## 隐藏控制台面板
 func hide_panel():
 	animate_panel_position(original_position)
 	get_parent().call_deferred(&"grab_focus")
 
+## 加载可用命令列表
 func command_load():
 	original_position = Vector2(0, 900) - size
 	display_position = Vector2(0, 900) - Vector2(0, size.y)
 
+## 连接输入框的提交与焦点信号
 func input_load():
 	input_line_edit.text_submitted.connect(_on_command_submitted)
 	input_line_edit.focus_entered.connect(_on_focus_entered)
 	input_line_edit.focus_exited.connect(_on_focus_exited)
 	input_line_edit.text_changed.connect(_on_text_changed)
 
+## 创建建议标签节点池
 func suggestion_labels_load():
 	labels = vbox_container.get_children()
 	vbox_container.visible = false
@@ -164,13 +170,16 @@ func suggestion_labels_load():
 		labels[i].connect(&"text_submitted", _suggestion_submitted) if labels[i].has_signal(&"text_submitted") else labels[i].connect(&"gui_input", _on_suggestion_clicked.bind(i))
 		labels[i].mouse_entered.connect(labels[i].call_deferred.bind(&"grab_focus"))
 
+## 输入框获得焦点：展开建议
 func _on_focus_entered():
 	history_navigation_enabled = true
 	current_history_index = -1
 
+## 输入框失去焦点：收起建议
 func _on_focus_exited():
 	history_navigation_enabled = false
 
+## 文本变化：按前缀刷新建议列表
 func _on_text_changed(new_text: String):
 	if _ignore_text_changed:
 		return
@@ -187,6 +196,7 @@ func _on_text_changed(new_text: String):
 	toggle_suggestions(not filtered.is_empty())
 	filtered.append("...")
 
+## 建议被提交：填入输入框并执行
 func _suggestion_submitted(suggestion: String):
 	input_line_edit.text = suggestion + "()"
 	input_line_edit.call_deferred(&"grab_focus")
@@ -194,6 +204,7 @@ func _suggestion_submitted(suggestion: String):
 	current_page = 0
 	input_line_edit.text_changed.emit(input_line_edit.text)
 
+## 建议被点击
 func _on_suggestion_clicked(event: InputEvent, index: int):
 	if event is InputEventMouseButton and event.pressed and event.button_mask == 1:
 		var suggestion = labels[index].text
@@ -203,6 +214,7 @@ func _on_suggestion_clicked(event: InputEvent, index: int):
 			return
 		_suggestion_submitted(suggestion)
 
+## 建议获得焦点：高亮该项
 func _on_suggestion_focused(index: int):
 	labels[index].select_all()
 	if labels[index].text == "..." or not labels[index].visible:
@@ -216,6 +228,7 @@ func _on_suggestion_focused(index: int):
 	current_selection = index
 	update_page_display(current_page)
 
+## 命令提交：执行命令并清空输入
 func _on_command_submitted(new_text: String):
 	var command_with_args = new_text.strip_edges().to_lower()
 	if command_with_args.is_empty():
@@ -248,6 +261,7 @@ func update_page_display(page: int):
 			labels[i].text = ""
 			labels[i].visible = false
 
+## 展开/收起建议列表
 func toggle_suggestions(_show: bool):
 	vbox_container.visible = _show
 	if _show:
@@ -271,6 +285,7 @@ func navigate_history(is_up: bool):
 		var actual_index = command_history.size() - 1 - current_history_index
 		input_line_edit.text = command_history[actual_index]
 
+## 全局输入：处理控制台开关快捷键
 func _input(event):
 	if not event.is_pressed():
 		return

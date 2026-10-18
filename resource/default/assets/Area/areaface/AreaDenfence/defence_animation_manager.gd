@@ -43,6 +43,7 @@ class PreviewParams:
 	## 是否存在次层卡牌
 	var has_second: bool
 
+	## 构造：记录顶部/第二张牌的全局位置、缩放与是否存在第二张
 	func _init(p_top_global: Vector2, p_second_global: Vector2, p_top_scale: float, p_second_scale: float, p_has_second: bool) -> void:
 		top_global = p_top_global
 		second_global = p_second_global

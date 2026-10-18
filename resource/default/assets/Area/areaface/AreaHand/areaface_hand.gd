@@ -1,30 +1,52 @@
 ## 手牌区面板，管理卡牌布局、排序、拖拽及操作按钮。
 extends AreaFace
 
+## 手牌排序管理器脚本
 const HandSortManager = preload("hand_sort_manager.gd")
+## 手牌拖拽管理器脚本
 const HandDragManager = preload("hand_drag_manager.gd")
+## 手牌动画管理器脚本
 const HandAnimationManager = preload("hand_animation_manager.gd")
 
+## 面板原始位置
 var original_position: Vector2
+## 面板原始尺寸
 var original_size: Vector2
+## 排列目标区域中心
 var area_target_position: Vector2
+## 排列目标区域尺寸
 var area_target_size: Vector2
+## 手牌整体缩放系数
 var total_scale_factor: float = 1.0
+## 当前卡牌排布补间
 var current_card_tween: Tween = null
+## 当前拖拽补间
 var current_drag_tween: Tween = null
 
+## 排序管理器实例
 var _sort_manager: HandSortManager = null
+## 拖拽管理器实例
 var _drag_manager: HandDragManager = null
+## 动画管理器实例
 var _anim_manager: HandAnimationManager = null
 
+## 操作按钮容器
 @onready var ui_container = $UIContainer
+## 快捷排序按钮容器
 @onready var quick_sort_ui = $UIContainer/QuickSortUI
+## 快捷排序按钮
 @onready var quick_sort_button = $UIContainer/QuickSortUI/QuickSortButton
+## 出牌按钮容器
 @onready var play_card_ui = $UIContainer/PlayCardUI
+## 出牌按钮
 @onready var play_card_button = $UIContainer/PlayCardUI/PlayCardButton
+## 弃牌按钮容器
 @onready var discard_cards_ui = $UIContainer/DiscardCardsUI
+## 弃牌按钮
 @onready var discard_button = $UIContainer/DiscardCardsUI/DiscardCardsButton
+## 放弃响应按钮容器
 @onready var abandon_response_ui = $UIContainer/AbandonResponseUI
+## 放弃响应按钮
 @onready var abandon_response_button = $UIContainer/AbandonResponseUI/AbandonResponseButton
 
 ## 初始化手牌区面板，设置管理器、请求区域、连接信号等。

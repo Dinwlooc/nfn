@@ -6,6 +6,7 @@ const  DEFAULT_SPEED = 0.07704
 # ## 上述常数的前导因子。
 # const  GOLDEN_SPEED_3FRAMES = 0.14935
 
+## 平滑移动动画（逐帧逼近目标点）
 static func smooth_move_animation(
 	current_position: Vector2,
 	target_position: Vector2,
@@ -46,6 +47,7 @@ static func tween_rect(
 	tween.tween_property(control, ^"size", target_size, duration).set_trans(trans_type).set_ease(ease_type)
 	return tween
 
+## 计算在容器内平均分布的一组坐标
 static func generate_coordinates(card_container_position:Vector2,card_container_size:Vector2,card_count:int = 1) -> PackedVector2Array:
 	if card_count == 0:
 		return []
@@ -72,6 +74,7 @@ static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: C
 	tween.tween_property(stylebox, ^"bg_color", to_color, half_duration)
 	return tween
 
+## 颜色闪烁动画（from ↔ to 往返 times 次后停在 from）
 static func blink_color(rect: ColorRect, from_color: Color, to_color: Color, half_duration: float = 0.1, times: int = 2) -> Tween:
 	var tween = rect.create_tween()
 	tween.set_parallel(false)

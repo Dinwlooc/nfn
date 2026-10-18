@@ -2,10 +2,15 @@
 extends CardMoveCommand
 class_name DiscardCardsCommand
 
+## 弃牌命令的上下文：要弃置的卡牌
+## @context
 class Context extends CardMoveCommand.Context:
+	## 要弃置的卡牌 id 列表
 	var card_ids: PackedInt32Array = PackedInt32Array()
+	## 设置要弃置的卡牌 id 列表
 	func set_card_ids(ids: PackedInt32Array) -> void:
 		card_ids = ids
+	## 卡牌 id 列表是否有效
 	func are_card_ids_valid() -> bool:
 		return not card_ids.is_empty()
 

@@ -3,7 +3,9 @@ extends Area
 class_name OrderedArea
 
 #==属性=======================================================================
+## 有序卡牌池
 var _ordered_pool: Array[Card] = []
+## 卡牌 id → 下标 的索引
 var _card_id_to_index: Dictionary[int, int] = {}
 
 #==公开方法=======================================================

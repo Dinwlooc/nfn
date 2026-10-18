@@ -2,18 +2,27 @@
 extends RefCounted
 class_name GameState
 
+## 卡牌管理器
 var cardsmanager := CardsManager.new()
+## 玩家管理器
 var player_manager := PlayersManager.new()
+## 游戏计时器
 var timer: GameTimer
+## 在线用户表：用户 id → 用户
 var users: Dictionary[int, User]
+## 命令堆栈是否正在处理中
 var _process_active := false
+## 阶段管理器
 var stage_manager: StageManager = StageManager.new()
 ## 区域注册表统一管理器
 var area_registry: AreaManager = AreaManager.new()
 ## 命令上下文堆栈。命令可以在其他命令的执行中途入栈，故尾部仅代表在当前的修饰下，下一轮调用时将被执行的命令。
 var command_context_stack: Array[CommandContext] = []
+## 公共玩家 id：表示非专有阶段（如主阶段）或公开临时阶段的归属
 const PUBLIC_PLAYER_ID: int = 1
 # 命令信号已移至 CommandBus
+## 所有命令处理完毕
+## @emitter
 signal all_commands_completed(game_state: GameState)
 ## 加载卡牌并将所有牌置入牌堆
 func load_cards() -> void:
@@ -44,6 +53,7 @@ func get_player_by_id(player_id: int) -> Player:
 		return null
 	return player_manager.get_player_by_id(player_id)
 
+## 批量按玩家 id 取玩家实例
 func get_players_by_ids(players_ids: PackedInt32Array) -> Array[Player]:
 	if not player_manager:
 		return []

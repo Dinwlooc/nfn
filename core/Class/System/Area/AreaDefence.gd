@@ -12,6 +12,7 @@ var settle_count: int = 0
 signal battle_formation_detected(top_card: Card, second_card: Card)
 
 #==构造函数===================================================================
+## 构造：设定区域名为守备区
 func _init(_player: Player = Player.PUBLIC_PLAYER) -> void:
 	super._init(_player)
 	area_name = GlobalConstants.DefaultArea.DEFENCE

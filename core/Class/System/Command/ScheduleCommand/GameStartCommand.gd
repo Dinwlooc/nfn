@@ -6,6 +6,7 @@ class_name GameStartCommand
 
 ## @context
 class Context extends CommandContext:
+	## 游戏开始的阶段推进状态
 	enum Phase {
 		INIT_SETUP,
 		START_DRAW,

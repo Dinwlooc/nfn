@@ -19,6 +19,7 @@ const ai_peer_id: int = -1
 ## @emitter
 signal player_added(player: Player)
 
+## 玩家区名称常量
 const PLAYER_AREA: StringName = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
 
 #=== Public Methods ===

@@ -3,6 +3,7 @@ extends Stage
 class_name StageStart
 
 #== Constructor ==
+## 构造：设定阶段名与时限
 func _init() -> void:
 	super._init()
 	stage_name = &"Start"

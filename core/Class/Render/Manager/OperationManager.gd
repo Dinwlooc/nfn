@@ -3,6 +3,7 @@ extends RefCounted
 
 ## 区域名称常量引用
 const HAND_AREA_NAME = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]
+## 玩家区名称常量
 const PLAYERS_AREA_NAME = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.PLAYERS]
 
 ## 操作请求错误码枚举
@@ -55,6 +56,7 @@ static func get_item_by_index(area: RenderArea, index: int) -> RenderItem:
 	if area is ItemRenderArea:
 		return area.get_item_by_index(index)
 	return null
+## 构造：绑定传输层与渲染上下文
 func _init(transport_layer: Transport, context: RenderContext) -> void:
 	_transport_layer = transport_layer
 	_context = context
@@ -75,7 +77,6 @@ func play_card_by_id(card_id: int, target_player_id: int = 0) -> RequestError:
 	_send_play_card(card_id, resolved_target_id, now)
 	return RequestError.OK
 ## 以指定卡牌发送弃置请求，无视其他卡牌的选中状态。
-## @seam
 func discard_card_by_id(card_id: int) -> RequestError:
 	var now: int = Time.get_ticks_msec()
 	if now - _last_request_time < COOLDOWN_MS:

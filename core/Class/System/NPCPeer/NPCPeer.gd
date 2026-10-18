@@ -2,7 +2,9 @@
 extends RefCounted
 class_name NPCPeer
 
+## 关联的游戏状态
 var _game_state: GameState
+## 所属玩家 id
 var _player_id: int
 
 ## 异步决策接口：子类必须实现此方法，决策完成后调用 callback，传入 OperationRequest 或 null

@@ -6,7 +6,9 @@
 extends RefCounted
 class_name BehaviorCommand
 
+## 是否已完成（处理器据此从堆栈弹出）
 var _is_completed: bool = false
+## 本次执行的命令上下文
 var _context: CommandContext
 
 ## @requester

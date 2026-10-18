@@ -1,8 +1,10 @@
 extends GameStateTrigger
 class_name PlayerTrigger
 
+## 士气等级升级所需总士气阈值（按等级顺序）
 const UPGRADE_REQUIREMENTS: Array[int] = [7, 12, 15, 18]
 
+## 构造：连接玩家添加信号
 func _init(game_state: GameState, command_bus: CommandBus) -> void:
 	super._init(game_state, command_bus)
 	_game_state.player_manager.player_added.connect(_on_player_added)

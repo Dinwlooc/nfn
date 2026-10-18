@@ -1,5 +1,6 @@
 extends SystemTrigger
 class_name StageTrigger
+## 构造：接管系统并连接阶段完成信号
 func _init(system: System) -> void:
 	super._init(system)
 	var _stage_manager: StageManager = system.game_state.stage_manager

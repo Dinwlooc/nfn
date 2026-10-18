@@ -5,7 +5,9 @@ class_name StageRequestCommand
 
 ## @context
 class Context extends CommandContext:
+	## 阶段请求的三阶段状态
 	enum Phase { INIT, REQUEST, DONE }
+	## 本次请求要压入临时阶段栈的阶段实例
 	var stage: Stage = null
 
 ## @seam_override

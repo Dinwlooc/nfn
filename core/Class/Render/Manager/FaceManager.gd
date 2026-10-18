@@ -1,3 +1,4 @@
+## Face 层管理器：按 item_type 从资源配置创建 [ItemFace]，绑定 [RenderItem] 的渲染/数据信号，并按类型回收。
 extends RefCounted
 class_name FaceManager
 ## ItemFace回收池，按类型存储

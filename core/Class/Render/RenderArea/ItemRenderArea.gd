@@ -14,6 +14,7 @@ var _divide_index: int = 0
 
 # ==================== 生命周期与初始化 ====================
 
+## 构造完成后按子节点初始化：注册非渲染项与卡牌池
 func _ready() -> void:
 	_initialize_divide_index()
 
@@ -36,6 +37,7 @@ func _validate_divide_index() -> void:
 # ==================== 信号连接管理 ====================
 
 ## 重写父类方法，连接当前区域与[param item]的额外信号（拖拽、取消拖拽、选中）。
+## @override
 func _connect_item_to_area(item: RenderItem) -> void:
 	super._connect_item_to_area(item)
 	item.request_drag.connect(on_drag)
@@ -43,6 +45,7 @@ func _connect_item_to_area(item: RenderItem) -> void:
 	item.request_select.connect(on_select)
 
 ## 断开当前区域与[param item]之间的所有信号连接。
+## @override
 func _disconnect_item_from_area(item: RenderItem) -> void:
 	super._disconnect_item_from_area(item)
 	if item.request_drag.is_connected(on_drag):
@@ -54,6 +57,7 @@ func _disconnect_item_from_area(item: RenderItem) -> void:
 # ==================== 核心逻辑处理 ====================
 ## 处理[param item_set]中的渲染项更新，从上下文获取或创建[RenderItem]，
 ## 并根据其所属区域进行添加、移除或数据更新。
+## @override
 func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 	if not render_context:
 		push_error("RenderContext not set in RenderArea")
@@ -103,6 +107,7 @@ func get_selected_ids() -> PackedInt32Array:
 # ==================== 添加与移除渲染项 ====================
 
 ## 向区域添加一个[param item]，可指定其在池中的[param index]（默认为末尾）。
+## @override
 func add_item(item: RenderItem, index: int = -1) -> void:
 	if index < 0:
 		index = items_pool.size()
@@ -119,6 +124,7 @@ func add_item(item: RenderItem, index: int = -1) -> void:
 	render_update(RenderEvent.new(RenderEvent.DefaultType.CARD_ADD))
 
 ## 从区域移除[param item]，清理池中占位并断开信号连接。
+## @override
 func remove_item(item: RenderItem) -> void:
 	if item.get_parent() == self:
 		item.position = item.global_position
@@ -253,6 +259,7 @@ func rearrange_items(target_ids: PackedInt32Array, item_type: StringName) -> voi
 # ==================== 查询方法 ====================
 
 ## 返回对象池中的总项数。
+## @override
 func get_item_count() -> int:
 	return items_pool.size()
 
@@ -313,8 +320,12 @@ func remove_non_render_item(node: Node) -> bool:
 		_divide_index -= 1
 	return true
 
+## 列表型区域不维护计数，留空实现
+## @override
 func  add_item_count(_count: int) -> void:
 	pass
 
+## 列表型区域不维护计数，留空实现
+## @override
 func remove_item_count(_count: int) -> void:
 	pass

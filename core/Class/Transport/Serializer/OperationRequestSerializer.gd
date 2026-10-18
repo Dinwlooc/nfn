@@ -1,23 +1,23 @@
 extends TransPackSerializer
 class_name OperationRequestSerializer
 
-# 所有支持的操作请求类型数组
+## 所有支持的操作请求类型数组（下标即序列化标识）
 static var operation_classes: Array[Script] = [
 	OperationRequest.PlayCard,
 	OperationRequest.AbandonResponse,
 	OperationRequest.DiscardCards
 ]
 
-# 构建双向注册表
+## 类名 → 索引 的正向注册表
 static var _registry:  Dictionary[StringName,int] = build_registry(operation_classes)
 
-# 序列化OperationRequest
+## 序列化OperationRequest：先写类型标识，再写包体
 static func serialize(obj: OperationRequest) -> PackedByteArray:
 	var buffer = StreamPeerBuffer.new()
 	serialize_with_registry(buffer, obj, _registry)
 	return buffer.data_array
 
-# 反序列化OperationRequest
+## 反序列化OperationRequest：按类型标识分派到具体子类
 static func deserialize(serialized_data: PackedByteArray) -> OperationRequest:
 	var buffer = StreamPeerBuffer.new()
 	buffer.data_array = serialized_data

@@ -1,6 +1,7 @@
 extends SystemTrigger
 class_name TimerTimeoutTrigger
 
+## 构造：接管系统并连接计时器超时信号
 func _init(system: System) -> void:
 	super._init(system)
 	_system.timer.timeout.connect(_on_timeout)

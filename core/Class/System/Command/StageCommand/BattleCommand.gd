@@ -3,6 +3,7 @@ class_name BattleCommand
 
 ## @context
 class Context extends CommandContext:
+	## 斗牌命令的五阶段状态
 	enum Phase {
 		INIT,
 		PRE_DUEL,
@@ -10,22 +11,32 @@ class Context extends CommandContext:
 		PROCESS_RESULT,
 		DONE
 	}
+	## 参与斗牌的守区
 	var defensive_area: AreaDefence
+	## 守区顶部卡牌
 	var top_card: Card
+	## 守区第二张卡牌
 	var second_card: Card
+	## 拼点结果（DuelCommand.Context.Result）
 	var duel_result: int = DuelCommand.Context.Result.TIE
+	## 双方点数差
 	var duel_diff: int = 0
 
+	## 设置斗牌参数（守区与两张卡）
 	func set_battle_params(area: AreaDefence, top: Card, second: Card) -> Context:
 		defensive_area = area
 		top_card = top
 		second_card = second
 		return self
 
+	## 两张斗牌参与修饰
+	## @hook @override
 	func get_primary_modifier_cards() -> Array[Card]:
 		return [top_card, second_card]
 
+## 基础战意获得量
 const BASE_MORALE_GAIN: int = 1
+## 拼点获胜的额外战意
 const MORALE_BONUS_WIN: int = 1
 
 ## @seam_override

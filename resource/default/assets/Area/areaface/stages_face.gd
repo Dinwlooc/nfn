@@ -6,18 +6,29 @@
 extends Control
 
 # ==================== 常量 ====================
+## 主阶段文本的居中坐标
 const MAIN_CENTER_POS := Vector2(0, 0)
+## 滑入动画时长（秒）
 const SLIDE_IN_DURATION := 0.3
+## 顶开后到回拉的延迟（秒）
 const DELAY_DURATION := 0.5
+## 垂直顶开时长（秒）
 const VERTICAL_DURATION := 0.15
+## 回拉退出时长（秒）
 const PULL_BACK_DURATION := 0.3
+## 滑入起始位置相对左边缘的留白
 const SLIDE_IN_MARGIN := 30.0
+## 旧标签顶到右侧后的水平间距
 const RIGHT_SPACING := 20.0
+## 普通字号
 const FONT_SIZE_NORMAL := 14
+## 强调字号（最后进入的阶段）
 const FONT_SIZE_EMPHASIZED := 28
+## 主阶段与临时阶段之间的垂直间隔
 const MAIN_TO_TEMP_GAP := 8.0
 
 # ==================== 枚举 ====================
+## 单个阶段标签在动画链上的位置状态
 enum LabelState {
 	IDLE,
 	MAIN_CENTER,
@@ -29,35 +40,53 @@ enum LabelState {
 }
 
 # ==================== 导出变量 ====================
+## 关联的渲染根节点（用于取渲染上下文）
 @export var render_control: RenderControl = null
 
 # ==================== 内部枚举 ====================
+## 阶段标签归属的行：主阶段行 / 临时阶段行
 enum StageLine { MAIN = 0, TEMP = 1 }
 
+## 一条阶段消息（文本 + 展示用玩家 id）
 class StageMessage:
+	## 已格式化的阶段文本
 	var text: String
+	## 展示用玩家 id
 	var display_player_id: int
+	## 构造：绑定文本与玩家 id
 	func _init(p_text: String, p_id: int) -> void:
 		text = p_text
 		display_player_id = p_id
 
 # ==================== 内部变量 ====================
+## 复用的标签节点池（固定 6 个）
 var _labels: Array[Label] = []
+## 每个标签的状态
 var _label_state: Array[LabelState] = []
+## 每个标签当前挂载的补间（用于打断）
 var _label_tweens: Array[Tween] = [null, null, null, null, null, null]
+## 每个标签归属的行
 var _label_line: Array[int] = []
 
+## 主阶段居中标签下标（-1 表示无）
 var _main_center_idx: int = -1
+## 主阶段右侧「被顶开」标签下标
 var _main_right_idx: int = -1
+## 主阶段待播消息队列
 var _main_queue: Array[StageMessage] = []
 
+## 临时阶段居中标签下标
 var _temp_center_idx: int = -1
+## 临时阶段右侧标签下标
 var _temp_right_idx: int = -1
+## 临时阶段待播消息队列
 var _temp_queue: Array[StageMessage] = []
 
+## 临时阶段行的基准 y 坐标
 var _temp_vertical_base: float = 0.0
 
 # ==================== 生命周期 ====================
+## 就绪：建标签池并接入阶段通知信号
 func _ready() -> void:
 	_setup_labels()
 	if not render_control:
@@ -72,6 +101,7 @@ func _ready() -> void:
 		var pid: int = ctx.state_manager.main_stage_player_id
 		_show_initial_main(_format_stage_text(initial_stage, pid))
 
+## 创建 6 个复用标签并初始化状态数组
 func _setup_labels() -> void:
 	for i in 6:
 		var label := Label.new()
@@ -86,6 +116,7 @@ func _setup_labels() -> void:
 	_label_tweens.resize(6)
 	_label_tweens.fill(null)
 
+## 切换标签的强调字号
 func _set_label_emphasized(label: Label, flag: bool) -> void:
 	if not label: return
 	if flag:
@@ -94,6 +125,7 @@ func _set_label_emphasized(label: Label, flag: bool) -> void:
 		label.remove_theme_font_size_override(&"font_size")
 	label.reset_size()
 
+## 直接显示初始主阶段文本
 func _show_initial_main(text: String) -> void:
 	var idx := _get_idle_label_index()
 	if idx == -1: return
@@ -106,6 +138,7 @@ func _show_initial_main(text: String) -> void:
 	_main_center_idx = idx
 
 # ==================== 信号回调 ====================
+## 主阶段通知：清空临时行并入队主阶段消息
 func _on_main_stage_notified(stage_name: StringName, player_id: int, _params: Dictionary) -> void:
 	var formatted :String = _format_stage_text(stage_name, player_id)
 	_clear_temp_with_pull()
@@ -115,21 +148,25 @@ func _on_main_stage_notified(stage_name: StringName, player_id: int, _params: Di
 	_main_queue.append(msg)
 	_process_main_queue()
 
+## 临时阶段通知：入队临时阶段消息
 func _on_temp_stage_notified(stage_name: StringName, _turn_id: int, owner_id: int, _params: Dictionary) -> void:
 	var msg := StageMessage.new(_format_stage_text(stage_name, owner_id), owner_id)
 	_temp_queue.append(msg)
 	_process_temp_queue()
 
+## 格式化阶段文本为「阶段名 [P玩家id]」
 func _format_stage_text(stage_name: StringName, player_id: int) -> String:
 	return "%s [P%d]" % [stage_name, player_id]
 
 # ==================== 队列处理 ====================
+## 消费主阶段队列，直到无空闲标签
 func _process_main_queue() -> void:
 	while not _main_queue.is_empty() and _get_idle_label_index() != -1:
 		var msg := _main_queue.pop_front() as StageMessage
 		var stable := _main_queue.is_empty()
 		_start_main_animation(msg.text, stable)
 
+## 消费临时阶段队列，直到无空闲标签
 func _process_temp_queue() -> void:
 	while not _temp_queue.is_empty() and _get_idle_label_index() != -1:
 		var msg := _temp_queue.pop_front() as StageMessage
@@ -137,6 +174,7 @@ func _process_temp_queue() -> void:
 		_start_temp_animation(msg.text, stable)
 
 # ==================== 主阶段动画 ====================
+## 主阶段切换：新标签滑入、旧标签顶到右侧，延迟后回拉
 func _start_main_animation(new_text: String, is_stable: bool) -> void:
 	if _main_center_idx == -1:
 		_show_initial_main(new_text)
@@ -175,6 +213,7 @@ func _start_main_animation(new_text: String, is_stable: bool) -> void:
 	delay.tween_interval(DELAY_DURATION)
 	delay.tween_callback(_start_main_pull_back.bind(old_idx))
 
+## 主阶段回拉：先向上顶开，再向左滑出
 func _start_main_pull_back(index: int) -> void:
 	if index < 0 or index >= _labels.size(): return
 	var label := _labels[index]
@@ -193,6 +232,7 @@ func _start_main_pull_back(index: int) -> void:
 	tw.tween_callback(_on_pull_complete.bind(index, StageLine.MAIN))
 
 # ==================== 临时阶段动画 ====================
+## 临时阶段切换：新标签滑入、旧标签顶到右侧，延迟后下降回拉
 func _start_temp_animation(new_text: String, is_stable: bool) -> void:
 	var base_y := MAIN_CENTER_POS.y
 	if _main_center_idx != -1:
@@ -253,6 +293,7 @@ func _start_temp_animation(new_text: String, is_stable: bool) -> void:
 	delay.tween_interval(DELAY_DURATION)
 	delay.tween_callback(_start_temp_pull_back.bind(old_idx))
 
+## 临时阶段回拉：先向下顶开，再向左滑出
 func _start_temp_pull_back(index: int) -> void:
 	if index < 0 or index >= _labels.size(): return
 	var label := _labels[index]
@@ -271,6 +312,7 @@ func _start_temp_pull_back(index: int) -> void:
 	tw.tween_callback(_on_pull_complete.bind(index, StageLine.TEMP))
 
 # ==================== 通用清理 ====================
+## 打断标签动画并立即回拉
 func _interrupt_and_pull(index: int, line: StageLine, is_main: bool) -> void:
 	_kill_tween(index)
 	if is_main:
@@ -278,6 +320,7 @@ func _interrupt_and_pull(index: int, line: StageLine, is_main: bool) -> void:
 	else:
 		_start_temp_pull_back(index)
 
+## 回拉完成：回收标签并继续消费对应队列
 func _on_pull_complete(index: int, line: StageLine) -> void:
 	_labels[index].visible = false
 	_label_state[index] = LabelState.IDLE
@@ -304,16 +347,19 @@ func _clear_temp_with_pull() -> void:
 		_temp_right_idx = -1
 
 # ==================== 辅助 ====================
+## 取一个空闲标签下标（无则 -1）
 func _get_idle_label_index() -> int:
 	for i in _labels.size():
 		if _label_state[i] == LabelState.IDLE:
 			return i
 	return -1
 
+## 登记标签归属行与状态
 func _assign_label(idx: int, line: StageLine, state: LabelState) -> void:
 	_label_line[idx] = line
 	_label_state[idx] = state
 
+## 终止标签上挂载的补间
 func _kill_tween(index: int) -> void:
 	var tw := _label_tweens[index]
 	if tw and tw.is_valid():

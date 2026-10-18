@@ -17,12 +17,19 @@ var min_update_interval: int = 3
 ## 块间相位偏移
 var phase_offset: int = 1
 
+## 是否启用
 var _active: bool = false
+## 目标块数量
 var _block_count: int = 0
+## 当前最大偏移量
 var _current_max_offset: float = 2.6
+## 当前更新间隔（帧）
 var _current_update_interval: int = 12
+## 更新计数
 var _update_counter: int = 0
+## 每周期更新次数
 const CYCLE_UPDATES: int = 10
+## 激活状态下的更新次数
 const ACTIVE_UPDATES: int = 10
 
 ## 设置块数量

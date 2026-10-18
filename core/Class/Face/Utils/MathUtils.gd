@@ -2,6 +2,7 @@
 extends Object
 class_name MathUtils
 
+## 生成正弦表（利用四分对称与半周反相）
 static func generate_sine_table(table_size: int) -> Array:
 	var sine_table = []
 	sine_table.resize(table_size)

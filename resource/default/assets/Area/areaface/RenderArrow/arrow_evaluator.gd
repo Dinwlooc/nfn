@@ -1,6 +1,7 @@
 ## 箭头评估器：负责从区域获取选中卡片，更新箭头位置与方向。
 extends RefCounted
 
+## 箭头节点脚本
 const ArrowNode = preload("arrow_node.gd")
 
 ## 手牌箭头控件

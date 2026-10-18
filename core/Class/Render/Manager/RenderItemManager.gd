@@ -4,6 +4,7 @@ class_name RenderItemManager
 
 ## 对象池
 var _pool: Array[RenderItem] = []
+## 卡牌实例池的单类型缓存上限，超出后 queue_free
 const MAX_CACHE_SIZE: int = 20
 
 ## 当池为空且新建 item 时发出
@@ -13,6 +14,7 @@ signal item_created(item: RenderItem)
 var item_mappings: Dictionary[StringName, Dictionary] = {}
 
 ## 从池中取出或新建 RenderItem
+## @side_effect
 func create_item(item_data: ItemPack, render_context: RenderContext) -> RenderItem:
 	if not _pool.is_empty():
 		var item: RenderItem = _pool.pop_back()
@@ -24,6 +26,7 @@ func create_item(item_data: ItemPack, render_context: RenderContext) -> RenderIt
 	return new_item
 
 ## 将物品回收到池中（不做任何外部清理）
+## @side_effect
 func recycle_item_to_pool(item: RenderItem) -> void:
 	item.reset()
 	if _pool.size() >= MAX_CACHE_SIZE:
@@ -32,12 +35,14 @@ func recycle_item_to_pool(item: RenderItem) -> void:
 	_pool.append(item)
 
 ## 注册物品到映射表
+## @side_effect
 func register_render_item(item_type: StringName, item_id: int, render_item: RenderItem) -> void:
 	if not item_mappings.has(item_type):
 		item_mappings[item_type] = {}
 	item_mappings[item_type][item_id] = render_item
 
 ## 从映射表中移除物品
+## @side_effect
 func unregister_render_item(item_type: StringName, item_id: int) -> void:
 	if item_mappings.has(item_type) and item_mappings[item_type].has(item_id):
 		item_mappings[item_type].erase(item_id)
@@ -49,6 +54,7 @@ func get_render_item_by_id(item_type: StringName, item_id: int) -> RenderItem:
 	return null
 
 ## 获取或创建物品（自动注册）
+## @side_effect
 func get_or_create_item(item_pack: ItemPack, render_context: RenderContext) -> RenderItem:
 	var item = get_render_item_by_id(item_pack.get_class_name(), item_pack.get_id())
 	if not item:

@@ -3,16 +3,22 @@ extends Stage
 class_name StageDefense
 
 #== Constants ==
+## 默认时限（秒）
 const DEFAULT_TIME_LIMIT: float = 30.0
+## 时限下限（秒）
 const MIN_TIME_LIMIT: float = 5.0
+## 每轮响应的时限步长（秒）
 const TIME_PENALTY_STEP: float = 10.0
+## 时限递减量（秒）
 const TIME_PENALTY_DECREMENT: float = 5.0
 
 #== Nested Classes ==
 ## 时间记录（累计用时与动态时间限制）
 ## @context
 class TimeRecords:
+	## 玩家 id → 已用时间（秒）
 	var total_time_used: Dictionary[int, float] = {}
+	## 玩家 id → 当前动态时限（秒）
 	var dynamic_time_limit: Dictionary[int, float] = {}
 
 #== Properties ==
@@ -40,6 +46,7 @@ var _current_battle_command: BattleCommand = null
 var _need_regenerate_battle_command: bool = false
 
 #== Constructor ==
+## 构造：绑定守区与攻击方
 func _init(defense_area: AreaDefence, attacker: Player) -> void:
 	super._init()
 	self.defense_area = defense_area

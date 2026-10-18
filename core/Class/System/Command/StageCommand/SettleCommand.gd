@@ -3,6 +3,7 @@ class_name SettleCommand
 
 ## @context
 class Context extends CommandContext:
+	## 结算命令的六阶段状态
 	enum Phase {
 		PREPARE,
 		ATTACK_JUDGE,
@@ -11,21 +12,32 @@ class Context extends CommandContext:
 		CLEAR,
 		DONE
 	}
+	## 参与结算的守区
 	var defensive_area: AreaDefence = null
+	## 攻击方玩家
 	var attacker: Player = null
+	## 守区顶部的结算牌
 	var settle_card: Card = null
+	## 守区第二张对抗牌（无则为单边结算）
 	var oppose_card: Card = null
+	## 是否单边结算（没有对抗牌）
 	var is_unilateral: bool = false
+	## 拼点结果（DuelCommand.Context.Result）
 	var duel_result: int = DuelCommand.Context.Result.TIE
+	## 双方点数差
 	var duel_diff: int = 0
+	## 本次结算的结果记录（含目标与最终伤害）
 	var settle_result: RuleSettle.Result = null
 
+	## 取结算牌
 	func get_settle_card() -> Card:
 		return settle_card
 
+	## 取对抗牌
 	func get_oppose_card() -> Card:
 		return oppose_card
 
+	## 设置守区（仅预备阶段可设）
 	func set_defensive_area(area: AreaDefence) -> Context:
 		if phase != Phase.PREPARE:
 			push_error("只能在预备阶段设置守区")
@@ -33,6 +45,7 @@ class Context extends CommandContext:
 		defensive_area = area
 		return self
 
+	## 设置攻击方（仅预备阶段可设）
 	func set_attacker(player: Player) -> Context:
 		if phase != Phase.PREPARE:
 			push_error("只能在预备阶段设置攻击者")
@@ -40,6 +53,7 @@ class Context extends CommandContext:
 		attacker = player
 		return self
 
+	## 重设结算牌（仅预备/攻击判断阶段可改）
 	func set_settle_card(card: Card) -> Context:
 		if phase != Phase.PREPARE and phase != Phase.ATTACK_JUDGE:
 			push_error("只能在预备阶段或攻击判断阶段重设结算牌")
@@ -47,6 +61,7 @@ class Context extends CommandContext:
 		settle_card = card
 		return self
 
+	## 重设对抗牌（仅预备/攻击判断阶段可改）
 	func set_oppose_card(card: Card) -> Context:
 		if phase != Phase.PREPARE and phase != Phase.ATTACK_JUDGE:
 			push_error("只能在预备阶段或攻击判断阶段重设对抗牌")
@@ -54,6 +69,8 @@ class Context extends CommandContext:
 		oppose_card = card
 		return self
 
+	## 结算牌与对抗牌的持有者参与修饰
+	## @hook @override
 	func get_primary_modifier_players() -> Array[Player]:
 		var players: Array[Player] = []
 		if settle_card and settle_card.player:
@@ -62,6 +79,8 @@ class Context extends CommandContext:
 			players.append(oppose_card.player)
 		return players
 
+	## 结算牌与对抗牌参与修饰
+	## @hook @override
 	func get_primary_modifier_cards() -> Array[Card]:
 		var cards: Array[Card] = []
 		if settle_card:

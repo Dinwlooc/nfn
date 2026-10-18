@@ -11,21 +11,27 @@ extends CharacterFace
 const DAMAGE_REFERENCE: float = 20.0
 ## 受击最小/最大旋转弧度（绝对值）
 const MIN_ANGLE: float = 0.0
+## 受击最大旋转弧度
 const MAX_ANGLE: float = PI / 16
 ## 受击最小/最大后仰位移（像素，绝对值）
 const MIN_BACK_DIST: float = 20.0
+## 受击最大后仰位移（像素）
 const MAX_BACK_DIST: float = 100.0
 ## 受击最小/最大下压位移（像素，绝对值）
 const MIN_DOWN_DIST: float = 5.0
+## 受击最大下压位移（像素）
 const MAX_DOWN_DIST: float = 25.0
 ## 倒地状态下强制旋转角度（弧度）
 const DOWN_ANGLE: float = PI / 2
 ## 受击最小/最大动画时长（秒）—— 基础时长 T = MIN_DURATION + (MAX_DURATION - MIN_DURATION) * factor
 const MIN_DURATION: float = 0.04
+## 受击最大动画时长（秒）
 const MAX_DURATION: float = 0.2
 ## 受击后恢复阶段时长系数（相对于 T）
 const RECOVER_X_FACTOR: float = 10.0
+## 恢复阶段竖直位移系数
 const RECOVER_Y_FACTOR: float = 7.0
+## 恢复阶段旋转系数
 const RECOVER_ROT_FACTOR: float = 5.0
 ## 残血恢复惩罚最大倍率（剩余HP比例越低，恢复越慢，最大为此倍数）
 const RECOVER_PENALTY_MAX_MULTIPLIER: float = 4.0
@@ -37,8 +43,11 @@ const DOWN_FALL_DUR_FACTOR: float = 1.5
 const RISE_BASE_DURATION: float = 0.3
 ## 起身动画各阶段时长系数（全部相对于 RISE_BASE_DURATION）
 const RISE_SINK_DURATION_FACTOR: float = 2.0
+## 起身旋转阶段时长系数
 const RISE_ROT_DURATION_FACTOR: float = 3.5
+## 起身站起阶段时长系数
 const RISE_UP_DURATION_FACTOR: float = 2.0
+## 起身走回阶段时长系数
 const RISE_WALK_DURATION_FACTOR: float = 4.0
 ## 起身时下沉的额外距离（像素），使角色先蹲下再站起
 const RISE_SINK_DISTANCE: float = 30.0
@@ -61,6 +70,7 @@ var _original_position: Vector2
 ## 原始旋转（用于还原）
 var _original_rotation: float
 
+## 就绪：初始化角色表现
 func _ready() -> void:
 	_original_position = position
 	_original_rotation = rotation

@@ -6,6 +6,7 @@ const DOTS_PER_UNIT: int = 4
 ## 点的容器（HBoxContainer）。
 @onready var dot_container: GridContainer = $DotContainer
 var _dots: Array[ColorRect] = []  ## 当前单位内的所有点。
+## 就绪：收集点节点并校验数量
 func _ready() -> void:
 	# 收集所有点（假设点直接作为 dot_container 的子节点）
 	for child in dot_container.get_children():

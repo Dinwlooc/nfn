@@ -3,36 +3,50 @@ class_name BuffCommand
 
 ## @context
 class Context extends CommandContext:
+	## Buff 命令的三阶段状态
 	enum Phase {
 		INIT,
 		APPLY,
 		DONE
 	}
+	## Buff 操作模式
 	enum BuffMode {
 		APPLY, OVERRIDE, REMOVE, DISPEL
 	}
+	## 目标玩家的 Buff 修饰器集合
 	var buff_modifiers: BuffModifiers = null
+	## 要操作的 Buff 实例
 	var buff: Buff = null
+	## 操作模式
 	var mode: BuffMode = BuffMode.APPLY
+	## 层数：叠加/移除时的本次增减量，覆盖时为目标层数
 	var stack_count: int = 1
+	## 来源卡牌
 	var source_card: Card = null
+	## 来源玩家
 	var source_player: Player = null
 
+	## 链式设置目标 Buff 修饰器集合
 	func set_buff_modifiers(p_modifiers: BuffModifiers) -> Context:
 		buff_modifiers = p_modifiers
 		return self
+	## 链式设置要操作的 Buff
 	func set_buff(p_buff: Buff) -> Context:
 		buff = p_buff
 		return self
+	## 链式设置操作模式
 	func set_mode(p_mode: BuffMode) -> Context:
 		mode = p_mode
 		return self
+	## 链式设置层数
 	func set_stack_count(p_count: int) -> Context:
 		stack_count = p_count
 		return self
+	## 链式设置来源卡牌
 	func set_source_card(p_card: Card) -> Context:
 		source_card = p_card
 		return self
+	## 链式设置来源玩家
 	func set_source_player(p_player: Player) -> Context:
 		source_player = p_player
 		return self
@@ -80,6 +94,7 @@ static func do_apply(context: Context, _game_state: GameState) -> void:
 		Context.BuffMode.DISPEL:
 			_do_apply_dispel(context)
 
+## 叠加模式：已有同 Buff 则累加层数并回调，否则首次附加
 static func _do_apply_apply(context: Context) -> void:
 	var bm := context.buff_modifiers
 	var buff_name: StringName = context.buff.buff_name
@@ -96,6 +111,7 @@ static func _do_apply_apply(context: Context) -> void:
 		bm.buffs[buff_name] = context.buff
 		context.buff.on_apply()
 
+## 覆盖模式：移除同名旧 Buff 后附加新的
 static func _do_apply_override(context: Context) -> void:
 	var bm := context.buff_modifiers
 	var buff_name: StringName = context.buff.buff_name
@@ -109,6 +125,7 @@ static func _do_apply_override(context: Context) -> void:
 	bm.buffs[buff_name] = context.buff
 	context.buff.on_apply()
 
+## 移除模式：扣减层数，归零则移除
 static func _do_apply_remove(context: Context) -> void:
 	var bm := context.buff_modifiers
 	var buff_name: StringName = context.buff.buff_name
@@ -125,6 +142,7 @@ static func _do_apply_remove(context: Context) -> void:
 			bm.buffs.erase(buff_name)
 			existing.on_remove()
 
+## 驱散模式：直接移除整个 Buff
 static func _do_apply_dispel(context: Context) -> void:
 	var bm := context.buff_modifiers
 	var buff_name: StringName = context.buff.buff_name

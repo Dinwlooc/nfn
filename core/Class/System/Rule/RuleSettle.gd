@@ -6,9 +6,13 @@ class_name RuleSettle
 ## 验证器名称常量
 ## @deep_inherit
 @abstract class Validator:
+	## 生命伤害衰减模式
 	const LIFE_DAMAGE_MODE: StringName = &"life_damage_mode"
+	## 法力伤害衰减模式
 	const MENTAL_DAMAGE_MODE: StringName = &"mental_damage_mode"
+	## 战意掩码
 	const COMBAT_WILL_MODE: StringName = &"combat_will_mode"
+	## 攻击朝向
 	const ATTACK_ORIENTATION: StringName = &"attack_orientation"
 
 ## 伤害衰减模式枚举
@@ -33,6 +37,7 @@ enum CombatWillFlag {
 	EXTRA_ON_OPPOSE_WIN = 1 << 3,
 }
 
+## 允许参与规则合并的校验器键
 static var _allowed_validator_keys: Array[StringName] = [
 	Validator.LIFE_DAMAGE_MODE,
 	Validator.MENTAL_DAMAGE_MODE,
@@ -41,12 +46,18 @@ static var _allowed_validator_keys: Array[StringName] = [
 ]
 
 ## 结算结果类
+## @record
 class Result:
+	## 结算目标玩家
 	var target: Player
+	## 最终生命伤害
 	var health_damage_value: int
+	## 最终法力伤害
 	var mental_damage_value: int
+	## 本次结算产生的战意授予
 	var combat_will_grants: Array[CombatWillGrant]
 
+	## 构造：默认零伤害
 	func _init(p_target: Player = null, p_health: int = 0, p_mental: int = 0) -> void:
 		target = p_target
 		health_damage_value = p_health
@@ -54,18 +65,25 @@ class Result:
 		combat_will_grants = []
 
 ## 战意授予条目
+## @record
 class CombatWillGrant:
+	## 受益玩家
 	var target_player: Player
+	## 是否是防御侧授予
 	var is_defense: bool
+	## 基础战意值
 	var base_value: int
+	## 对决结算的额外战意值
 	var extra_value: int
 
+	## 构造：绑定受益方与战意数值
 	func _init(p_target: Player, p_is_defense: bool, p_base: int, p_extra: int) -> void:
 		target_player = p_target
 		is_defense = p_is_defense
 		base_value = p_base
 		extra_value = p_extra
 
+## 各卡牌类型的默认结算规则
 static var _settle_rules: Dictionary[StringName, Variant] = {
 	GlobalConstants.DefaultCard.ATTACK: {
 		Validator.LIFE_DAMAGE_MODE: DamageMode.DECAY_ON_LOSE,
@@ -81,6 +99,7 @@ static var _settle_rules: Dictionary[StringName, Variant] = {
 	},
 }
 
+## 计算结算初值：结算目标与未衰减的生命/法力伤害
 static func get_initial_info(
 	settle_card: Card,
 	oppose_card: Card,
@@ -103,6 +122,7 @@ static func get_initial_info(
 	var mental_init: int = base_power if mental_mode != DamageMode.NONE else 0
 	return Result.new(target, health_init, mental_init)
 
+## 按模式对初始伤害施加衰减（单边结算不衰减）
 static func apply_decay(
 	initial: Result,
 	is_unilateral: bool,
@@ -119,6 +139,7 @@ static func apply_decay(
 	result.mental_damage_value = _apply_single_decay(initial.mental_damage_value, mental_mode, duel_result, duel_diff, oppose_power)
 	return result
 
+## 按战意掩码生成战意授予列表（单边结算不再给对决额外战意）
 static func generate_combat_will_grants(
 	settle_card: Card,
 	oppose_card: Card,
@@ -151,6 +172,7 @@ static func generate_combat_will_grants(
 
 ## --- 内部辅助 ---
 
+## 单项伤害的衰减计算
 static func _apply_single_decay(base: int, mode: DamageMode, duel_result: int, duel_diff: int, oppose_power: int) -> int:
 	if base <= 0 or mode == DamageMode.NONE or mode == DamageMode.NO_DECAY:
 		return base
@@ -163,11 +185,13 @@ static func _apply_single_decay(base: int, mode: DamageMode, duel_result: int, d
 			return max(0, base - oppose_power)
 	return base
 
+## 合并卡牌类型默认规则、卡牌自身覆盖与调用方覆盖
 static func _get_merged_rules(settle_card: Card, override_rules: Dictionary[StringName, Variant]) -> Dictionary[StringName, Variant]:
 	var base_rules: Dictionary[StringName, Variant]
 	base_rules.assign(_settle_rules.get(settle_card.type, {}))
 	return Rule.get_rule_config(settle_card, base_rules, _allowed_validator_keys, override_rules)
 
+## 按攻击朝向取结算目标
 static func _get_player_by_orientation(orientation: AttackOrientation, attacker: Player, defender: Player) -> Player:
 	match orientation:
 		AttackOrientation.DEFENDER:

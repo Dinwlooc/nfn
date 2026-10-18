@@ -1,6 +1,7 @@
 extends SystemTrigger
 class_name CommandTrigger
 
+## 构造：接管系统并连接命令入队信号
 func _init(system: System) -> void:
 	super._init(system)
 	_system.command_bus.new_behavior.connect(_system.command_processor.queue_behavior)

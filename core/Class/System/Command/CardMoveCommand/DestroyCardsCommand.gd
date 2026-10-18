@@ -2,15 +2,23 @@
 extends CardMoveCommand
 class_name DestroyCardsCommand
 
+## 摧毁命令的上下文：目标守区与目标卡牌
+## @context
 class Context extends CardMoveCommand.Context:
+	## 触发摧毁的源卡牌
 	var source_card: Card = null
+	## 被摧毁卡牌的 id
 	var target_card_id: int = 0
+	## 被摧毁卡牌所在的守区
 	var target_defense_area: AreaDefence = null
 
+	## 设置触发源卡牌
 	func set_source_card(card: Card) -> void:
 		source_card = card
+	## 设置被摧毁卡牌 id
 	func set_target_card_id(id: int) -> void:
 		target_card_id = id
+	## 设置被摧毁卡牌所在守区
 	func set_target_defense_area(area: AreaDefence) -> void:
 		target_defense_area = area
 

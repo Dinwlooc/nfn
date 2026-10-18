@@ -5,10 +5,14 @@ class_name RuleCardPlay
 
 ## 规则检查结果
 class RuleResult:
+	## 是否通过校验
 	var is_valid: bool
+	## 校验通过时生成的行为命令
 	var command: BehaviorCommand
+	## 失败原因文本
 	var message: String
 
+	## 构造：默认视为通过
 	func _init(p_is_valid: bool, p_command: BehaviorCommand = null, p_message: String = "") -> void:
 		is_valid = p_is_valid
 		command = p_command
@@ -17,10 +21,15 @@ class RuleResult:
 ## 验证器名称常量
 ## @deep_inherit
 @abstract class Validator:
+	## 目标许可规则键
 	const TARGET_PERMISSION := &"target_permission"
+	## 距离权限规则键
 	const DISTANCE_PERMISSION := &"distance_permission"
+	## 出牌区域模式规则键
 	const PLAY_AREA_MODE := &"play_area_mode"
+	## 消耗模式规则键
 	const CONSUME_MODE := &"consume_mode"
+	## 目标必须在座规则键
 	const TARGET_SEATED := &"target_seated"
 
 ## 目标许可掩码枚举
@@ -129,6 +138,7 @@ static func check_and_create_command(
 	var command: BehaviorCommand = _build_command(source_player, card, target_player, rule_config[Validator.PLAY_AREA_MODE], ap_source)
 	return RuleResult.new(true, command, "卡牌使用检查通过")
 
+## 计算该卡的总消耗（含修饰）
 static func _calculate_total_cost(card: Card, _source_player: Player) -> int:
 	return card.get_attribute(&"cost")
 

@@ -9,14 +9,23 @@
 extends RefCounted
 class_name CommandContext
 
+## 发起命令的玩家 id
 var player_id: int = 0
+## 命令名，由 BehaviorCommand 构造时写入
 var command_name: StringName
+## 命令阶段序号
 var phase: int = 0
+## 是否已完成
 var is_completed: bool = false
+## 是否已取消
 var is_cancelled: bool = false
+## 是否处于虚拟化执行（只跑纯函数）
 var is_virtual: bool = false
+## 是否允许取消
 var can_be_cancelled: bool = true
+## 伴生源（弱引用，避免环引用）
 var companion_source: WeakRef
+## 失败原因文本
 var error: String = ""
 
 ## @zero_instance

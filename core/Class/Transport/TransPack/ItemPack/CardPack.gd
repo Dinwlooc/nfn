@@ -9,13 +9,21 @@ enum MainProperty {
 	PLAYER_ID,
 	END
 }
+## 标准卡牌名
 const STANDARD_NAME: StringName = &""
+## 标准卡牌类型（NULL）
 const STANDARD_TYPE: int = GlobalConstants.CardType.NULL
+## 标准所属玩家 id
 const STANDARD_PLAYER_ID: int = 0
+## 卡牌名
 var name: StringName
+## 卡牌类型序号
 var type: int
+## 所属玩家 id
 var player_id: int
+## 常量表键：物品类型
 const ItemType = GlobalConstants.KEY_ITEM_TYPE
+## 类型名 NULL（对应 GlobalConstants.CardType.NULL）
 const NULL = GlobalConstants.CARD_TYPES[GlobalConstants.CardType.NULL]
 
 ## 构造器，初始化所有字段。

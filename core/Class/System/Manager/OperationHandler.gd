@@ -3,8 +3,11 @@ extends RefCounted
 class_name OperationHandler
 
 #=== Variables ===
+## 对等端 id → 玩家 id 的校验映射
 var _peer_player_map: Dictionary[int, int] = {}
+## 玩家 id → 当前占用的请求（_null_request 表示空槽）
 var _pending_requests: Dictionary[int, OperationRequest] = {}
+## 空槽占位请求，用于区分“无请求”与“请求为空”
 var _null_request: OperationRequest = OperationRequest.new()
 
 #=== Signals ===
@@ -16,6 +19,7 @@ signal operation_validated(request: OperationRequest)
 signal permissions_updated(responsive_player_ids: PackedInt32Array)
 
 #=== Enums ===
+## 请求的终态
 enum RequestState { CANCELLED, COMPLETED }
 
 #=== Public Methods ===

@@ -3,6 +3,7 @@
 extends RefCounted
 class_name SystemTrigger
 
+## 关联的系统实例
 var _system: System
 ## 断开所有信号连接。子类必须覆盖此方法。
 @abstract func disconnect_all() -> void

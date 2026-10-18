@@ -3,15 +3,25 @@ class_name AutoNPCPeer
 
 ## 决策数据快照（纯数据值对象，线程安全）
 class DecisionData:
+	## NPC 玩家 id
 	var player_id: int
+	## 手牌快照：{id, type}
 	var hand_cards: Array[Dictionary]   # {id: int, type: StringName}
+	## 守区是否为空
 	var defense_area_empty: bool
+	## 本主阶段是否已出过攻击
 	var has_attacked_in_main: bool
+	## 当前阶段名
 	var current_stage_name: StringName
+	## 防御阶段的归属玩家 id
 	var defense_stage_owner_id: int
+	## 是否持有响应权
 	var is_responsive: bool
+	## 其它玩家 id 列表
 	var other_player_ids: PackedInt32Array
+	## 自己的速度属性
 	var self_speed: int
+	## 其它玩家守区结算次数：玩家 id → 次数
 	var other_players_settle_counts: Dictionary[int, int]
 
 ## 本回合主阶段是否已出手攻击
@@ -19,6 +29,7 @@ var _has_attacked_in_main_this_round: bool = false
 ## 最新决策请求的 ID，用于在回调中丢弃过期结果
 var _latest_request_id: int = 0
 
+## 构造：绑定游戏状态与 NPC 玩家 id
 func _init(game_state: GameState, player_id: int) -> void:
 	super._init(game_state, player_id)
 

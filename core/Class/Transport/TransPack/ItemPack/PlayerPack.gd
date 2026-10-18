@@ -21,31 +21,56 @@ enum MainProperty {
 	END
 }
 
+## 标准座位索引
 const STANDARD_SEAT_INDEX: int = 0
+## 标准生命值
 const STANDARD_HP: int = 20
+## 标准法力值
 const STANDARD_MP: int = 20
+## 标准行动点
 const STANDARD_AP: int = 3
+## 标准修正最大生命
 const STANDARD_MODIFIED_HP_MAX: int = 20
+## 标准修正最大法力
 const STANDARD_MODIFIED_MP_MAX: int = 20
+## 标准修正初始行动点
 const STANDARD_MODIFIED_INIT_AP: int = 3
+## 标准修正抽牌数
 const STANDARD_MODIFIED_DRAW_CARDS_COUNT: int = 2
+## 标准对等体 id
 const STANDARD_PEER_ID: int = 0
+## 标准攻击战意
 const STANDARD_MORALE_ATTACK: int = 0
+## 标准防御战意
 const STANDARD_MORALE_DEFENSE: int = 0
+## 标准战意等级
 const STANDARD_MORALE_LEVEL: int = 0
 
+## 座位索引
 var seat_index: int
+## 生命值
 var HP: int
+## 法力值
 var MP: int
+## 行动点
 var AP: int
+## 本回合被禁止的操作
 var disallowed_operations: Array[StringName]
+## 含修饰的最大生命值
 var modified_HP_max: int
+## 含修饰的最大法力值
 var modified_MP_max: int
+## 含修饰的初始行动点
 var modified_init_AP: int
+## 含修饰的抽牌数
 var modified_draw_cards_count: int
+## 对等体 id
 var peer_id: int
+## 攻击战意
 var morale_attack: int
+## 防御战意
 var morale_defense: int
+## 战意等级
 var morale_level: int
 
 ## 构造器，初始化所有字段。

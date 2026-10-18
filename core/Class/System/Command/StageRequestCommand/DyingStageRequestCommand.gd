@@ -4,6 +4,7 @@ class_name DyingStageRequestCommand
 
 ## @context
 class Context extends StageRequestCommand.Context:
+	## 濒死待结算的玩家
 	var dying_player: Player
 
 ## @seam_override

@@ -1,29 +1,38 @@
+## 渲染层根节点：接收 [Transport] 的渲染请求并节流处理，托管 [RenderContext]、[FaceManager] 与 [OperationManager]。
 extends Control
 class_name RenderControl
 ## 渲染请求队列处理器（先进先出，每帧处理一个）
 class RenderRequestQueue:
 	extends RefCounted
+	## 待处理的渲染请求队列
 	var _queue: Array[RenderRequest] = []
+	## 所属渲染控制器
 	var _owner: RenderControl
+	## 构造：绑定所属控制器
 	func _init(owner: RenderControl) -> void:
 		_owner = owner
 	## 入队请求
 	func enqueue(request: RenderRequest) -> void:
 		_queue.append(request)
-	## 每帧处理一个请求
+	## 每调用处理一个请求
 	func process_one() -> void:
 		if _queue.is_empty():
 			return
 		var request = _queue.pop_front()
 		_owner._handle_request_immediate(request)
 
+## 渲染上下文
 var render_context: RenderContext = RenderContext.new()
+## 卡面管理器
 var face_manager: FaceManager = FaceManager.new()
+## 传输层引用
 var transport: Transport = GlobalTransport
+## 操作请求管理器
 var operation_manager: OperationManager = OperationManager.new(transport, render_context)
 ## 渲染请求队列
 var _request_queue: RenderRequestQueue
 
+## 就绪：接线区域创建与传输层信号
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.RENDER_CONTROL_TYPE, self)
 	render_context.set_operation_manager(operation_manager)
@@ -41,17 +50,20 @@ func _ready() -> void:
 	render_context.item_manager.item_created.connect(face_manager.connect_to_item)
 	render_context.area_manager.area_created.connect(_on_render_context_area_created)
 
+## 每帧：消费渲染请求队列
 func _process(_delta: float) -> void:
 	if not Engine.get_process_frames() % 10 == 0:
 		return
 	_request_queue.process_one()
 
+## 初始化新创建的区域：绑定上下文并接入信号
 func _initialize_render_area(area: RenderArea) -> void:
 	area.set_render_context(render_context)
 	_initialize_preset_items(area)
 	area.context_ready.emit()
 	area.render_update()
 
+## 初始化区域内的预置渲染项
 func _initialize_preset_items(area: RenderArea) -> void:
 	var item_index := 0
 	for child in area.get_children():
@@ -61,6 +73,7 @@ func _initialize_preset_items(area: RenderArea) -> void:
 		if child is AreaFace:
 			child.set_render_context(render_context)
 
+## 初始化单个预置渲染项并挂入区域
 func _init_preset_item(item: RenderItem, area: RenderArea, pool_index: int) -> void:
 	item.area_name = area.get_area_name()
 	item.render_context = render_context
@@ -139,7 +152,8 @@ func _handle_request_immediate(request: RenderRequest) -> void:
 		render_area.process_request(request)
 	else:
 		push_error("RenderArea not found for target: " + str(target_area) + ",player:" + str(request.target_area_player_id))
-		render_context.get_render_area(&"discard").process_request(request)
+		render_context.get_render_area(RenderArea.DefaultArea.DISCARD).process_request(request)
 
+## 区域创建回调：初始化该区域
 func _on_render_context_area_created(area: RenderArea, player_id: int) -> void:
 	_initialize_render_area(area)

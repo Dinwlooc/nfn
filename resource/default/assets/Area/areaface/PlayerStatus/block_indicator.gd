@@ -34,6 +34,7 @@ var block_base_positions: Array[Vector2] = []
 ## 每个块当前正在播放的 Tween（用于闪烁动画管理）
 var _block_tweens: Array[Tween] = []
 
+## 就绪：收集块节点与动画实例
 func _ready() -> void:
 	_ensure_background_style()
 
@@ -112,9 +113,11 @@ func blink_block(index: int, from_color: Color, to_color: Color, duration: float
 	_block_tweens[index] = tween
 	tween.finished.connect(_on_blink_finished.bind(index), CONNECT_ONE_SHOT)
 
+## 颜色动画完成回调
 func _on_color_animation_finished(index: int) -> void:
 	block_animating[index] = false
 
+## 闪烁完成回调
 func _on_blink_finished(index: int) -> void:
 	if index >= 0 and index < block_animating.size():
 		block_animating[index] = false

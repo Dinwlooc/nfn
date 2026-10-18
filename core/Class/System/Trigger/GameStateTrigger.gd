@@ -3,7 +3,9 @@
 extends RefCounted
 class_name GameStateTrigger
 
+## 关联的游戏状态
 var _game_state: GameState
+## 命令总线
 var _command_bus: CommandBus
 ## 断开所有信号连接。子类必须覆盖此方法。
 @abstract func disconnect_all() -> void

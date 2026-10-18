@@ -1,28 +1,44 @@
 ## UI更新器：负责将数据变化应用到具体的指示器节点，并管理动画控制器。
 extends RefCounted
 
+## 生命/战意块指示器脚本
 const BlockIndicator = preload("block_indicator.gd")
+## 法力点指示器脚本
 const DotIndicator = preload("dot_indicator.gd")
+## 行动点图标指示器脚本
 const TextIconIndicator = preload("text_icon_indicator.gd")
+## 呼吸动画脚本
 const BreathAnimation = preload("breath_animation.gd")
+## 颤动动画脚本
 const TremorAnimation = preload("tremor_animation.gd")
+## 粒子管理器脚本
 const ParticleManager = preload("ParticleManager.gd")
+## 常量配置脚本
 const C = preload("status_constants.gd")
 
 ## 引用UI节点
 var hp_indicator: BlockIndicator
+## 法力点指示器
 var mp_indicator: DotIndicator
+## 行动点指示器
 var ap_indicator: TextIconIndicator
+## 战意条指示器
 var morale_indicator: BlockIndicator
+## 战意等级标签
 var morale_level_label: Label
+## 战意数值标签
 var morale_value_label: RichTextLabel
+## 粒子管理器
 var particle_manager: ParticleManager
 
 ## 动画控制器（纯逻辑，信号连接在此处完成）
 var _breath_anim: BreathAnimation
+## 颤动动画实例（低血量）
 var _tremor_anim: TremorAnimation
+## 战意呼吸动画实例
 var _morale_breath_anim: BreathAnimation
 
+## 构造：接管各指示器与标签，并创建动画实例
 func _init(
 	hp_bar: BlockIndicator,
 	mp_dots: DotIndicator,
@@ -62,15 +78,19 @@ func _init(
 	morale_indicator.set_capacity(0)
 
 # ----- 响应数据信号 -----
+## 生命值变化入口
 func on_hp_changed(old_hp: int, new_hp: int, old_max: int, new_max: int) -> void:
 	_apply_hp_animation(old_max, old_hp, new_max, new_hp)
 
+## 法力值变化入口
 func on_mp_changed(old_mp: int, new_mp: int, old_max: int, new_max: int) -> void:
 	_apply_mp_animation(old_max, old_mp, new_max, new_mp)
 
+## 行动点变化入口
 func on_ap_changed(old_ap: int, new_ap: int, old_init: int, new_init: int) -> void:
 	ap_indicator.update_text(new_ap, new_init)
 
+## 战意变化入口
 func on_morale_changed(old_level: int, new_level: int, old_attack: int, new_attack: int, old_defense: int, new_defense: int, old_required: int, new_required: int) -> void:
 	_update_morale_level(new_level)
 	_update_morale_value_text(new_attack, new_defense, new_required)
@@ -78,6 +98,7 @@ func on_morale_changed(old_level: int, new_level: int, old_attack: int, new_atta
 	if new_level > old_level:
 		_emit_level_up_effect()
 
+## 清空全部显示
 func on_clear_display() -> void:
 	hp_indicator.update_label_text(0, 0)
 	mp_indicator.update_label_text(0, 0)
@@ -97,6 +118,7 @@ func on_clear_display() -> void:
 	_update_morale_value_text(0, 0, C.UPGRADE_REQUIREMENTS[0])
 
 # ----- 内部动画实现 -----
+## 应用生命侧动画（块颜色/背景/标签/呼吸颤动/粒子）
 func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
@@ -149,6 +171,7 @@ func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 				var pos: Vector2 = block.global_position + Vector2(block.size.x, block.size.y * 0.5)
 				particle_manager.emit_blood_hit(pos, hp_loss, ratio)
 
+## 应用法力侧动画（点颜色/淡出）
 func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
 	var clamped_new_cur: int = max(0, new_cur)
 	var clamped_old_cur: int = max(0, old_cur)
@@ -175,6 +198,7 @@ func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 			var to_color: Color = C.COLOR_MP_LOST if is_decrease else C.COLOR_MP_CURRENT
 			mp_indicator.blink_dot(i, from_color, to_color, C.MP_BLINK_DURATION)
 
+## 应用战意侧动画（块颜色/数值文本）
 func _apply_morale_animation(old_attack: int, old_defense: int, old_required: int, new_attack: int, new_defense: int, new_required: int) -> void:
 	morale_indicator.set_capacity(new_required)
 	_morale_breath_anim.set_block_count(new_required)
@@ -197,6 +221,7 @@ func _apply_morale_animation(old_attack: int, old_defense: int, old_required: in
 	else:
 		_morale_breath_anim.set_active(false)
 
+## 计算第 index 个战意块应显示的颜色
 func _get_morale_block_color(index: int, attack: int, defense: int, required: int) -> Color:
 	if required <= 0:
 		return Color.TRANSPARENT
@@ -210,15 +235,18 @@ func _get_morale_block_color(index: int, attack: int, defense: int, required: in
 		return C.COLOR_MORALE_DEFENSE
 	return Color.TRANSPARENT
 
+## 更新战意等级标签
 func _update_morale_level(new_level: int) -> void:
 	morale_level_label.text = "Lv.%d" % new_level
 
+## 更新战意数值文本（攻/防/所需）
 func _update_morale_value_text(attack: int, defense: int, required: int) -> void:
 	var total: int = attack + defense
 	var text: String = "[color=#CC33CC]%d[/color]+[color=#3366CC]%d[/color]=[color=#AA66FF]%d[/color]/[color=#AA66FF]%d[/color]" % [attack, defense, total, required]
 	morale_value_label.text = text
 	morale_value_label.bbcode_enabled = true
 
+## 发射升级粒子特效
 func _emit_level_up_effect() -> void:
 	var blocks: Array[Panel] = morale_indicator.blocks
 	if not blocks.size() > 0:
@@ -228,6 +256,7 @@ func _emit_level_up_effect() -> void:
 	particle_manager.emit_level_up(pos)
 
 # ----- 信号连接：动画控制器的输出 -----
+## 生命块亮度更新回调
 func _on_hp_brightness_updated(index: int, brightness: float) -> void:
 	if index < 0 or index >= hp_indicator.blocks.size():
 		return
@@ -244,6 +273,7 @@ func _on_hp_brightness_updated(index: int, brightness: float) -> void:
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	stylebox.bg_color = new_color
 
+## 生命块偏移更新回调（颤动）
 func _on_hp_offset_updated(index: int, offset: Vector2) -> void:
 	if index < 0 or index >= hp_indicator.blocks.size():
 		return
@@ -251,6 +281,7 @@ func _on_hp_offset_updated(index: int, offset: Vector2) -> void:
 		return
 	hp_indicator.blocks[index].position = hp_indicator.block_base_positions[index] + offset
 
+## 战意块亮度更新回调
 func _on_morale_brightness_updated(index: int, brightness: float) -> void:
 	if index < 0 or index >= morale_indicator.blocks.size():
 		return

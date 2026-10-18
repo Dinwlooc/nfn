@@ -3,27 +3,37 @@ class_name MoraleCommand
 
 ## @context
 class Context extends PlayerAttributeCommand.Context:
+	## 士气攻击侧变更量
 	var attack_delta: int = 0
+	## 士气防御侧变更量
 	var defense_delta: int = 0
+	## 准备阶段缓存的攻击侧变更量
 	var cached_attack_delta: int = 0
+	## 准备阶段缓存的防御侧变更量
 	var cached_defense_delta: int = 0
+	## 士气来源玩家 id
 	var source_player_id: int = 0
+	## 事件名，用于渲染与日志标识
 	var event_name: StringName = &""
 
+	## 链式设置攻击侧变更量（负数按 0 处理）
 	func set_attack_delta(v: int) -> Context:
 		attack_delta = max(0, v)
 		cached_attack_delta = attack_delta
 		return self
 
+	## 链式设置防御侧变更量（负数按 0 处理）
 	func set_defense_delta(v: int) -> Context:
 		defense_delta = max(0, v)
 		cached_defense_delta = defense_delta
 		return self
 
+	## 链式设置士气来源玩家 id
 	func set_source_player_id(id: int) -> Context:
 		source_player_id = id
 		return self
 
+	## 链式设置事件名
 	func set_event_name(name: StringName) -> Context:
 		event_name = name
 		return self

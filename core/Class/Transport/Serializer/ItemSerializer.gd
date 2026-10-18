@@ -1,23 +1,26 @@
 extends TransPackSerializer
 class_name ItemSerializer
 
+## 支持序列化的物品包类型表（下标即序列化标识）
 static var item_classes: Array[Script] = [
 	CardPack,
 	HandCardPack,
 	PlayerPack
 ]
+## 类名 → 索引 的正向注册表
 static var _registry: Dictionary[StringName,int] = build_registry(item_classes)
+## 索引 → 类 的反向注册表
 static var _reverse_registry: Array[Script] = item_classes
 
-# 序列化单个Item - 保持原接口
+## 序列化单个Item - 保持原接口
 static func serialize(item: TransPack, buffer = StreamPeerBuffer.new()) -> PackedByteArray:
 	serialize_with_registry(buffer, item, _registry)
 	return buffer.data_array
-# 反序列化单个Item - 保持原接口
+## 反序列化单个Item - 保持原接口
 static func deserialize(buffer: StreamPeerBuffer) -> TransPack:
 	var result = deserialize_with_registry(buffer, _reverse_registry)
 	return result as TransPack
-# 序列化同类型Item数组 - 优化版
+## 序列化同类型Item数组 - 优化版：只写一次类型标识
 static func serialize_array(items: Array[ItemPack], buffer: StreamPeerBuffer = StreamPeerBuffer.new()) -> PackedByteArray:
 	write(buffer, items.size())
 	if items.size() == 0:
@@ -29,7 +32,7 @@ static func serialize_array(items: Array[ItemPack], buffer: StreamPeerBuffer = S
 	for item in items:
 		item.serialize_to_buffer(buffer)
 	return buffer.data_array
-# 反序列化同类型Item数组 - 优化版
+## 反序列化同类型Item数组 - 优化版：读一次类型标识后批量构造
 static func deserialize_array(buffer: StreamPeerBuffer) -> Array[ItemPack]:
 	var result: Array[ItemPack] = []
 	var array_size: int = read(buffer, TYPE_INT)

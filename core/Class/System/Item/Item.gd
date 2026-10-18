@@ -2,12 +2,19 @@
 extends RefCounted
 class_name Item
 
+## 物品唯一 id（-1 表示未分配）
 var id: int = -1
+## 上次生成的增量数据包缓存
 var last_pack: ItemPack = null
+## 物品蓝图数据
 var data: ItemData
+## 属性修饰器集合
 var attributeModifiers: AttributeModifiers = AttributeModifiers.new()
+## 命令修饰器集合
 var command_modifiers: CommandModifiers
+## Buff 修饰器集合
 var buff_modifiers: BuffModifiers
+## 物品自身的规则覆盖
 var rule_overrides: Dictionary[StringName,Variant] = {}
 ## 构造函数，接收一个 ItemData 蓝图
 func _init(item_data: ItemData,is_virtual:bool = false) -> void:
@@ -65,6 +72,8 @@ func set_rule_overrides(overrides: Dictionary[StringName,Variant]) -> void:
 static func get_item_type() -> StringName:
 	return &"item"
 
+## 取增量数据包：有缓存则就地计算差值，否则新建并记录合并掩码
+## @side_effect
 func get_pack() -> ItemPack:
 	if last_pack:
 		last_pack._update_and_calculate_delta(self)
@@ -73,11 +82,17 @@ func get_pack() -> ItemPack:
 	last_pack.update_merge_mask()
 	return last_pack
 
+## 生成完整数据包（不走增量缓存）
+## @delegates
 func get_full_pack() -> ItemPack:
 	return _create_pack()
 
+## 按蓝图创建数据包
+## @delegates
 func _create_pack() -> ItemPack:
 	return data.pack_class.init_from_item(self)
 
+## 清除增量数据包缓存
+## @side_effect
 func clear_pack_cache() -> void:
 	last_pack = null

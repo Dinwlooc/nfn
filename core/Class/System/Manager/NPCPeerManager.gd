@@ -3,12 +3,17 @@ extends RefCounted
 class_name NPCPeerManager
 
 #=== Constants ===
+## 单次请求的最大重试次数
 const MAX_RETRIES: int = 5
 
 #=== Variables ===
+## 关联的游戏状态
 var _game_state: GameState
+## 玩家 id → NPC 对等端
 var _npc_peers: Dictionary[int, NPCPeer] = {}
+## 玩家 id → 已重试次数
 var _retry_counts: Dictionary[int, int] = {}
+## 玩家 id → 决策序列号（用于忽略过期回调）
 var _decision_serial: Dictionary[int, int] = {}   # 决策序列号，用于忽略过期回调
 
 #=== Signals ===

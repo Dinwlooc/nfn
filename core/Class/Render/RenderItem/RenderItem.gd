@@ -3,6 +3,7 @@ extends Control
 class_name RenderItem
 
 #==enums==
+## 卡牌拖拽状态机
 enum DraggingState {
 	READY,          # 0 - 准备就绪
 	CHECKING,       # 1 - 长按检测中
@@ -11,14 +12,23 @@ enum DraggingState {
 }
 
 #==vars==
+## 当前所在渲染区域名
 var area_name:StringName = &""
+## 所属玩家 id（-1 表示未归属）
 var player_id:int = -1
+## 渲染上下文引用
 var render_context:RenderContext
+## 池内序号（-1 表示未入池）
 var pool_id:int
+## 是否被选中
 var selected:bool = false
+## 是否处于拖拽态
 var dragged:bool = false
+## 拖拽状态机当前状态
 var dragging:DraggingState = DraggingState.READY
+## 鼠标是否悬停
 var hovering:bool = false
+## 当前数据包
 var data:ItemPack
 ## 视觉中心坐标。
 ## Get 返回当前 position + size*scale/2，Set 调整 position 使中心落在给定值。
@@ -60,10 +70,12 @@ signal mouse_entered_item(item: RenderItem)
 ## @emitter
 signal mouse_exited_item(item: RenderItem)
 
+## 构造：设定节点名并绑定初始数据包
 func _init(new_data:ItemPack = ItemPack.NULL_PACK) -> void:
 	name = &"RenderItem"
 	data = new_data
 
+## 入树后请求牌面与数据，并接入鼠标进出信号
 func _ready() -> void:
 	request_face.emit(self)
 	data_requested.emit(self)
@@ -110,12 +122,15 @@ func reset() -> void:
 	mouse_exited.disconnect(_emit_mouse_exited_item)
 	reset_requested.emit(self)
 
+## 取缩放后的实际显示尺寸
 func get_item_size()->Vector2:
 	return Vector2(size.x * scale.x,size.y * scale.y)
 
+## 取居中偏移量（可用于按视觉中心定位）
 func get_centered_offset(scale_overriding:Vector2 = scale)->Vector2:
 	return - Vector2(size.x * scale_overriding.x,size.y * scale_overriding.y)/2
 
+## 设置显示尺寸
 func set_item_size(new_size:Vector2):
 	size = new_size
 ## 设置悬停状态并请求刷新
@@ -159,9 +174,11 @@ func request_cancel_dragging():
 	dragging = DraggingState.READY
 	request_cancel_dragged.emit(self)
 
+## 判断鼠标位置是否落在本卡牌矩形内
 func is_hovering(mouse_pos):
 	return Rect2(position,size).has_point(mouse_pos)
 
+## 取当前数据包的物品 id（无数据时返回 -1）
 func get_id()->int:
 	if data:
 		return data.get_id()

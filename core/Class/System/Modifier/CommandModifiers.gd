@@ -2,26 +2,37 @@
 extends RefCounted
 class_name CommandModifiers
 
+## 已挂载的命令修饰器
 var _modifiers: Array[Modifier] = []
+## 缓存的修饰结果对应的动作序数（-1 表示无缓存）
 var _cached_sequence: int = -1
+## 每个修饰器上一轮的输出上下文
 var _cached_results: Array[ModifierContext] = []
 
+## 添加一个命令修饰器（去重）
+## @side_effect
 func add_modifier(modifier: Modifier) -> void:
 	if modifier not in _modifiers:
 		_modifiers.append(modifier)
 
+## 移除一个命令修饰器
+## @side_effect
 func remove_modifier(modifier: Modifier) -> void:
 	_modifiers.erase(modifier)
 
+## 取全部命令修饰器
 func get_modifiers() -> Array[Modifier]:
 	return _modifiers
 
+## 清空修饰器与缓存
+## @side_effect
 func reset() -> void:
 	_modifiers.clear()
 	_cached_sequence = -1
 	_cached_results.clear()
 
 ## 处理修饰器，传入上下文、游戏状态、命令总线、创建者和当前动作序数
+## @side_effect
 func process_modifiers(context: CommandContext, state: GameState, command_bus: CommandBus, creator: Item, sequence: int) -> void:
 	if _modifiers.is_empty():
 		return

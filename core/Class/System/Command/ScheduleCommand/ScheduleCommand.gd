@@ -3,7 +3,9 @@
 extends BehaviorCommand
 class_name ScheduleCommand
 
+## 调度命令持有的命令总线，构造时注入
 var _command_bus: CommandBus
+## 调度命令的执行入口，子类必须实现
 @abstract func execute(game_state: GameState) -> void
 ## 构造函数：第一个参数为 command_bus
 func _init(

@@ -2,6 +2,8 @@
 extends CardMoveCommand
 class_name ShuffleCommand
 
+## 洗牌命令的上下文
+## @context
 class Context extends CardMoveCommand.Context:
 	pass
 
@@ -35,6 +37,7 @@ static func init(context: Context, game_state: GameState) -> void:
 	context.set_source_area(discard)
 	context.set_target_area(drawing)
 
+## 打乱牌堆区
 static func shuffle_drawing_card(game_state: GameState) -> void:
 	var drawing: AreaDrawing = game_state.get_drawing_area()
 	if drawing:

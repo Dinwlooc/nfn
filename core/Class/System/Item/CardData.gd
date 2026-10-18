@@ -7,6 +7,7 @@ class_name CardData
 ## 卡牌类型（运行时可变，初始值由蓝图提供）
 @export var type: StringName = &"attack"
 
+## 构造：指定卡牌数据包类型
 func _init() -> void:
 	super._init()
 	pack_class = HandCardPack

@@ -2,15 +2,24 @@
 ## 通过信号驱动更新，主循环使用状态机（等待→排列→绘制）轮询。
 extends Control
 # 导入内部依赖
+## 箭头节点脚本
 const ArrowNode = preload("arrow_node.gd")
+## 箭头线脚本
 const ArrowLine = preload("arrow_line.gd")
+## 箭头线构建器脚本
 const ArrowLineBuilder = preload("arrow_line_builder.gd")
+## 箭头评估器脚本
 const ArrowEvaluator = preload("arrow_evaluator.gd")
 # ==================== 常量 ====================
+## 手牌区名称
 const HAND_AREA_NAME: StringName = RenderArea.DefaultArea.HAND
+## 玩家区名称
 const PLAYERS_AREA_NAME: StringName = RenderArea.DefaultArea.PLAYERS
+## 守备区名称
 const DEFENCE_AREA_NAME: StringName = RenderArea.DefaultArea.DEFENCE
+## 曲线细分精度
 const CURVE_TESSELLATE_PRECISION: int = 5
+## 箭头激活延迟（毫秒）
 const ACTIVATION_DELAY_MS: int = 250
 ## 主循环状态机
 enum State { IDLE, WAITING, ARRANGING, DRAWING }
@@ -42,6 +51,7 @@ var render_context: RenderContext
 var _state: State = State.IDLE
 ## 子组件实例
 var _line_builder: ArrowLineBuilder
+## 箭头评估器实例
 var _evaluator: ArrowEvaluator
 # ==================== 生命周期 ====================
 ## 初始化，创建子控件并连接区域信号

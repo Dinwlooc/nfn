@@ -3,8 +3,11 @@ extends Stage
 class_name StageDying
 
 #== Constants ==
+## 濒死阶段默认时限（秒）
 const DEFAULT_TIME_LIMIT: float = 10.0
+## 时限下限（秒）
 const MIN_TIME_LIMIT: float = 4.0
+## 每次响应的时限惩罚步长（秒）
 const TIME_PENALTY_STEP: float = 2.0
 
 #== Properties ==
@@ -18,6 +21,7 @@ var _is_locked: bool = false
 var _pending_stage_end: bool = false
 
 #== Constructor ==
+## 构造：绑定濒死玩家，设定阶段名与时限
 func _init(p_dying_player: Player) -> void:
 	super._init()
 	dying_player = p_dying_player

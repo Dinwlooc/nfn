@@ -1,6 +1,8 @@
 ## 箭头线构建器：生成主线和敌方线的曲线点集，并启动电光动画。
 extends RefCounted
+## 箭头节点脚本
 const ArrowNode = preload("arrow_node.gd")
+## 箭头线脚本
 const ArrowLine = preload("arrow_line.gd")
 ## 曲线细分精度
 const CURVE_TESSELLATE_PRECISION: int = 5

@@ -1,19 +1,25 @@
 extends RefCounted
 class_name AttributeModifiers
-# 常量标记四种算术类型
+## 基础加减（加法合并）
 const TYPE_BASE_ADD = 0       # 基础加减 (加法合并)
+## 基础倍率（加法合并）
 const TYPE_BASE_MULTIPLY = 1  # 基础倍率 (加法合并)
+## 最终加减（加法合并）
 const TYPE_FINAL_ADD = 2      # 最终加减 (加法合并)
+## 最终乘算（乘法合并）
 const TYPE_FINAL_MULTIPLY = 3 # 最终乘算 (乘法合并)
+## 最终值在 combined_values 数组中的下标
 const FINAL_VALUE_INDEX = 4   # 最终值
-#  combined_values: 属性名(StringName) -> 数组[5](float)
+## combined_values: 属性名(StringName) -> 数组[5](float)
 var combined_values:Dictionary[StringName,PackedFloat32Array] = {}
-# modifiers_dict: 属性名(StringName) -> 类型(int) -> 修饰器名(StringName) -> 值(float)
+## modifiers_dict: 属性名(StringName) -> 类型(int) -> 修饰器名(StringName) -> 值(float)
 var modifiers_dict:Dictionary[StringName,Dictionary] = {}
-# 设置属性的基础值（转换为基础加减修饰器）
+## 设置属性的基础值（转换为基础加减修饰器）
+## @side_effect
 func set_base_value(attribute: StringName, base_value: int) -> void:
 	add_modifier(attribute, TYPE_BASE_ADD, &"base_value", float(base_value))
-# 添加修饰器
+## 添加修饰器：同名同类型已存在时按差值增量更新
+## @side_effect
 func add_modifier(attribute: StringName, type: int, modifier_name: StringName, value: float) -> void:
 	_ensure_attribute_exists(attribute)
 	var rounded_value: float = _round_value(type, value)
@@ -27,7 +33,8 @@ func add_modifier(attribute: StringName, type: int, modifier_name: StringName, v
 	else:
 		modifiers_of_type[modifier_name] = rounded_value
 		_apply_modifier(attribute, type, rounded_value)
-# 删除修饰器
+## 删除修饰器
+## @side_effect
 func remove_modifier(attribute: StringName, type: int, modifier_name: StringName) -> void:
 	if not modifiers_dict.has(attribute):
 		return
@@ -41,7 +48,8 @@ func remove_modifier(attribute: StringName, type: int, modifier_name: StringName
 	modifiers_of_type.erase(modifier_name)
 	_revert_modifier(attribute, type, old_value)
 
-# 更新修饰器值
+## 更新修饰器值：按差值增量应用，最终乘算需整类重算
+## @side_effect
 func _update_modifier(attribute: StringName, type: int, modifier_name: StringName, old_value: float, new_value: float) -> void:
 	var modifiers_of_type = modifiers_dict[attribute][type]
 	if type == TYPE_FINAL_MULTIPLY:
@@ -56,7 +64,8 @@ func _update_modifier(attribute: StringName, type: int, modifier_name: StringNam
 		_apply_modifier(attribute, type, delta)
 	else:
 		_revert_modifier(attribute, type, -delta)
-# 应用修饰器影响
+## 应用修饰器影响
+## @side_effect
 func _apply_modifier(attribute: StringName, type: int, value: float) -> void:
 	var values: PackedFloat32Array = combined_values[attribute]
 	match type:
@@ -73,7 +82,8 @@ func _apply_modifier(attribute: StringName, type: int, value: float) -> void:
 			# 最终乘算需要完全重算
 			_recalculate_combined_type(attribute, type)
 			_recalculate_final(attribute)
-# 撤销修饰器影响
+## 撤销修饰器影响
+## @side_effect
 func _revert_modifier(attribute: StringName, type: int, value: float) -> void:
 	var values = combined_values[attribute]
 	match type:
@@ -90,17 +100,19 @@ func _revert_modifier(attribute: StringName, type: int, value: float) -> void:
 			# 最终乘算需要完全重算
 			_recalculate_combined_type(attribute, type)
 			_recalculate_final(attribute)
-# 获取最终值
+## 获取最终值
 func get_final_value(attribute: StringName) -> int:
 	_ensure_attribute_exists(attribute)
 	return int(round(combined_values.get(attribute, PackedFloat32Array())[FINAL_VALUE_INDEX]))
-# 确保属性存在
+## 确保属性存在：懒初始化其修饰表与合并数组
+## @side_effect
 func _ensure_attribute_exists(attribute: StringName) -> void:
 	if modifiers_dict.has(attribute):
 		return
 	modifiers_dict[attribute] = {0: {}, 1: {}, 2: {}, 3: {}}
 	combined_values[attribute] = PackedFloat32Array([0.0, 0.0, 0.0, 1.0, 0.0])
-# 重新计算合并值
+## 重新计算某一算术类型的合并值
+## @side_effect
 func _recalculate_combined_type(attribute: StringName, type: int) -> void:
 	var combined = 0.0
 	var type_dict = modifiers_dict[attribute].get(type, {})
@@ -127,6 +139,8 @@ func _round_value(type: int, value: float) -> float:
 			return round(value * 100.0) / 100.0
 		_:
 			return value
+## 重算全部属性的合并值与最终值
+## @side_effect
 func recalculate_all() -> void:
 	for attribute in modifiers_dict:
 		# 重新计算所有类型

@@ -3,12 +3,15 @@ extends Stage
 class_name StageDiscard
 
 #== Constants ==
+## 弃牌阶段时限（秒）
 const TIME_LIMIT: float = 10.0
 
 #== Properties ==
+## 待弃牌玩家表：玩家 id → 还需弃置的张数
 var _players_to_discard: Dictionary[int, int] = {}
 
 #== Constructor ==
+## 构造：设定阶段名与时限
 func _init() -> void:
 	super._init()
 	stage_name = &"Discard"

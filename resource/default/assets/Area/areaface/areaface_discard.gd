@@ -24,11 +24,15 @@ const FINAL_SCALE: float = 0.8
 ## 最终缩放
 const FINAL_SCALE_END: float = 0.2
 
+## 关联的弃牌区
 var _discard_area: RenderAreaDiscard = null
 
+## 就绪：登记弃牌区
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.DISCARD)
 
+## 接入区域：缓存弃牌区引用
+## @override
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
 	if not (target_area is RenderAreaDiscard):
@@ -38,6 +42,8 @@ func _connect_to_area(target_area: RenderArea) -> void:
 	if not _discard_area.items_added.is_connected(_on_item_added):
 		_discard_area.items_added.connect(_on_item_added)
 
+## 断开区域连接
+## @override
 func _disconnect_from_area(target_area: RenderArea) -> void:
 	if target_area is RenderAreaDiscard:
 		if target_area.items_added.is_connected(_on_item_added):
@@ -85,6 +91,7 @@ func _on_item_added(render_item: RenderItem) -> void:
 			.set_trans(TRANS_TYPE).set_ease(EASE_TYPE)
 	tween.finished.connect(_on_animation_finished.bind(render_item), CONNECT_ONE_SHOT)
 
+## 动画完成回调：回收卡牌
 func _on_animation_finished(render_item: RenderItem) -> void:
 	if not is_instance_valid(render_item):
 		return

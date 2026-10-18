@@ -1,36 +1,63 @@
 ## 玩家状态面板（HP/MP/AP/士气），支持自动绑定本地玩家。
 extends AreaFace
 
+## 绑定模式：自动绑定本地玩家 / 手动指定
 enum Mode { AUTO, MANUAL }
+## 当前绑定模式
 @export var mode: Mode = Mode.AUTO
 
+## 生命/战意块指示器脚本
 const BlockIndicator = preload("block_indicator.gd")
+## 法力点指示器脚本
 const DotIndicator = preload("dot_indicator.gd")
+## 行动点图标指示器脚本
 const TextIconIndicator = preload("text_icon_indicator.gd")
+## 呼吸动画脚本
 const BreathAnimation = preload("breath_animation.gd")
+## 颤动动画脚本
 const TremorAnimation = preload("tremor_animation.gd")
+## 粒子管理器脚本
 const ParticleManager = preload("ParticleManager.gd")
+## 状态数据脚本
 const StatusData = preload("status_data.gd")
+## UI 更新器脚本
 const StatusUIUpdater = preload("status_ui_updater.gd")
+## 常量配置脚本
 const C = preload("status_constants.gd")
 
+## 生命条指示器
 @onready var hp_indicator: BlockIndicator = $HPBar
+## 法力点指示器
 @onready var mp_indicator: DotIndicator = $MPContainer
+## 行动点指示器
 @onready var ap_indicator: TextIconIndicator = $APContainer
+## 战意条指示器
 @onready var morale_indicator: BlockIndicator = $MoraleBar
+## 战意等级标签
 @onready var morale_level_label: Label = $MoraleBar/ValueLabel
+## 战意数值标签
 @onready var morale_value_label: RichTextLabel = $MoraleBar/MoraleValueLabel
+## 粒子管理器
 @onready var particle_manager: ParticleManager = $ParticleManager
 
+## 状态数据（从 PlayerPack 同步）
 var _data: StatusData
+## UI 更新器
 var _ui_updater: StatusUIUpdater
+## 当前绑定的玩家卡实例
 var _current_player: RenderItem = null
+## 当前绑定玩家的 id（-1 表示未绑定）
 var _cached_player_id: int = -1
+## 是否已完成首次数据同步
 var _initialized: bool = false
+## 流血粒子发射计数
 var _bleed_frame_counter: int = 0
+## 当前流血发射间隔（帧）
 var _bleed_interval: int = 0
+## 是否处于流血状态
 var _bleed_active: bool = false
 
+## 就绪：登记玩家区，创建数据与 UI 更新器并接线
 func _ready() -> void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
 	_data = StatusData.new()
@@ -48,6 +75,7 @@ func _ready() -> void:
 	_data.ap_changed.connect(_ui_updater.on_ap_changed)
 	_data.morale_changed.connect(_ui_updater.on_morale_changed)
 
+## 每帧：驱动 UI 更新器；满足间隔时从当前血量块发出流血粒子
 func _process(delta: float) -> void:
 	if not visible:
 		return
@@ -68,6 +96,8 @@ func _process(delta: float) -> void:
 	var ratio: float = float(_data.hp_current) / float(_data.hp_max) if _data.hp_max > 0 else 0.0
 	particle_manager.emit_blood_bleed_single(pos, dir, ratio)
 
+## 接入区域：AUTO 模式下监听本地玩家出现事件
+## @override
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
 	if not (target_area is RenderAreaPlayers):
@@ -78,12 +108,15 @@ func _connect_to_area(target_area: RenderArea) -> void:
 		if target_area.local_player:
 			_on_local_player_received(target_area.local_player)
 
+## 断开区域连接
+## @override
 func _disconnect_from_area(target_area: RenderArea) -> void:
 	if target_area is RenderAreaPlayers:
 		if target_area.local_player_received.is_connected(_on_local_player_received):
 			target_area.local_player_received.disconnect(_on_local_player_received)
 	super._disconnect_from_area(target_area)
 
+## 本地玩家出现：自动绑定
 func _on_local_player_received(local_player: RenderItem) -> void:
 	set_player(local_player)
 ## 设置当前绑定的玩家（自动监听数据更新）
@@ -102,6 +135,7 @@ func set_player(player: RenderItem) -> void:
 	_cached_player_id = _current_player.get_id()
 	_update_cached_stats(_current_player.data)
 
+## 绑定玩家的数据更新回调：重新同步并计算增减
 func _on_player_data_requested(player: RenderItem) -> void:
 	if player == _current_player and player and player.data is PlayerPack:
 		_update_cached_stats(player.data)
@@ -117,6 +151,7 @@ func _update_cached_stats(player_data: PlayerPack) -> void:
 		_trigger_damage_event(hp_damage, mp_damage)
 	_update_bleed_state()
 
+## 清空显示与内部统计
 func _clear_display() -> void:
 	_ui_updater.on_clear_display()
 	_initialized = false

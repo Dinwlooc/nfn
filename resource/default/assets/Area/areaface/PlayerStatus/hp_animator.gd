@@ -1,6 +1,7 @@
 ## HP 动画控制器：管理 HP 变化时的块更新、闪烁、渐变、背景、呼吸/颤动控制，以及粒子请求。
 extends RefCounted
 
+## 常量配置脚本
 const C = preload("status_constants.gd")
 
 ## 信号：请求设置块容量（新容量）
@@ -26,8 +27,11 @@ signal request_emit_hit(global_pos: Vector2, hp_loss: int, hp_ratio: float)
 ## 信号：请求发射井喷粒子（全局位置）
 signal request_emit_gush(global_pos: Vector2)
 
+## 当前最大 HP
 var _hp_max: int = 0
+## 当前 HP
 var _hp_cur: int = 0
+## 是否已初始化
 var _initialized: bool = false
 
 ## 设置当前 HP 状态

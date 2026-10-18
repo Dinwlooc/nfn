@@ -1,9 +1,13 @@
 ## 治疗修饰器：在【技能】阶段生效，治疗目标玩家4点生命与2点精神。
 extends Modifier
 
+## 生命变化量（负值为治疗）
 @export var health_damage: int = 0
+## 法力变化量（负值为治疗）
 @export var mental_damage: int = 0
 
+## 技能阶段：对技能目标玩家施加治疗
+## @side_effect
 func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
 	if RuleModifierRuntime.should_skip(modifier_ctx):
 		return modifier_ctx

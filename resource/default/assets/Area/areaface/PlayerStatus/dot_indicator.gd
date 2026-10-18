@@ -2,6 +2,7 @@
 ## 和一个 ValueLabel 作为平行子节点，用于显示数值。
 extends Control
 
+## 法力单位脚本
 const DotUnit = preload("dot_unit.gd")
 
 ## 每个单位的点数（与 DotUnit 保持一致）。
@@ -15,7 +16,9 @@ const DOTS_PER_UNIT: int = 4
 
 var _units: Array[DotUnit] = []      ## 所有 DotUnit 实例
 var _capacity: int = 0               ## 总点数容量
+## 闪烁时长（秒）
 var _blink_duration: float = 0.2
+## 淡出时长（秒）
 var _fade_duration: float = 0.2
 
 ## 设置总点数容量，调整单位数量。

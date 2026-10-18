@@ -4,6 +4,7 @@ class_name NewRoundCommand
 
 ## @context
 class Context extends CommandContext:
+	## 指定新回合的玩家 id（-1 表示自动轮转下一家）
 	var new_round_player_id: int = -1
 
 ## @seam_override

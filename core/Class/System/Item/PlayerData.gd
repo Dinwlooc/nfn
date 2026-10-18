@@ -3,6 +3,7 @@
 extends ItemData
 class_name PlayerData
 
+## 构造：指定玩家数据包类型
 func _init() -> void:
 	super._init()
 	pack_class = PlayerPack

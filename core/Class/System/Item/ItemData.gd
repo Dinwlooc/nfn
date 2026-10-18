@@ -18,6 +18,7 @@ class_name ItemData
 			_reset_to_defaults = false
 			notify_property_list_changed()
 
+## 构造：首次创建时填充属性默认值
 func _init() -> void:
 	if attribute_defaults.is_empty():
 		reset_attribute_defaults()

@@ -53,6 +53,7 @@ var _cached_player_id: int = 0
 ## 缓存的属性计算结果（留作扩展）
 var _cached_properties: Dictionary = {}
 
+## 就绪：初始化目标卡表现
 func _ready() -> void:
 	_icon_original_position = selected_icon.position
 	_container_original_size = character_container.size
@@ -171,6 +172,7 @@ func _revert_selected_effects() -> void:
 	selected_icon.visible = false
 	selected_icon.position = _icon_original_position
 
+## 每物理帧更新目标卡朝向/跟随
 func _physics_process(_delta: float) -> void:
 	if selected_icon.visible:
 		_update_floating_icon()
