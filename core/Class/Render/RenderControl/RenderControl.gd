@@ -84,12 +84,12 @@ func _init_preset_item(item: RenderItem, area: RenderArea, pool_index: int) -> v
 		var item_id = item.data.get_id()
 		render_context.register_render_item(item_type, item_id, item)
 	if not item.data_requested.is_connected(face_manager.create_item_face):
-		item.data_requested.connect(face_manager.create_item_face.bind(item))
+		item.data_requested.connect(face_manager.create_item_face)
 	for face in item.get_children():
 		if face is ItemFace:
 			face_manager._init_preset_item_face(item, face)
 	if item.get_child_count() == 0 and item.data != null:
-		item.data_requested.emit()
+		item.data_requested.emit(item)
 
 ## 控制台指令：追加选择渲染位次对应的手牌。
 ## @delegates(on_select)

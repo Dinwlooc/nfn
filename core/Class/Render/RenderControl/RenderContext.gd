@@ -32,11 +32,6 @@ func notify_main_stage(stage_name: StringName, player_id: int, params: Dictionar
 func notify_temp_stage(stage_name: StringName, turn_player_id: int, stage_owner_id: int, params: Dictionary = {}) -> void:
 	state_manager.notify_temp_stage(stage_name, turn_player_id, stage_owner_id, params)
 
-## 通知阶段变更（由状态管理器决定主阶段或临时阶段）
-## @delegates
-func notify_stage(stage_name: StringName, current_player_id: int, params: Dictionary = {}) -> void:
-	state_manager.notify_stage(stage_name, current_player_id, params)
-
 ## 取当前阶段名（优先临时阶段，回退主阶段）
 func get_current_stage_name() -> StringName:
 	if not state_manager.get_current_stage_name().is_empty():

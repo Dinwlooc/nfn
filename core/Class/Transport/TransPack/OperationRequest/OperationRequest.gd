@@ -10,12 +10,12 @@ var source_peer_id:int
 var source_player_id:int
 ## 当前状态
 var state:State = State.PROCESS
-## 请求被取消
+## 请求被取消，携带请求自身
 ## @emitter
-signal cancelled()
-## 请求已完成
+signal cancelled(request: OperationRequest)
+## 请求已完成，携带请求自身
 ## @emitter
-signal completed()
+signal completed(request: OperationRequest)
 ## 包类名的静态标识
 ## @override
 static func get_class_name_static() -> StringName:
@@ -29,12 +29,12 @@ func use_npc_peer_id() -> OperationRequest:
 ## @side_effect @emitter
 func cancel() -> void:
 	state = State.CANCELLED
-	cancelled.emit()
+	cancelled.emit(self)
 ## 完成请求并广播
 ## @side_effect @emitter
 func complete() -> void:
 	state = State.COMPLETED
-	completed.emit()
+	completed.emit(self)
 ## 序列化：只写来源玩家 id
 ## @override @side_effect
 func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:

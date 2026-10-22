@@ -20,8 +20,8 @@ func _setup_mediator_connections() -> void:
 ## @signal_listener 玩家添加时连接战意信号
 func _on_player_added(player: Player) -> void:
 	GlobalConsole._print(["System: 新玩家加入,id:", player.get_id(), "，peer_id:", player.peer_id])
-	player.morale_attack_increased.connect(_on_morale_attack_increased.bind(player))
-	player.morale_defense_increased.connect(_on_morale_defense_increased.bind(player))
+	player.morale_attack_increased.connect(_on_morale_attack_increased)
+	player.morale_defense_increased.connect(_on_morale_defense_increased)
 ## @signal_listener 回合结束时尝试升级所有玩家
 func _on_round_ended() -> void:
 	for player in _game_state.player_manager.players:

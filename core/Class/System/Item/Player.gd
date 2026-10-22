@@ -24,12 +24,12 @@ var morale_defense: int = 0
 ## 士气等级
 var morale_level: int = 0
 
-## 士气攻击侧增加
+## 士气攻击侧增加，携带玩家自身
 ## @emitter
-signal morale_attack_increased(amount: int)
-## 士气防御侧增加
+signal morale_attack_increased(amount: int, player: Player)
+## 士气防御侧增加，携带玩家自身
 ## @emitter
-signal morale_defense_increased(amount: int)
+signal morale_defense_increased(amount: int, player: Player)
 ## 士气等级变更
 ## @emitter
 signal morale_level_changed(new_level: int)
@@ -84,13 +84,13 @@ func clear_pack_cache() -> void:
 ## @side_effect @emitter
 func add_morale_attack(value: int) -> void:
 	morale_attack += value
-	morale_attack_increased.emit(value)
+	morale_attack_increased.emit(value, self)
 
 ## 增加士气防御侧并广播
 ## @side_effect @emitter
 func add_morale_defense(value: int) -> void:
 	morale_defense += value
-	morale_defense_increased.emit(value)
+	morale_defense_increased.emit(value, self)
 
 ## 设置士气等级并广播
 ## @emitter

@@ -55,9 +55,10 @@ func _on_player_added(player: Player) -> void:
 	if _agents.has(player_id):
 		return
 	_agents[player_id] = Agent.new()
-## 请求取消时的重试逻辑
+## 请求取消时的重试逻辑（取消信号携带请求自身）
 ## @internal
-func _on_request_cancelled(player_id: int) -> void:
+func _on_request_cancelled(request: OperationRequest) -> void:
+	var player_id: int = request.source_player_id
 	var count: int = _retry_counts.get(player_id, 0)
 	if count < MAX_RETRIES:
 		_retry_counts[player_id] = count + 1
@@ -103,7 +104,7 @@ func _on_npc_decision(player_id: int, serial: int, request: OperationRequest) ->
 	_decision_serial.erase(player_id)
 	if request == null:
 		request = OperationRequest.AbandonResponse.new(player_id).use_npc_peer_id()
-	request.cancelled.connect(_on_request_cancelled.bind(player_id), CONNECT_ONE_SHOT)
+	request.cancelled.connect(_on_request_cancelled, CONNECT_ONE_SHOT)
 	emit_operation_requested(request)
 ## 构造系统层决策快照（主线程调用，纯数据）
 ## @external

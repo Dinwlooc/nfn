@@ -92,8 +92,8 @@ func _can_accept_new_request(player_id: int) -> bool:
 ## @internal @signal_listener
 func _setup_request_tracking(player_id: int, request: OperationRequest) -> void:
 	_pending_requests[player_id] = request
-	request.cancelled.connect(_on_request_cancelled.bind(request))
-	request.completed.connect(_on_request_completed.bind(request))
+	request.cancelled.connect(_on_request_cancelled)
+	request.completed.connect(_on_request_completed)
 ## 请求取消回调
 ## @internal @signal_listener
 func _on_request_cancelled(request: OperationRequest) -> void:

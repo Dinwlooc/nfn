@@ -41,9 +41,6 @@ signal main_stage_notified(stage_name: StringName, player_id: int, params: Dicti
 ## @emitter
 signal temp_stage_notified(stage_name: StringName, turn_player_id: int, stage_owner_id: int, params: Dictionary)
 
-## 保留旧信号（兼容，不再被 StageFace 使用）
-signal stage_notified(stage_name: StringName, current_player_id: int, params: Dictionary)
-
 # ================= 拖拽管理 =================
 ## 记录拖拽起点区域与卡牌
 func set_card_on_drag(area: RenderArea, realcard: RenderItem) -> void:
