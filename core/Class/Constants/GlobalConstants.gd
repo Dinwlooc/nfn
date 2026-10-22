@@ -54,6 +54,7 @@ class DefaultCard:
 # 向动态常量集注册官方静态常量
 ## 把官方静态常量注册进动态常量表
 ## @side_effect
+## @atomic
 static func register_to(registry: GlobalRegistry) -> void:
 	registry.register_constant(KEY_ITEM_TYPE, CARD_TYPES, CardType.size())
 	registry.register_constant(KEY_AREA_TYPE, AREA_TYPES, AreaType.size())

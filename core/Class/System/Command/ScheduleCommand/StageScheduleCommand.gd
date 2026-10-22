@@ -34,6 +34,7 @@ func _init(
 	context_overriding.disallowed_stages = disallowed
 
 ## 静态执行：根据操作调用StageManager
+## @atomic
 static func do_execute(context: Context, game_state: GameState, command_bus: CommandBus) -> void:
 	match context.operation:
 		Operation.ROLLBACK:

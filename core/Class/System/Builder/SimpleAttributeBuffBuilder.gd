@@ -2,6 +2,7 @@ class_name SimpleAttributeBuffBuilder
 extends RefCounted
 
 ## 创建简单属性Buff，根据属性名、类型与正负方向拼合修饰器名
+## @factory
 static func create_attribute_buff(
 	buff_name: StringName,
 	attribute_modifiers: AttributeModifiers,
@@ -36,5 +37,6 @@ static func _get_type_string(type: int) -> StringName:
 ## @param attribute_modifiers: 目标属性修饰器容器
 ## @param component_name: 组件名称（如 DestroyXModifier.get_component_name()）
 ## @param stack_value: 层数值（整数）
+## @atomic
 static func set_component_stack(attribute_modifiers: AttributeModifiers, component_name: StringName, stack_value: int) -> void:
 	attribute_modifiers.add_modifier(component_name, AttributeModifiers.TYPE_BASE_ADD, component_name, float(stack_value))

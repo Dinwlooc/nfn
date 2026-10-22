@@ -218,6 +218,7 @@ func _on_card_area_changed(card: Card) -> void:
 		ctx.oppose_card = null
 
 ## 静态准备阶段：初始化守区，获取结算牌和对抗牌
+## @atomic
 static func do_prepare(context: Context, game_state: GameState) -> void:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
@@ -232,6 +233,7 @@ static func do_prepare(context: Context, game_state: GameState) -> void:
 	context.is_unilateral = (context.oppose_card == null)
 
 ## 静态攻击判断阶段：计算初始结算信息，需要时返回拼点命令
+## @atomic
 static func do_attack_judge(context: Context, game_state: GameState) -> DuelCommand:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
@@ -282,6 +284,7 @@ static func do_damage(context: Context, game_state: GameState) -> Array[Behavior
 	return commands
 
 ## 静态清理阶段：返回将防御区所有牌移到弃牌堆的命令
+## @atomic
 static func do_clear(context: Context, game_state: GameState) -> CardTransferCommand:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
@@ -295,6 +298,7 @@ static func do_clear(context: Context, game_state: GameState) -> CardTransferCom
 	)
 
 ## 辅助静态方法：将战意授予转换为 MoraleCommand 列表
+## @atomic
 static func _build_combat_will_commands(
 	grants: Array[RuleSettle.CombatWillGrant],
 	context: Context

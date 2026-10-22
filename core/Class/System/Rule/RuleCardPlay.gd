@@ -143,6 +143,7 @@ static func _calculate_total_cost(card: Card, _source_player: Player) -> int:
 	return card.get_attribute(&"cost")
 
 ## 验证目标许可
+## @atomic
 static func _validate_target_permission(
 	permission_mask: int,
 	source: Player,
@@ -163,6 +164,7 @@ static func _validate_target_permission(
 	return RuleResult.new(true)
 
 ## 验证距离限制
+## @atomic
 static func _validate_distance(card: Card, source: Player, target: Player, game_state: GameState) -> RuleResult:
 	if target == null or target.get_id() == source.get_id():
 		return RuleResult.new(true)

@@ -106,11 +106,13 @@ func _emit_completed(result: int, diff: int) -> void:
 	duel_completed.emit(result, diff)
 
 ## 静态计算点数
+## @atomic
 static func do_calculate_power(context: Context, _game_state: GameState) -> void:
 	context.cached_power1 = context.card1.get_attribute(&"power")
 	context.cached_power2 = context.card2.get_attribute(&"power")
 
 ## 静态评估结果
+## @atomic
 static func do_evaluate_result(context: Context, _game_state: GameState) -> void:
 	context.point_difference = abs(context.cached_power1 - context.cached_power2)
 	if context.cached_power1 > context.cached_power2:

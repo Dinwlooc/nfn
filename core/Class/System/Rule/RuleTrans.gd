@@ -5,6 +5,7 @@ extends Object
 class_name RuleTrans
 
 ## 发送区域卡牌数量变化通知（不传输具体卡牌包）
+## @atomic
 static func send_count_change(
 	source_area: Area,
 	target_area: Area,
@@ -25,6 +26,7 @@ static func send_count_change(
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 
 ## 发送一组物品包（ItemPack）到客户端
+## @delegates
 static func send_items(
 	source_area: Area,
 	target_area: Area,
@@ -43,6 +45,7 @@ static func send_items(
 
 ## 发送卡牌列表到客户端，根据区域可见性决定使用的包类型。
 ## 移动到不可见区域后清除缓存；不可见区域间移动不获取包。
+## @delegates
 static func send_cards(
 	source_area: Area,
 	target_area: Area,
@@ -87,6 +90,7 @@ static func send_cards(
 	send_items(source_area, target_area, item_packs, event_type, custom_params)
 
 ## 发送玩家增量更新
+## @delegates
 static func send_player_delta_updates(
 	players: Array[Player],
 	event_type: RenderRequest.ItemSet.EventType = RenderRequest.ItemSet.EventType.UPDATE,
@@ -125,6 +129,7 @@ static func send_player_delta_packs(
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 
 ## 向指定客户端发送玩家全量数据
+## @atomic
 static func send_players_full_updates(players: Array[Player], peer_id: int) -> void:
 	var full_packs: Array[ItemPack] = []
 	for player: Player in players:
@@ -142,12 +147,14 @@ static func send_players_full_updates(players: Array[Player], peer_id: int) -> v
 	GlobalTransport.send_render_request(peer_id, request)
 
 ## 通过玩家管理器向指定客户端发送全量玩家数据
+## @delegates
 static func send_all_players_full_updates_from_manager(manager: PlayersManager, peer_id: int) -> void:
 	send_players_full_updates(manager.players, peer_id)
 
 # --- 内部辅助 ---
 
 ## 根据源区域与目标区域的可见性组合，决定发送 ItemSet 或 ItemCountSet 到哪些玩家
+## @atomic
 static func _distribute_item_request(
 	source_area: Area,
 	target_area: Area,

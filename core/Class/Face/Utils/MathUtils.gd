@@ -15,6 +15,7 @@ static func generate_sine_table(table_size: int) -> Array:
 		sine_table[2 * quarter + i] = -sine_table[i]
 	return sine_table
 ## 生成连接两点的平滑曲线
+## @atomic
 static func create_smooth_curve(start: Vector2, end: Vector2, start_tangent_up: bool, end_tangent_up: bool) -> Curve2D:
 	const TANGENT_FACTOR: float = 200.0
 	const MIN_TANGENT_LENGTH: float = 100.0

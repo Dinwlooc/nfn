@@ -21,6 +21,7 @@ func _init(
 	context_overriding.attacker = attacker
 
 ## 静态初始化：校验条件并设置 stage，若失败则设置 phase 为 DONE
+## @atomic
 static func do_init(context: Context, game_state: GameState) -> void:
 	if context.is_virtual:
 		return

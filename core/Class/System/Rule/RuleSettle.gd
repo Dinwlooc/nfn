@@ -100,6 +100,7 @@ static var _settle_rules: Dictionary[StringName, Variant] = {
 }
 
 ## 计算结算初值：结算目标与未衰减的生命/法力伤害
+## @delegates
 static func get_initial_info(
 	settle_card: Card,
 	oppose_card: Card,
@@ -140,6 +141,7 @@ static func apply_decay(
 	return result
 
 ## 按战意掩码生成战意授予列表（单边结算不再给对决额外战意）
+## @atomic
 static func generate_combat_will_grants(
 	settle_card: Card,
 	oppose_card: Card,
@@ -173,6 +175,7 @@ static func generate_combat_will_grants(
 ## --- 内部辅助 ---
 
 ## 单项伤害的衰减计算
+## @atomic
 static func _apply_single_decay(base: int, mode: DamageMode, duel_result: int, duel_diff: int, oppose_power: int) -> int:
 	if base <= 0 or mode == DamageMode.NONE or mode == DamageMode.NO_DECAY:
 		return base

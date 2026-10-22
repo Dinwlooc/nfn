@@ -38,6 +38,7 @@ func execute(game_state: GameState) -> void:
 			_on_done_phase(game_state, ctx)
 
 ## 静态初始化设置：创建玩家并发送更新
+## @atomic
 static func do_init_setup(game_state: GameState) -> void:
 	if game_state.users:
 		for user in game_state.users.values():
@@ -48,6 +49,7 @@ static func do_init_setup(game_state: GameState) -> void:
 	RuleTrans.send_player_delta_updates(game_state.player_manager.get_seated_players())
 
 ## 静态开始抽牌：创建新回合命令与抽牌命令
+## @atomic
 static func do_start_draw(game_state: GameState, command_bus: CommandBus) -> Array[BehaviorCommand]:
 	var commands: Array[BehaviorCommand] = []
 	var new_round_cmd := NewRoundCommand.new(command_bus, 2)

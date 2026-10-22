@@ -24,6 +24,7 @@ func _on_move_in_phase(game_state: GameState, context_overriding: CardMoveComman
 	super._on_move_in_phase(game_state, context_overriding)
 	shuffle_drawing_card(game_state)
 ## 静态初始化。弃牌区为空时直接完成。行为设计如此。
+## @atomic
 static func init(context: Context, game_state: GameState) -> void:
 	var discard: AreaDiscard = game_state.get_discard_area()
 	if BehaviorCommand.fail_if_null(discard, context, "无法获取弃牌区"): return
@@ -38,6 +39,7 @@ static func init(context: Context, game_state: GameState) -> void:
 	context.set_target_area(drawing)
 
 ## 打乱牌堆区
+## @atomic
 static func shuffle_drawing_card(game_state: GameState) -> void:
 	var drawing: AreaDrawing = game_state.get_drawing_area()
 	if drawing:

@@ -32,6 +32,7 @@ class Context extends CardMoveCommand.Context:
 		return card_ids.size() > 0
 
 ## 静态初始化：校验并设置源区域、目标区域.
+## @atomic
 static func init(context: Context, game_state: GameState) -> void:
 	var source_player: Player = context.get_source_player()
 	if BehaviorCommand.fail_if_null(source_player, context, "源玩家无效"): return

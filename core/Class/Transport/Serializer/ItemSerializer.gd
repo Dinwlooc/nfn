@@ -33,6 +33,7 @@ static func serialize_array(items: Array[ItemPack], buffer: StreamPeerBuffer = S
 		item.serialize_to_buffer(buffer)
 	return buffer.data_array
 ## 反序列化同类型Item数组 - 优化版：读一次类型标识后批量构造
+## @atomic
 static func deserialize_array(buffer: StreamPeerBuffer) -> Array[ItemPack]:
 	var result: Array[ItemPack] = []
 	var array_size: int = read(buffer, TYPE_INT)

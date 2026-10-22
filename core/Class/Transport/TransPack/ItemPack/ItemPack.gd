@@ -33,6 +33,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 	SerializationUtil.write(buffer, is_full_update)
 ## 反序列化基础字段，子类重写时须保留 pack_overriding 参数并替换默认值。
 ## @seam_override
+## @override
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: TransPack = ItemPack.new()) -> ItemPack:
 	pack_overriding.id = SerializationUtil.read(buffer, TYPE_INT)
 	pack_overriding.version = SerializationUtil.read(buffer, TYPE_INT)

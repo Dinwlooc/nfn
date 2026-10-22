@@ -38,6 +38,7 @@ func execute(game_state: GameState) -> void:
 			_on_done_phase(game_state, ctx)
 
 ## 静态转移手牌：创建 CardTransferCommand 将所有手牌移至弃牌堆
+## @atomic
 static func do_transfer(context: Context, game_state: GameState, command_owner: PlayerDeathCommand) -> void:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
@@ -54,6 +55,7 @@ static func do_transfer(context: Context, game_state: GameState, command_owner: 
 		command_owner.append_companion_command(transfer_cmd)
 
 ## 静态移除玩家：从玩家管理器移除并发送更新
+## @atomic
 static func do_remove(context: Context, game_state: GameState) -> void:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE

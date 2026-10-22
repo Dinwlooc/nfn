@@ -15,6 +15,7 @@ class Context extends CardMoveCommand.Context:
 		return not card_ids.is_empty()
 
 ## 静态初始化。允许空弃牌。行为设计如此。
+## @atomic
 static func init(context: Context, game_state: GameState) -> void:
 	var source_player: Player = context.get_source_player()
 	if BehaviorCommand.fail_if_null(source_player, context, "未找到源玩家"): return

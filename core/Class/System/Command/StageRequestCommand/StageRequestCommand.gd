@@ -35,6 +35,7 @@ func execute(game_state: GameState) -> void:
 			_on_done_phase(game_state, ctx)
 
 ## 静态请求：执行阶段入栈
+## @atomic
 static func do_request(context: Context, game_state: GameState) -> void:
 	if not context.stage:
 		push_error("StageRequestCommand: 未设置 stage")

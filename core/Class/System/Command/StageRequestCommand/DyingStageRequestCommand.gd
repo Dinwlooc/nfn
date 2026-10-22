@@ -17,6 +17,7 @@ func _init(
 	context_overriding.dying_player = dying_player
 
 ## 静态初始化：校验并设置 stage，若已存在则完成
+## @atomic
 static func do_init(context: Context, game_state: GameState) -> void:
 	if context.is_virtual:
 		return

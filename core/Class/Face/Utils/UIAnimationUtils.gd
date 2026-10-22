@@ -26,6 +26,7 @@ static func smooth_move_animation(
 	return new_position
 ## 简单的多属性Tween工具。
 ## 项目的高级UI动画一般不使用它，而是完整写出Tween编排流程，以提高性能表现。
+## @atomic
 static func tween_animations(node:Node,list:Dictionary[NodePath,Variant],time:float = 0.5,trans_type:Tween.TransitionType = Tween.TRANS_CUBIC,ease_type = Tween.EASE_OUT)->Tween:
 	var tween:Tween = node.create_tween().set_parallel()
 	if list:
@@ -48,6 +49,7 @@ static func tween_rect(
 	return tween
 
 ## 计算在容器内平均分布的一组坐标
+## @atomic
 static func generate_coordinates(card_container_position:Vector2,card_container_size:Vector2,card_count:int = 1) -> PackedVector2Array:
 	if card_count == 0:
 		return []
@@ -62,6 +64,7 @@ static func generate_coordinates(card_container_position:Vector2,card_container_
 		coordinates.append(Vector2(x, y_center)+card_container_position)
 	return coordinates
 ## 使用前要注意主题资源的共享性。需要时应当前提对主题资源进行唯一化。
+## @atomic
 static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: Color,  half_duration: float = 0.1 , times: int = 2) -> Tween:
 	var stylebox = block.get_theme_stylebox(&"panel") as StyleBoxFlat
 	if not stylebox:
@@ -75,6 +78,7 @@ static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: C
 	return tween
 
 ## 颜色闪烁动画（from ↔ to 往返 times 次后停在 from）
+## @atomic
 static func blink_color(rect: ColorRect, from_color: Color, to_color: Color, half_duration: float = 0.1, times: int = 2) -> Tween:
 	var tween = rect.create_tween()
 	tween.set_parallel(false)

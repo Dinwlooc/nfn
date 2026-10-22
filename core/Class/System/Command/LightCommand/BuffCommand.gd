@@ -112,6 +112,7 @@ static func _do_apply_apply(context: Context) -> void:
 		context.buff.on_apply()
 
 ## 覆盖模式：移除同名旧 Buff 后附加新的
+## @atomic
 static func _do_apply_override(context: Context) -> void:
 	var bm := context.buff_modifiers
 	var buff_name: StringName = context.buff.buff_name
@@ -126,6 +127,7 @@ static func _do_apply_override(context: Context) -> void:
 	context.buff.on_apply()
 
 ## 移除模式：扣减层数，归零则移除
+## @atomic
 static func _do_apply_remove(context: Context) -> void:
 	var bm := context.buff_modifiers
 	var buff_name: StringName = context.buff.buff_name
@@ -143,6 +145,7 @@ static func _do_apply_remove(context: Context) -> void:
 			existing.on_remove()
 
 ## 驱散模式：直接移除整个 Buff
+## @atomic
 static func _do_apply_dispel(context: Context) -> void:
 	var bm := context.buff_modifiers
 	var buff_name: StringName = context.buff.buff_name

@@ -23,6 +23,7 @@ class Context extends CardMoveCommand.Context:
 		target_defense_area = area
 
 ## 静态初始化
+## @atomic
 static func init(context: Context, game_state: GameState) -> void:
 	if BehaviorCommand.fail_if_null(context.target_defense_area, context, "目标守区未设置"):
 		return

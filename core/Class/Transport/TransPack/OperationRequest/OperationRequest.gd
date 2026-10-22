@@ -56,6 +56,14 @@ class PlayCard extends OperationRequest:
 		source_player_id = player_id
 		_card_id = card_id
 		_target_id = target_id
+	## 取要打出的卡牌 id
+	## @pure
+	func get_card_id() -> int:
+		return _card_id
+	## 取目标玩家 id
+	## @pure
+	func get_target_id() -> int:
+		return _target_id
 	## 包类名标识
 	## @override
 	static func get_class_name_static() -> StringName:

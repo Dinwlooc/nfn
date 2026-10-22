@@ -17,6 +17,7 @@ static func _create_shared_texture() -> ImageTexture:
 ## @param particle: 可选，若传入现有 GPUParticles2D，则复用并重新配置它；否则新建
 ## @param texture: 可选，自定义纹理，默认使用共享白色纹理
 ## @return 配置好的 GPUParticles2D
+## @factory
 static func create_particles(amount: int, lifetime: float, config: ParticleConfig, particles: GPUParticles2D = GPUParticles2D.new(), texture: Texture2D = _shared_texture) -> GPUParticles2D:
 	particles.amount = amount
 	particles.lifetime = lifetime

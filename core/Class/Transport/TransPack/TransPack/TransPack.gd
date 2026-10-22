@@ -8,11 +8,13 @@ var version: int = 0
 @abstract func serialize_to_buffer(_buffer: StreamPeerBuffer) -> void
 ## 反序列化静态方法。
 ## @seam_override
+## @atomic
 static func deserialize_from_buffer(_buffer: StreamPeerBuffer, _pack_override: TransPack) -> TransPack:
 	push_error("TransPack.deserialize_from_buffer() must be overridden in subclass")
 	return null
 ## 获取类名字符串（静态）。
 ## @force_override
+## @pure
 static func get_class_name_static() -> StringName:
 	push_error("Must override get_class_name_static() in subclass")
 	return &"TransPack"

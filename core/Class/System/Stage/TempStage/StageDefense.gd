@@ -77,7 +77,7 @@ static func build_time_records(player_ids: Array[int]) -> TimeRecords:
 		records.dynamic_time_limit[player_id] = DEFAULT_TIME_LIMIT
 	return records
 ## 更新玩家累计用时与动态时间限制
-## @atomic
+## @side_effect
 func update_total_time_used(player_id: int, elapsed: float) -> void:
 	var new_total: float = total_time_used[player_id] + elapsed
 	total_time_used[player_id] = new_total

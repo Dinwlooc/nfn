@@ -66,6 +66,7 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, player_id)
 ## 反序列化自身属性。
 ## @side_effect @seam_override
+## @override
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: TransPack = CardPack.new()) -> CardPack:
 	super.deserialize_from_buffer(buffer, pack_overriding)
 	if pack_overriding.merge_mask & (1 << MainProperty.NAME):

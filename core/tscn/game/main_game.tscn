@@ -20,6 +20,7 @@
 [ext_resource type="Script" uid="uid://5o64qp3kknjx" path="res://resource/default/assets/Area/areaface/areaface_discard.gd" id="15_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://b025ean41nrj6" path="res://core/tscn/game/console.tscn" id="15_vjhr3"]
 [ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/AreaDenfence/areaface_defence.tscn" id="16_jjejj"]
+[ext_resource type="Script" uid="uid://cvwv82omjebv5" path="res://core/Class/Render/AutoPlay/AutoPlayManager.gd" id="21_ros0v"]
 
 [node name="MainGame" type="Node2D" unique_id=264974230]
 
@@ -170,3 +171,7 @@ offset_bottom = 84.0
 layout_mode = 0
 offset_left = -492.0
 offset_right = -4.0
+
+[node name="AutoPlayManager" type="Node" parent="Control" unique_id=601586010 node_paths=PackedStringArray("render_control")]
+script = ExtResource("21_ros0v")
+render_control = NodePath("..")

@@ -121,6 +121,7 @@ func _on_done_phase(_game_state: GameState, context_overriding: Context = _conte
 	complete()
 
 ## 静态移出。默认可以对空的合法类型参数进行生成空的移出卡牌数组，但将跳过移入阶段。行为设计如此。
+## @atomic
 static func do_move_out(context: Context, game_state: GameState) -> void:
 	if not context.source_area:
 		BehaviorCommand.fail(context, "移出区域未设置")

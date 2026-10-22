@@ -181,6 +181,7 @@ static func do_apply(context: Context, _game_state: GameState) -> void:
 		_apply_mental_change(context.target_player, context.cached_mental_delta, context.ignore_cap)
 
 ## 静态辅助：把生命侧增减量写入玩家（治疗受上限约束，除非 ignore_cap）
+## @atomic
 static func _apply_health_change(player: Player, delta: int, ignore_cap: bool) -> void:
 	var new_value: int = player.HP - delta
 	if delta <= 0 and not ignore_cap:
@@ -188,6 +189,7 @@ static func _apply_health_change(player: Player, delta: int, ignore_cap: bool) -
 	player.HP = new_value
 
 ## 静态辅助：把法力侧增减量写入玩家（伤害下限 0，治疗受上限约束）
+## @atomic
 static func _apply_mental_change(player: Player, delta: int, ignore_cap: bool) -> void:
 	var new_value: int = player.MP - delta
 	if delta > 0:

@@ -16,7 +16,7 @@ var operation_handler := OperationHandler.new()
 var trigger_manager := TriggerManager.new()
 ## 传输层（全局 autoload）
 var transport: Transport = GlobalTransport
-## NPC 对等体管理器
+## NPC 管理器（系统层决策桥接）
 var npc_peer_manager: NPCPeerManager = NPCPeerManager.new(game_state)
 ## 修饰器管理器
 var modifier_manager := ModifierManager.new()

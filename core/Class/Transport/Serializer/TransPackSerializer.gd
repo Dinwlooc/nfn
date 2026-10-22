@@ -3,6 +3,7 @@ extends RefCounted
 class_name TransPackSerializer
 
 ## 向缓冲区写入一个值（委托给 SerializationUtil）
+## @atomic
 static func write(buffer: StreamPeerBuffer, value:Variant) -> void:
 	SerializationUtil.write(buffer,value)
 
@@ -20,6 +21,7 @@ static func build_registry(classes: Array[Script]) -> Dictionary[StringName, int
 
 # 使用类名进行序列化
 ## 按注册表写出类标识与包体；未注册的类写入 -1 作为无效标识
+## @delegates
 static func serialize_with_registry(
 	buffer: StreamPeerBuffer,
 	obj: TransPack,

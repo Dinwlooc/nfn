@@ -73,6 +73,7 @@ func execute(game_state: GameState) -> void:
 			_on_done_phase(game_state, ctx)
 
 ## 静态初始化：检查双方是否同属一个玩家，若相同则直接完成
+## @atomic
 static func do_init(context: Context, _game_state: GameState) -> void:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
@@ -81,11 +82,13 @@ static func do_init(context: Context, _game_state: GameState) -> void:
 		context.phase = Context.Phase.DONE
 
 ## 静态预拼点阶段（专供修饰器触发）
+## @atomic
 static func do_pre_duel(_context: Context, _game_state: GameState) -> void:
 	# 无操作，仅为修饰器预留
 	pass
 
 ## 静态创建拼点命令并连接信号
+## @atomic
 static func do_create_duel(context: Context, _game_state: GameState, command_owner: BattleCommand) -> void:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
@@ -95,6 +98,7 @@ static func do_create_duel(context: Context, _game_state: GameState, command_own
 	command_owner.append_companion_command(duel_command)
 
 ## 静态处理结果：计算双方战意并创建 MoraleCommand
+## @atomic
 static func do_process_result(context: Context, _game_state: GameState, command_owner: BattleCommand) -> void:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
