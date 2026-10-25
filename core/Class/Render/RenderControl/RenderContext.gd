@@ -178,6 +178,111 @@ func get_dragged_area() -> RenderArea:
 func get_dragged_card() -> RenderItem:
 	return state_manager.get_dragged_card()
 
+# ================= 决策快照门面 =================
+## 取本地玩家 id
+## @pure
+func get_local_player_id() -> int:
+	return area_manager.local_player_id
+
+## 取指定玩家的手牌渲染区（缺失或类型不符返回 null）
+## @nullable_pure
+func get_hand_area(player_id: int = PUBLIC_PLAYER_ID) -> ItemRenderArea:
+	return get_render_area(GlobalConstants.DefaultArea.HAND, player_id) as ItemRenderArea
+
+## 取指定玩家的守区渲染区（缺失或类型不符返回 null）
+## @nullable_pure
+func get_defense_area(player_id: int = PUBLIC_PLAYER_ID) -> ItemRenderArea:
+	return get_render_area(GlobalConstants.DefaultArea.DEFENCE, player_id) as ItemRenderArea
+
+## 取玩家列表渲染区（缺失或类型不符返回 null）
+## @nullable_pure
+func get_players_area() -> ItemRenderArea:
+	return get_render_area(GlobalConstants.DefaultArea.PLAYERS) as ItemRenderArea
+
+## 取指定玩家手牌区当前卡牌数
+## @pure
+func get_hand_card_count(player_id: int = PUBLIC_PLAYER_ID) -> int:
+	var hand_area: ItemRenderArea = get_hand_area(player_id)
+	if hand_area == null:
+		return 0
+	return hand_area.get_item_count()
+
+## 取指定玩家守区当前卡牌数
+## @pure
+func get_defense_card_count(player_id: int = PUBLIC_PLAYER_ID) -> int:
+	var defense_area: ItemRenderArea = get_defense_area(player_id)
+	if defense_area == null:
+		return 0
+	return defense_area.get_item_count()
+
+## 估算指定玩家手牌上限（基础值；临时加成不在同步范围）
+## @pure
+func get_hand_limit(player_id: int = PUBLIC_PLAYER_ID) -> int:
+	var mp: int = PlayerPack.STANDARD_MP
+	var players_area: ItemRenderArea = get_players_area()
+	if players_area != null:
+		for item: RenderItem in players_area.items_pool:
+			if item == null or item.data == null:
+				continue
+			var player_pack: PlayerPack = item.data as PlayerPack
+			if player_pack == null or player_pack.get_id() != player_id:
+				continue
+			mp = player_pack.MP
+			break
+	return ceili(float(mp) / 4.0)
+
+## 取指定玩家守区顶层牌的归属玩家 id（空守区按项目约定返回 0）
+## @pure
+func get_defense_top_card_owner(player_id: int = PUBLIC_PLAYER_ID) -> int:
+	var defense_area: ItemRenderArea = get_defense_area(player_id)
+	if defense_area == null:
+		return 0
+	for index: int in range(defense_area.items_pool.size() - 1, -1, -1):
+		var item: RenderItem = defense_area.items_pool[index]
+		if item == null or item.data == null:
+			continue
+		var card_pack: CardPack = item.data as CardPack
+		if card_pack == null:
+			continue
+		return card_pack.player_id
+	return 0
+
+## 取指定玩家守区结算次数（同步自守区渲染区）
+## @pure
+func get_settle_count(player_id: int = PUBLIC_PLAYER_ID) -> int:
+	var defense_area: RenderArea = get_render_area(GlobalConstants.DefaultArea.DEFENCE, player_id)
+	if not (defense_area is RenderAreaDefence):
+		return 0
+	return (defense_area as RenderAreaDefence).settle_count
+
+## 取指定玩家速度（同步自玩家数据包）
+## @pure
+func get_player_speed(player_id: int = PUBLIC_PLAYER_ID) -> int:
+	var players_area: ItemRenderArea = get_players_area()
+	if players_area == null:
+		return PlayerPack.STANDARD_SPEED
+	for item: RenderItem in players_area.items_pool:
+		if item == null or item.data == null:
+			continue
+		var player_pack: PlayerPack = item.data as PlayerPack
+		if player_pack == null or player_pack.get_id() != player_id:
+			continue
+		return player_pack.speed
+	return PlayerPack.STANDARD_SPEED
+
+## 取指定玩家手牌 id 序列（按区域顺序，用于局势指纹）
+## @pure
+func get_hand_card_ids(player_id: int = PUBLIC_PLAYER_ID) -> PackedInt32Array:
+	var ids: PackedInt32Array = []
+	var hand_area: ItemRenderArea = get_hand_area(player_id)
+	if hand_area == null:
+		return ids
+	for item: RenderItem in hand_area.items_pool:
+		if item == null or item.data == null:
+			continue
+		ids.append(item.data.get_id())
+	return ids
+
 # ================= 操作管理 =================
 ## 注入操作请求管理器
 ## @side_effect

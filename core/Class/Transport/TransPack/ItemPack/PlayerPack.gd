@@ -18,6 +18,7 @@ enum MainProperty {
 	MORALE_ATTACK,
 	MORALE_DEFENSE,
 	MORALE_LEVEL,
+	SPEED,
 	END
 }
 
@@ -45,6 +46,8 @@ const STANDARD_MORALE_ATTACK: int = 0
 const STANDARD_MORALE_DEFENSE: int = 0
 ## 标准战意等级
 const STANDARD_MORALE_LEVEL: int = 0
+## 标准速度
+const STANDARD_SPEED: int = 1
 
 ## 座位索引
 var seat_index: int
@@ -72,6 +75,8 @@ var morale_attack: int
 var morale_defense: int
 ## 战意等级
 var morale_level: int
+## 速度
+var speed: int
 
 ## 构造器，初始化所有字段。
 func _init(
@@ -88,7 +93,8 @@ func _init(
 	init_peer_id: int = STANDARD_PEER_ID,
 	init_morale_attack: int = STANDARD_MORALE_ATTACK,
 	init_morale_defense: int = STANDARD_MORALE_DEFENSE,
-	init_morale_level: int = STANDARD_MORALE_LEVEL
+	init_morale_level: int = STANDARD_MORALE_LEVEL,
+	init_speed: int = STANDARD_SPEED
 ) -> void:
 	super._init(init_id)
 	seat_index = init_seat_index
@@ -104,6 +110,7 @@ func _init(
 	morale_attack = init_morale_attack
 	morale_defense = init_morale_defense
 	morale_level = init_morale_level
+	speed = init_speed
 ## 根据玩家实例创建数据包，并填充到 pack_overriding（若未提供则新建）。调用父类后填充玩家特有属性。
 ## @factory @seam_override
 static func init_from_item(item: Item, pack_overriding: ItemPack = PlayerPack.new()) -> PlayerPack:
@@ -124,6 +131,7 @@ static func init_from_item(item: Item, pack_overriding: ItemPack = PlayerPack.ne
 	base_pack.morale_attack = player.morale_attack
 	base_pack.morale_defense = player.morale_defense
 	base_pack.morale_level = player.morale_level
+	base_pack.speed = player.get_attribute(&"speed")
 	base_pack.update_merge_mask()
 	return base_pack
 ## 序列化自身属性。
@@ -156,6 +164,8 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		SerializationUtil.write(buffer, morale_defense)
 	if merge_mask & (1 << MainProperty.MORALE_LEVEL):
 		SerializationUtil.write(buffer, morale_level)
+	if merge_mask & (1 << MainProperty.SPEED):
+		SerializationUtil.write(buffer, speed)
 ## 反序列化自身属性。
 ## @side_effect @seam_override
 ## @override
@@ -187,6 +197,8 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: T
 		pack_overriding.morale_defense = SerializationUtil.read(buffer, TYPE_INT)
 	if pack_overriding.merge_mask & (1 << MainProperty.MORALE_LEVEL):
 		pack_overriding.morale_level = SerializationUtil.read(buffer, TYPE_INT)
+	if pack_overriding.merge_mask & (1 << MainProperty.SPEED):
+		pack_overriding.speed = SerializationUtil.read(buffer, TYPE_INT)
 	return pack_overriding
 ## 合并更新包。
 ## @chain_override @side_effect
@@ -218,6 +230,8 @@ func merge(update_pack: ItemPack) -> void:
 		morale_defense = update_pack.morale_defense
 	if update_pack.merge_mask & (1 << MainProperty.MORALE_LEVEL):
 		morale_level = update_pack.morale_level
+	if update_pack.merge_mask & (1 << MainProperty.SPEED):
+		speed = update_pack.speed
 ## 重置所有属性为标准态。
 ## @chain_override @side_effect
 func reset_to_standard() -> void:
@@ -235,6 +249,7 @@ func reset_to_standard() -> void:
 	morale_attack = STANDARD_MORALE_ATTACK
 	morale_defense = STANDARD_MORALE_DEFENSE
 	morale_level = STANDARD_MORALE_LEVEL
+	speed = STANDARD_SPEED
 ## 计算与旧包的差异掩码。
 ## @override @pure
 func calculate_delta_mask(old_pack: PlayerPack) -> int:
@@ -265,6 +280,8 @@ func calculate_delta_mask(old_pack: PlayerPack) -> int:
 		delta_mask |= 1 << MainProperty.MORALE_DEFENSE
 	if morale_level != old_pack.morale_level:
 		delta_mask |= 1 << MainProperty.MORALE_LEVEL
+	if speed != old_pack.speed:
+		delta_mask |= 1 << MainProperty.SPEED
 	return delta_mask
 ## 更新合并掩码。
 ## @chain_override @side_effect
@@ -298,6 +315,8 @@ func update_merge_mask() -> void:
 		merge_mask |= 1 << MainProperty.MORALE_DEFENSE
 	if morale_level != STANDARD_MORALE_LEVEL:
 		merge_mask |= 1 << MainProperty.MORALE_LEVEL
+	if speed != STANDARD_SPEED:
+		merge_mask |= 1 << MainProperty.SPEED
 ## 返回类名静态方法。
 ## @override @pure
 static func get_class_name_static() -> StringName:
@@ -320,6 +339,7 @@ func _update_and_calculate_delta(player: Player) -> void:
 	_compare_update_morale_attack(player)
 	_compare_update_morale_defense(player)
 	_compare_update_morale_level(player)
+	_compare_update_speed(player)
 	version = (version + 1) % VERSION_MAX
 ## 比较并更新座位索引。
 ## @atomic
@@ -403,3 +423,10 @@ func _compare_update_morale_level(player: Player) -> void:
 	if morale_level != player.morale_level:
 		merge_mask |= 1 << MainProperty.MORALE_LEVEL
 		morale_level = player.morale_level
+## 比较并更新速度。
+## @atomic
+func _compare_update_speed(player: Player) -> void:
+	var new_val := player.get_attribute(&"speed")
+	if speed != new_val:
+		merge_mask |= 1 << MainProperty.SPEED
+		speed = new_val

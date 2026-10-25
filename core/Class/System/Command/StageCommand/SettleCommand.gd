@@ -289,6 +289,7 @@ static func do_clear(context: Context, game_state: GameState) -> CardTransferCom
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
 		return null
+	RuleTrans.send_settle_summary(context.defensive_area, context.settle_card, context.oppose_card)
 	return CardTransferCommand.new(
 		game_state.get_player_by_id(context.player_id),
 		context.defensive_area,

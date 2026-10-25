@@ -1,17 +1,20 @@
+# 点文件与点目录全忽略；白名单除外
+.*
+!/.gitignore
+!/.gitattributes
+
+# --- 恢复候选（Owner 2026-10-25：审查后可能恢复 .dsh 与 AGENTS.md 的仓库同步，届时取消下行注释） ---
+# /.dsh/
+# /AGENTS.md
+AGENTS.md
+
 # Godot-specific ignores
 .import/
 export.cfg
 export_presets.cfg
-.godot/
 addons/
-.idea/
 Unused/
-.dsh/
-AGENTS.md
-# Imported translations (automatically generated from CSV files)
 *.translation
-.vs
 
 # Mono-specific ignores
-.mono/
 data_*/

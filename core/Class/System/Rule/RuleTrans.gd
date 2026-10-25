@@ -248,3 +248,18 @@ static func send_stage_switch_notify(game_state: GameState, custom_params: Dicti
 	var temp_owner_id: int = cur_stage.temporary_stage_player_id
 	var request: RenderRequest.StageNotifyRequest = RenderRequest.StageNotifyRequest.new(player_id, stage_name, temp_owner_id, custom_params)
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
+
+## 发送守区结算摘要（结算计数与本次结算牌 / 对抗牌 id）
+## @atomic
+static func send_settle_summary(defensive_area: AreaDefence, settle_card: Card, oppose_card: Card) -> void:
+	if not defensive_area:
+		return
+	var settle_card_id: int = settle_card.get_id() if settle_card else -1
+	var oppose_card_id: int = oppose_card.get_id() if oppose_card else -1
+	var request: RenderRequest.SettleSet = RenderRequest.SettleSet.new(
+		defensive_area.settle_count,
+		settle_card_id,
+		oppose_card_id,
+		defensive_area.player.get_id()
+	)
+	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)

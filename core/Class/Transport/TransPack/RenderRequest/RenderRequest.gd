@@ -253,3 +253,49 @@ class StageNotifyRequest extends RenderRequest:
 	## @override
 	static func get_class_name_static() -> StringName:
 		return &"StageNotifyRequest"
+# ========== SettleSet ==========
+## 守区结算摘要请求：结算计数与本次结算牌 / 对抗牌 id（未来可能扩展）
+class SettleSet extends RenderRequest:
+	## 守区当前结算次数
+	var settle_count: int = 0
+	## 本次结算牌 id（无则 -1）
+	var settle_card_id: int = -1
+	## 本次对抗牌 id（无则 -1）
+	var oppose_card_id: int = -1
+
+	## 构造：绑定守区归属玩家与结算摘要
+	func _init(
+		count: int = 0,
+		settle_id: int = -1,
+		oppose_id: int = -1,
+		area_player_id: int = PUBLIC_AREA_PLAYER_ID,
+	) -> void:
+		target_area = GlobalConstants.DefaultArea.DEFENCE
+		target_area_player_id = area_player_id
+		settle_count = count
+		settle_card_id = settle_id
+		oppose_card_id = oppose_id
+
+	## 序列化：先写基类字段，再写结算摘要
+	## @override @side_effect
+	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
+		super.serialize_to_buffer(buffer)
+		SerializationUtil.write(buffer, settle_count)
+		SerializationUtil.write(buffer, settle_card_id)
+		SerializationUtil.write(buffer, oppose_card_id)
+
+	## 反序列化：读回结算摘要
+	## @override
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = SettleSet.new()) -> RenderRequest:
+		super.deserialize_from_buffer(buffer, pack)
+		var settle_set = pack as SettleSet
+		if settle_set:
+			settle_set.settle_count = SerializationUtil.read(buffer, TYPE_INT)
+			settle_set.settle_card_id = SerializationUtil.read(buffer, TYPE_INT)
+			settle_set.oppose_card_id = SerializationUtil.read(buffer, TYPE_INT)
+		return pack
+
+	## 包类名标识
+	## @override
+	static func get_class_name_static() -> StringName:
+		return &"SettleSet"
