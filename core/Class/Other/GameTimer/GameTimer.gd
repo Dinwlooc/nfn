@@ -5,6 +5,10 @@ class_name GameTimer
 func _ready() -> void:
 	GlobalRegistry.register_singleton(GlobalRegistry.TIMER_TYPE, self)
 
+## 退出场景树时注销，防止注册表残留悬空引用
+func _exit_tree() -> void:
+	GlobalRegistry.unregister_singleton(GlobalRegistry.TIMER_TYPE)
+
 ## 服务器端创建计时器（仅服务器调用）
 func timer_create(time: float) -> void:
 	if not multiplayer.is_server():
@@ -30,7 +34,7 @@ func timer_continue() -> void:
 func _update_timer_state(time: float, paused_state: bool) -> void:
 	paused = paused_state
 	wait_time = time
-	paused = true
+	#paused = true #手动调试用，需要锁定计时时取消该注释。
 	start()
 ## 服务器本地更新暂停状态
 func _update_paused(paused_state: bool) -> void:

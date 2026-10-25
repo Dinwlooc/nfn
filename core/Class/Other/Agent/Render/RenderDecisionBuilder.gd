@@ -1,6 +1,7 @@
-## 渲染侧决策构造器：经 [RenderContext] 门面取数，装配 [NPCDecisionData]；
-## 与系统层 [NPCPeerManager] 的快照构造结构对称。响应权规则镜像留于此处，
+## 渲染侧决策构造器（渲染层模块）：经 [RenderContext] 门面取数，装配 [NPCDecisionData]；
+## 与系统层 [AgentManager] 的快照构造结构对称。响应权规则镜像留于此处，
 ## 系统层日后经同步暴露答案时可整行删除。
+## 纯静态工具类：不持状态、不接触游戏状态，只读渲染上下文门面。
 extends RefCounted
 class_name RenderDecisionBuilder
 
@@ -57,7 +58,7 @@ static func build(context: RenderContext, player_id: int, attacked_in_main: bool
 
 #== Private Methods ==
 ## 填充手牌快照：类型转回常量名以复用决策树的比较
-## @external
+## @internal
 static func _fill_hand_cards(context: RenderContext, data: NPCDecisionData) -> void:
 	var hand_area: ItemRenderArea = context.get_hand_area()
 	if hand_area == null:
@@ -71,12 +72,12 @@ static func _fill_hand_cards(context: RenderContext, data: NPCDecisionData) -> v
 		data.hand_cards.append({&"id": card_pack.get_id(), &"type": get_card_type_name(card_pack.type)})
 
 ## 填充本地守区是否为空
-## @external
+## @internal
 static func _fill_self_defense(context: RenderContext, data: NPCDecisionData) -> void:
 	data.defense_area_empty = context.get_defense_card_count() == 0
 
 ## 填充其他玩家 id 与守区结算次数（结算次数同步自守区渲染区）
-## @external
+## @internal
 static func _fill_other_players(context: RenderContext, player_id: int, data: NPCDecisionData) -> void:
 	var players_area: ItemRenderArea = context.get_players_area()
 	if players_area == null:
@@ -92,7 +93,7 @@ static func _fill_other_players(context: RenderContext, player_id: int, data: NP
 		data.other_players_settle_counts[other_player_id] = context.get_settle_count(other_player_id)
 
 ## 填充守区攻防阶段的归属玩家与响应权
-## @external
+## @internal
 static func _fill_defense_stage(context: RenderContext, player_id: int, data: NPCDecisionData) -> void:
 	if data.current_stage_name != &"DefenseBattle":
 		data.is_responsive = true

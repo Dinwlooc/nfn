@@ -1,5 +1,6 @@
-## 托管节流管理器：收拢稳定等待、发送冷却、in-flight 观察窗、退避与每局势发送上限；
-## 以局势指纹为界重置计数，以请求代数丢弃过期回调。不含决策记忆（回合攻击标记由调用方持有）。
+## 托管节流管理器（渲染层模块）：收拢稳定等待、发送冷却、in-flight 观察窗、退避与每局势发送上限；
+## 以局势指纹为界重置计数，以请求代数丢弃过期回调。不含决策记忆（回合攻击标记由 [AgentManager] 持有）。
+## 属 [AgentManager] 渲染层快照构建模块的节拍闸门，与 [RenderDecisionBuilder] 同属插件层。
 extends RefCounted
 class_name AutoPlayThrottleManager
 

@@ -26,6 +26,8 @@ const TIMER_TYPE := &"timer"
 const RENDER_CONTROL_TYPE := &"render_control"
 ## 网络管理器单例类型键
 const NETWORK_MANAGER_TYPE := &"network_manager"
+## Agent 管理器单例类型键
+const AGENT_MANAGER_TYPE := &"agent_manager"
 # 新增常量注册接口
 ## 注册一组常量名，建立 名↔序 双向映射（断言名称数与枚举长度一致）
 ## @side_effect @emitter
@@ -78,14 +80,24 @@ func check_type(type: StringName, instance: Object) -> void:
 			assert(instance is RenderControl, "RenderControl must be RenderControl type")
 		NETWORK_MANAGER_TYPE:
 			assert(instance is NetworkManager, "NetworkManager must be NetworkManager type")
+		AGENT_MANAGER_TYPE:
+			assert(instance is AgentManager, "AgentManager must be AgentManager type")
 		_:
 			push_warning("Registering unknown singleton type: " + type)
+
+## 注销单例（注册节点退出场景树时调用，防止残留悬空引用）
+## @side_effect
+func unregister_singleton(type: StringName) -> void:
+	_singletons.erase(type)
 
 ## 订阅某类型单例：已注册立即回调，未注册则等注册完成后回调
 ## @side_effect
 func connect_singleton(type: StringName, callback: Callable) -> void:
 	if _singletons.has(type):
-		callback.call(_singletons[type])
+		if is_instance_valid(_singletons[type]):
+			callback.call(_singletons[type])
+		else:
+			_singletons.erase(type)
 	singleton_registered.connect(func(t: StringName, instance: Node):
 		if t == type:
 			callback.call(instance))

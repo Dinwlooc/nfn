@@ -49,6 +49,14 @@ func _ready() -> void:
 	GlobalConsole.c_abandon_response.connect(_on_abandon_response)
 	render_context.item_manager.item_created.connect(face_manager.connect_to_item)
 	render_context.area_manager.area_created.connect(_on_render_context_area_created)
+	# 部署渲染层 Agent 模块（渲染层无触发器概念，由本节点直接部署）
+	GlobalRegistry.connect_singleton(GlobalRegistry.AGENT_MANAGER_TYPE, _on_agent_manager_registered)
+
+## AgentManager 注册回调：初始化渲染层快照构建模块
+## @signal_listener
+func _on_agent_manager_registered(instance: Node) -> void:
+	if instance is AgentManager:
+		instance.initialize_render(self)
 
 ## 每帧：消费渲染请求队列
 func _process(_delta: float) -> void:

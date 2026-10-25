@@ -1,9 +1,7 @@
-## 系统权威节点：接线计时器与网络，驱动命令堆栈，并承接调试指令。
+## 系统权威节点：接线网络，驱动命令堆栈，并承接调试指令。
 extends Node
 class_name System
 
-## 场景内计时器（编辑器接线）
-@export var timer: GameTimer
 ## 全局游戏状态，聚合所有逻辑层数据与子管理器
 var game_state := GameState.new()
 ## 命令堆栈处理器，按帧节流驱动
@@ -16,20 +14,16 @@ var operation_handler := OperationHandler.new()
 var trigger_manager := TriggerManager.new()
 ## 传输层（全局 autoload）
 var transport: Transport = GlobalTransport
-## NPC 管理器（系统层决策桥接）
-var npc_peer_manager: NPCPeerManager = NPCPeerManager.new(game_state)
 ## 修饰器管理器
 var modifier_manager := ModifierManager.new()
 
-## 注册全局常量，并把计时器注入游戏状态与阶段管理器
+## 注册全局常量
 func _init() -> void:
 	GlobalConstants.register_to(GlobalRegistry)
-	game_state.timer = timer
-	game_state.stage_manager.set_timer(timer)
 
 ## 初始化触发器与调试指令接入，加载卡牌后延迟启动服务器
+## 计时器由 TimerTimeoutTrigger 从注册表取得并注入；Agent 由 AgentTrigger 部署
 func _ready() -> void:
-	game_state.stage_manager.set_timer(timer)
 	trigger_manager.initialize(self)
 	signal_connect_test()
 	game_state.load_cards()

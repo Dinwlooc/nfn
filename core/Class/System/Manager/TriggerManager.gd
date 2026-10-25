@@ -15,6 +15,7 @@ static var system_trigger_classes: Array[Script] = [
 	OperationTrigger,
 	TimerTimeoutTrigger,
 	StageTrigger,
+	AgentTrigger,
 ]
 ## 游戏状态触发器类列表
 static var gamestate_trigger_classes: Array[Script] = [

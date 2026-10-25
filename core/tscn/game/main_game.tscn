@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cq8jj35acobqx"]
 
-[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer.gd" id="2_4k47o"]
+[ext_resource type="Script" uid="uid://l6fbxtjpr4xl" path="res://core/Class/Other/GameTimer/GameTimer.gd" id="2_4k47o"]
 [ext_resource type="Script" uid="uid://cib0t5jr4s8x2" path="res://core/Class/System/System/System.gd" id="2_gpy5h"]
 [ext_resource type="Script" uid="uid://lq8b7l2dl0fj" path="res://core/Class/Render/RenderArea/RenderAreaCenter.gd" id="4_8dpeo"]
 [ext_resource type="Script" uid="uid://drlnwp8p3nn5a" path="res://core/Class/Render/RenderArea/RenderAreaDraw.gd" id="4_662gx"]
@@ -20,13 +20,15 @@
 [ext_resource type="Script" uid="uid://5o64qp3kknjx" path="res://resource/default/assets/Area/areaface/areaface_discard.gd" id="15_ppvbj"]
 [ext_resource type="PackedScene" uid="uid://b025ean41nrj6" path="res://core/tscn/game/console.tscn" id="15_vjhr3"]
 [ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/AreaDenfence/areaface_defence.tscn" id="16_jjejj"]
-[ext_resource type="Script" uid="uid://cvwv82omjebv5" path="res://core/Class/Render/AutoPlay/AutoPlayManager.gd" id="21_ros0v"]
+[ext_resource type="Script" uid="uid://bvofibqljxcmr" path="res://core/Class/Other/Agent/Manager/AgentManager.gd" id="21_ros0v"]
 
 [node name="MainGame" type="Node2D" unique_id=264974230]
 
-[node name="System" type="Node" parent="." unique_id=632558749 node_paths=PackedStringArray("timer")]
+[node name="System" type="Node" parent="." unique_id=632558749]
 script = ExtResource("2_gpy5h")
-timer = NodePath("../Timer")
+
+[node name="AgentManager" type="Node" parent="." unique_id=601586010]
+script = ExtResource("21_ros0v")
 
 [node name="Timer" type="Timer" parent="." unique_id=1423721328]
 one_shot = true
@@ -171,7 +173,3 @@ offset_bottom = 84.0
 layout_mode = 0
 offset_left = -492.0
 offset_right = -4.0
-
-[node name="AutoPlayManager" type="Node" parent="Control" unique_id=601586010 node_paths=PackedStringArray("render_control")]
-script = ExtResource("21_ros0v")
-render_control = NodePath("..")
