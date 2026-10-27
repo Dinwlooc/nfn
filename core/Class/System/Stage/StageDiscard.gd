@@ -109,14 +109,14 @@ func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
-	match request.get_class_name():
+	match request.get_operation_name():
 		&"discard_cards":
-			_process_discard_request(request as OperationRequest.DiscardCards, game_state, command_bus)
+			_process_discard_request(request as ItemsOperation, game_state, command_bus)
 		&"abandon_response":
 			_process_abandon_response(request as OperationRequest.AbandonResponse, game_state, command_bus)
 		_:
 			request.cancel()
-			GlobalConsole._print(["弃牌阶段：不支持的操作类型", request.get_class_name_static()])
+			GlobalConsole._print(["弃牌阶段：不支持的操作类型", request.get_operation_name()])
 	if _players_to_discard.is_empty():
 		request_end_stage(command_bus)
 ## 超时处理
@@ -130,7 +130,7 @@ func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 #== Private Methods ==
 ## 处理弃牌请求
 ## @side_effect
-func _process_discard_request(request: OperationRequest.DiscardCards, game_state: GameState, command_bus: CommandBus) -> void:
+func _process_discard_request(request: ItemsOperation, game_state: GameState, command_bus: CommandBus) -> void:
 	var player_id: int = request.source_player_id
 	var need_count: int = calculate_remaining_need_for_player(player_id)
 	if need_count <= 0:
@@ -142,7 +142,7 @@ func _process_discard_request(request: OperationRequest.DiscardCards, game_state
 		GlobalConsole._print(["弃牌阶段：无法获取玩家", player_id, "的手牌区"])
 		request.cancel()
 		return
-	var submitted_ids: PackedInt32Array = request._card_ids
+	var submitted_ids: PackedInt32Array = request.ids
 	if submitted_ids.is_empty():
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "提交空弃牌列表"])
 		request.cancel()

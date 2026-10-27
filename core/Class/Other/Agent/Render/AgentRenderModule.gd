@@ -138,7 +138,7 @@ func _on_decision(serial: int, request_key: String, request: OperationRequest) -
 	_mark_attack_if_needed(request)
 	_render_control.transport.upload_operation_request(request)
 	_gate.on_sent(Time.get_ticks_msec())
-	GlobalConsole._print(["AI托管：已上传请求：", request.get_class_name()])
+	GlobalConsole._print(["AI托管：已上传请求：", request.get_operation_name()])
 
 ## 局势变化：刷新节拍门，并维护回合内攻击标记
 ## @side_effect
@@ -183,12 +183,12 @@ func _should_act(situation: Situation) -> bool:
 ## 记录主阶段攻击：出牌类型为攻击牌时置位
 ## @side_effect
 func _mark_attack_if_needed(request: OperationRequest) -> void:
-	if not (request is OperationRequest.PlayCard):
+	if request.get_operation_name() != &"play_card":
 		return
 	if _context.get_current_stage_name() != &"Main":
 		return
-	var play_request: OperationRequest.PlayCard = request as OperationRequest.PlayCard
-	if _get_hand_card_type(play_request.get_card_id()) != GlobalConstants.DefaultCard.ATTACK:
+	var play_request: ItemsOperation = request as ItemsOperation
+	if _get_hand_card_type(play_request.get_primary_id()) != GlobalConstants.DefaultCard.ATTACK:
 		return
 	_attacked_in_main = true
 

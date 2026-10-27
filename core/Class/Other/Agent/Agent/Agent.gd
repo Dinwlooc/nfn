@@ -95,7 +95,7 @@ static func _build_request_from_result(data: NPCDecisionData, result: Dictionary
 		&"abandon":
 			request = OperationRequest.AbandonResponse.new(data.player_id)
 		&"play_card":
-			request = OperationRequest.PlayCard.new(data.player_id, result[&"card_id"], result[&"target_id"])
+			request = ItemsOperation.play_card(data.player_id, result[&"card_id"], result[&"target_id"])
 		_:
 			request = OperationRequest.AbandonResponse.new(data.player_id)
 	if data.is_npc:

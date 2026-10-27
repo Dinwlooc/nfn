@@ -20,6 +20,10 @@ signal completed(request: OperationRequest)
 ## @override
 static func get_class_name_static() -> StringName:
 	return &"base_request"
+## 取操作分派键，供阶段按操作类型分发；基类无操作类型
+## @hook
+func get_operation_name() -> StringName:
+	return &""
 ## 标记为 NPC 发起（对等体 id 置 -1）
 ## @side_effect
 func use_npc_peer_id() -> OperationRequest:
@@ -45,115 +49,21 @@ static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = Op
 	pack.source_player_id = TransPackSerializer.read(buffer, TYPE_INT)
 	return pack
 
-## 出牌请求：卡牌 id + 目标 id
-class PlayCard extends OperationRequest:
-	## 要打出的卡牌 id
-	var _card_id: int
-	## 目标玩家 id
-	var _target_id: int
-	## 构造：绑定来源玩家、卡牌与目标
-	func _init(player_id:int = 0,card_id:int = -1,target_id:int = 0) -> void:
-		source_player_id = player_id
-		_card_id = card_id
-		_target_id = target_id
-	## 取要打出的卡牌 id
-	## @pure
-	func get_card_id() -> int:
-		return _card_id
-	## 取目标玩家 id
-	## @pure
-	func get_target_id() -> int:
-		return _target_id
-	## 包类名标识
-	## @override
-	static func get_class_name_static() -> StringName:
-		return &"play_card"
-	## 序列化：先写基类字段，再写卡牌与目标 id
-	## @override @side_effect
-	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
-		super.serialize_to_buffer(buffer)
-		TransPackSerializer.write(buffer, _card_id)
-		TransPackSerializer.write(buffer, _target_id)
-	## 反序列化：先读基类字段，再读卡牌与目标 id
-	## @override
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer,pack:TransPack = PlayCard.new()) -> OperationRequest:
-		super.deserialize_from_buffer(buffer,pack)
-		pack ._card_id = TransPackSerializer.read(buffer, TYPE_INT)
-		pack ._target_id = TransPackSerializer.read(buffer, TYPE_INT)
-		return pack
-## 放弃响应操作请求，通常产生与响应超时相同的效果。
+## 通用放弃请求：不带参数，表示来源方放弃当前响应或操作；不属于物品操作族。
 class AbandonResponse extends OperationRequest:
+	## 构造：绑定来源玩家
+	func _init(player_id: int = 0) -> void:
+		source_player_id = player_id
 	## 包类名标识
 	## @override
 	static func get_class_name_static() -> StringName:
 		return &"abandon_response"
-	## 构造：绑定来源玩家
-	func _init(player_id:int = 0) -> void:
-		source_player_id = player_id
+	## 取操作分派键
+	## @override
+	func get_operation_name() -> StringName:
+		return &"abandon_response"
 	## 反序列化：只有基类字段
 	## @override
 	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = AbandonResponse.new()) -> OperationRequest:
-		super.deserialize_from_buffer(buffer,pack)
-		return pack
-
-## 响应声明请求：群体攻击等"多目标同时表态"的场景专用。
-## 与 PlayCard 的区别：响应牌只作声明、不离手、不指定他人为目标；由结算命令统一弃置。
-class RespondCard extends OperationRequest:
-	## 声明用于响应的卡牌 id
-	var _card_id: int
-	## 构造：绑定来源玩家与响应牌
-	func _init(player_id: int = 0, card_id: int = -1) -> void:
-		source_player_id = player_id
-		_card_id = card_id
-	## 取响应牌 id
-	## @pure
-	func get_card_id() -> int:
-		return _card_id
-	## 包类名标识
-	## @override
-	static func get_class_name_static() -> StringName:
-		return &"respond_card"
-	## 序列化：先写基类字段，再写响应牌 id
-	## @override @side_effect
-	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
-		super.serialize_to_buffer(buffer)
-		TransPackSerializer.write(buffer, _card_id)
-	## 反序列化：先读基类字段，再读响应牌 id
-	## @override
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = RespondCard.new()) -> OperationRequest:
 		super.deserialize_from_buffer(buffer, pack)
-		pack._card_id = TransPackSerializer.read(buffer, TYPE_INT)
-		return pack
-
-## 弃牌请求：待弃置的卡牌 id 列表
-class DiscardCards extends OperationRequest:	## 要弃置的卡牌 id 列表
-	var _card_ids: PackedInt32Array
-
-	## 构造：绑定来源玩家与卡牌列表
-	func _init(player_id: int = 0, card_ids: PackedInt32Array = PackedInt32Array()) -> void:
-		source_player_id = player_id
-		_card_ids = card_ids
-
-	## 包类名标识
-	## @override
-	static func get_class_name_static() -> StringName:
-		return &"discard_cards"
-
-	## 序列化：先写基类字段，再写张数与每个 id
-	## @override @side_effect
-	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
-		super.serialize_to_buffer(buffer)
-		TransPackSerializer.write(buffer, _card_ids.size())
-		for id in _card_ids:
-			TransPackSerializer.write(buffer, id)
-
-	## 反序列化：先读基类字段，再按张数读回每个 id
-	## @override
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = DiscardCards.new()) -> OperationRequest:
-		super.deserialize_from_buffer(buffer, pack)
-		var size: int = TransPackSerializer.read(buffer, TYPE_INT)
-		var ids: PackedInt32Array = []
-		for i in size:
-			ids.append(TransPackSerializer.read(buffer, TYPE_INT))
-		pack._card_ids = ids
 		return pack

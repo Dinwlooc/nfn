@@ -65,15 +65,15 @@ func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
-	match request.get_class_name():
+	match request.get_operation_name():
 		&"play_card":
-			_process_play_card_request(request as OperationRequest.PlayCard, game_state, command_bus)
+			_process_play_card_request(request as ItemsOperation, game_state, command_bus)
 		&"respond_card":
-			_process_respond_card_request(request as OperationRequest.RespondCard, game_state, command_bus)
+			_process_respond_card_request(request as ItemsOperation, game_state, command_bus)
 		&"abandon_response":
 			_process_abandon_request(request, command_bus)
 		_:
-			GlobalConsole._print(["群体攻击阶段：不支持的操作类型", request.get_class_name()])
+			GlobalConsole._print(["群体攻击阶段：不支持的操作类型", request.get_operation_name()])
 			request.cancel()
 
 ## 超时：未表态者一律视为放弃响应（设计：未响应 = 单方面攻击）
@@ -96,19 +96,15 @@ func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 	_refresh_responsive_players(command_bus)
 	_try_resolve(command_bus)
 
-## 处理出牌请求：只登记、不移动牌（响应牌保持在手牌区，结算后由 GroupAttackCommand 弃置）
+## 处理出牌请求：只登记、不移动牌（响应牌保持在手牌区，结算后由 GroupAttackCommand 弃置）；目标字段由本阶段无视
 ## @side_effect
-func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState, command_bus: CommandBus) -> void:
-	if request.get_target_id() >= 0 and request.get_target_id() != request.source_player_id:
-		GlobalConsole._print(["群体攻击阶段：响应不得指向他人"])
-		request.cancel()
-		return
-	_try_accept_response(request.source_player_id, request.get_card_id(), request, game_state, command_bus)
+func _process_play_card_request(request: ItemsOperation, game_state: GameState, command_bus: CommandBus) -> void:
+	_try_accept_response(request.source_player_id, request.get_primary_id(), request, game_state, command_bus)
 
 ## 处理响应声明请求（respond_card）：不带目标参数，语义就是"我出这张牌响应"
 ## @side_effect
-func _process_respond_card_request(request: OperationRequest.RespondCard, game_state: GameState, command_bus: CommandBus) -> void:
-	_try_accept_response(request.source_player_id, request.get_card_id(), request, game_state, command_bus)
+func _process_respond_card_request(request: ItemsOperation, game_state: GameState, command_bus: CommandBus) -> void:
+	_try_accept_response(request.source_player_id, request.get_primary_id(), request, game_state, command_bus)
 
 ## 校验并登记响应牌（play_card 与 respond_card 两个入口共用）
 ## @internal @side_effect

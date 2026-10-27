@@ -39,13 +39,13 @@ var _last_request_time: int = 0
 const COOLDOWN_MS: int = 200
 
 ## 构造打出请求。
-## @factory
-static func create_play_card_request(player_id: int, card_id: int, target_id: int) -> OperationRequest.PlayCard:
-	return OperationRequest.PlayCard.new(player_id, card_id, target_id)
+## @factory @delegates(ItemsOperation.play_card)
+static func create_play_card_request(player_id: int, card_id: int, target_id: int) -> ItemsOperation:
+	return ItemsOperation.play_card(player_id, card_id, target_id)
 ## 构造弃置请求，牌 id 集合数量决定弃置张数。
-## @factory
-static func create_discard_cards_request(player_id: int, card_ids: PackedInt32Array) -> OperationRequest.DiscardCards:
-	return OperationRequest.DiscardCards.new(player_id, card_ids)
+## @factory @delegates(ItemsOperation.discard_cards)
+static func create_discard_cards_request(player_id: int, card_ids: PackedInt32Array) -> ItemsOperation:
+	return ItemsOperation.discard_cards(player_id, card_ids)
 ## 构造放弃响应请求。
 ## @factory
 static func create_abandon_response_request(player_id: int) -> OperationRequest.AbandonResponse:
@@ -147,14 +147,14 @@ func upload_abandon_response() -> RenderEvent:
 ## 发送打出请求并构建渲染事件。
 ## @internal
 func _send_play_card(card_id: int, target_id: int, now: int) -> RenderEvent:
-	var request: OperationRequest.PlayCard = create_play_card_request(_context.area_manager.local_player_id, card_id, target_id)
+	var request: ItemsOperation = create_play_card_request(_context.area_manager.local_player_id, card_id, target_id)
 	_send_operation_request(request)
 	_last_request_time = now
 	return _build_play_card_event(card_id, target_id, RequestError.OK)
 ## 发送弃置请求并构建渲染事件。
 ## @internal
 func _send_discard_cards(card_ids: PackedInt32Array, now: int) -> RenderEvent:
-	var request: OperationRequest.DiscardCards = create_discard_cards_request(_context.area_manager.local_player_id, card_ids)
+	var request: ItemsOperation = create_discard_cards_request(_context.area_manager.local_player_id, card_ids)
 	_send_operation_request(request)
 	_last_request_time = now
 	return _build_discard_cards_event(card_ids, RequestError.OK)

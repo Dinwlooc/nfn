@@ -39,13 +39,13 @@ func verify_operation(request: OperationRequest) -> bool:
 ## 处理请求（验证并分发）
 ## @internal @emitter
 func handle_request(request: OperationRequest) -> void:
-	GlobalConsole._print(["OperationHandler:接受到请求：", request.get_class_name()])
+	GlobalConsole._print(["OperationHandler:接受到请求：", request.get_operation_name()])
 	if not verify_operation(request):
-		GlobalConsole._print(["OperationHandler:取消请求：", request.get_class_name(), "。原因：访问了不合法的玩家"])
+		GlobalConsole._print(["OperationHandler:取消请求：", request.get_operation_name(), "。原因：访问了不合法的玩家"])
 		return
 	var player_id: int = request.source_player_id
 	if not _can_accept_new_request(player_id):
-		GlobalConsole._print(["OperationHandler:取消请求：", request.get_class_name(), "。原因：玩家无响应权"])
+		GlobalConsole._print(["OperationHandler:取消请求：", request.get_operation_name(), "。原因：玩家无响应权"])
 		return
 	_setup_request_tracking(player_id, request)
 	operation_validated.emit(request)

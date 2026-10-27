@@ -93,11 +93,11 @@ func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 func process_operation_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused or _is_locked:
 		return
-	match request.get_class_name():
+	match request.get_operation_name():
 		&"play_card":
-			_process_play_card_request(request as OperationRequest.PlayCard, game_state, command_bus)
+			_process_play_card_request(request as ItemsOperation, game_state, command_bus)
 		_:
-			GlobalConsole._print(["濒死阶段：不支持的操作类型", request.get_class_name_static()])
+			GlobalConsole._print(["濒死阶段：不支持的操作类型", request.get_operation_name()])
 			request.cancel()
 ## 刷新响应权
 ## @override @hook @no_escape @side_effect
@@ -114,10 +114,11 @@ func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 #== Private Methods ==
 ## 处理出牌请求
 ## @side_effect
-func _process_play_card_request(request: OperationRequest.PlayCard, game_state: GameState, command_bus: CommandBus) -> void:
-	var card: Card = game_state.cardsmanager.get_card_by_id(request._card_id)
+func _process_play_card_request(request: ItemsOperation, game_state: GameState, command_bus: CommandBus) -> void:
+	var card: Card = game_state.cardsmanager.get_card_by_id(request.get_primary_id())
 	var source_player: Player = game_state.player_manager.get_player_by_id(request.source_player_id)
-	var target_player: Player = game_state.player_manager.get_player_by_id(request._target_id) if request._target_id >= 0 else null
+	var target_id: int = request.get_primary_target_id()
+	var target_player: Player = game_state.player_manager.get_player_by_id(target_id) if target_id != 0 else null
 	if not card or not source_player:
 		GlobalConsole._print(["濒死阶段：卡牌或玩家实例获取失败"])
 		request.cancel()
