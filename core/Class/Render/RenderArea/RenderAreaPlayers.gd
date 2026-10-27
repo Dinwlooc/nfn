@@ -28,6 +28,10 @@ func _on_player_added(new_player:RenderItem)->void:
 	var defence_area:RenderAreaDefence = render_context.create_render_area(DefaultArea.DEFENCE,new_player.data.get_id())
 	new_player.add_child(hand_area)
 	new_player.add_child(defence_area)
+	# 技能区：牌离手后落在玩家卡面下（区域类由 RenderAreaFactory 提供）
+	var ability_area:RenderArea = render_context.create_render_area(DefaultArea.ABILITY,new_player.data.get_id())
+	if ability_area:
+		new_player.add_child(ability_area)
 
 ## 静态区域名：供工厂在无实例时查询
 static func get_area_name_static()->StringName:

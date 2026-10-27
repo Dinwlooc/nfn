@@ -40,6 +40,12 @@ signal main_stage_notified(stage_name: StringName, player_id: int, params: Dicti
 ## 临时阶段变更通知
 ## @emitter
 signal temp_stage_notified(stage_name: StringName, turn_player_id: int, stage_owner_id: int, params: Dictionary)
+## 群体攻击阶段通知（目标 / 待表态 / 威力 / 时机）
+## @emitter
+signal group_attack_notified(notify: RenderRequest.GroupAttackNotify)
+
+## 群体攻击阶段状态快照（未处于该阶段时为 null）
+var group_attack_state: RenderRequest.GroupAttackNotify = null
 
 # ================= 拖拽管理 =================
 ## 记录拖拽起点区域与卡牌
@@ -79,6 +85,8 @@ func notify_main_stage(stage_name: StringName, player_id: int, params: Dictionar
 	temp_stage_name = &""
 	temp_turn_player_id = PUBLIC_PLAYER_ID
 	temp_stage_owner_id = PUBLIC_PLAYER_ID
+	# 群体攻击属于临时阶段，主阶段切换即失效
+	group_attack_state = null
 	main_stage_notified.emit(stage_name, player_id, params)
 ## 通知临时阶段：保留主阶段不变，发射临时阶段信号
 func notify_temp_stage(stage_name: StringName, turn_player_id: int, stage_owner_id: int, params: Dictionary = {}) -> void:
@@ -86,6 +94,20 @@ func notify_temp_stage(stage_name: StringName, turn_player_id: int, stage_owner_
 	temp_turn_player_id = turn_player_id
 	temp_stage_owner_id = stage_owner_id
 	temp_stage_notified.emit(stage_name, turn_player_id, stage_owner_id, params)
+## 通知群体攻击阶段：保存状态快照并广播；FINISHED 时清空快照（前端据信号收起展示）
+func notify_group_attack(notify: RenderRequest.GroupAttackNotify) -> void:
+	if not notify:
+		return
+	if notify.state == RenderRequest.GroupAttackNotify.State.FINISHED:
+		group_attack_state = null
+	else:
+		group_attack_state = notify
+	group_attack_notified.emit(notify)
+
+## 取群体攻击阶段状态快照（未处于该阶段时返回 null）
+func get_group_attack_state() -> RenderRequest.GroupAttackNotify:
+	return group_attack_state
+
 ## 获取当前阶段所属玩家 ID（临时阶段优先）
 func get_current_stage_name() -> StringName:
 	return temp_stage_name if not temp_stage_name.is_empty() else main_stage_name

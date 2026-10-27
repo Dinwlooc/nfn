@@ -32,6 +32,11 @@ func notify_main_stage(stage_name: StringName, player_id: int, params: Dictionar
 func notify_temp_stage(stage_name: StringName, turn_player_id: int, stage_owner_id: int, params: Dictionary = {}) -> void:
 	state_manager.notify_temp_stage(stage_name, turn_player_id, stage_owner_id, params)
 
+## 通知群体攻击阶段（目标 / 待表态 / 威力 / 时机）
+## @delegates
+func notify_group_attack(notify: RenderRequest.GroupAttackNotify) -> void:
+	state_manager.notify_group_attack(notify)
+
 ## 取当前阶段名（优先临时阶段，回退主阶段）
 func get_current_stage_name() -> StringName:
 	if not state_manager.get_current_stage_name().is_empty():
@@ -43,6 +48,16 @@ func get_current_stage_player_id() -> int:
 	if not state_manager.temp_stage_name.is_empty():
 		return state_manager.temp_stage_owner_id
 	return state_manager.main_stage_player_id
+
+## 取主阶段行动玩家 id
+## @pure
+func get_main_stage_player_id() -> int:
+	return state_manager.main_stage_player_id
+
+## 取临时阶段归属玩家 id（无临时阶段时为 0）
+## @pure
+func get_temp_stage_owner_id() -> int:
+	return state_manager.temp_stage_owner_id
 
 # ================= 区域管理委托 =================
 ## 注册区域回调（回调签名：func(new_area: RenderArea, old_area: RenderArea)）

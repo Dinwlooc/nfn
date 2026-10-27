@@ -1,11 +1,12 @@
 extends TransPackSerializer
 class_name OperationRequestSerializer
 
-## 所有支持的操作请求类型数组（下标即序列化标识）
+## 所有支持的操作请求类型数组（下标即序列化标识；新类型只追加、不插队）
 static var operation_classes: Array[Script] = [
 	OperationRequest.PlayCard,
 	OperationRequest.AbandonResponse,
-	OperationRequest.DiscardCards
+	OperationRequest.DiscardCards,
+	OperationRequest.RespondCard
 ]
 
 ## 类名 → 索引 的正向注册表

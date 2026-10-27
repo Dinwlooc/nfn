@@ -1,6 +1,9 @@
 extends GameStateTrigger
 class_name CenterSkillTrigger
 
+## 群体攻击阶段请求命令脚本（preload 规避新建 class_name 未进全局类缓存）
+const GroupAttackStageRequestCommandScript := preload("res://core/Class/System/Command/StageRequestCommand/GroupAttackStageRequestCommand.gd")
+
 ## 中央区引用，_init 时从区域注册表取得
 var _center_area: AreaCenter
 
@@ -26,11 +29,20 @@ func _schedule_skill(card: Card) -> void:
 	_command_bus.queue_behavior(_create_move_to_discard_command(card))
 	var targets: Array[Player] = _center_area.skill_target_players
 	_command_bus.queue_behavior(SkillCommand.new(card, _center_area, targets))
-## 群体攻击：当前仅移入弃牌（群体攻击命令未实现）
+## 群体攻击：先移入弃牌，再请求群体攻击响应阶段（目标在此刻快照——中央区清空会清掉技能目标）
 ## @delegates
 func _schedule_group_attack(card: Card) -> void:
 	_command_bus.queue_behavior(_create_move_to_discard_command(card))
-	# 群体攻击命令暂未实现
+	var attacker: Player = card.player if card.player and card.player != Player.PUBLIC_PLAYER else null
+	if not attacker:
+		return
+	var targets: Array[Player] = []
+	for target: Player in _center_area.skill_target_players.duplicate():
+		if target and target != attacker:
+			targets.append(target)
+	if targets.is_empty():
+		return
+	_command_bus.queue_behavior(GroupAttackStageRequestCommandScript.new(card, attacker, targets))
 ## 无技能：仅移入弃牌
 ## @delegates
 func _schedule_move_to_discard(card: Card) -> void:

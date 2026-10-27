@@ -96,9 +96,37 @@ class AbandonResponse extends OperationRequest:
 		super.deserialize_from_buffer(buffer,pack)
 		return pack
 
+## 响应声明请求：群体攻击等"多目标同时表态"的场景专用。
+## 与 PlayCard 的区别：响应牌只作声明、不离手、不指定他人为目标；由结算命令统一弃置。
+class RespondCard extends OperationRequest:
+	## 声明用于响应的卡牌 id
+	var _card_id: int
+	## 构造：绑定来源玩家与响应牌
+	func _init(player_id: int = 0, card_id: int = -1) -> void:
+		source_player_id = player_id
+		_card_id = card_id
+	## 取响应牌 id
+	## @pure
+	func get_card_id() -> int:
+		return _card_id
+	## 包类名标识
+	## @override
+	static func get_class_name_static() -> StringName:
+		return &"respond_card"
+	## 序列化：先写基类字段，再写响应牌 id
+	## @override @side_effect
+	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
+		super.serialize_to_buffer(buffer)
+		TransPackSerializer.write(buffer, _card_id)
+	## 反序列化：先读基类字段，再读响应牌 id
+	## @override
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = RespondCard.new()) -> OperationRequest:
+		super.deserialize_from_buffer(buffer, pack)
+		pack._card_id = TransPackSerializer.read(buffer, TYPE_INT)
+		return pack
+
 ## 弃牌请求：待弃置的卡牌 id 列表
-class DiscardCards extends OperationRequest:
-	## 要弃置的卡牌 id 列表
+class DiscardCards extends OperationRequest:	## 要弃置的卡牌 id 列表
 	var _card_ids: PackedInt32Array
 
 	## 构造：绑定来源玩家与卡牌列表

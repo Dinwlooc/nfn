@@ -263,3 +263,30 @@ static func send_settle_summary(defensive_area: AreaDefence, settle_card: Card, 
 		defensive_area.player.get_id()
 	)
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
+
+## 发送群体攻击阶段通知（目标 / 待表态 / 威力 / 时机）
+## @atomic
+static func send_group_attack_notify(
+	source_card: Card,
+	attacker: Player,
+	targets: Array[Player],
+	pending_ids: PackedInt32Array,
+	power: int,
+	notify_state: RenderRequest.GroupAttackNotify.State
+) -> void:
+	if not attacker:
+		return
+	var target_ids: PackedInt32Array = PackedInt32Array()
+	for target: Player in targets:
+		if target:
+			target_ids.append(target.get_id())
+	var card_id: int = source_card.get_id() if source_card else -1
+	var request: RenderRequest.GroupAttackNotify = RenderRequest.GroupAttackNotify.new(
+		card_id,
+		attacker.get_id(),
+		target_ids,
+		pending_ids.duplicate(),
+		power,
+		notify_state
+	)
+	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)

@@ -2,8 +2,18 @@
 extends Object
 class_name RenderAreaFactory
 
-## 可创建的渲染区域类表
-static var area_classes: Array[Script] = [RenderAreaHand,RenderAreaDefence]
+## 新建区域脚本：preload 规避新建 class_name 未进全局类缓存
+const RenderAreaAbilityScript := preload("res://core/Class/Render/RenderArea/RenderAreaAbility.gd")
+
+## 可创建的渲染区域类表（按区域名注册；新增区域只追加，不改已有项）
+static var area_classes: Array[Script] = [
+	RenderAreaHand,
+	RenderAreaDefence,
+	RenderAreaCenter,
+	RenderAreaDiscard,
+	RenderAreaDraw,
+	RenderAreaAbilityScript
+]
 ## 区域名 → 区域类 的注册表
 static var registry: Dictionary[StringName, Script] = build_registry(area_classes)
 

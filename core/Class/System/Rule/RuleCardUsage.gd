@@ -13,6 +13,9 @@ enum ErrorCode {
 	WRONG_TURN,
 	INVALID_CARD_TYPE,
 	INVALID_DEFENSE_TARGET,
+	NOT_IN_HAND,
+	NOT_OWNER,
+	RESPONSE_FORBIDDEN,
 }
 
 ## 校验结果记录：是否可用 + 失败原因 + 提示文本
@@ -41,6 +44,8 @@ class UsageResult:
 	const DEFENSE_TARGET := &"defense_target"
 	## 濒死阶段可用校验
 	const DYING_AVAILABLE := &"dying_available"
+	## 群体攻击响应可用校验（卡牌级开关，缺省按"可用"处理）
+	const GROUP_ATTACK_AVAILABLE := &"group_attack_available"
 
 ## 允许参与规则合并的校验器键
 static var _allowed_validator_keys: Array[StringName] = [
@@ -48,6 +53,7 @@ static var _allowed_validator_keys: Array[StringName] = [
 	Validator.SPEED_LIMIT,
 	Validator.DEFENSE_TARGET,
 	Validator.DYING_AVAILABLE,
+	Validator.GROUP_ATTACK_AVAILABLE,
 ]
 
 ## 各卡牌类型默认启用的校验器
@@ -129,6 +135,26 @@ static func can_use_card_in_defense(
 				var res := _validate_defense_target(source_player, target_player, defender)
 				if not res.is_valid:
 					return res
+	return UsageResult.new(true)
+
+## 群体攻击响应可用性校验：响应者必须是牌主、牌必须在手牌区、卡牌级开关允许
+static func can_use_card_in_group_attack(
+	card: Card,
+	source_player: Player,
+	game_state: GameState
+) -> UsageResult:
+	if not card:
+		return UsageResult.new(false, ErrorCode.CARD_NULL, "卡牌实例为空")
+	if not source_player:
+		return UsageResult.new(false, ErrorCode.NOT_OWNER, "响应者不存在")
+	if card.get_owner_id() != source_player.get_id():
+		return UsageResult.new(false, ErrorCode.NOT_OWNER, "只能用自己的牌响应")
+	if card.area_name != GlobalConstants.DefaultArea.HAND:
+		return UsageResult.new(false, ErrorCode.NOT_IN_HAND, "响应牌必须来自手牌")
+	var rule_config: Dictionary[StringName, Variant] = _get_rule_config(card)
+	if rule_config.has(Validator.GROUP_ATTACK_AVAILABLE):
+		if not rule_config[Validator.GROUP_ATTACK_AVAILABLE]:
+			return UsageResult.new(false, ErrorCode.RESPONSE_FORBIDDEN, "此卡牌不能用于响应群体攻击")
 	return UsageResult.new(true)
 
 ## 濒死阶段可用性校验

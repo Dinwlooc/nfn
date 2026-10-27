@@ -1,7 +1,7 @@
 ## 渲染侧决策构造器（渲染层模块）：经 [RenderContext] 门面取数，装配 [NPCDecisionData]；
-## 与系统层 [AgentManager] 的快照构造结构对称。响应权规则镜像留于此处，
+## 与系统层 [AgentSystemModule] 的快照构造结构对称。响应权规则镜像留于此处，
 ## 系统层日后经同步暴露答案时可整行删除。
-## 纯静态工具类：不持状态、不接触游戏状态，只读渲染上下文门面。
+## 纯静态工具类：不持状态、不接触游戏状态，只读渲染上下文门面；静态方法天然外生，不标副作用范式。
 extends RefCounted
 class_name RenderDecisionBuilder
 
@@ -21,7 +21,7 @@ static func is_responsive(context: RenderContext, player_id: int, stage_name: St
 	var state_manager: RenderStateManager = context.state_manager
 	match stage_name:
 		&"Main":
-			return state_manager.main_stage_player_id == player_id
+			return context.get_main_stage_player_id() == player_id
 		&"Discard":
 			return context.get_hand_card_count(player_id) > context.get_hand_limit(player_id)
 		&"DefenseBattle":
@@ -31,11 +31,10 @@ static func is_responsive(context: RenderContext, player_id: int, stage_name: St
 ## 判断守区攻防阶段指定玩家是否持有响应权
 ## @pure
 static func is_responsive_in_defense(context: RenderContext, player_id: int) -> bool:
-	var state_manager: RenderStateManager = context.state_manager
-	var defender_id: int = state_manager.temp_stage_owner_id
+	var defender_id: int = context.get_temp_stage_owner_id()
 	if defender_id <= 0:
 		return false
-	var attacker_id: int = state_manager.main_stage_player_id
+	var attacker_id: int = context.get_main_stage_player_id()
 	var top_owner_id: int = context.get_defense_top_card_owner(defender_id)
 	var responsive_id: int = attacker_id
 	if top_owner_id != 0 and top_owner_id != defender_id:
@@ -43,7 +42,6 @@ static func is_responsive_in_defense(context: RenderContext, player_id: int) -> 
 	return responsive_id == player_id
 
 ## 构造渲染侧决策快照（纯数据，主线程调用）
-## @external
 static func build(context: RenderContext, player_id: int, attacked_in_main: bool) -> NPCDecisionData:
 	var data: NPCDecisionData = NPCDecisionData.new()
 	data.player_id = player_id
@@ -57,8 +55,7 @@ static func build(context: RenderContext, player_id: int, attacked_in_main: bool
 	return data
 
 #== Private Methods ==
-## 填充手牌快照：类型转回常量名以复用决策树的比较
-## @internal
+## 填充手牌快照：类型转回常量名以复用决策树的比较（静态方法不标副作用范式）
 static func _fill_hand_cards(context: RenderContext, data: NPCDecisionData) -> void:
 	var hand_area: ItemRenderArea = context.get_hand_area()
 	if hand_area == null:
@@ -72,12 +69,10 @@ static func _fill_hand_cards(context: RenderContext, data: NPCDecisionData) -> v
 		data.hand_cards.append({&"id": card_pack.get_id(), &"type": get_card_type_name(card_pack.type)})
 
 ## 填充本地守区是否为空
-## @internal
 static func _fill_self_defense(context: RenderContext, data: NPCDecisionData) -> void:
 	data.defense_area_empty = context.get_defense_card_count() == 0
 
 ## 填充其他玩家 id 与守区结算次数（结算次数同步自守区渲染区）
-## @internal
 static func _fill_other_players(context: RenderContext, player_id: int, data: NPCDecisionData) -> void:
 	var players_area: ItemRenderArea = context.get_players_area()
 	if players_area == null:
@@ -93,10 +88,9 @@ static func _fill_other_players(context: RenderContext, player_id: int, data: NP
 		data.other_players_settle_counts[other_player_id] = context.get_settle_count(other_player_id)
 
 ## 填充守区攻防阶段的归属玩家与响应权
-## @internal
 static func _fill_defense_stage(context: RenderContext, player_id: int, data: NPCDecisionData) -> void:
 	if data.current_stage_name != &"DefenseBattle":
 		data.is_responsive = true
 		return
-	data.defense_stage_owner_id = context.state_manager.temp_stage_owner_id
+	data.defense_stage_owner_id = context.get_temp_stage_owner_id()
 	data.is_responsive = is_responsive(context, player_id, data.current_stage_name)

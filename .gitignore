@@ -18,3 +18,15 @@ Unused/
 
 # Mono-specific ignores
 data_*/
+
+# --- .dsh 纳入版本控制（Owner 2026-10-27：点文件/点目录仍由首行 `.*` 忽略） ---
+!/.dsh/
+**/node_modules/
+*.revlog.md
+
+# --- 插件的 .dsh 兼容 junction（实体在 dsh-plugins/，junction 不重复入库） ---
+/.dsh/godot-creator/
+/.dsh/harness-skills/
+
+# --- 实验档案：含会话 uuid 与本机绝对路径（如 C:/Users/70585），不进仓库 ---
+/.dsh/experiments/

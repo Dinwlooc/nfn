@@ -299,3 +299,87 @@ class SettleSet extends RenderRequest:
 	## @override
 	static func get_class_name_static() -> StringName:
 		return &"SettleSet"
+
+
+# ========== GroupAttackNotify ==========
+## 群体攻击阶段通知：目标是谁、谁还没表态、当前威力多少
+class GroupAttackNotify extends RenderRequest:
+	## 通知时机
+	enum State {
+		START,      ## 阶段开始，等待响应
+		UPDATE,     ## 有目标表态（出牌或放弃）
+		RESOLVED,   ## 已入队结算
+		FINISHED    ## 阶段已结束（临时阶段弹出），前端应清理展示
+	}
+	## 本次通知的时机
+	var state: State = State.START
+	## 来源卡 id（无则 -1）
+	var source_card_id: int = -1
+	## 攻击方玩家 id
+	var attacker_id: int = 0
+	## 目标玩家 id（结算顺序）
+	var target_ids: PackedInt32Array = PackedInt32Array()
+	## 尚未表态的目标玩家 id
+	var pending_ids: PackedInt32Array = PackedInt32Array()
+	## 当前威力
+	var power: int = 0
+
+	## 构造：绑定来源卡、攻击方、目标与待表态集合
+	func _init(
+		card_id: int = -1,
+		attacker: int = 0,
+		targets: PackedInt32Array = PackedInt32Array(),
+		pending: PackedInt32Array = PackedInt32Array(),
+		card_power: int = 0,
+		notify_state: State = State.START,
+	) -> void:
+		target_area = GlobalConstants.DefaultArea.CENTER
+		target_area_player_id = PUBLIC_AREA_PLAYER_ID
+		source_card_id = card_id
+		attacker_id = attacker
+		target_ids = targets
+		pending_ids = pending
+		power = card_power
+		state = notify_state
+
+	## 序列化：先写基类字段，再写本通知字段（数组先写长度再逐个写）
+	## @override @side_effect
+	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
+		super.serialize_to_buffer(buffer)
+		SerializationUtil.write(buffer, int(state))
+		SerializationUtil.write(buffer, source_card_id)
+		SerializationUtil.write(buffer, attacker_id)
+		SerializationUtil.write(buffer, power)
+		SerializationUtil.write(buffer, target_ids.size())
+		for target_id in target_ids:
+			SerializationUtil.write(buffer, target_id)
+		SerializationUtil.write(buffer, pending_ids.size())
+		for pending_id in pending_ids:
+			SerializationUtil.write(buffer, pending_id)
+
+	## 反序列化：读回本通知字段
+	## @override
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = GroupAttackNotify.new()) -> RenderRequest:
+		super.deserialize_from_buffer(buffer, pack)
+		var notify := pack as GroupAttackNotify
+		if notify:
+			notify.state = SerializationUtil.read(buffer, TYPE_INT) as State
+			notify.source_card_id = SerializationUtil.read(buffer, TYPE_INT)
+			notify.attacker_id = SerializationUtil.read(buffer, TYPE_INT)
+			notify.power = SerializationUtil.read(buffer, TYPE_INT)
+			var target_count: int = SerializationUtil.read(buffer, TYPE_INT)
+			var targets: PackedInt32Array = PackedInt32Array()
+			for _i in target_count:
+				targets.append(SerializationUtil.read(buffer, TYPE_INT))
+			notify.target_ids = targets
+			var pending_count: int = SerializationUtil.read(buffer, TYPE_INT)
+			var pending: PackedInt32Array = PackedInt32Array()
+			for _j in pending_count:
+				pending.append(SerializationUtil.read(buffer, TYPE_INT))
+			notify.pending_ids = pending
+		return pack
+
+	## 包类名标识
+	## @override
+	static func get_class_name_static() -> StringName:
+		return &"GroupAttackNotify"
