@@ -27,6 +27,6 @@ data_*/
 # --- 插件的 .dsh 兼容 junction（实体在 dsh-plugins/，junction 不重复入库） ---
 /.dsh/godot-creator/
 /.dsh/harness-skills/
-
+dsh-plugins
 # --- 实验档案：含会话 uuid 与本机绝对路径（如 C:/Users/70585），不进仓库 ---
 /.dsh/experiments/

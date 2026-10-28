@@ -1,4 +1,12 @@
 {
   "version": 1,
-  "revlogEntries": 8
+  "revlogEntries": 8,
+  "modelAliases": {
+    "deepseek-chat": "deepseek-flash",
+    "deepseek-reasoner": "deepseek-flash",
+    "deepseek-v4-pro": "deepseek-flash",
+    "deepseek-v4-flash": "deepseek-flash",
+    "deepseek-v41-flash": "deepseek-flash",
+    "deepseek-v4.1-flash": "deepseek-flash"
+  }
 }
