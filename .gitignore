@@ -3,11 +3,6 @@
 !/.gitignore
 !/.gitattributes
 
-# --- 恢复候选（Owner 2026-10-25：审查后可能恢复 .dsh 与 AGENTS.md 的仓库同步，届时取消下行注释） ---
-# /.dsh/
-# /AGENTS.md
-AGENTS.md
-
 # Godot-specific ignores
 .import/
 export.cfg
