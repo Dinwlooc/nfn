@@ -48,7 +48,7 @@ static func set_bloom_range(node: CanvasItem, min_val: float, max_val: float = 1
 static func set_bloom_intensity(node: CanvasItem, intensity: float) -> void:
 	node.set_instance_shader_parameter(&"bloom_intensity", intensity)
 
-## 设置泛光扩散半径（对应 spread）
+## 设置泛光扩散半径（像素，对应 spread）
 ## @atomic
 static func set_bloom_radius(node: CanvasItem, radius: float) -> void:
 	node.set_instance_shader_parameter(&"spread", radius)

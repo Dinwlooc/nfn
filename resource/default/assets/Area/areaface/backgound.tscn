@@ -6,13 +6,6 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_riwjx"]
 shader = ExtResource("2_ghmfw")
-shader_parameter/enable_bloom = false
-shader_parameter/threshold_min = 0.34000001615
-shader_parameter/brightness_upper_limit = 0.882000041895
-shader_parameter/bloom_intensity = 0.5
-shader_parameter/spread = 5.0
-shader_parameter/enable_pulse = true
-shader_parameter/pulse_speed = 0.75500003260262
 
 [node name="Backgound" type="Control" unique_id=769022814]
 layout_mode = 3
@@ -24,6 +17,15 @@ script = ExtResource("1_f1hya")
 
 [node name="ColorRect" type="TextureRect" parent="." unique_id=1848977747]
 material = SubResource("ShaderMaterial_riwjx")
+instance_shader_parameters/bloom_intensity = 1.7390000826025
+instance_shader_parameters/brightness_upper_limit = 1.0
+instance_shader_parameters/enable_bloom = true
+instance_shader_parameters/enable_pulse = true
+instance_shader_parameters/pulse_depth = 1.0
+instance_shader_parameters/pulse_speed = 0.76600003312512
+instance_shader_parameters/sample_jitter = 0.0
+instance_shader_parameters/sample_mip = 0.0
+instance_shader_parameters/spread = 19.054000905065
 layout_mode = 1
 offset_right = 1600.0
 offset_bottom = 900.0

@@ -25,7 +25,7 @@ var _context: RenderContext = null
 ## 本地玩家 id
 var _local_player_id: int = 0
 ## 决策代理
-var _agent: Agent = Agent.new()
+var _agent: Agent = AutoAgent.new()
 ## 托管开关
 var _enabled: bool = false
 ## 节流与重试状态机

@@ -44,7 +44,7 @@ func get_serial() -> int:
 	return _serial
 
 ## 递增并取新请求代数：每次请求前调用，使旧回调过期
-## @side_effect
+## @internal
 func advance_serial() -> int:
 	_serial += 1
 	return _serial
@@ -86,7 +86,7 @@ func on_situation_changed(situation_key: String) -> void:
 	_serial += 1
 
 ## 记录一次发送：开启观察窗并计数
-## @side_effect
+## @internal
 func on_sent(now: int) -> void:
 	_in_flight = true
 	_in_flight_started_msec = now
@@ -99,7 +99,7 @@ func abort() -> void:
 	_in_flight = false
 
 ## 重置节拍运行态（启停托管），并递增代数使旧回调失效
-## @side_effect
+## @internal
 func reset() -> void:
 	_situation_key = ""
 	_situation_changed_msec = 0

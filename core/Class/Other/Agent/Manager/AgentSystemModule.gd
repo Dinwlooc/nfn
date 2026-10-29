@@ -66,7 +66,7 @@ func _ensure_agent(player: Player) -> void:
 	var player_id: int = player.get_id()
 	if _agents.has(player_id):
 		return
-	_agents[player_id] = Agent.new()
+	_agents[player_id] = AutoAgent.new()
 
 ## 请求取消时的重试逻辑（取消信号携带请求自身）
 ## @signal_listener
@@ -88,18 +88,18 @@ func _retry_request(player_id: int) -> void:
 		return
 	_request_decision_async(player_id)
 
-## 尝试发送 NPC 请求（等待 Agent 就绪）
+## 尝试发送 NPC 请求：先走出牌前互动/思考窗口，再请求决策
 ## @internal
 func _try_send_npc_request(player_id: int) -> void:
 	if not _agents.has(player_id):
 		return
-	await _await_agent_ready()
+	await _play_interaction_pause()
 	_retry_counts.erase(player_id)
 	_request_decision_async(player_id)
 
-## 等待 NPC 就绪（简单延时）
+## 出牌前互动/思考窗口：当前以延时模拟思考，未来可在此挂其它互动；不是「等待就绪」
 ## @internal
-func _await_agent_ready() -> void:
+func _play_interaction_pause() -> void:
 	var scene_tree: SceneTree = Engine.get_main_loop() as SceneTree
 	if scene_tree:
 		await scene_tree.create_timer(1.0).timeout

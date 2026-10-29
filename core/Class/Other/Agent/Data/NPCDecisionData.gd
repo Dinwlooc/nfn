@@ -4,7 +4,7 @@ class_name NPCDecisionData
 
 ## 所属玩家 id
 var player_id: int
-## 手牌快照：{id, type}
+## 手牌快照：每项 {&"id": int, &"type": StringName}（Godot 不支持嵌套强类型集合，故不写 Dictionary[StringName, Variant]）
 var hand_cards: Array[Dictionary]
 ## 守区是否为空
 var defense_area_empty: bool

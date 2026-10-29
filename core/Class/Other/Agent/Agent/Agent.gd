@@ -1,95 +1,31 @@
-## Agent：以纯数据快照为唯一输入、以操作请求为唯一输出的决策代理。
-## 快照取数在系统层与渲染层各自的 NPC 管理器桥接中完成，Agent 不接触游戏状态与渲染上下文。
+## 决策机基类：以纯数据快照为唯一输入、以操作请求为唯一输出。
+## 异步壳与「决策字典 → 操作请求」的装配在此固定；具体决策由子类实现 [method decide]（默认实现见 [AutoAgent]）。
+## 随机性只经 rng_seed 进入，工作线程不推进全局随机源，故决策可复现、线程安全；本类无实例状态。
+@abstract
 extends RefCounted
 class_name Agent
 
-## 最新决策请求的 ID，用于在回调中丢弃过期结果
-var _latest_request_id: int = 0
+#== Constants ==
+## 未注入种子：提交时从全局随机源取一次
+const RNG_SEED_FROM_GLOBAL: int = -1
 
-## 异步决策入口：立即提交新任务，旧任务的结果将被丢弃
-## @side_effect
-func request_decision_async(data: NPCDecisionData, callback: Callable) -> void:
-	_latest_request_id += 1
-	var request_id := _latest_request_id
-	# 捕获 request_id 到闭包中，用于过期检测
-	var handle_result: Callable = func(result: Dictionary):
-		if request_id != _latest_request_id:
-			return
-		var request: OperationRequest = _build_request_from_result(data, result)
-		callback.call(request)
-	WorkerThreadPool.add_task(_thread_decision.bind(data, handle_result))
+#== Public Methods ==
+## 决策入口：同一快照与同一种子必得同一决策字典；子类必须实现
+@abstract func decide(data: NPCDecisionData, rng_seed: int) -> Dictionary[StringName, Variant]
 
-## 静态线程函数：执行决策计算，完成后将结果推回主线程
-## @delegates
-static func _thread_decision(data: NPCDecisionData, handle_result: Callable) -> void:
-	var result: Dictionary = decide(data)
-	handle_result.call_deferred(result)
-
-## 核心决策树（纯函数，线程安全），返回决策字典
+## 放弃决策
 ## @pure
-static func decide(data: NPCDecisionData) -> Dictionary:
-	var result: Dictionary = {&"type": &"abandon", &"card_id": 0, &"target_id": 0}
-	match data.current_stage_name:
-		&"Discard":
-			result[&"type"] = &"abandon"
-		&"Main":
-			var attack_cards: Array[Dictionary] = []
-			var defense_cards: Array[Dictionary] = []
-			for card in data.hand_cards:
-				match card[&"type"]:
-					GlobalConstants.DefaultCard.ATTACK:
-						attack_cards.append(card)
-					GlobalConstants.DefaultCard.DEFENCE:
-						defense_cards.append(card)
-					_:
-						pass
-			if data.defense_area_empty and defense_cards.size() > 1:
-				defense_cards.shuffle()
-				result[&"type"] = &"play_card"
-				result[&"card_id"] = defense_cards[0][&"id"]
-				result[&"target_id"] = data.player_id
-				return result
-			if not data.has_attacked_in_main and not attack_cards.is_empty():
-				var valid_targets: Array[int] = []
-				for pid in data.other_player_ids:
-					var settle: int = data.other_players_settle_counts.get(pid, 999)
-					if settle < data.self_speed:
-						valid_targets.append(pid)
-				if not valid_targets.is_empty():
-					valid_targets.shuffle()
-					var target_id: int = valid_targets[0]
-					attack_cards.shuffle()
-					result[&"type"] = &"play_card"
-					result[&"card_id"] = attack_cards[0][&"id"]
-					result[&"target_id"] = target_id
-					return result
-			result[&"type"] = &"abandon"
-		&"DefenseBattle":
-			if not data.is_responsive:
-				result[&"type"] = &"abandon"
-				return result
-			if data.defense_stage_owner_id == data.player_id:
-				for card in data.hand_cards:
-					if card[&"type"] == GlobalConstants.DefaultCard.DEFENCE:
-						result[&"type"] = &"play_card"
-						result[&"card_id"] = card[&"id"]
-						result[&"target_id"] = data.player_id
-						return result
-			else:
-				for card in data.hand_cards:
-					if card[&"type"] == GlobalConstants.DefaultCard.ATTACK or card[&"type"] == &"skill":
-						result[&"type"] = &"play_card"
-						result[&"card_id"] = card[&"id"]
-						result[&"target_id"] = data.defense_stage_owner_id
-						return result
-			result[&"type"] = &"abandon"
-		_:
-			result[&"type"] = &"abandon"
-	return result
+static func decide_abandon() -> Dictionary[StringName, Variant]:
+	return {&"type": &"abandon", &"card_id": 0, &"target_id": 0}
+
+## 出牌决策：以指定卡牌对指定目标出牌
+## @pure
+static func play_card_decision(card_id: int, target_id: int) -> Dictionary[StringName, Variant]:
+	return {&"type": &"play_card", &"card_id": card_id, &"target_id": target_id}
 
 ## 根据决策结果字典构造操作请求（主线程调用）；NPC 快照标记为 NPC 来源通道
 ## @factory
-static func _build_request_from_result(data: NPCDecisionData, result: Dictionary) -> OperationRequest:
+static func build_request_from_result(data: NPCDecisionData, result: Dictionary[StringName, Variant]) -> OperationRequest:
 	var request: OperationRequest = null
 	match result[&"type"]:
 		&"abandon":
@@ -101,3 +37,23 @@ static func _build_request_from_result(data: NPCDecisionData, result: Dictionary
 	if data.is_npc:
 		request.use_npc_peer_id()
 	return request
+
+## 异步决策入口：种子在提交线程解析后随任务下传，回调在本线程收到操作请求
+## 工作线程入口 _thread_decision 由引擎线程池调用，不属本方法的内部调用（同 @atomic 的引擎 API 豁免）
+## @external @seam
+func request_decision_async(data: NPCDecisionData, callback: Callable,
+		rng_seed_overriding: int = RNG_SEED_FROM_GLOBAL) -> void:
+	var rng_seed: int = rng_seed_overriding
+	# 哨兵值表示未注入：在提交线程取一次全局随机数，工作线程不再触碰全局源
+	if rng_seed == RNG_SEED_FROM_GLOBAL:
+		rng_seed = randi()
+	var handle_result: Callable = func(result: Dictionary[StringName, Variant]) -> void:
+		callback.call(build_request_from_result(data, result))
+	WorkerThreadPool.add_task(_thread_decision.bind(self, data, rng_seed, handle_result))
+
+#== Private Methods ==
+## 静态线程函数：在子类决策机上执行决策，完成后把结果推回主线程
+## @delegates
+static func _thread_decision(machine: Agent, data: NPCDecisionData, rng_seed: int, handle_result: Callable) -> void:
+	var result: Dictionary[StringName, Variant] = machine.decide(data, rng_seed)
+	handle_result.call_deferred(result)
