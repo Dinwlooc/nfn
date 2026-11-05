@@ -17,10 +17,6 @@ var transport: Transport = GlobalTransport
 ## 修饰器管理器
 var modifier_manager := ModifierManager.new()
 
-## 注册全局常量
-func _init() -> void:
-	GlobalConstants.register_to(GlobalRegistry)
-
 ## 初始化触发器与调试指令接入，加载卡牌后延迟启动服务器
 ## 计时器由 TimerTimeoutTrigger 从注册表取得并注入；Agent 由 AgentTrigger 部署
 func _ready() -> void:
@@ -33,7 +29,7 @@ func _ready() -> void:
 ## 启动服务器并接管用户表
 ## @side_effect
 func start_server() -> void:
-	transport.start_server()
+	transport.start_server(EntryMode.server_port)
 	game_state.users = transport.network_manager.users
 
 ## 按 4 帧节流驱动命令堆栈（帧控制节奏由架构裁定保留）

@@ -110,8 +110,6 @@ func _tick() -> void:
 		return
 	if not RenderDecisionBuilder.is_responsive(_context, _local_player_id, situation.stage_name):
 		return
-	if not _should_act(situation):
-		return
 	if not _gate.can_send(Time.get_ticks_msec(), situation.key):
 		return
 	_request_decision()
@@ -172,13 +170,6 @@ func _build_situation() -> Situation:
 	]
 	situation.ready = true
 	return situation
-
-## 判断当前局势是否应继续主动决策（主阶段攻击只做一次）
-## @pure
-func _should_act(situation: Situation) -> bool:
-	if situation.stage_name != &"Main":
-		return true
-	return not _attacked_in_main
 
 ## 记录主阶段攻击：出牌类型为攻击牌时置位
 ## @side_effect

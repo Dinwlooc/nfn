@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tests/config_lab/config_lab.gd" id="1_lab"]
+
+[node name="ConfigLabRender" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1600.0
+offset_bottom = 900.0
+script = ExtResource("1_lab")
+scope = &"render"
+lab_title = "渲染端配置表"

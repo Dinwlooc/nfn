@@ -6,28 +6,15 @@
 [ext_resource type="Shader" uid="uid://5wrglt1krnn2" path="res://resource/default/shader/gdshader/rgb_shift_distortion.gdshader" id="3_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://cobu52ytag23t" path="res://resource/default/assets/Backgound/backgound6.png" id="4_j0cbf"]
 [ext_resource type="Texture2D" uid="uid://v20ylpnaw8mc" path="res://resource/default/assets/Backgound/backgound2.png" id="6_m1fcx"]
-[ext_resource type="Texture2D" uid="uid://c3ants1otolio" path="res://resource/default/assets/Backgound/backgound3icon3png.png" id="7_j0cbf"]
-[ext_resource type="Texture2D" uid="uid://csli57il02lge" path="res://resource/default/assets/Backgound/backgound3icon2.png" id="8_m1fcx"]
+[ext_resource type="Script" uid="uid://dbgt4d5tcj5vv" path="res://core/tscn/meum/menu_button.gd" id="7_bjhf5"]
+[ext_resource type="PackedScene" uid="uid://clycwx0f8xi1c" path="res://core/tscn/meum/room_panel.tscn" id="8_l3ebq"]
 [ext_resource type="PackedScene" uid="uid://b025ean41nrj6" path="res://core/tscn/game/console.tscn" id="10_l3ebq"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_fu0d1"]
 shader = ExtResource("3_3ffcx")
-shader_parameter/enable_bloom = true
-shader_parameter/threshold_min = 0.3
-shader_parameter/threshold_softness = 0.16
-shader_parameter/brightness_upper_limit = 0.95
-shader_parameter/bloom_intensity = 0.5
-shader_parameter/spread = 14.0
-shader_parameter/sample_mip = 2.0
-shader_parameter/sample_jitter = 0.4
-shader_parameter/enable_pulse = false
-shader_parameter/pulse_depth = 0.5
-shader_parameter/pulse_speed = 1.0
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_d576q"]
 shader = ExtResource("3_j0cbf")
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6du6q"]
 
 [node name="Node2D" type="Node2D" unique_id=1565350988]
 
@@ -59,57 +46,55 @@ material = SubResource("ShaderMaterial_d576q")
 clip_contents = true
 layout_mode = 1
 anchors_preset = -1
-anchor_left = -0.075
-anchor_top = 0.182
-anchor_right = -0.0725
-anchor_bottom = 0.425
-offset_right = 1600.0
-offset_bottom = 900.0
-scale = Vector2(0.5, 0.5)
+anchor_left = 0.080625
+anchor_top = -0.041111093
+anchor_right = 0.220625
+anchor_bottom = 0.5377778
+offset_left = -120.0
+offset_top = 164.0
+offset_right = 680.0
+offset_bottom = 614.0
+scale = Vector2(0.7, 0.7)
 texture = ExtResource("6_m1fcx")
-expand_mode = 1
 stretch_mode = 3
 metadata/_edit_use_anchors_ = true
 
-[node name="ItemList_Set" type="ItemList" parent="MeumControl" unique_id=33504981]
-layout_mode = 1
-anchors_preset = -1
-anchor_right = 0.071
-anchor_bottom = 0.04
-offset_left = 1177.0
-offset_top = 307.0
-offset_right = 1455.4
-offset_bottom = 415.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_selected_color = Color(0, 0.898039, 0.87451, 1)
-theme_override_font_sizes/font_size = 35
-theme_override_styles/panel = SubResource("StyleBoxTexture_6du6q")
-auto_height = true
-text_overrun_behavior = 0
-item_count = 1
-icon_scale = 0.8
-item_0/text = "退出游戏"
-item_0/icon = ExtResource("7_j0cbf")
-item_0/selectable = false
+[node name="MenuButtons" type="Control" parent="MeumControl" unique_id=293698310]
+anchors_preset = 0
+offset_left = 1150.0
+offset_top = 250.0
+offset_right = 1530.0
+offset_bottom = 560.0
 
-[node name="ItemList_TestGame" type="ItemList" parent="MeumControl" unique_id=208087057]
-layout_mode = 1
-anchors_preset = -1
-anchor_right = 0.071
-anchor_bottom = 0.04
-offset_left = 1241.0
-offset_top = 207.0
-offset_right = 1433.4
-offset_bottom = 303.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_selected_color = Color(0, 0.898039, 0.87451, 1)
-theme_override_font_sizes/font_size = 35
-theme_override_styles/panel = SubResource("StyleBoxTexture_6du6q")
-auto_height = true
-text_overrun_behavior = 0
-item_count = 1
-icon_scale = 0.8
-item_0/text = "开始游戏"
-item_0/icon = ExtResource("8_m1fcx")
+[node name="ButtonCreate" type="Button" parent="MeumControl/MenuButtons" unique_id=1399914404]
+layout_mode = 0
+offset_right = 380.0
+offset_bottom = 66.0
+text = "创建游戏"
+alignment = 0
+script = ExtResource("7_bjhf5")
+
+[node name="ButtonJoin" type="Button" parent="MeumControl/MenuButtons" unique_id=807346511]
+layout_mode = 0
+offset_top = 88.0
+offset_right = 380.0
+offset_bottom = 154.0
+text = "加入游戏"
+alignment = 0
+script = ExtResource("7_bjhf5")
+
+[node name="ButtonQuit" type="Button" parent="MeumControl/MenuButtons" unique_id=2031123639]
+layout_mode = 0
+offset_top = 176.0
+offset_right = 380.0
+offset_bottom = 242.0
+text = "退出游戏"
+alignment = 0
+script = ExtResource("7_bjhf5")
+
+[node name="RoomPanel" parent="MeumControl" unique_id=1817434689 instance=ExtResource("8_l3ebq")]
+layout_mode = 0
+offset_left = 1600.0
+offset_right = 2500.0
 
 [node name="Console" parent="." unique_id=658343563 instance=ExtResource("10_l3ebq")]

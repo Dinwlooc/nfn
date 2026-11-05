@@ -1,8 +1,11 @@
 ## 角色主体信息定义（全局资源）
-## 包含角色的视觉参数、物理参数和帧索引，供动画系统使用。
+## 包含角色的标识、视觉参数、受击表现修正包和帧索引，供动画系统使用。
 class_name CharacterProfile
 extends Resource
 
+## ==================== 角色标识 ====================
+## 角色代码名（如 &"nfn:mizukagami"），与系统数据层玩家数据包的名称对齐
+@export var character_name: StringName = &""
 ## ==================== 精灵图配置 ====================
 ## 角色主体精灵图（Texture2D）
 @export var texture: Texture2D = null
@@ -26,8 +29,9 @@ extends Resource
 ## ==================== 物理因子 ====================
 ## 身高因子（预留）
 @export var height_factor: float = 1.0
-## 体重因子（预留）
-@export var weight_factor: float = 1.0
+## ==================== 受击表现 ====================
+## 受击表现修正包（未配置时按全 100 处理，即保持基准观感）
+@export var hit_pack: CharacterHitPack = null
 ## ==================== 颜色 ====================
 ## 主色彩（预留）
 @export var primary_color: Color = Color.WHITE

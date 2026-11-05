@@ -116,6 +116,9 @@ func start_pending_temp_stage(game_state: GameState, command_bus: CommandBus) ->
 	var top_stage: Stage = temp_stage_stack[-1]
 	if current_stage == top_stage:
 		return
+	# 临时阶段中断当前阶段：暂停以便回滚时经 resume 恢复（主阶段据此重计时为恢复时限）
+	if current_stage and not current_stage.is_ended and not current_stage.is_paused:
+		current_stage.pause(game_state, command_bus)
 	_transition_to(top_stage, game_state, command_bus)
 ## 结束当前回合
 ## @no_escape @internal @emitter
@@ -171,6 +174,9 @@ func start_round(player_id: int, game_state: GameState, command_bus: CommandBus)
 	current_main_stage_index = 0
 	current_player_id = player_id
 	temp_stage_stack.clear()
+	# 主阶段实例跨回合复用：上回合遗留的暂停标记会错误地让新回合以恢复时限进入
+	for stage: Stage in main_stages:
+		stage.is_paused = false
 	_transition_to(main_stages[current_main_stage_index], game_state, command_bus)
 ## 获取当前主阶段索引（枚举值）
 ## @pure

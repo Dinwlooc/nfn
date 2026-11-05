@@ -58,4 +58,3 @@ func clear_registry() -> void:
 func _load_config(path: String) -> ConfigFile:
 	var config := ConfigFile.new()
 	return config if config.load(path) == OK else null
-

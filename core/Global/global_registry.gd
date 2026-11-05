@@ -1,5 +1,4 @@
-## 全局配置表
-## 该单例尚未投入使用。
+## 全局配置表：常量名↔序映射与单例注册/取用。
 extends Node
 # 统一信号定义
 ## 单例注册完成（类型键 + 实例）
@@ -14,6 +13,13 @@ signal constant_registered(type: StringName)  # 新增常量注册信号
 var _singletons: Dictionary = {}
 ## 常量表：类型键 → { &"array": Array[StringName], &"dic": Dictionary }
 var _constants: Dictionary = {}  # 新增常量存储 { type: { array: [], dic: {} } }
+
+#== Lifecycle ==
+## 就绪时把官方常量表注册进来，使常量表不依赖系统层是否已装载
+## （任何 CardPack 构造前必须已注册，故不放在系统层）
+## @operation
+func _ready() -> void:
+	GlobalConstants.register_to(self)
 
 # 预定义类型常量
 ## 控制台单例类型键

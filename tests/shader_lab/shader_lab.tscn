@@ -1,8 +1,9 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3 uid="uid://dqbexscyy2x4r"]
 
-[ext_resource type="Script" path="res://tests/shader_lab/shader_lab.gd" id="1"]
+[ext_resource type="Script" uid="uid://bllx5wfysb1c5" path="res://tests/shader_lab/shader_lab.gd" id="1"]
 
-[node name="ShaderLab" type="Control"]
+[node name="ShaderLab" type="Control" unique_id=629915933]
+visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1600.0

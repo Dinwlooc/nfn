@@ -7,8 +7,8 @@ enum ConnectionState { DISCONNECTED, CONNECTING, CONNECTED }
 
 ## 底层 WebSocket 对等体
 var peer: WebSocketMultiplayerPeer = WebSocketMultiplayerPeer.new()
-## 在线对等体表（peer_id → User）
-var users: Dictionary[int, User] = {}        ## 对等体 ID 到 User 实例的映射
+## 在线对等体表（对等体 ID → User 实例）
+var users: Dictionary[int, User] = {}
 ## 服务器地址（ws://…）
 var url: String = ""
 ## 当前连接状态
@@ -68,12 +68,12 @@ func get_current_id() -> int:
 		return peer.get_unique_id()
 	return -1
 
-## 启动服务器（随机端口）
-func random_create() -> bool:
-	var port: int = randi_range(1024, 65535)
-	if peer.create_server(port) != OK:
+## 启动服务器；port 为 0 时随机分配
+func create_server(port: int = 0) -> bool:
+	var listen_port: int = port if port > 0 else randi_range(1024, 65535)
+	if peer.create_server(listen_port) != OK:
 		return false
-	url = "ws://localhost:" + str(port)
+	url = "ws://localhost:" + str(listen_port)
 	connection_state = ConnectionState.CONNECTED
 	var current_id: int = get_current_id()
 	if current_id != -1:
@@ -82,7 +82,7 @@ func random_create() -> bool:
 		user.get_config()
 		users[current_id] = user
 		peer_connected.emit(current_id)
-	GlobalConsole._print(["NetworkManager: 服务器成功启动:ws://localhost:", port])
+	GlobalConsole._print(["NetworkManager: 服务器成功启动:ws://localhost:", listen_port])
 	multiplayer_api.multiplayer_peer = peer
 	connection_succeeded.emit()
 	return true

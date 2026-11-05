@@ -1,8 +1,8 @@
-extends Control
-
 ## 通用着色器实验室：按用例并排显示“基线 / 当前”，用例由数据定义，不绑定具体着色器。
 ## 每个用例声明场景、显示子树、目标 CanvasItem、着色器文件名、基线/当前参数与要展示的参数名。
 ## 每次重建都重新实例化 res:// 真实场景，因此同名场景/贴图/材质被覆盖后会直接反映。
+## 引导（键位、实参、上报、退出码）由 LabShell 承担，本类只负责呈现。
+extends LabShell
 const PANEL_SIZE: Vector2 = Vector2(760.0, 427.5)
 const PANEL_Y: float = 96.0
 const LEFT_X: float = 30.0
@@ -50,27 +50,50 @@ var _left_caption: Label
 var _right_caption: Label
 var _status_label: Label
 
-func _ready() -> void:
-	_hide_transition()
+## 就绪：建用例表与静态界面，并显示首条
+## @override
+func _lab_boot() -> void:
+	if lab_id.is_empty():
+		lab_id = &"shader"
 	_build_cases()
 	_build_static_ui()
 	_build_pair(_case_index)
 
-func _unhandled_input(event: InputEvent) -> void:
-	var key: InputEventKey = event as InputEventKey
-	if key == null or not key.pressed or key.echo:
-		return
-	if key.keycode == KEY_ESCAPE:
-		get_tree().quit()
-		return
-	if key.keycode == KEY_R:
-		_build_pair(_case_index)
-		return
+## 重载后重建当前用例
+## @override
+func _lab_reload() -> void:
+	_build_pair(_case_index)
+
+## 键盘：1-N 选用例
+## @override
+func _lab_input(key: InputEventKey) -> void:
 	var case_number: int = key.keycode - KEY_1
 	if case_number < 0 or case_number >= _cases.size():
 		return
 	_case_index = case_number
 	_build_pair(_case_index)
+
+## 用例标识取序号；用例身份仍留在本文件的 _build_cases
+## @override
+func case_ids() -> Array[StringName]:
+	var ids: Array[StringName] = []
+	for index: int in _cases.size():
+		ids.append(StringName(str(index + 1)))
+	return ids
+
+## 无断言：重建成功即 PASS，观感由人眼判断
+## @override
+func run_case(case_id: StringName) -> Dictionary[StringName, Variant]:
+	var index: int = int(String(case_id)) - 1
+	if index < 0 or index >= _cases.size():
+		var unknown: PackedStringArray = PackedStringArray(["未知用例：%s" % case_id])
+		return { &"tag": "%s/%s" % [lab_id, case_id], &"ok": false, &"failures": 1, &"lines": unknown }
+	_case_index = index
+	var built: bool = _build_pair(index)
+	var lines: PackedStringArray = PackedStringArray()
+	if not built:
+		lines.append("重建失败：%s" % _cases[index].label)
+	return { &"tag": "%s/%s" % [lab_id, case_id], &"ok": built, &"failures": 0 if built else 1, &"lines": lines }
 
 ## 组装用例表；新增着色器只在这里追加数据。
 ## @internal
@@ -156,8 +179,9 @@ func _make_caption(pos: Vector2) -> Label:
 	add_child(label)
 	return label
 
+## 重建并返回是否成功；失败原因进状态栏
 ## @internal
-func _build_pair(index: int) -> void:
+func _build_pair(index: int) -> bool:
 	if _pair_root != null:
 		_pair_root.queue_free()
 		_pair_root = null
@@ -165,7 +189,7 @@ func _build_pair(index: int) -> void:
 	var packed: PackedScene = load(case_data.scene_path) as PackedScene
 	if packed == null:
 		_set_status("无法加载场景：%s" % case_data.scene_path)
-		return
+		return false
 	var baseline: Control = _extract_display(packed, case_data.display_selector, case_data.display_scale)
 	var current: Control = _extract_display(packed, case_data.display_selector, case_data.display_scale)
 	if baseline == null or current == null:
@@ -174,7 +198,7 @@ func _build_pair(index: int) -> void:
 		if current != null:
 			current.queue_free()
 		_set_status("无法提取显示子树：%s" % case_data.display_selector)
-		return
+		return false
 
 	_pair_root = Control.new()
 	_pair_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -186,7 +210,7 @@ func _build_pair(index: int) -> void:
 	var current_target: CanvasItem = _find_target(current, case_data)
 	if baseline_target == null or current_target == null:
 		_set_status("目标节点或着色器不匹配：%s" % case_data.shader_file)
-		return
+		return false
 	_apply_params(baseline_target, case_data.baseline_params)
 	_apply_params(current_target, case_data.current_params)
 	_title_label.text = "着色器实验室 · %s" % case_data.label
@@ -196,6 +220,7 @@ func _build_pair(index: int) -> void:
 		case_data.shader_file,
 		_format_readout(current_target, case_data.readout_params),
 	]
+	return true
 
 ## 从场景实例中摘出显示子树；保留场景内材质与实例参数。
 ## @external

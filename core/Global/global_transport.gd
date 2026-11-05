@@ -90,7 +90,9 @@ func receive_operation_request(data: PackedByteArray) -> void:
 	else:
 		push_error("Failed to deserialize operation request")
 
-## 以随机端口启动本地服务器
+## 启动本地服务器（port 为 0 时随机）；启动失败时在控制台报错
 ## @delegates
-func start_server() -> void:
-	network_manager.random_create()
+func start_server(port: int = 0) -> void:
+	if network_manager.create_server(port):
+		return
+	GlobalConsole._print("Transport:Error:服务器启动失败，端口 %d 不可用" % port)

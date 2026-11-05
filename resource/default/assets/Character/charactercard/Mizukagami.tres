@@ -2,10 +2,16 @@
 
 [ext_resource type="Script" uid="uid://bx8xiv3qqkaju" path="res://core/Class/Face/RenderFace/CharacterProfile.gd" id="1_8wgem"]
 [ext_resource type="Texture2D" uid="uid://cmgxffqsluc8l" path="res://resource/default/assets/Character/NFN_Mizukagami/NFN_Mizukagami_Sprite.png" id="2_les14"]
+[ext_resource type="Script" uid="uid://cpfdayqmopdrn" path="res://core/Class/Face/RenderFace/CharacterHitPack.gd" id="3_hitpack"]
+
+[sub_resource type="Resource" id="Resource_hitpack"]
+script = ExtResource("3_hitpack")
 
 [resource]
 script = ExtResource("1_8wgem")
+character_name = &"nfn:mizukagami"
 texture = ExtResource("2_les14")
 hframes = 4
 hit_frame = 2
+hit_pack = SubResource("Resource_hitpack")
 metadata/_custom_type_script = "uid://bx8xiv3qqkaju"

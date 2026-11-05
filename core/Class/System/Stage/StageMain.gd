@@ -47,6 +47,8 @@ func resume(game_state: GameState, command_bus: CommandBus) -> void:
 	_current_attacker_id = _current_attacker.get_id()
 	command_bus.set_responsive_players(build_responsive_players(_current_attacker_id))
 	_reset_timer_for_current_player(RESUME_TIME_LIMIT)
+	# 恢复后的首次刷新仍按恢复时限，不得回退到进入时限
+	_has_entered_refresh = true
 	super.resume(game_state, command_bus)
 ## 阶段结束时的清理效果
 ## @override @hook @no_escape

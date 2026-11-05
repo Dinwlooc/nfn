@@ -1,0 +1,118 @@
+[gd_scene format=3 uid="uid://clycwx0f8xi1c"]
+
+[ext_resource type="Script" uid="uid://by1gauw0u6txf" path="res://core/tscn/meum/room_panel.gd" id="1_panel"]
+[ext_resource type="Script" uid="uid://dbgt4d5tcj5vv" path="res://core/tscn/meum/menu_button.gd" id="2_btn"]
+
+[node name="RoomPanel" type="Control" unique_id=1817434689]
+custom_minimum_size = Vector2(900, 900)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 900.0
+offset_bottom = 900.0
+script = ExtResource("1_panel")
+
+[node name="Backdrop" type="ColorRect" parent="." unique_id=555087164]
+layout_mode = 0
+offset_right = 900.0
+offset_bottom = 900.0
+color = Color(0.0313726, 0.0431373, 0.0666667, 0.94)
+
+[node name="Edge" type="ColorRect" parent="." unique_id=234134784]
+layout_mode = 0
+offset_right = 3.0
+offset_bottom = 900.0
+color = Color(0, 0.898039, 0.87451, 0.75)
+
+[node name="Title" type="Label" parent="." unique_id=203565896]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 96.0
+offset_right = 830.0
+offset_bottom = 168.0
+theme_override_font_sizes/font_size = 52
+text = "创建游戏"
+
+[node name="PageCreate" type="VBoxContainer" parent="." unique_id=1859713982]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 220.0
+offset_right = 830.0
+offset_bottom = 520.0
+theme_override_constants/separation = 20
+
+[node name="Label_Desc" type="Label" parent="PageCreate" unique_id=628133607]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 28
+text = "以本机作为服务器开启牌桌。"
+autowrap_mode = 2
+
+[node name="LineEdit_Port" type="LineEdit" parent="PageCreate" unique_id=1234073330]
+custom_minimum_size = Vector2(560, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+
+[node name="Label_Hint" type="Label" parent="PageCreate" unique_id=925834090]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.66, 0.72, 1)
+theme_override_font_sizes/font_size = 24
+text = "端口留空即随机分配；创建后实际地址见控制台。"
+autowrap_mode = 2
+
+[node name="PageJoin" type="VBoxContainer" parent="." unique_id=322138276]
+visible = false
+layout_mode = 0
+offset_left = 70.0
+offset_top = 220.0
+offset_right = 830.0
+offset_bottom = 520.0
+theme_override_constants/separation = 20
+
+[node name="Label_Desc" type="Label" parent="PageJoin" unique_id=538531437]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.85, 0.9, 1)
+theme_override_font_sizes/font_size = 28
+text = "填写创建者的服务器地址。"
+autowrap_mode = 2
+
+[node name="LineEdit_Host" type="LineEdit" parent="PageJoin" unique_id=312579001]
+custom_minimum_size = Vector2(560, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+placeholder_text = "ws://地址:端口"
+
+[node name="LineEdit_Port" type="LineEdit" parent="PageJoin" unique_id=1350943571]
+custom_minimum_size = Vector2(560, 58)
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+
+[node name="Label_Hint" type="Label" parent="PageJoin" unique_id=841827692]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.66, 0.72, 1)
+theme_override_font_sizes/font_size = 24
+text = "主机与端口分开填写；连接成功后以无系统层方式进入牌桌。"
+autowrap_mode = 2
+
+[node name="ButtonEnter" type="Button" parent="." unique_id=1798429214]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 700.0
+offset_right = 370.0
+offset_bottom = 772.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 40
+text = "进入游戏"
+alignment = 0
+script = ExtResource("2_btn")
+
+[node name="ButtonBack" type="Button" parent="." unique_id=536630888]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 792.0
+offset_right = 370.0
+offset_bottom = 852.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 30
+text = "返回"
+alignment = 0
+script = ExtResource("2_btn")
