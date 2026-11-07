@@ -5,9 +5,8 @@ class_name RenderRequestSerializer
 static var render_request_classes: Array[Script] = [
 	RenderRequest.ItemSet,
 	RenderRequest.ItemCountSet,
-	RenderRequest.StageNotifyRequest,
 	RenderRequest.SettleSet,
-	RenderRequest.GroupAttackNotify
+	RenderRequest.StageSet
 ]
 ## 构建注册表（类 -> 索引）
 static var _registry: Dictionary = build_registry(render_request_classes)

@@ -238,16 +238,13 @@ static func send_buff_modifiers_update(
 	else:
 		push_error("RuleTrans.send_buff_modifiers_update: 未知的所有者类型 ", buff_modifiers.owner_type)
 
-## 发送阶段切换通知
-static func send_stage_switch_notify(game_state: GameState, custom_params: Dictionary[StringName, Variant] = {}) -> void:
-	var cur_stage: Stage = game_state.stage_manager.current_stage
-	if not cur_stage:
+## 发送阶段集合请求（对指定嵌套位点上的一个阶段发送增量包）
+## @atomic
+static func send_stage_set(game_state: GameState, stage: Stage) -> void:
+	if not stage:
 		return
-	var player_id: int = game_state.stage_manager.current_player_id
-	var stage_name: StringName = cur_stage.stage_name
-	var temp_owner_id: int = cur_stage.temporary_stage_player_id
-	var request: RenderRequest.StageNotifyRequest = RenderRequest.StageNotifyRequest.new(player_id, stage_name, temp_owner_id, custom_params)
-	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
+	var stage_set: RenderRequest.StageSet = game_state.stage_manager.build_stage_set(stage)
+	stage_set.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
 
 ## 发送守区结算摘要（结算计数与本次结算牌 / 对抗牌 id）
 ## @atomic
@@ -261,32 +258,5 @@ static func send_settle_summary(defensive_area: AreaDefence, settle_card: Card, 
 		settle_card_id,
 		oppose_card_id,
 		defensive_area.player.get_id()
-	)
-	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)
-
-## 发送群体攻击阶段通知（目标 / 待表态 / 威力 / 时机）
-## @atomic
-static func send_group_attack_notify(
-	source_card: Card,
-	attacker: Player,
-	targets: Array[Player],
-	pending_ids: PackedInt32Array,
-	power: int,
-	notify_state: RenderRequest.GroupAttackNotify.State
-) -> void:
-	if not attacker:
-		return
-	var target_ids: PackedInt32Array = PackedInt32Array()
-	for target: Player in targets:
-		if target:
-			target_ids.append(target.get_id())
-	var card_id: int = source_card.get_id() if source_card else -1
-	var request: RenderRequest.GroupAttackNotify = RenderRequest.GroupAttackNotify.new(
-		card_id,
-		attacker.get_id(),
-		target_ids,
-		pending_ids.duplicate(),
-		power,
-		notify_state
 	)
 	request.send_to_player(MultiplayerPeer.TARGET_PEER_BROADCAST)

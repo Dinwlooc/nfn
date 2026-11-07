@@ -1,5 +1,5 @@
 ## 阶段基类，所有主阶段与临时阶段继承此类。
-extends RefCounted
+extends Entity
 class_name Stage
 
 #== Constants ==
@@ -22,6 +22,8 @@ var temporary_stage_player_id: int = 0
 var is_ended: bool = false
 ## 阶段是否暂停
 var is_paused: bool = false
+## 阶段自定义数据（一级键值非空约定：默认值等同键不存在）
+var custom_params: Dictionary[StringName, Variant] = {}
 
 #== Constructor ==
 ## 构造函数（无特殊初始化）
@@ -94,4 +96,24 @@ func process_operation_request(_request: OperationRequest, _game_state: GameStat
 ## 阶段进入或恢复后，通常伴随调度命令结束，使该方法被固定调用一次，时机晚于enter与resume。
 ## @hook @no_escape
 func refresh_response(_game_state: GameState, _command_bus: CommandBus) -> void:
+	pass
+
+## 取增量数据包：基类缓存，此处收窄返回类型
+## @override
+func get_pack() -> StagePack:
+	return super.get_pack() as StagePack
+
+## 生成完整数据包（不走增量缓存）
+## @override
+func get_full_pack() -> StagePack:
+	return super.get_full_pack() as StagePack
+
+## 按阶段创建数据包
+## @override
+func _create_pack() -> StagePack:
+	return StagePack.init_from_stage(self)
+
+## 把子类的扩展字段写入数据包（子类重写时先调用 super）
+## @hook @chain_override
+func _fill_pack(_pack: StagePack) -> void:
 	pass

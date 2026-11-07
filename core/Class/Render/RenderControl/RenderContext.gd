@@ -22,42 +22,30 @@ func _init() -> void:
 	state_manager = RenderStateManager.new()
 
 # ================= 阶段通知接口 =================
-## 通知主阶段变更
+## 通知阶段集合
 ## @delegates
-func notify_main_stage(stage_name: StringName, player_id: int, params: Dictionary = {}) -> void:
-	state_manager.notify_main_stage(stage_name, player_id, params)
-
-## 通知临时阶段变更
-## @delegates
-func notify_temp_stage(stage_name: StringName, turn_player_id: int, stage_owner_id: int, params: Dictionary = {}) -> void:
-	state_manager.notify_temp_stage(stage_name, turn_player_id, stage_owner_id, params)
-
-## 通知群体攻击阶段（目标 / 待表态 / 威力 / 时机）
-## @delegates
-func notify_group_attack(notify: RenderRequest.GroupAttackNotify) -> void:
-	state_manager.notify_group_attack(notify)
+func notify_stage_set(stage_set: RenderRequest.StageSet) -> void:
+	state_manager.notify_stage_set(stage_set)
 
 ## 取当前阶段名（优先临时阶段，回退主阶段）
+## @delegates
 func get_current_stage_name() -> StringName:
-	if not state_manager.get_current_stage_name().is_empty():
-		return state_manager.get_current_stage_name()
-	return state_manager.main_stage_name
+	return state_manager.get_current_stage_name()
 
 ## 取当前阶段行动玩家 id（临时阶段取归属者，否则取主阶段玩家）
+## @delegates
 func get_current_stage_player_id() -> int:
-	if not state_manager.temp_stage_name.is_empty():
-		return state_manager.temp_stage_owner_id
-	return state_manager.main_stage_player_id
+	return state_manager.get_current_stage_player_id()
 
 ## 取主阶段行动玩家 id
-## @pure
+## @delegates
 func get_main_stage_player_id() -> int:
-	return state_manager.main_stage_player_id
+	return state_manager.get_main_stage_player_id()
 
 ## 取临时阶段归属玩家 id（无临时阶段时为 0）
-## @pure
+## @delegates
 func get_temp_stage_owner_id() -> int:
-	return state_manager.temp_stage_owner_id
+	return state_manager.get_temp_stage_owner_id()
 
 # ================= 区域管理委托 =================
 ## 注册区域回调（回调签名：func(new_area: RenderArea, old_area: RenderArea)）

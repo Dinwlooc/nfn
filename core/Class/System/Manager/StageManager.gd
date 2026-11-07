@@ -191,6 +191,20 @@ func has_stage_with_name(stage_name: StringName) -> bool:
 		if stage.stage_name == stage_name:
 			return true
 	return false
+## 取阶段的嵌套位点：0 表示主阶段栈位，n>=1 表示临时阶段栈索引 n-1
+## @pure
+func get_stage_site(stage: Stage) -> int:
+	var temp_index: int = temp_stage_stack.find(stage)
+	if temp_index != -1:
+		return RenderRequest.StageSet.site_from_temp_index(temp_index)
+	return 0
+## 为阶段构建阶段集合请求（写入嵌套位点与当前行动玩家）
+## @factory
+func build_stage_set(stage: Stage) -> RenderRequest.StageSet:
+	var stage_set: RenderRequest.StageSet = RenderRequest.StageSet.new(get_stage_site(stage), stage.get_pack())
+	stage_set.pack.current_player_id = current_player_id
+	stage_set.pack.merge_mask |= 1 << StagePack.Field.CURRENT_PLAYER_ID
+	return stage_set
 ## 结束当前阶段（执行清理，发射 stage_completed）
 ## @no_escape @internal @emitter
 func end_current_stage(game_state: GameState, command_bus: CommandBus) -> void:

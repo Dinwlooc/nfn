@@ -27,6 +27,8 @@ var response_cards: Dictionary[int, Card] = {}
 var _pending_stage_end: bool = false
 ## 是否已发起过结算（防重复）
 var _resolved: bool = false
+## 群体攻击当前时机（写入阶段包）
+var group_attack_state: int = StagePack.GroupAttackState.START
 
 ## 构造：绑定来源卡、攻击方与目标快照
 func _init(card: Card, attacker_player: Player, targets: Array[Player]) -> void:
@@ -44,20 +46,50 @@ func enter(game_state: GameState, command_bus: CommandBus) -> void:
 	_rebuild_pending()
 	_refresh_responsive_players(command_bus)
 	request_reset_timer.emit(time_limit)
-	_notify(RenderRequest.GroupAttackNotify.State.START)
+	_notify(game_state, StagePack.GroupAttackState.START)
 	super.enter(game_state, command_bus)
 
-## 广播群体攻击通知（目标 / 待表态 / 威力 / 时机）
-## @delegates(send_group_attack_notify) @side_effect
-func _notify(notify_state: RenderRequest.GroupAttackNotify.State) -> void:
-	var power: int = source_card.get_power() if source_card else 0
-	RuleTrans.send_group_attack_notify(source_card, attacker, target_players, pending_player_ids, power, notify_state)
+## 记录群体攻击时机并广播阶段集合
+## @delegates(send_stage_set) @side_effect
+func _notify(game_state: GameState, notify_state: StagePack.GroupAttackState) -> void:
+	group_attack_state = notify_state
+	RuleTrans.send_stage_set(game_state, self)
+
+## 把群体攻击扩展字段写入阶段包（增量比较）
+## @chain_override
+func _fill_pack(pack: StagePack) -> void:
+	super._fill_pack(pack)
+	var card_id: int = source_card.get_id() if source_card else -1
+	var attacker_now: int = attacker.get_id() if attacker else 0
+	var power_now: int = source_card.get_power() if source_card else 0
+	var targets: PackedInt32Array = PackedInt32Array()
+	for target: Player in target_players:
+		if target:
+			targets.append(target.get_id())
+	if pack.attack_state != group_attack_state:
+		pack.merge_mask |= 1 << StagePack.Field.ATTACK_STATE
+		pack.attack_state = group_attack_state
+	if pack.source_card_id != card_id:
+		pack.merge_mask |= 1 << StagePack.Field.SOURCE_CARD_ID
+		pack.source_card_id = card_id
+	if pack.attacker_id != attacker_now:
+		pack.merge_mask |= 1 << StagePack.Field.ATTACKER_ID
+		pack.attacker_id = attacker_now
+	if pack.target_ids != targets:
+		pack.merge_mask |= 1 << StagePack.Field.TARGET_IDS
+		pack.target_ids = targets
+	if pack.pending_ids != pending_player_ids:
+		pack.merge_mask |= 1 << StagePack.Field.PENDING_IDS
+		pack.pending_ids = pending_player_ids.duplicate()
+	if pack.power != power_now:
+		pack.merge_mask |= 1 << StagePack.Field.POWER
+		pack.power = power_now
 
 ## 结束清理：收回所有响应权，并通知前端清理群体攻击展示
 ## @override @hook @no_escape @side_effect
 func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	command_bus.set_responsive_players(PackedInt32Array())
-	_notify(RenderRequest.GroupAttackNotify.State.FINISHED)
+	_notify(game_state, StagePack.GroupAttackState.FINISHED)
 	super.end_stage_effect(game_state, command_bus)
 
 ## 处理玩家操作请求
@@ -71,7 +103,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 		&"respond_card":
 			_process_respond_card_request(request as ItemsOperation, game_state, command_bus)
 		&"abandon_response":
-			_process_abandon_request(request, command_bus)
+			_process_abandon_request(request, game_state, command_bus)
 		_:
 			GlobalConsole._print(["群体攻击阶段：不支持的操作类型", request.get_operation_name()])
 			request.cancel()
@@ -83,7 +115,7 @@ func timeout(game_state: GameState, command_bus: CommandBus) -> void:
 		return
 	pending_player_ids = PackedInt32Array()
 	_refresh_responsive_players(command_bus)
-	_try_resolve(command_bus)
+	_try_resolve(game_state, command_bus)
 
 ## 命令全部完成后：先收尾，再刷新授权
 ## @override @hook @no_escape @side_effect
@@ -94,7 +126,7 @@ func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
 		request_end_stage(command_bus)
 		return
 	_refresh_responsive_players(command_bus)
-	_try_resolve(command_bus)
+	_try_resolve(game_state, command_bus)
 
 ## 处理出牌请求：只登记、不移动牌（响应牌保持在手牌区，结算后由 GroupAttackCommand 弃置）；目标字段由本阶段无视
 ## @side_effect
@@ -123,12 +155,12 @@ func _try_accept_response(player_id: int, card_id: int, request: OperationReques
 	_remove_pending(player_id)
 	request.complete()
 	_refresh_responsive_players(command_bus)
-	_notify(RenderRequest.GroupAttackNotify.State.UPDATE)
-	_try_resolve(command_bus)
+	_notify(game_state, StagePack.GroupAttackState.UPDATE)
+	_try_resolve(game_state, command_bus)
 
 ## 处理放弃响应请求
 ## @side_effect
-func _process_abandon_request(request: OperationRequest, command_bus: CommandBus) -> void:
+func _process_abandon_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
 	var player_id: int = request.source_player_id
 	if not pending_player_ids.has(player_id):
 		request.cancel()
@@ -136,12 +168,12 @@ func _process_abandon_request(request: OperationRequest, command_bus: CommandBus
 	_remove_pending(player_id)
 	request.complete()
 	_refresh_responsive_players(command_bus)
-	_notify(RenderRequest.GroupAttackNotify.State.UPDATE)
-	_try_resolve(command_bus)
+	_notify(game_state, StagePack.GroupAttackState.UPDATE)
+	_try_resolve(game_state, command_bus)
 
 ## 全部目标表态后入队结算命令（只入队，阶段收尾交给下一次 refresh_response）
 ## @side_effect @delegates(queue_behavior)
-func _try_resolve(command_bus: CommandBus) -> void:
+func _try_resolve(game_state: GameState, command_bus: CommandBus) -> void:
 	if _pending_stage_end or _resolved:
 		return
 	if not pending_player_ids.is_empty():
@@ -149,7 +181,7 @@ func _try_resolve(command_bus: CommandBus) -> void:
 	_resolved = true
 	_pending_stage_end = true
 	command_bus.queue_behavior(GroupAttackCommandScript.new(source_card, target_players, response_cards))
-	_notify(RenderRequest.GroupAttackNotify.State.RESOLVED)
+	_notify(game_state, StagePack.GroupAttackState.RESOLVED)
 	GlobalConsole._print(["群体攻击阶段：全部目标已表态，入队结算命令"])
 
 ## 按目标快照重建待表态列表

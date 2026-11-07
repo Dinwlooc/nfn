@@ -94,12 +94,10 @@ func _ready() -> void:
 	var ctx: RenderContext = render_control.render_context
 	if not ctx or not ctx.state_manager:
 		return
-	ctx.state_manager.main_stage_notified.connect(_on_main_stage_notified)
-	ctx.state_manager.temp_stage_notified.connect(_on_temp_stage_notified)
-	var initial_stage: StringName = ctx.state_manager.main_stage_name
-	if not initial_stage.is_empty():
-		var pid: int = ctx.state_manager.main_stage_player_id
-		_show_initial_main(_format_stage_text(initial_stage, pid))
+	ctx.state_manager.stage_set_notified.connect(_on_stage_set_notified)
+	var initial_stage: StagePack = ctx.state_manager.main_stage
+	if initial_stage and not initial_stage.stage_name.is_empty():
+		_show_initial_main(_format_stage_text(initial_stage.stage_name, initial_stage.current_player_id))
 
 ## 创建 6 个复用标签并初始化状态数组
 func _setup_labels() -> void:
@@ -138,8 +136,19 @@ func _show_initial_main(text: String) -> void:
 	_main_center_idx = idx
 
 # ==================== 信号回调 ====================
+## 阶段集合通知：主阶段位点走主阶段行，临时阶段位点走临时阶段行
+## @signal_listener
+func _on_stage_set_notified(stage_set: RenderRequest.StageSet) -> void:
+	var pack: StagePack = stage_set.pack
+	if not pack:
+		return
+	if RenderRequest.StageSet.is_main_site(stage_set.stage_site):
+		_on_main_stage(pack.stage_name, pack.current_player_id)
+		return
+	_on_temp_stage(pack.stage_name, pack.temporary_stage_player_id)
+
 ## 主阶段通知：清空临时行并入队主阶段消息
-func _on_main_stage_notified(stage_name: StringName, player_id: int, _params: Dictionary) -> void:
+func _on_main_stage(stage_name: StringName, player_id: int) -> void:
 	var formatted :String = _format_stage_text(stage_name, player_id)
 	_clear_temp_with_pull()
 	if _main_center_idx != -1 and _labels[_main_center_idx].text == formatted:
@@ -149,7 +158,7 @@ func _on_main_stage_notified(stage_name: StringName, player_id: int, _params: Di
 	_process_main_queue()
 
 ## 临时阶段通知：入队临时阶段消息
-func _on_temp_stage_notified(stage_name: StringName, _turn_id: int, owner_id: int, _params: Dictionary) -> void:
+func _on_temp_stage(stage_name: StringName, owner_id: int) -> void:
 	var msg := StageMessage.new(_format_stage_text(stage_name, owner_id), owner_id)
 	_temp_queue.append(msg)
 	_process_temp_queue()

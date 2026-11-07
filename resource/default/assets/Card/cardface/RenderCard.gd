@@ -61,6 +61,9 @@ const DISCARD_BLINK_HALF_TIME: float = 0.3
 func _ready() -> void:
 	_stylebox = background_panel.get_theme_stylebox(&"panel") as StyleBoxFlat
 	_stylebox.bg_color = DEFAULT_COLOR
+	# 竖排名默认隐藏：场景里该节点默认可见，已提交状态若也写成 false，差量判定会跳过「隐藏」而让它一直显示
+	vertical_name_label.visible = false
+	_applied_vertical_name_visible = false
 	var button: Button = get_node(^"Button")
 	button.button_down.connect(_on_button_down_selecting)
 	button.button_down.connect(_on_button_down_dragging)

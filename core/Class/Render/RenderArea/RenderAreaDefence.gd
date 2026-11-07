@@ -24,10 +24,10 @@ func process_request(request: RenderRequest) -> void:
 ## @override @signal_listener
 func set_render_context(context: RenderContext) -> void:
 	if render_context:
-		render_context.state_manager.main_stage_notified.disconnect(_on_main_stage_notified)
+		render_context.state_manager.stage_set_notified.disconnect(_on_stage_set_notified)
 	super.set_render_context(context)
 	if render_context:
-		render_context.state_manager.main_stage_notified.connect(_on_main_stage_notified)
+		render_context.state_manager.stage_set_notified.connect(_on_stage_set_notified)
 
 ## 处理结算摘要请求：记录结算计数与结算牌 / 对抗牌 id
 func _process_settle_set(settle_set: RenderRequest.SettleSet) -> void:
@@ -37,7 +37,10 @@ func _process_settle_set(settle_set: RenderRequest.SettleSet) -> void:
 
 ## 主阶段切换：离开 Main 阶段时清零结算计数（Main 内的临时阶段不触发）
 ## @signal_listener
-func _on_main_stage_notified(stage_name: StringName, _player_id: int, _params: Dictionary) -> void:
+func _on_stage_set_notified(stage_set: RenderRequest.StageSet) -> void:
+	if not RenderRequest.StageSet.is_main_site(stage_set.stage_site):
+		return
+	var stage_name: StringName = stage_set.pack.stage_name
 	if _last_main_stage_name == &"Main" and stage_name != &"Main":
 		settle_count = 0
 	_last_main_stage_name = stage_name
@@ -46,5 +49,5 @@ func _on_main_stage_notified(stage_name: StringName, _player_id: int, _params: D
 ## @override
 func _exit_tree() -> void:
 	if render_context:
-		render_context.state_manager.main_stage_notified.disconnect(_on_main_stage_notified)
+		render_context.state_manager.stage_set_notified.disconnect(_on_stage_set_notified)
 	super._exit_tree()

@@ -75,11 +75,6 @@ func get_hand_limit() -> int:
 func get_charge_amount(base_morale: int) -> int:
 	return attributeModifiers.compute_with_temporary_bonus(&"charge_amount", float(base_morale))
 
-## 清除增量数据包缓存
-## @side_effect
-func clear_pack_cache() -> void:
-	last_pack = null
-
 ## 增加士气攻击侧并广播
 ## @side_effect @emitter
 func add_morale_attack(value: int) -> void:

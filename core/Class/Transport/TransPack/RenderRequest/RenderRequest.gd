@@ -213,46 +213,6 @@ class ItemCountSet extends RenderRequest:
 	## @override
 	static func get_class_name_static() -> StringName:
 		return &"ItemCountSet"
-# ========== StageNotifyRequest ==========
-## 阶段变更通知请求
-class StageNotifyRequest extends RenderRequest:
-	## 当前行动玩家 id
-	var current_player_id: int
-	## 阶段名
-	var stage_name: StringName
-	## 临时阶段归属玩家 ID（0 表示主阶段，非 0 表示临时阶段并属于该玩家）
-	var temporary_stage_player_id: int
-
-	## 构造：绑定玩家、阶段与临时归属
-	func _init(player_id: int = 0, stage: StringName = &"", temp_owner_id: int = 0, params: Dictionary[StringName,Variant] = {}) -> void:
-		target_area = GlobalConstants.DefaultArea.CENTER
-		target_area_player_id = PUBLIC_AREA_PLAYER_ID
-		current_player_id = player_id
-		stage_name = stage
-		temporary_stage_player_id = temp_owner_id
-		custom_params = params
-
-	## 序列化：先写基类字段，再写玩家、阶段与临时归属
-	## @override @side_effect
-	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
-		super.serialize_to_buffer(buffer)   # 基类已写入 custom_params
-		SerializationUtil.write(buffer, current_player_id)
-		SerializationUtil.write(buffer, stage_name)
-		SerializationUtil.write(buffer, temporary_stage_player_id)
-
-	## 反序列化：读回玩家、阶段与临时归属
-	## @override
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = StageNotifyRequest.new()) -> RenderRequest:
-		super.deserialize_from_buffer(buffer, pack)   # 基类已读取 custom_params
-		pack.current_player_id = SerializationUtil.read(buffer, TYPE_INT)
-		pack.stage_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-		pack.temporary_stage_player_id = SerializationUtil.read(buffer, TYPE_INT)
-		return pack
-
-	## 包类名标识
-	## @override
-	static func get_class_name_static() -> StringName:
-		return &"StageNotifyRequest"
 # ========== SettleSet ==========
 ## 守区结算摘要请求：结算计数与本次结算牌 / 对抗牌 id（未来可能扩展）
 class SettleSet extends RenderRequest:
@@ -294,92 +254,57 @@ class SettleSet extends RenderRequest:
 			settle_set.settle_card_id = SerializationUtil.read(buffer, TYPE_INT)
 			settle_set.oppose_card_id = SerializationUtil.read(buffer, TYPE_INT)
 		return pack
-
 	## 包类名标识
 	## @override
 	static func get_class_name_static() -> StringName:
 		return &"SettleSet"
+# ========== StageSet ==========
+## 阶段集合请求：对指定嵌套位点上的一个阶段发送增量数据包
+class StageSet extends RenderRequest:
+	## 阶段嵌套位点：0 表示主阶段栈位；n>=1 表示临时阶段栈索引 n-1
+	var stage_site: int = 0
+	## 该位点的阶段增量包
+	var pack: StagePack = StagePack.new()
 
-
-# ========== GroupAttackNotify ==========
-## 群体攻击阶段通知：目标是谁、谁还没表态、当前威力多少
-class GroupAttackNotify extends RenderRequest:
-	## 通知时机
-	enum State {
-		START,      ## 阶段开始，等待响应
-		UPDATE,     ## 有目标表态（出牌或放弃）
-		RESOLVED,   ## 已入队结算
-		FINISHED    ## 阶段已结束（临时阶段弹出），前端应清理展示
-	}
-	## 本次通知的时机
-	var state: State = State.START
-	## 来源卡 id（无则 -1）
-	var source_card_id: int = -1
-	## 攻击方玩家 id
-	var attacker_id: int = 0
-	## 目标玩家 id（结算顺序）
-	var target_ids: PackedInt32Array = PackedInt32Array()
-	## 尚未表态的目标玩家 id
-	var pending_ids: PackedInt32Array = PackedInt32Array()
-	## 当前威力
-	var power: int = 0
-
-	## 构造：绑定来源卡、攻击方、目标与待表态集合
-	func _init(
-		card_id: int = -1,
-		attacker: int = 0,
-		targets: PackedInt32Array = PackedInt32Array(),
-		pending: PackedInt32Array = PackedInt32Array(),
-		card_power: int = 0,
-		notify_state: State = State.START,
-	) -> void:
+	## 构造：绑定嵌套位点与阶段包
+	func _init(site: int = 0, stage_pack: StagePack = StagePack.new()) -> void:
 		target_area = GlobalConstants.DefaultArea.CENTER
 		target_area_player_id = PUBLIC_AREA_PLAYER_ID
-		source_card_id = card_id
-		attacker_id = attacker
-		target_ids = targets
-		pending_ids = pending
-		power = card_power
-		state = notify_state
+		stage_site = site
+		pack = stage_pack
 
-	## 序列化：先写基类字段，再写本通知字段（数组先写长度再逐个写）
+	## 序列化：先写基类字段，再写位点与阶段包
 	## @override @side_effect
 	func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 		super.serialize_to_buffer(buffer)
-		SerializationUtil.write(buffer, int(state))
-		SerializationUtil.write(buffer, source_card_id)
-		SerializationUtil.write(buffer, attacker_id)
-		SerializationUtil.write(buffer, power)
-		SerializationUtil.write(buffer, target_ids.size())
-		for target_id in target_ids:
-			SerializationUtil.write(buffer, target_id)
-		SerializationUtil.write(buffer, pending_ids.size())
-		for pending_id in pending_ids:
-			SerializationUtil.write(buffer, pending_id)
+		SerializationUtil.write(buffer, stage_site)
+		pack.serialize_to_buffer(buffer)
 
-	## 反序列化：读回本通知字段
+	## 反序列化：读回位点与阶段包
 	## @override
-	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = GroupAttackNotify.new()) -> RenderRequest:
-		super.deserialize_from_buffer(buffer, pack)
-		var notify := pack as GroupAttackNotify
-		if notify:
-			notify.state = SerializationUtil.read(buffer, TYPE_INT) as State
-			notify.source_card_id = SerializationUtil.read(buffer, TYPE_INT)
-			notify.attacker_id = SerializationUtil.read(buffer, TYPE_INT)
-			notify.power = SerializationUtil.read(buffer, TYPE_INT)
-			var target_count: int = SerializationUtil.read(buffer, TYPE_INT)
-			var targets: PackedInt32Array = PackedInt32Array()
-			for _i in target_count:
-				targets.append(SerializationUtil.read(buffer, TYPE_INT))
-			notify.target_ids = targets
-			var pending_count: int = SerializationUtil.read(buffer, TYPE_INT)
-			var pending: PackedInt32Array = PackedInt32Array()
-			for _j in pending_count:
-				pending.append(SerializationUtil.read(buffer, TYPE_INT))
-			notify.pending_ids = pending
-		return pack
+	static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack_overriding: TransPack = StageSet.new()) -> RenderRequest:
+		super.deserialize_from_buffer(buffer, pack_overriding)
+		var stage_set := pack_overriding as StageSet
+		stage_set.stage_site = SerializationUtil.read(buffer, TYPE_INT)
+		stage_set.pack = StagePack.deserialize_from_buffer(buffer)
+		return stage_set
 
 	## 包类名标识
 	## @override
 	static func get_class_name_static() -> StringName:
-		return &"GroupAttackNotify"
+		return &"StageSet"
+
+	## 判断位点是否为主阶段栈位
+	## @pure
+	static func is_main_site(site: int) -> bool:
+		return site == 0
+
+	## 由临时阶段栈索引换算嵌套位点
+	## @pure
+	static func site_from_temp_index(index: int) -> int:
+		return index + 1
+
+	## 由嵌套位点换算临时阶段栈索引（主阶段位点返回 -1）
+	## @pure
+	static func temp_index_from_site(site: int) -> int:
+		return site - 1

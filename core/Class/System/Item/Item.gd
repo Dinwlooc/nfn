@@ -1,11 +1,7 @@
 ## 物品基类，所有可交互实体（卡牌、玩家等）的基础。
-extends RefCounted
+extends Entity
 class_name Item
 
-## 物品唯一 id（-1 表示未分配）
-var id: int = -1
-## 上次生成的增量数据包缓存
-var last_pack: ItemPack = null
 ## 物品蓝图数据
 var data: ItemData
 ## 属性修饰器集合
@@ -24,10 +20,8 @@ func _init(item_data: ItemData,is_virtual:bool = false) -> void:
 	command_modifiers = CommandModifiers.new()
 	buff_modifiers = BuffModifiers.new(attributeModifiers, command_modifiers)
 	_reset_to_data()
-## 获取物品 ID
-func get_id() -> int:
-	return id
 ## 设置物品 ID（由管理器调用），并根据虚方法 _get_owner_type 设置 BuffModifiers 所有者
+## @override
 func set_id(new_id: int) -> Item:
 	id = new_id
 	if buff_modifiers:
@@ -72,27 +66,17 @@ func set_rule_overrides(overrides: Dictionary[StringName,Variant]) -> void:
 static func get_item_type() -> StringName:
 	return &"item"
 
-## 取增量数据包：有缓存则就地计算差值，否则新建并记录合并掩码
-## @side_effect
+## 取增量数据包：基类缓存，此处收窄返回类型
+## @override
 func get_pack() -> ItemPack:
-	if last_pack:
-		last_pack._update_and_calculate_delta(self)
-		return last_pack
-	last_pack = _create_pack()
-	last_pack.update_merge_mask()
-	return last_pack
+	return super.get_pack() as ItemPack
 
 ## 生成完整数据包（不走增量缓存）
-## @delegates
+## @override
 func get_full_pack() -> ItemPack:
-	return _create_pack()
+	return super.get_full_pack() as ItemPack
 
 ## 按蓝图创建数据包
-## @delegates
+## @delegates(data.pack_class.init_from_item)
 func _create_pack() -> ItemPack:
 	return data.pack_class.init_from_item(self)
-
-## 清除增量数据包缓存
-## @side_effect
-func clear_pack_cache() -> void:
-	last_pack = null
