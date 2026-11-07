@@ -87,6 +87,10 @@ func get_current_stage_player_id() -> int:
 func get_main_stage_player_id() -> int:
 	return main_stage.current_player_id if main_stage else PUBLIC_PLAYER_ID
 
+## 取主阶段数据包（无则 null）
+func get_main_stage() -> StagePack:
+	return main_stage
+
 ## 取顶部临时阶段数据包（无则 null）
 func get_top_temp_stage() -> StagePack:
 	return temp_stage_stack[-1] if not temp_stage_stack.is_empty() else null

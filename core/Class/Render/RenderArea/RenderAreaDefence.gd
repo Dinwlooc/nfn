@@ -40,7 +40,12 @@ func _process_settle_set(settle_set: RenderRequest.SettleSet) -> void:
 func _on_stage_set_notified(stage_set: RenderRequest.StageSet) -> void:
 	if not RenderRequest.StageSet.is_main_site(stage_set.stage_site):
 		return
-	var stage_name: StringName = stage_set.pack.stage_name
+	if not render_context or not render_context.state_manager:
+		return
+	var main_pack: StagePack = render_context.state_manager.get_main_stage()
+	if not main_pack:
+		return
+	var stage_name: StringName = main_pack.stage_name
 	if _last_main_stage_name == &"Main" and stage_name != &"Main":
 		settle_count = 0
 	_last_main_stage_name = stage_name

@@ -298,6 +298,7 @@ static func get_class_name_static() -> StringName:
 ## 更新并计算基础字段的增量掩码
 ## @side_effect
 func _update_and_calculate_delta(stage: Stage) -> void:
+	is_full_update = false
 	merge_mask = 0
 	if stage_name != stage.stage_name:
 		merge_mask |= 1 << Field.STAGE_NAME

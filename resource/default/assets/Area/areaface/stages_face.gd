@@ -137,15 +137,20 @@ func _show_initial_main(text: String) -> void:
 
 # ==================== 信号回调 ====================
 ## 阶段集合通知：主阶段位点走主阶段行，临时阶段位点走临时阶段行
+## 增量包只携带变化字段，展示必须取合并后的位点缓存，不能读包体本身
 ## @signal_listener
 func _on_stage_set_notified(stage_set: RenderRequest.StageSet) -> void:
-	var pack: StagePack = stage_set.pack
-	if not pack:
+	var ctx: RenderContext = render_control.render_context if render_control else null
+	if not ctx or not ctx.state_manager:
 		return
 	if RenderRequest.StageSet.is_main_site(stage_set.stage_site):
-		_on_main_stage(pack.stage_name, pack.current_player_id)
+		var main_pack: StagePack = ctx.state_manager.get_main_stage()
+		if main_pack:
+			_on_main_stage(main_pack.stage_name, main_pack.current_player_id)
 		return
-	_on_temp_stage(pack.stage_name, pack.temporary_stage_player_id)
+	var temp_pack: StagePack = ctx.state_manager.get_top_temp_stage()
+	if temp_pack:
+		_on_temp_stage(temp_pack.stage_name, temp_pack.temporary_stage_player_id)
 
 ## 主阶段通知：清空临时行并入队主阶段消息
 func _on_main_stage(stage_name: StringName, player_id: int) -> void:
@@ -157,9 +162,12 @@ func _on_main_stage(stage_name: StringName, player_id: int) -> void:
 	_main_queue.append(msg)
 	_process_main_queue()
 
-## 临时阶段通知：入队临时阶段消息
+## 临时阶段通知：文本未变则忽略同一阶段内的增量刷新，避免重复入队重播动画
 func _on_temp_stage(stage_name: StringName, owner_id: int) -> void:
-	var msg := StageMessage.new(_format_stage_text(stage_name, owner_id), owner_id)
+	var formatted: String = _format_stage_text(stage_name, owner_id)
+	if _temp_center_idx != -1 and _labels[_temp_center_idx].text == formatted:
+		return
+	var msg := StageMessage.new(formatted, owner_id)
 	_temp_queue.append(msg)
 	_process_temp_queue()
 

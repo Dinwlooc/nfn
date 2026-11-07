@@ -64,6 +64,8 @@ var current_stage: Stage = null
 var current_main_stage_name: StringName = &""
 ## 当前玩家 ID
 var current_player_id: int = 0
+## 阶段位点 → 最近一次发送该位点数据包的阶段（位点换主时改发全量包）
+var stage_site_owners: Dictionary[int, Stage] = {}
 
 #=== Constructor ===
 ## 构造方法：初始化主阶段列表，并永久连接主阶段的 reset_timer 信号
@@ -107,6 +109,8 @@ func push_temp_stage(stage: Stage) -> void:
 	if not stage.is_temporary():
 		stage.temporary_stage_player_id = Stage.PUBLIC_PLAYER_ID
 	temp_stage_stack.push_back(stage)
+	# 新入栈的位点清除旧主，避免同一阶段对象复用位点时沿用旧增量基线
+	stage_site_owners.erase(temp_stage_stack.size())
 	_connect_request_reset_timer(stage)
 ## 启动栈尾的临时阶段（若尚未启动）
 ## @internal
@@ -127,6 +131,7 @@ func end_round(game_state: GameState, command_bus: CommandBus) -> void:
 	for stage in temp_stage_stack:
 		_disconnect_request_reset_timer(stage)
 	temp_stage_stack.clear()
+	stage_site_owners.clear()
 	current_main_stage_name = &""
 	current_player_id = 0
 	current_stage = null
@@ -199,12 +204,17 @@ func get_stage_site(stage: Stage) -> int:
 		return RenderRequest.StageSet.site_from_temp_index(temp_index)
 	return 0
 ## 为阶段构建阶段集合请求（写入嵌套位点与当前行动玩家）
+## 位点换主时改发全量包：不同阶段的增量版本序列互不相干，旧位点的增量基线不再适用
 ## @factory
 func build_stage_set(stage: Stage) -> RenderRequest.StageSet:
-	var stage_set: RenderRequest.StageSet = RenderRequest.StageSet.new(get_stage_site(stage), stage.get_pack())
-	stage_set.pack.current_player_id = current_player_id
-	stage_set.pack.merge_mask |= 1 << StagePack.Field.CURRENT_PLAYER_ID
-	return stage_set
+	var site: int = get_stage_site(stage)
+	var pack: StagePack = stage.get_pack()
+	if stage_site_owners.get(site) != stage:
+		pack.is_full_update = true
+		stage_site_owners[site] = stage
+	pack.current_player_id = current_player_id
+	pack.merge_mask |= 1 << StagePack.Field.CURRENT_PLAYER_ID
+	return RenderRequest.StageSet.new(site, pack)
 ## 结束当前阶段（执行清理，发射 stage_completed）
 ## @no_escape @internal @emitter
 func end_current_stage(game_state: GameState, command_bus: CommandBus) -> void:
