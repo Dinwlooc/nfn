@@ -30,7 +30,7 @@ func _init(host: Node) -> void:
 func run_case(lab_id: StringName, case: LabCase) -> Dictionary[StringName, Variant]:
 	_failures = 0
 	_lines = PackedStringArray()
-	_instance = null
+	_discard_instance()
 	_frame_budget = int(maxf(case.timeout, 0.1) * float(Engine.get_physics_ticks_per_second()))
 	var deadline_msec: int = Time.get_ticks_msec() + int(maxf(case.timeout, 0.1) * 1000.0)
 	if not ResourceLoader.exists(case.scene_path):
@@ -43,7 +43,10 @@ func run_case(lab_id: StringName, case: LabCase) -> Dictionary[StringName, Varia
 		return _result(lab_id, case)
 	# 参数先于入树施加，场景 _ready 时即可读到预设值
 	_apply_params(case.params)
+	# 先摆位再入树：实验室场景在 _ready 里记录原始位姿，动画结束只会回到这一刻的位置
+	_place_instance()
 	_host.get_case_container().add_child(_instance)
+	_place_instance()
 	await _host.get_tree().process_frame
 	for step: Dictionary in case.steps:
 		if Time.get_ticks_msec() > deadline_msec:
@@ -57,7 +60,6 @@ func run_case(lab_id: StringName, case: LabCase) -> Dictionary[StringName, Varia
 		if _failures > 0:
 			break
 	_check_expect(case.expect)
-	_release()
 	return _result(lab_id, case)
 
 #==steps==
@@ -150,12 +152,17 @@ func _resolve_node(selector: String) -> Node:
 func _fail(reason: String) -> void:
 	_failures += 1
 	_lines.append("FAIL " + reason)
-## 回收用例实例
+## 丢弃上一次的用例实例：用例结束不回收，实例留在舞台上供人观看，下一次执行前替换
 ## @internal
-func _release() -> void:
+func _discard_instance() -> void:
 	if is_instance_valid(_instance):
 		_instance.queue_free()
 	_instance = null
+## 让宿主摆放实例（宿主提供 place_case_instance 时生效，缺省不干预）
+## @internal
+func _place_instance() -> void:
+	if _host != null and _host.has_method(&"place_case_instance"):
+		_host.call(&"place_case_instance", _instance)
 ## 汇总判定
 ## @internal
 func _result(lab_id: StringName, case: LabCase) -> Dictionary[StringName, Variant]:

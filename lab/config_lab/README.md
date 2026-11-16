@@ -7,8 +7,8 @@
 启动：
 
 ```
-res://tests/config_lab/config_lab_system.tscn
-res://tests/config_lab/config_lab_render.tscn
+res://lab/config_lab/config_lab_system.tscn
+res://lab/config_lab/config_lab_render.tscn
 ```
 
 按键：`R` 重载配置表并刷新，`Esc` 退出。

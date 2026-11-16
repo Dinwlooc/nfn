@@ -17,6 +17,10 @@ extends Control
 @export var headless_timeout: float = 30.0
 
 #==vars==
+## 返回目标场景路径；非空时 Esc 回到该场景而不是退出进程（由菜单进入时写入）
+## @context
+static var return_scene: String = ""
+
 ## 无头看门狗
 var _watchdog: Timer
 ## 实参指定的用例标识；空表示未指定
@@ -60,6 +64,20 @@ func _lab_input(_key: InputEventKey) -> void:
 func _on_reported(_text: String) -> void:
 	pass
 
+## 退出实验室：有返回目标则回该菜单场景，否则退出进程
+## @hook
+func lab_exit() -> void:
+	var target: String = return_scene
+	return_scene = ""
+	if target.is_empty():
+		get_tree().quit(0)
+		return
+	var transition: Node = get_node_or_null("/root/GlobalTransition")
+	if transition == null:
+		get_tree().change_scene_to_file(target)
+		return
+	transition.change_scene_with_transition(target)
+
 ## 可用用例标识；返回空数组即零用例实验室
 ## @hook
 func case_ids() -> Array[StringName]:
@@ -98,7 +116,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	if key == null or not key.pressed or key.echo:
 		return
 	if key.keycode == KEY_ESCAPE:
-		get_tree().quit(0)
+		lab_exit()
 		return
 	if key.keycode == KEY_R:
 		reload_config()

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene format=3]
 
-[ext_resource type="Script" path="res://tests/config_lab/config_lab.gd" id="1_lab"]
+[ext_resource type="Script" uid="uid://dlga3gpytlkto" path="res://lab/config_lab/config_lab.gd" id="1_lab"]
 
 [node name="ConfigLabSystem" type="Control"]
 layout_mode = 3

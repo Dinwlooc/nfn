@@ -8,7 +8,7 @@
 - `LabSpec`：按实验室标识从 `GlobalConfig` 的配置表读出用例（含实验室默认值段）。
 - `LabCase`：一条用例的值对象（场景 / 参数 / 步骤 / 期望 / 超时）。
 - `LabRunner`：在舞台上实例化场景、施加参数、派发步骤并判定；参数只写资源副本。
-- `LabStage`：通用舞台（用例列表、键盘、读数、无头引导）；每个实验室继承它。
+- `LabStage`：通用舞台（用例列表、键盘、读数、无头引导）；每个实验室继承它。用例实例挂在**可拉伸剪裁框**（`ClipBox`）里，默认居中、随舞台尺寸自动重定位到第一次手动调整为止；勾选「角色框剪裁」后按框裁剪，四角把手拖动拉框、框内拖动整体移动，最小 40×40。**滚轮缩放**（鼠标在舞台内滚动，0.25–6.0 倍，`Ctrl+滚轮` 复位）以框中心为心缩放实例，超出框的部分被裁掉。
 
 ## 用例写在配置表里
 
@@ -59,9 +59,9 @@
 - **AI/回归**：无头直接跑同一场景，用实参挑用例：
 
 ```
-godot --headless --path project res://tests/face_lab/face_lab.tscn -- --all
-godot --headless --path project res://tests/face_lab/face_lab.tscn -- --case=hit_normal
-godot --headless --path project res://tests/face_lab/face_lab.tscn -- --reload --all
+godot --headless --path project res://lab/face_lab/face_lab.tscn -- --all
+godot --headless --path project res://lab/face_lab/face_lab.tscn -- --case=hit_normal
+godot --headless --path project res://lab/face_lab/face_lab.tscn -- --reload --all
 ```
 
 `--reload` 先重载配置表再跑（改表后一条命令验证）；无头进程本就重新读表，故它主要用于同进程复用。

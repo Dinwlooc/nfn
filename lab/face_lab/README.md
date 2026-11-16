@@ -4,13 +4,13 @@
 
 一个场景覆盖角色表现面：受击（物理/魔法/镜像）、倒地、治疗起身、停止、重复触发与边界数据。用例表在 `res://config/render/lab.cfg` 的 `[lab:face]` 与 `[case:face:*]` 段，改用例不用改代码。
 
-启动（交互）：`res://tests/face_lab/face_lab.tscn`，`1-9`/`0` 选用例执行，`↑`/`↓` 移动、`Enter` 执行，`R` 重跑，`Esc` 退出。
+启动（交互）：`res://lab/face_lab/face_lab.tscn`，点左侧用例列表或按 `1-9`/`0` 选用例执行，`↑`/`↓` 移动、`Enter` 执行，`R` 重跑，`Esc` 回主菜单。用例实例在执行结束后**保留在舞台上**（停在结束状态，便于观看），下一次执行前才替换；舞台自动把实例摆到中央。
 
 回归（无头）：
 
 ```
-godot --headless --path project res://tests/face_lab/face_lab.tscn -- --all
-godot --headless --path project res://tests/face_lab/face_lab.tscn -- --case=down_then_heal
+godot --headless --path project res://lab/face_lab/face_lab.tscn -- --all
+godot --headless --path project res://lab/face_lab/face_lab.tscn -- --case=down_then_heal
 ```
 
 读 `RESULT face/<case>: PASS|FAIL` 与退出码（= 失败数）。内核说明见 `tests/lab_core/README.md`。

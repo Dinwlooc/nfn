@@ -83,11 +83,20 @@ text = "加入游戏"
 alignment = 0
 script = ExtResource("7_bjhf5")
 
-[node name="ButtonQuit" type="Button" parent="MeumControl/MenuButtons" unique_id=2031123639]
+[node name="ButtonLab" type="Button" parent="MeumControl/MenuButtons"]
 layout_mode = 0
 offset_top = 176.0
 offset_right = 380.0
 offset_bottom = 242.0
+text = "实验室"
+alignment = 0
+script = ExtResource("7_bjhf5")
+
+[node name="ButtonQuit" type="Button" parent="MeumControl/MenuButtons" unique_id=2031123639]
+layout_mode = 0
+offset_top = 264.0
+offset_right = 380.0
+offset_bottom = 330.0
 text = "退出游戏"
 alignment = 0
 script = ExtResource("7_bjhf5")

@@ -11,6 +11,10 @@ const LOGO_SHIFT := -900.0
 const SLIDE_DURATION := 0.45
 ## 主游戏场景路径
 const GAME_SCENE := "res://core/tscn/game/main_game.tscn"
+## 主菜单场景路径：从实验室按 Esc 返回此处
+const MENU_SCENE := "res://core/tscn/meum/main_meum.tscn"
+## 实验室引导壳：进入实验室前写入退出返回目标
+const LabShellScript := preload("res://lab/lab_core/lab_shell.gd")
 
 ## LOGO 初始位置
 var _logo_home: Vector2
@@ -30,15 +34,34 @@ func _ready() -> void:
 	_panel_home = $RoomPanel.position
 	$MenuButtons/ButtonCreate.pressed.connect(_on_mode_pressed.bind(EntryMode.Mode.CREATE))
 	$MenuButtons/ButtonJoin.pressed.connect(_on_mode_pressed.bind(EntryMode.Mode.JOIN))
+	$MenuButtons/ButtonLab.pressed.connect(_on_lab_pressed)
 	$MenuButtons/ButtonQuit.pressed.connect(_on_quit_pressed)
 	$RoomPanel.confirmed.connect(_on_confirmed)
 	$RoomPanel.back_requested.connect(_on_back_requested)
+	$RoomPanel.lab_selected.connect(_on_lab_selected)
 	GlobalTransition.fade_out()
 
 ## 点选入口：切到对应分页；面板未展开时一并播放滑入
 ## @side_effect
 func _on_mode_pressed(mode: EntryMode.Mode) -> void:
 	$RoomPanel.select_mode(mode)
+	_open_panel()
+
+## 点选实验室入口：切到实验室分页；面板未展开时一并播放滑入
+## @side_effect
+func _on_lab_pressed() -> void:
+	$RoomPanel.select_lab()
+	_open_panel()
+
+## 实验室选中：写入实验室的返回目标，带转场加载该实验室场景
+## @side_effect
+func _on_lab_selected(scene_path: String) -> void:
+	LabShellScript.return_scene = MENU_SCENE
+	GlobalTransition.change_scene_with_transition(scene_path)
+
+## 面板未展开时播放滑入；已展开则保持现状
+## @side_effect
+func _open_panel() -> void:
 	if _panel_open:
 		return
 	_panel_open = true

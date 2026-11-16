@@ -36,7 +36,6 @@ var _cached_mp: int = 0
 var _cached_player_id: int = 0
 ## 缓存的属性计算结果（留作扩展）
 var _cached_properties: Dictionary = {}
-
 #==consts==
 ## 选中动画时长（秒）
 const SELECT_ANIMATION_DURATION: float = 0.2
