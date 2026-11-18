@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="CharacterFacePreset" format=3]
+
+[ext_resource type="Script" uid="uid://it8hnl46bnda" path="res://lab/characterface_lab/CharacterFacePreset.gd" id="1_preset"]
+
+[resource]
+script = ExtResource("1_preset")
+hp_damage = 0
+mp_damage = 0
+remaining_ratio = 1

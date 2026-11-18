@@ -1,10 +1,10 @@
 ## 通用着色器实验室：左边参考图、右边同一张图穿着色器，可切换参考图、切换着色器、实时调参；
 ## 另保留「用例对拍」模式：按数据定义的用例并排显示真实场景的基线 / 当前。
 ## 每条用例声明场景、显示子树、目标 CanvasItem、着色器文件名、基线/当前参数与要展示的参数名。
-## 引导（键位、实参、上报、退出码）由 LabShell 承担，本类只负责呈现。
-extends LabShell
+## 引导（键位、实参、上报、退出码）由 FaceLab 承担，本类只负责呈现。
+extends FaceLab
 ## 用例列表组件：与交互实验室共用同一份按钮列呈现
-const LabCaseListScript := preload("res://lab/lab_core/lab_case_list.gd")
+const LabCaseListScript := preload("res://lab/lab_core/LabCaseList.gd")
 const PANEL_SIZE: Vector2 = Vector2(760.0, 427.5)
 const PANEL_Y: float = 96.0
 const LEFT_X: float = 30.0
@@ -104,7 +104,7 @@ var _free_material: ShaderMaterial
 
 ## 就绪：建用例表与静态界面，先进自由对拍
 ## @override
-func _lab_boot() -> void:
+func _build_gui() -> void:
 	if lab_id.is_empty():
 		lab_id = &"shader"
 	_build_cases()
@@ -113,7 +113,7 @@ func _lab_boot() -> void:
 
 ## 重载后重建当前模式
 ## @override
-func _lab_reload() -> void:
+func _on_reload() -> void:
 	if _free_mode:
 		_build_free_pair()
 		return
@@ -156,6 +156,27 @@ func run_case(case_id: StringName) -> Dictionary[StringName, Variant]:
 	if not built:
 		lines.append("重建失败：%s" % _cases[index].label)
 	return { &"tag": "%s/%s" % [lab_id, case_id], &"ok": built, &"failures": 0 if built else 1, &"lines": lines }
+
+## 无头入口：先确保用例表与界面就绪，再逐条重建并汇总退出码
+## @override
+func _start_cli_run() -> void:
+	if _cases.is_empty():
+		_build_gui()
+	var selected: Array[StringName] = case_ids()
+	if wanted_case != &"":
+		var one: Array[StringName] = [wanted_case]
+		selected = one if wanted_case in selected else []
+	if selected.is_empty():
+		report_line("no cases: lab=%s" % lab_id)
+		get_tree().quit(0)
+		return
+	var total: int = 0
+	for case_id: StringName in selected:
+		var result: Dictionary[StringName, Variant] = await run_case(case_id)
+		var ok: bool = bool(result.get(&"ok", false))
+		total += int(result.get(&"failures", 0 if ok else 1))
+		report_result(result)
+	get_tree().quit(total)
 
 ## 组装用例表；新增着色器只在这里追加数据。
 ## @internal

@@ -8,11 +8,11 @@ extends RefCounted
 const LAB_ROOT: String = "res://lab/"
 ## 实验室场景后缀
 const SCENE_SUFFIX: String = ".tscn"
-## 实验室引导壳脚本，用于判定一个场景是不是实验室
-const SHELL_PATH: String = "res://lab/lab_core/lab_shell.gd"
+## 实验室界面根基类脚本，用于判定一个场景是不是实验室
+const FACE_LAB_PATH: String = "res://lab/lab_core/FaceLab.gd"
 
 #==public==
-## 扫描实验室场景，返回按路径升序排列的场景路径；根节点脚本链未到达 LabShell 的场景被排除
+## 扫描实验室场景，返回按路径升序排列的场景路径；根节点脚本链未到达 FaceLab 的场景被排除
 ## @external
 static func scan(root: String = LAB_ROOT) -> Array[String]:
 	var found: Array[String] = []
@@ -55,7 +55,7 @@ static func _is_lab_scene(scene_path: String) -> bool:
 		return false
 	var script: Script = load(script_path) as Script
 	while script != null:
-		if script.resource_path == SHELL_PATH:
+		if script.resource_path == FACE_LAB_PATH:
 			return true
 		script = script.get_base_script()
 	return false

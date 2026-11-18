@@ -1,0 +1,12 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://dxab3cny4c8jx" path="res://lab/characterface_lab/characterface_lab.gd" id="1_lab"]
+
+[node name="CharacterFaceLab" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_lab")
+lab_id = &"characterface"
+lab_title = "角色表现（CharacterFace）实验室"

@@ -273,6 +273,7 @@ func play_damage_animation(hp_damage: int, mp_damage: int, remaining_hp_ratio: f
 ## 停止当前受击动画（重写父类钩子）：清槽位并瞬时归位。
 ## @override
 func stop_damage_animation() -> void:
+	_is_down_stagger = false
 	_kill_current_animation_if_exists()
 	frame_tween = UIAnimationUtils.clear_tween(frame_tween)
 	position = _original_position
@@ -284,6 +285,12 @@ func set_mirrored(flip_h: bool) -> void:
 	_is_mirrored = flip_h
 	if character:
 		character.flip_h = flip_h
+
+## 重新锚定：把当前位姿记为演出原点（重写父类钩子）。
+## @override
+func sync_anchor() -> void:
+	_original_position = position
+	_original_rotation = rotation
 
 #==internal==
 ## 处理治疗：若硬直且剩余生命>0，则播放起身动画

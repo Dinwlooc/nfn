@@ -1,9 +1,9 @@
 ## 实验室用例：从配置表读出的一条可执行测试流程。
-## 只承载数据；参数与期望都留在配置表里，步骤语义由 LabRunner 的步骤注册表实现。
-class_name LabCase
+## 只承载数据；参数与预设名都留在配置表里，动作语义由处理器实现。
 extends RefCounted
+class_name LabCase
 
-#==fields==
+#==字段==
 ## 用例标识（同一实验室内唯一）
 var case_id: StringName = &""
 ## 目标场景路径
@@ -16,8 +16,12 @@ var steps: Array[Dictionary] = []
 var expect: Dictionary[StringName, Variant] = {}
 ## 单用例帧预算折算用的超时秒数
 var timeout: float = 5.0
+## 操作参数预设名（空表示只装配不施演）
+var preset: StringName = &""
+## 施加预设后等待的观测帧数
+var wait_frames: int = 0
 
-#==lifecycle==
+#==构造==
 ## 构造：持有原始行数据，缺省值由读取方填入
 func _init(p_case_id: StringName = &"", p_scene_path: String = "", p_params: Dictionary[StringName, Variant] = {}, p_steps: Array[Dictionary] = [], p_expect: Dictionary[StringName, Variant] = {}, p_timeout: float = 5.0) -> void:
 	case_id = p_case_id

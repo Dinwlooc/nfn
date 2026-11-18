@@ -16,3 +16,8 @@ func stop_damage_animation() -> void:
 ## @hook
 func set_mirrored(flip_h: bool) -> void:
 	pass
+
+## 重新锚定当前位姿为演出原点（由调用者在重新摆放后调用）。
+## @hook
+func sync_anchor() -> void:
+	pass
