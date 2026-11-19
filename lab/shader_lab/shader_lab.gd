@@ -1,10 +1,10 @@
-## 通用着色器实验室：左边参考图、右边同一张图穿着色器，可切换参考图、切换着色器、实时调参；
-## 另保留「用例对拍」模式：按数据定义的用例并排显示真实场景的基线 / 当前。
-## 每条用例声明场景、显示子树、目标 CanvasItem、着色器文件名、基线/当前参数与要展示的参数名。
-## 引导（键位、实参、上报、退出码）由 FaceLab 承担，本类只负责呈现。
+## 着色器实验室：双资源实验室，图片与着色器各自独立选择，右侧舞台由处理器按组合组装；
+## 左侧只把图原样呈现，不给着色器——基线严格来说就是只读图片资源的效果。
+## 用例对拍已移除，实验室只有自由对拍一种形态；
+## 本类只声明界面、选择器与参数面板；组合的组装归处理器。
 extends FaceLab
-## 用例列表组件：与交互实验室共用同一份按钮列呈现
-const LabCaseListScript := preload("res://lab/lab_core/LabCaseList.gd")
+## 舞台场景：处理器按它实例化右侧展示节点
+const STAGE_SCENE: String = "res://lab/shader_lab/shader_stage.tscn"
 const PANEL_SIZE: Vector2 = Vector2(760.0, 427.5)
 const PANEL_Y: float = 96.0
 const LEFT_X: float = 30.0
@@ -15,45 +15,11 @@ const SHADER_DIR: String = "res://resource/default/shader/gdshader/"
 const TEXTURE_DIRS: Array[String] = ["res://resource/default/assets/"]
 
 ## 着色器声明行的解析式：捕获类型名、变量名、hint 段与默认值
-const UNIFORM_PATTERN: String = "^\\s*(?:instance\\s+)?uniform\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?::\\s*([^=]*))?(?:=\\s*([^;]*))?;"
+const UNIFORM_PATTERN: String = "\\s*(?:instance\\s+)?uniform\\s+([A-Za-z_][A-Za-z0-9_]*)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*(?::\\s*([^=]*))?(?:=\\s*([^;]*))?;"
 ## hint_range 的上下界
 const RANGE_PATTERN: String = "hint_range\\(\\s*(-?[0-9.]+)\\s*,\\s*(-?[0-9.]+)"
 ## 着色器源里的 include 行（uniform 可能写在 .gdshaderinc 里）
 const INCLUDE_PATTERN: String = "#include\\s+\"([^\"]+)\""
-
-## 一条着色器用例；参数覆盖为 instance uniform 键值。
-## @record
-class ShaderCase:
-	var label: String
-	var scene_path: String
-	var display_selector: String
-	var target_selector: String
-	var shader_file: String
-	var baseline_params: Dictionary[StringName, Variant]
-	var current_params: Dictionary[StringName, Variant]
-	var readout_params: PackedStringArray
-	var display_scale: float
-
-	func _init(
-		case_label: String,
-		case_scene_path: String,
-		case_display_selector: String,
-		case_target_selector: String,
-		case_shader_file: String,
-		case_baseline_params: Dictionary[StringName, Variant],
-		case_current_params: Dictionary[StringName, Variant],
-		case_readout_params: PackedStringArray,
-		case_display_scale: float
-	) -> void:
-		label = case_label
-		scene_path = case_scene_path
-		display_selector = case_display_selector
-		target_selector = case_target_selector
-		shader_file = case_shader_file
-		baseline_params = case_baseline_params
-		current_params = case_current_params
-		readout_params = case_readout_params
-		display_scale = case_display_scale
 
 ## 一条着色器参数：名称、类型字面量与取值范围（来自源文件，不靠引擎反射）。
 ## @record
@@ -71,21 +37,12 @@ class ParamSpec:
 		max_value = p_max
 		default_value = p_default
 
-var _cases: Array[ShaderCase] = []
-var _case_index: int = 0
 var _pair_root: Control
 var _title_label: Label
 var _left_caption: Label
 var _right_caption: Label
-## 用例选择列表
-var _case_list: LabCaseListScript
 var _status_label: Label
 var _help_label: Label
-## 当前是否处于自由对拍模式
-var _free_mode: bool = true
-## 模式切换按钮
-var _case_mode_button: Button
-var _free_mode_button: Button
 ## 参考图与着色器选择器
 var _texture_option: OptionButton
 var _shader_option: OptionButton
@@ -97,131 +54,50 @@ var _shader_index: int = 0
 ## 参数面板（自由对拍）
 var _param_scroll: ScrollContainer
 var _param_box: VBoxContainer
-## 自由对拍的左参考图与右着色器展示
+## 左参考图与右舞台（舞台由处理器组装）
 var _free_ref: TextureRect
-var _free_target: TextureRect
+var _free_target: ShaderStage
 var _free_material: ShaderMaterial
 
-## 就绪：建用例表与静态界面，先进自由对拍
+#==生命周期==
+## 提供处理器：着色器舞台由它组装
+## @override
+func _create_handler() -> LabHandler:
+	return ShaderLabHandler.new(data)
+
+## 判据入口：屏蔽 _ready 时由空壳调用，只建参数库、处理器与界面
+## @side_effect
+func _lab_boot() -> void:
+	data = LabData.new()
+	if lab_id.is_empty():
+		lab_id = &"shader"
+	_ensure_handler()
+	_build_gui()
+
+## 取处理器：界面先于基类创建处理器时补建
+## @internal
+func _ensure_handler() -> ShaderLabHandler:
+	if handler == null:
+		handler = _create_handler()
+	return handler as ShaderLabHandler
+
+## 建界面：静态框架 + 先进自由对拍
 ## @override
 func _build_gui() -> void:
 	if lab_id.is_empty():
 		lab_id = &"shader"
-	_build_cases()
 	_build_static_ui()
-	_set_mode(true)
+	_build_free_pair()
+
 
 ## 重载后重建当前模式
 ## @override
 func _on_reload() -> void:
-	if _free_mode:
-		_build_free_pair()
-		return
-	_build_pair(_case_index)
-
-## 键盘：1-N 选用例（仅用例模式），M 切换模式
-## @override
-func _lab_input(key: InputEventKey) -> void:
-	if key.keycode == KEY_M:
-		_set_mode(not _free_mode)
-		return
-	if _free_mode:
-		return
-	var case_number: int = key.keycode - KEY_1
-	if case_number < 0 or case_number >= _cases.size():
-		return
-	_select_case(case_number)
-
-## 用例标识取序号；用例身份仍留在本文件的 _build_cases
-## @override
-func case_ids() -> Array[StringName]:
-	var ids: Array[StringName] = []
-	for index: int in _cases.size():
-		ids.append(StringName(str(index + 1)))
-	return ids
-
-## 无断言：重建成功即 PASS，观感由人眼判断
-## @override
-func run_case(case_id: StringName) -> Dictionary[StringName, Variant]:
-	var index: int = int(String(case_id)) - 1
-	if index < 0 or index >= _cases.size():
-		var unknown: PackedStringArray = PackedStringArray(["未知用例：%s" % case_id])
-		return { &"tag": "%s/%s" % [lab_id, case_id], &"ok": false, &"failures": 1, &"lines": unknown }
-	_set_mode(false)
-	_case_index = index
-	var built: bool = _build_pair(index)
-	if _case_list != null:
-		_case_list.mark_selected(index)
-	var lines: PackedStringArray = PackedStringArray()
-	if not built:
-		lines.append("重建失败：%s" % _cases[index].label)
-	return { &"tag": "%s/%s" % [lab_id, case_id], &"ok": built, &"failures": 0 if built else 1, &"lines": lines }
-
-## 无头入口：先确保用例表与界面就绪，再逐条重建并汇总退出码
-## @override
-func _start_cli_run() -> void:
-	if _cases.is_empty():
-		_build_gui()
-	var selected: Array[StringName] = case_ids()
-	if wanted_case != &"":
-		var one: Array[StringName] = [wanted_case]
-		selected = one if wanted_case in selected else []
-	if selected.is_empty():
-		report_line("no cases: lab=%s" % lab_id)
-		get_tree().quit(0)
-		return
-	var total: int = 0
-	for case_id: StringName in selected:
-		var result: Dictionary[StringName, Variant] = await run_case(case_id)
-		var ok: bool = bool(result.get(&"ok", false))
-		total += int(result.get(&"failures", 0 if ok else 1))
-		report_result(result)
-	get_tree().quit(total)
-
-## 组装用例表；新增着色器只在这里追加数据。
-## @internal
-func _build_cases() -> void:
-	_cases = []
-	var bloom_readout: PackedStringArray = PackedStringArray([
-		"threshold_min", "threshold_softness", "bloom_intensity", "spread", "sample_mip", "sample_jitter",
-	])
-	_cases.append(ShaderCase.new(
-		"泛光 · 菜单背景",
-		"res://core/tscn/meum/main_meum.tscn",
-		"MeumControl/Backgound",
-		"ColorRect",
-		"bloom.gdshader",
-		_override(&"enable_bloom", false),
-		_override(&"enable_bloom", true),
-		bloom_readout,
-		0.475,
-	))
-	_cases.append(ShaderCase.new(
-		"泛光 · 区域背景",
-		"res://resource/default/assets/Area/areaface/backgound.tscn",
-		".",
-		"ColorRect",
-		"bloom.gdshader",
-		_override(&"enable_bloom", false),
-		_override(&"enable_bloom", true),
-		bloom_readout,
-		0.475,
-	))
-
-## 生成单参数覆盖表。
-## @pure
-func _override(key: StringName, value: Variant) -> Dictionary[StringName, Variant]:
-	var params: Dictionary[StringName, Variant] = {}
-	params[key] = value
-	return params
-
-## 隐藏转场单例的全屏黑幕；否则非菜单场景的测试场景整幅全黑。
-## @side_effect
-func _hide_transition() -> void:
-	GlobalTransition.fade_out(0.0)
+	if _free_target != null:
+		_apply_free_shader()
 
 #==界面==
-## 建静态界面：标题、双栏、模式切换、选择器、参数面板、状态与用例列表
+## 建静态界面：标题、双栏、选择器、参数面板、状态与帮助
 ## @internal
 func _build_static_ui() -> void:
 	var background: ColorRect = ColorRect.new()
@@ -242,9 +118,9 @@ func _build_static_ui() -> void:
 	divider.color = Color(0.12, 0.16, 0.2)
 	divider.position = Vector2(797.0, PANEL_Y)
 	divider.size = Vector2(6.0, PANEL_SIZE.y)
+	divider.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(divider)
 
-	_build_mode_row()
 	_build_selectors()
 	_build_param_panel()
 
@@ -262,29 +138,8 @@ func _build_static_ui() -> void:
 	_help_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_help_label.add_theme_font_size_override("font_size", 15)
 	_help_label.add_theme_color_override("font_color", Color(0.55, 0.62, 0.7))
+	_help_label.text = "选参考图 / 着色器 → 下方调参即时生效    R 重新加载    Esc 返回主菜单（独立运行时退出）"
 	add_child(_help_label)
-
-	_case_list = LabCaseListScript.new()
-	_case_list.position = Vector2(RIGHT_X, 676.0)
-	_case_list.custom_minimum_size = Vector2(760.0, 0.0)
-	add_child(_case_list)
-	_fill_case_list()
-
-## 模式切换按钮
-## @internal
-func _build_mode_row() -> void:
-	_case_mode_button = Button.new()
-	_case_mode_button.text = "① 用例对拍"
-	_case_mode_button.position = Vector2(LEFT_X, 534.0)
-	_case_mode_button.size = Vector2(190.0, 34.0)
-	_case_mode_button.pressed.connect(_on_mode_pressed.bind(false))
-	add_child(_case_mode_button)
-	_free_mode_button = Button.new()
-	_free_mode_button.text = "② 自由对拍"
-	_free_mode_button.position = Vector2(LEFT_X + 200.0, 534.0)
-	_free_mode_button.size = Vector2(190.0, 34.0)
-	_free_mode_button.pressed.connect(_on_mode_pressed.bind(true))
-	add_child(_free_mode_button)
 
 ## 参考图与着色器选择器
 ## @internal
@@ -328,87 +183,75 @@ func _make_caption(pos: Vector2) -> Label:
 	var label: Label = Label.new()
 	label.position = pos
 	label.add_theme_font_size_override("font_size", 18)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(label)
 	return label
 
-## 重建用例选择列表：标签用序号与标题，点选即切换
-## @internal
-func _fill_case_list() -> void:
-	var labels: PackedStringArray = PackedStringArray()
-	for index: int in _cases.size():
-		labels.append("%d. %s" % [index + 1, _cases[index].label])
-	_case_list.fill(labels, _select_case)
-	_case_list.mark_selected(_case_index)
-
-## 切到某条用例：重建并刷新列表高亮
-## @internal
-func _select_case(index: int) -> void:
-	if index < 0 or index >= _cases.size():
-		return
-	_set_mode(false)
-	_case_index = index
-	_build_pair(_case_index)
-	if _case_list != null:
-		_case_list.mark_selected(_case_index)
-
-## 模式按钮回调
-## @internal
-func _on_mode_pressed(free_mode: bool) -> void:
-	_set_mode(free_mode)
-
-## 切换模式：自由对拍显示选择器与参数面板，用例对拍显示用例列表
-## @side_effect
-func _set_mode(free_mode: bool) -> void:
-	_free_mode = free_mode
-	_texture_option.visible = free_mode
-	_shader_option.visible = free_mode
-	_param_scroll.visible = free_mode
-	_case_list.visible = not free_mode
-	if free_mode:
-		_build_free_pair()
-	else:
-		_build_pair(_case_index)
-	_update_help()
-
-## 刷新帮助行
-## @side_effect
-func _update_help() -> void:
-	var base: String = "M 切换模式    R 重新加载    Esc 返回主菜单（独立运行时退出）"
-	if _free_mode:
-		_help_label.text = "选参考图 / 着色器 → 下方调参即时生效    " + base
-		return
-	_help_label.text = "1-%d 或点选用例列表    " % _cases.size() + base
-
 #==自由对拍==
-## 建自由对拍：左参考图原样、右同图穿着色器并挂选中的参数
+## 建容器：铺满全屏但不吃鼠标，避免盖住下拉与参数面板
+## @internal
+func _build_pair_root() -> void:
+	_pair_root = Control.new()
+	_pair_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_pair_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(_pair_root)
+
+## 建自由对拍：左参考图原样、右舞台由处理器按当前组合组装
 ## @internal
 func _build_free_pair() -> void:
 	if _pair_root != null:
 		_pair_root.queue_free()
 		_pair_root = null
-	_pair_root = Control.new()
-	# 容器本身不吃鼠标：它铺满全屏且后于控件创建，STOP 会盖住下拉与参数面板
-	_pair_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_pair_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(_pair_root)
-
+	_build_pair_root()
 	_free_ref = TextureRect.new()
 	_free_ref.size = PANEL_SIZE
 	_free_ref.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_free_ref.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-
-	_free_target = TextureRect.new()
-	_free_target.size = PANEL_SIZE
-	_free_target.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_free_target.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_free_material = ShaderMaterial.new()
-	_free_target.material = _free_material
-
+	_free_target = _assemble_stage()
+	if _free_target == null:
+		_set_status("无法组装舞台：%s" % STAGE_SCENE)
+		return
+	_free_material = _free_target.material_of()
 	_attach_panel(_free_ref, Vector2(LEFT_X, PANEL_Y))
 	_attach_panel(_free_target, Vector2(RIGHT_X, PANEL_Y))
-
 	_apply_free_texture()
 	_apply_free_shader()
+
+## 交给处理器组装一个舞台节点取出来；组装结果不入树，由实验室摆放
+## @internal
+func _assemble_stage() -> ShaderStage:
+	var lab_handler: ShaderLabHandler = _ensure_handler()
+	if lab_handler == null:
+		return null
+	var node: Node = lab_handler.assemble(&"free", STAGE_SCENE, {})
+	if node == null:
+		return null
+	return lab_handler.take(&"free") as ShaderStage
+
+## 把当前两份选择合成一个组合：图片 + 着色器 + 参数
+## @pure
+func _combo_from_selectors() -> ShaderLabPreset:
+	var combo: ShaderLabPreset = ShaderLabPreset.new()
+	if not _texture_paths.is_empty():
+		combo.texture_path = _texture_paths[_texture_index]
+	if not _shader_paths.is_empty():
+		combo.shader_path = _shader_paths[_shader_index]
+	return combo
+
+## 按当前组合重建右侧舞台，并在操作参数库里留下这份组合
+## @side_effect
+func _compose_free() -> void:
+	if _free_target == null:
+		return
+	var combo: ShaderLabPreset = _combo_from_selectors()
+	var lab_handler: ShaderLabHandler = _ensure_handler()
+	if lab_handler != null:
+		lab_handler.apply(combo, _free_target)
+	_free_material = _free_target.material_of()
+	if _free_ref != null and _free_target.texture != null:
+		_free_ref.texture = _free_target.texture
+	if data != null:
+		data.put_preset(&"free", combo)
 
 ## 把选中的参考图贴到两侧（左侧原图，右侧同图供着色器处理）
 ## @side_effect
@@ -419,12 +262,10 @@ func _apply_free_texture() -> void:
 		_set_status("没有找到参考图：检查 %s" % ", ".join(TEXTURE_DIRS))
 		return
 	_texture_index = clampi(_texture_index, 0, _texture_paths.size() - 1)
-	var texture: Texture2D = load(_texture_paths[_texture_index]) as Texture2D
-	_free_ref.texture = texture
-	_free_target.texture = texture
+	_compose_free()
 	_set_status("参考图：%s" % _texture_paths[_texture_index].get_file())
 
-## 把选中的着色器挂到右侧并重建参数面板
+## 按选中的着色器重建右侧舞台与参数面板
 ## @side_effect
 func _apply_free_shader() -> void:
 	if _free_target == null:
@@ -433,26 +274,23 @@ func _apply_free_shader() -> void:
 		_set_status("没有找到着色器：检查 %s" % SHADER_DIR)
 		return
 	_shader_index = clampi(_shader_index, 0, _shader_paths.size() - 1)
-	var shader: Shader = load(_shader_paths[_shader_index]) as Shader
-	_free_material.shader = shader
-	# 重新挂一次材质：换 shader 后确保 TextureRect 用的就是这份材质
-	_free_target.material = _free_material
+	_compose_free()
 	_left_caption.text = "参考图（原样）"
 	_right_caption.text = "着色器（%s）" % _shader_paths[_shader_index].get_file()
 	_title_label.text = "着色器实验室 · 自由对拍"
-	_build_param_controls(shader)
+	_build_param_controls(_free_material.shader if _free_material != null else null)
 
 ## 参考图切换
 ## @internal
-func _on_texture_selected(index: int) -> void:
-	_texture_index = index
+func _on_texture_selected(index_value: int) -> void:
+	_texture_index = index_value
 	_apply_free_texture()
 	_update_free_status()
 
 ## 着色器切换
 ## @internal
-func _on_shader_selected(index: int) -> void:
-	_shader_index = index
+func _on_shader_selected(index_value: int) -> void:
+	_shader_index = index_value
 	_apply_free_shader()
 	_update_free_status()
 
@@ -539,8 +377,9 @@ func _add_float_slider(spec: ParamSpec) -> void:
 	slider.min_value = spec.min_value
 	slider.max_value = spec.max_value
 	slider.step = maxf((spec.max_value - spec.min_value) / 200.0, 0.001)
-	slider.value = float(spec.default_value)
-	slider.custom_minimum_size = Vector2(360.0, 24.0)
+	# 不给伸展与最小宽度时，HBox 只按控件最小尺寸分配，滑杆会被压成一条缝
+	slider.custom_minimum_size = Vector2(280.0, 0.0)
+	slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(slider)
 	var value_label: Label = Label.new()
 	value_label.text = "%.3f" % float(spec.default_value)
@@ -551,12 +390,12 @@ func _add_float_slider(spec: ParamSpec) -> void:
 	_param_box.add_child(row)
 	_apply_param(spec.key, float(spec.default_value))
 
-## 写一个参数到右侧材质并刷新状态
+## 写一个参数到右侧舞台并刷新状态
 ## @side_effect
 func _apply_param(key: StringName, value: Variant) -> void:
 	if _free_target == null:
 		return
-	_free_target.set_instance_shader_parameter(key, value)
+	_free_target.set_param(key, value)
 
 ## 参数回调：bool
 ## @internal
@@ -593,8 +432,7 @@ func _update_free_status() -> void:
 		names.append(String(spec.key))
 	var parts: PackedStringArray = PackedStringArray()
 	for name: String in names:
-		var key: StringName = StringName(name)
-		var value: Variant = _free_target.get_instance_shader_parameter(key)
+		var value: Variant = _free_target.param_value(StringName(name))
 		parts.append("%s=%s" % [name, _format_value(value) if value != null else "默认"])
 	_set_status("%s  |  %s" % [_shader_paths[_shader_index].get_file(), ", ".join(parts)])
 
@@ -629,9 +467,6 @@ func _collect_files(dir_path: String, suffix: String, out: PackedStringArray) ->
 		if sub == "." or sub == "..":
 			continue
 		_collect_files(dir_path.path_join(sub), suffix, out)
-
-
-
 
 #==参数解析==
 ## 从着色器源（含 #include 的 .gdshaderinc）解析出可调参数
@@ -698,120 +533,7 @@ func _read_text_lines(path: String) -> PackedStringArray:
 	file.close()
 	return text.split("\n")
 
-#==用例对拍==
-## 重建并返回是否成功；失败原因进状态栏
-## @internal
-func _build_pair(index: int) -> bool:
-	if _pair_root != null:
-		_pair_root.queue_free()
-		_pair_root = null
-	var case_data: ShaderCase = _cases[index]
-	var packed: PackedScene = load(case_data.scene_path) as PackedScene
-	if packed == null:
-		_set_status("无法加载场景：%s" % case_data.scene_path)
-		return false
-	var baseline: Control = _extract_display(packed, case_data.display_selector, case_data.display_scale)
-	var current: Control = _extract_display(packed, case_data.display_selector, case_data.display_scale)
-	if baseline == null or current == null:
-		if baseline != null:
-			baseline.queue_free()
-		if current != null:
-			current.queue_free()
-		_set_status("无法提取显示子树：%s" % case_data.display_selector)
-		return false
-
-	_pair_root = Control.new()
-	# 容器本身不吃鼠标：它铺满全屏且后于控件创建，STOP 会盖住下拉与参数面板
-	_pair_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	_pair_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_pair_root)
-	_attach_panel(baseline, Vector2(LEFT_X, PANEL_Y))
-	_attach_panel(current, Vector2(RIGHT_X, PANEL_Y))
-
-	var baseline_target: CanvasItem = _find_target(baseline, case_data)
-	var current_target: CanvasItem = _find_target(current, case_data)
-	if baseline_target == null or current_target == null:
-		_set_status("目标节点或着色器不匹配：%s" % case_data.shader_file)
-		return false
-	_apply_params(baseline_target, case_data.baseline_params)
-	_apply_params(current_target, case_data.current_params)
-	_title_label.text = "着色器实验室 · %s" % case_data.label
-	_left_caption.text = "基线（%s）" % _format_overrides(case_data.baseline_params)
-	_right_caption.text = "当前（%s）" % _format_overrides(case_data.current_params)
-	_status_label.text = "%s  |  %s" % [
-		case_data.shader_file,
-		_format_readout(current_target, case_data.readout_params),
-	]
-	return true
-
-## 从场景实例中摘出显示子树；保留场景内材质与实例参数。
-## @external
-func _extract_display(packed: PackedScene, selector: String, scale_factor: float) -> Control:
-	var source: Node = packed.instantiate()
-	var display: Node = source if selector == "." else source.get_node_or_null(selector)
-	if display == null or not display is Control:
-		source.queue_free()
-		return null
-	var control: Control = display as Control
-	var original_scale: Vector2 = control.scale
-	if control != source:
-		var parent: Node = control.get_parent()
-		parent.remove_child(control)
-		source.queue_free()
-	_clear_owner(control)
-	control.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	control.position = Vector2.ZERO
-	control.scale = original_scale * scale_factor
-	return control
-
-## 在显示子树里找到带指定着色器的目标节点。
-## @pure
-func _find_target(display: Node, case_data: ShaderCase) -> CanvasItem:
-	var target: Node = display if case_data.target_selector == "." else display.get_node_or_null(case_data.target_selector)
-	if target == null or not target is CanvasItem:
-		return null
-	var canvas_item: CanvasItem = target as CanvasItem
-	var material: ShaderMaterial = canvas_item.material as ShaderMaterial
-	if material == null or material.shader == null:
-		return null
-	var shader_path: String = material.shader.resource_path
-	if not shader_path.ends_with(case_data.shader_file):
-		return null
-	return canvas_item
-
-## @external
-func _apply_params(target: CanvasItem, params: Dictionary[StringName, Variant]) -> void:
-	for key: StringName in params:
-		target.set_instance_shader_parameter(key, params[key])
-
-## @pure
-func _format_overrides(params: Dictionary[StringName, Variant]) -> String:
-	var parts: PackedStringArray = PackedStringArray()
-	for key: StringName in params:
-		parts.append("%s=%s" % [key, _format_value(params[key])])
-	return ", ".join(parts)
-
-## 读取实际生效值：实例覆盖优先，其次材质参数；都没有则标“默认”。
-## @pure
-func _format_readout(target: CanvasItem, names: PackedStringArray) -> String:
-	var parts: PackedStringArray = PackedStringArray()
-	for name: String in names:
-		var key: StringName = StringName(name)
-		var value: Variant = target.get_instance_shader_parameter(key)
-		if value == null:
-			var material: ShaderMaterial = target.material as ShaderMaterial
-			if material != null:
-				value = material.get_shader_parameter(key)
-		parts.append("%s=%s" % [key, _format_value(value) if value != null else "默认"])
-	return ", ".join(parts)
-
-## 清除旧场景的 owner，避免跨场景重新挂载时 owner 不一致警告。
-## @external
-func _clear_owner(node: Node) -> void:
-	node.owner = null
-	for child: Node in node.get_children():
-		_clear_owner(child)
-
+#==呈现工具==
 ## @pure
 func _format_value(value: Variant) -> String:
 	if value is float:
@@ -833,6 +555,8 @@ func _attach_panel(display: Control, pos: Vector2) -> void:
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_pair_root.add_child(panel)
 	panel.add_child(display)
+	display.position = Vector2.ZERO
+	display.size = PANEL_SIZE
 	display.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 ## @internal

@@ -21,6 +21,14 @@ func get_preset(name: StringName, path: String) -> Resource:
 	presets[name] = preset
 	return preset
 
+## 放入一份组合：覆盖同名项，供处理器按名解析
+## @side_effect
+func put_preset(name: StringName, preset: Resource) -> void:
+	if preset == null:
+		presets.erase(name)
+		return
+	presets[name] = preset
+
 ## 清空缓存：换预设集或重载配置表后调用
 func clear() -> void:
 	presets.clear()

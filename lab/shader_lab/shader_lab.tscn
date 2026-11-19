@@ -8,3 +8,5 @@ anchors_preset = 0
 offset_right = 1600.0
 offset_bottom = 900.0
 script = ExtResource("1")
+lab_id = &"shader"
+lab_title = "着色器实验室"

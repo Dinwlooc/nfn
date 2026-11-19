@@ -175,6 +175,10 @@ func report_result(result: Dictionary[StringName, Variant]) -> void:
 ## 退出实验室
 func lab_exit() -> void:
 	var target: String = return_scene
+	if target.is_empty():
+		get_tree().quit()
+		return
+	GlobalTransition.change_scene_with_transition(target)
 
 #==用例推进==
 ## 启动当前用例：装配实例、入树、施加预设
