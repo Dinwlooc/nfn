@@ -13,10 +13,10 @@
 shader = ExtResource("1_j7r54")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ggemd"]
-bg_color = Color(0.785329, 0.327489, 0, 0.470588)
+bg_color = Color(0.78431374, 0.32941177, 0, 0.3372549)
 border_color = Color(0.992157, 0.113725, 0, 1)
 corner_detail = 1
-shadow_color = Color(1, 1, 1, 0.635294)
+shadow_color = Color(1, 1, 1, 0)
 shadow_size = 2
 anti_aliasing = false
 

@@ -1,16 +1,16 @@
-## 用例列表：把一组用例标签渲染成按钮列，点选后回调调用方；选中项高亮。
-## 交互模式与无头共用同一份用例标识，本组件只负责呈现与转发，不持有用例语义。
+## 预设列表：把一组预设标签渲染成按钮列，点选后回调调用方；选中项高亮。
+## 交互与无头共用同一份预设标识，本组件只负责呈现与转发，不持有预设语义。
 extends VBoxContainer
-class_name LabCaseList
+class_name LabPresetList
 
 #==字段==
-## 回调：被点选的用例下标
+## 回调：被点选的预设下标
 var _on_pick: Callable = Callable()
-## 当前高亮的用例下标；-1 表示无
+## 当前高亮的预设下标；-1 表示无
 var _selected: int = -1
 
 #==列表呈现==
-## 重建列表：labels 的下标即用例下标
+## 重建列表：labels 的下标即预设下标
 ## @side_effect
 func fill(labels: PackedStringArray, on_pick: Callable) -> void:
 	_on_pick = on_pick
@@ -27,7 +27,7 @@ func fill(labels: PackedStringArray, on_pick: Callable) -> void:
 		add_child(button)
 	mark_selected(_selected)
 
-## 高亮一条用例；越界时清除高亮
+## 高亮一条预设；越界时清除高亮
 ## @side_effect
 func mark_selected(index: int) -> void:
 	_selected = index

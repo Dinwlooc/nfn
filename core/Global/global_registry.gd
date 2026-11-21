@@ -99,16 +99,21 @@ func unregister_singleton(type: StringName) -> void:
 ## 订阅某类型单例：已注册立即回调，未注册则等注册完成后回调
 ## @side_effect
 func connect_singleton(type: StringName, callback: Callable) -> void:
+	if _singletons.has(type) and not is_instance_valid(_singletons[type]):
+		_singletons.erase(type)
 	if _singletons.has(type):
-		if is_instance_valid(_singletons[type]):
-			callback.call(_singletons[type])
-		else:
-			_singletons.erase(type)
+		callback.call(_singletons[type])
 	singleton_registered.connect(func(t: StringName, instance: Node):
-		if t == type:
-			callback.call(instance))
+		if t != type or not callback.is_valid():
+			return
+		callback.call(instance))
 
 ## 取已注册单例（未注册断言失败）
 func get_singleton(type: StringName) -> Node:
 	assert(_singletons.has(type), "Singleton not registered: " + type)
 	return _singletons[type]
+
+## 是否有某类型单例已注册且实例有效
+## @pure
+func has_singleton(type: StringName) -> bool:
+	return _singletons.has(type) and is_instance_valid(_singletons[type])

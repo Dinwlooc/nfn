@@ -1,18 +1,21 @@
 ## 角色表现（CharacterFace）实验室：一个场景覆盖角色受击、倒地、魔法受击与边界数据。
 ## Face 是项目术语：表现层封装交互接口的根控件类；本实验室测的是其中的 CharacterFace。
-## 用例全部来自配置表，交互与无头共用同一份；本脚本只声明界面与处理器。
+## 预设全部来自配置表，交互与无头共用同一份；本脚本只声明界面与处理器。
 extends FaceLab
 
+## 预设列表脚本：新类名未进全局类缓存，故以预加载常量引用；重扫登记后可改回按类名静态调用
+const PresetListScript: Script = preload("res://lab/lab_core/LabPresetList.gd")
+
 #==字段==
-## 用例列表控件
-var case_box: LabCaseList = null
-## 舞台容器（用例实例挂在剪裁框内）
+## 预设列表控件
+var preset_box: VBoxContainer = null
+## 舞台容器（预设实例挂在剪裁框内）
 var stage_root: Control = null
 ## 读数区
 var readout: RichTextLabel = null
 ## 舞台上待居中的实例
 var center_target: Control = null
-## 当前选中用例下标
+## 当前选中预设下标
 var current: int = 0
 ## 舞台缩放倍率
 var zoom: float = 1.0
@@ -45,9 +48,9 @@ var zoom_label: Label = null
 func _create_handler() -> LabHandler:
 	return CharacterFaceLabHandler.new(data)
 
-## 用例实例挂在剪裁框内：裁剪按框生效，位置也相对框计算
+## 预设实例挂在剪裁框内：裁剪按框生效，位置也相对框计算
 ## @override
-func _case_container() -> Node:
+func _preset_container() -> Node:
 	return clip_box if clip_box != null else self
 
 ## 实例入树后挂到舞台上：缩放、剪裁、居中
@@ -67,7 +70,7 @@ func _on_reported(text: String) -> void:
 		return
 	readout.text = (readout.text + "\n" + text) if not readout.text.is_empty() else text
 
-## 建界面：标题、用例列表、舞台、读数与剪裁框
+## 建界面：标题、预设列表、舞台、读数与剪裁框
 ## @override
 func _build_gui() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -81,9 +84,9 @@ func _build_gui() -> void:
 	var body: HBoxContainer = HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(body)
-	case_box = LabCaseList.new()
-	case_box.custom_minimum_size = Vector2(260.0, 0.0)
-	body.add_child(case_box)
+	preset_box = PresetListScript.new()
+	preset_box.custom_minimum_size = Vector2(260.0, 0.0)
+	body.add_child(preset_box)
 	stage_root = Control.new()
 	stage_root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	stage_root.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -108,25 +111,25 @@ func _build_gui() -> void:
 	readout.custom_minimum_size = Vector2(0.0, 160.0)
 	readout.add_theme_font_size_override("normal_font_size", 16)
 	root.add_child(readout)
-	_fill_case_list()
+	_fill_preset_list()
 
 #==界面==
-## 重建用例按钮列
+## 重建预设按钮列
 ## @internal
-func _fill_case_list() -> void:
-	if case_box == null:
+func _fill_preset_list() -> void:
+	if preset_box == null:
 		return
 	var labels: PackedStringArray = PackedStringArray()
-	for i: int in cases.size():
-		labels.append("%d. %s" % [i + 1, cases[i].case_id])
-	case_box.fill(labels, _on_case_button)
-	case_box.mark_selected(current)
+	for i: int in presets.size():
+		labels.append("%d. %s" % [i + 1, presets[i]])
+	preset_box.call("fill", labels, _on_preset_button)
+	preset_box.call("mark_selected", current)
 
 ## 按钮回调
 ## @internal
-func _on_case_button(index: int) -> void:
+func _on_preset_button(index: int) -> void:
 	current = index
-	start_case(cases[index].case_id)
+	start_preset(presets[index])
 
 ## 重新计算居中位置；支点属于场景自身语义，不能改
 ## @internal

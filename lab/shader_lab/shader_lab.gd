@@ -1,6 +1,6 @@
 ## 着色器实验室：双资源实验室，图片与着色器各自独立选择，右侧舞台由处理器按组合组装；
 ## 左侧只把图原样呈现，不给着色器——基线严格来说就是只读图片资源的效果。
-## 用例对拍已移除，实验室只有自由对拍一种形态；
+## 对拍只有自由形态：选参考图与着色器，不预置呈现组合；
 ## 本类只声明界面、选择器与参数面板；组合的组装归处理器。
 extends FaceLab
 ## 舞台场景：处理器按它实例化右侧展示节点
@@ -66,7 +66,7 @@ func _create_handler() -> LabHandler:
 	return ShaderLabHandler.new(data)
 
 ## 判据入口：屏蔽 _ready 时由空壳调用，只建参数库、处理器与界面
-## @side_effect
+## @override
 func _lab_boot() -> void:
 	data = LabData.new()
 	if lab_id.is_empty():

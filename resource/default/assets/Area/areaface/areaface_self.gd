@@ -16,10 +16,20 @@ extends AreaFace
 var character_position: Vector2
 ## 角色卡对位补间槽位
 var layout_tween: Tween = null
+## 面板屏内位（就绪时记录一次）
+var _original_position: Vector2
+## 面板移入补间槽位
+var panel_tween: Tween = null
 
+## 层视差运行时实例
+var _parallax: LayerParallaxRuntime = null
 #==consts==
 ## 角色卡对位补间时长（秒）
 const CARD_MOVE_TIME: float = 0.1
+## 面板移入补间时长（秒）
+const PANEL_ENTER_TIME: float = 0.3
+## 层视差运行时
+const LayerParallaxRuntime = preload("res://core/Class/Face/Utils/LayerParallaxRuntime.gd")
 
 #==lifecycle==
 ## 就绪：登记玩家区并接线尺寸/按钮回调。
@@ -28,7 +38,23 @@ func _ready() -> void:
 	request_area(RenderArea.DefaultArea.PLAYERS)
 	_setup_character_pivot.call_deferred()
 	character_container.resized.connect(_update_character_pivot)
+	_setup_parallax()
 	select_button.pressed.connect(_on_select_button_pressed)
+	_original_position = position
+	position = UIAnimationUtils.compute_offscreen_position(self, get_viewport_rect().size)
+
+#==parallax==
+## 建立层表：背板最远、立绘中层、能力条最近；选择按钮不参与位移
+## @internal
+func _setup_parallax() -> void:
+	_parallax = LayerParallaxRuntime.new()
+	_parallax.setup(self, [$Backgound, $BackgoundCharacter, $BackgoundAbility], [0.30, 0.55, 0.80])
+
+## 每帧：按指针位置更新层视差
+## @override
+func _process(delta: float) -> void:
+	if _parallax != null:
+		_parallax.update(delta, get_viewport().get_mouse_position())
 
 #==hooks==
 ## 进入区域：向区域广播一次入区渲染请求。
@@ -56,6 +82,7 @@ func tween_update(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 ## @override @signal_listener
 func _connect_to_area(target_area: RenderArea) -> void:
 	super._connect_to_area(target_area)
+	_watch_game_start(target_area)
 	if target_area is not RenderAreaPlayers:
 		return
 	if target_area.local_player:
@@ -68,6 +95,7 @@ func _disconnect_from_area(target_area: RenderArea) -> void:
 	if target_area is RenderAreaPlayers:
 		if target_area.local_player_received.is_connected(_on_local_player_received):
 			target_area.local_player_received.disconnect(_on_local_player_received)
+	_unwatch_game_start(target_area)
 	super._disconnect_from_area(target_area)
 
 #==tween==
@@ -85,6 +113,36 @@ func card_move(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 ## @atomic
 static func do_card_align(tween: Tween, card: RenderItem, target_position: Vector2) -> void:
 	tween.tween_property(card, ^"position", target_position, CARD_MOVE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+#==panel_entry==
+## 订阅开局标志：首个阶段渲染请求到达后把面板移回屏内位；已开局则立即移入
+## @signal_listener
+func _watch_game_start(target_area: RenderArea) -> void:
+	var state: RenderStateManager = target_area.render_context.state_manager if target_area.render_context else null
+	if not state:
+		return
+	if state.game_started:
+		_enter_panel()
+		return
+	if not state.game_started_notified.is_connected(_on_game_started):
+		state.game_started_notified.connect(_on_game_started, CONNECT_ONE_SHOT)
+## 退订开局标志
+## @signal_listener
+func _unwatch_game_start(target_area: RenderArea) -> void:
+	var state: RenderStateManager = target_area.render_context.state_manager if target_area.render_context else null
+	if state and state.game_started_notified.is_connected(_on_game_started):
+		state.game_started_notified.disconnect(_on_game_started)
+## 开局：把面板补间回屏内位
+## @signal_listener
+func _on_game_started() -> void:
+	_enter_panel()
+## 面板移入：从屏外位补间回屏内位，完成后重算角色卡对位
+## @atomic
+func _enter_panel() -> void:
+	var tween: Tween = create_tween()
+	UIAnimationUtils.do_panel_enter(tween, self, _original_position, PANEL_ENTER_TIME)
+	tween.finished.connect(render_update)
+	panel_tween = UIAnimationUtils.replace_tween(panel_tween, tween)
 
 #==internal==
 ## 延迟设置角色枢轴（等待容器尺寸就绪）

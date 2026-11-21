@@ -24,6 +24,8 @@ var _preview_manager: DefencePreviewManager = null
 var _float_start_time: float = 0.0
 ## 每张卡片的基准 Y 坐标缓存（键为 instance_id）
 var _float_base_y: Dictionary[int, float] = {}
+## 当前视差位移（屏幕像素，已平滑）
+var _parallax_offset: Vector2 = Vector2.ZERO
 ## 玩家区域引用
 var _players_area: RenderAreaPlayers = null
 ## 本地玩家接收回调（用于绑定/解绑）
@@ -38,6 +40,22 @@ const DefenceAnimationManager = preload("defence_animation_manager.gd")
 const DefencePreviewManager = preload("defence_preview_manager.gd")
 ## 补间动画时长（秒）
 const TWEEN_TIME: float = 0.2
+## 层视差换算工具
+const LayerParallax = preload("res://core/Class/Face/Utils/LayerParallax.gd")
+## 视差深度系数
+const PARALLAX_DEPTH: float = 0.60
+## 推离幅度（屏幕像素）
+const PARALLAX_PUSH: float = 30.0
+## 推离的深度混入量（很小）
+const PARALLAX_PUSH_MIX: float = 0.15
+## 吸向幅度（屏幕像素）
+const PARALLAX_PULL: float = 3.0
+## 吸向的深度指数
+const PARALLAX_PULL_POWER: float = 2.5
+## 指针死区
+const PARALLAX_DEADZONE: float = 0.08
+## 跟随平滑（每秒衰减率）
+const PARALLAX_FOLLOW: float = 10.0
 
 #==enums==
 ## 展示模式：自动/手动
@@ -60,12 +78,46 @@ func _ready() -> void:
 	area_target_position = original_position
 	area_target_size = original_size
 	_update_total_scale_factor()
+
 ## 每帧：驱动预览延迟计时，并在预览模式下更新浮动画。
 ## @override
 func _process(delta: float) -> void:
 	_preview_manager.update(delta)
 	if _preview_manager.preview_mode and area and not area.items_pool.is_empty():
 		_update_floating()
+	_update_card_positions(delta)
+
+#==parallax==
+## 计算当前视差位移（屏幕像素）：推离 + 吸向，量化后按区域缩放折回局部
+## @internal
+func _compute_parallax_offset() -> Vector2:
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var mouse_position: Vector2 = get_viewport().get_mouse_position()
+	var pointer: Vector2 = LayerParallax.normalize_pointer(mouse_position, viewport_size, PARALLAX_DEADZONE)
+	var region_transform: Transform2D = get_global_transform()
+	var center_global: Vector2 = region_transform * (size * 0.5)
+	var push: Vector2 = LayerParallax.push_vector(pointer, PARALLAX_DEPTH, PARALLAX_PUSH, PARALLAX_PUSH_MIX)
+	var pull: Vector2 = LayerParallax.pull_vector(center_global, mouse_position, PARALLAX_DEPTH, PARALLAX_PULL, PARALLAX_PULL_POWER)
+	return LayerParallax.offset_for(push + pull, region_transform.get_scale().x)
+
+## 每帧：非预览卡牌的位置按「落点 + 视差偏移」逐帧逼近；缩放与旋转仍由补间负责
+## @internal
+func _update_card_positions(delta: float) -> void:
+	if not area or area.items_pool.is_empty() or target_position.is_empty():
+		return
+	var target_offset: Vector2 = Vector2.ZERO if _preview_manager.preview_mode else _compute_parallax_offset()
+	_parallax_offset = _parallax_offset.lerp(target_offset, 1.0 - exp(-PARALLAX_FOLLOW * delta))
+	var cards: Array[RenderItem] = area.items_pool
+	var pool_size: int = cards.size()
+	var scale_target: Vector2 = Vector2(total_scale_factor, total_scale_factor)
+	for i in pool_size:
+		var card: RenderItem = cards[i]
+		if card == null or card.dragged or i >= target_position.size():
+			continue
+		if _preview_manager.preview_mode and i >= pool_size - 2:
+			continue
+		var local_target: Vector2 = target_position[i] + card.get_centered_offset(scale_target) + _parallax_offset
+		card.position = UIAnimationUtils.smooth_move_animation(card.position, local_target)
 
 #==queries==
 ## 获取当前关联的玩家。

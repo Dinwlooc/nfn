@@ -24,7 +24,7 @@
 
 ```
 res://lab/shader_lab/shader_lab.tscn
-（无头不再跑用例；判据走 `.dsh/custom_tools/business/godot/shader_lab_check.mjs`）
+（无头不跑预设；判据走 `.dsh/custom_tools/business/godot/shader_lab_check.mjs`）
 ```
 
 `R` 重新加载（换资源后）；`Esc` 回主菜单。
@@ -51,7 +51,7 @@ res://lab/shader_lab/shader_lab.tscn
 - 只对 **`instance uniform`** 生效；普通 `uniform` 两侧会完全相同。
 - 基线严格来说就是**只读图片资源**的效果，与着色器参数无关。
 - 参数面板按**源文件文本**解析，脚本生成的 uniform 或宏拼接出来的声明不会被识别。
-- 着色器实验室只有自由对拍一种形态；用例对拍与真实场景并排对拍均已按 Owner 决定移除。
+- 着色器实验室只有自由对拍一种形态；与真实场景并排对拍已按 Owner 决定移除。
 
 ## 与模组
 

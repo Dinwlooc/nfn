@@ -20,6 +20,8 @@ var card_on_drag: DragState = null
 var main_stage: StagePack = null
 ## 临时阶段数据包栈：下标 0 为栈底，栈顶为当前临时阶段
 var temp_stage_stack: Array[StagePack] = []
+## 是否已收到首个阶段渲染请求（渲染端统一的开局标志）
+var game_started: bool = false
 
 ## 拖拽信号
 signal dragging_started(item: RenderItem)
@@ -30,6 +32,9 @@ signal dragging_canceled(item: RenderItem)
 ## 阶段集合通知
 ## @emitter
 signal stage_set_notified(stage_set: RenderRequest.StageSet)
+## 游戏开始：渲染端统一以首次收到阶段渲染请求为开局标志，只发一次
+## @emitter
+signal game_started_notified()
 
 # ================= 拖拽管理 =================
 ## 记录拖拽起点区域与卡牌
@@ -68,6 +73,10 @@ func notify_stage_set(stage_set: RenderRequest.StageSet) -> void:
 		return
 	_merge_stage_pack(stage_set)
 	stage_set_notified.emit(stage_set)
+	if game_started:
+		return
+	game_started = true
+	game_started_notified.emit()
 
 ## 取当前阶段名（临时阶段优先，回退主阶段）
 func get_current_stage_name() -> StringName:

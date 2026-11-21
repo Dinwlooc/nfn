@@ -139,11 +139,6 @@ static func _do_single_card(
 		if card.global_position != global_target:
 			master_tween.tween_property(card, ^"global_position", global_target, anim_time) \
 				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	else:
-		var card_local_target: Vector2 = target_local + card.get_centered_offset(scale_target)
-		if card.position != card_local_target:
-			master_tween.tween_property(card, ^"position", card_local_target, anim_time) \
-				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	if card.scale != scale_target:
 		master_tween.tween_property(card, ^"scale", scale_target, anim_time) \
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

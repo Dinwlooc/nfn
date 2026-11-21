@@ -1,6 +1,9 @@
 ## 角色目标卡：把玩家的 HP/MP 变化转成受击演出，并驱动选中态的位移/缩放与图标浮动。
 extends ItemFace
 
+## 层视差运行时
+const LayerParallaxRuntime = preload("res://core/Class/Face/Utils/LayerParallaxRuntime.gd")
+
 #==vars==
 ## 选中图标节点
 @onready var selected_icon: TextureRect = $SelectedIcon
@@ -16,6 +19,8 @@ extends ItemFace
 @onready var area_hand: AreaFace = $AreaFaceHand
 ## 选中态补间槽位（同一时刻只保留一条）
 var selection_tween: Tween = null
+## 层视差运行时实例
+var _parallax: LayerParallaxRuntime = null
 ## 原始位置（用于还原图标）
 var _icon_original_position: Vector2
 ## 原始大小（用于还原角色容器）
@@ -84,11 +89,22 @@ func _ready() -> void:
 	_properties_original_position = properties.position
 	_properties_original_scale = properties.scale
 	character.set_mirrored(true)
+	_setup_parallax()
 ## 物理帧：选中图标可见时驱动浮动。
 ## @override
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	if _parallax != null:
+		_parallax.update(delta, get_viewport().get_mouse_position())
 	if selected_icon.visible:
 		_update_floating_icon()
+#==parallax==
+## 建立层表：背板与子面板绝对写回；立绘连同剪切框一起走 CharacterPanel 的相对叠加；选中图标只算位移
+## @internal
+func _setup_parallax() -> void:
+	_parallax = LayerParallaxRuntime.new()
+	_parallax.setup(self, [$Backgound, $AreaFaceDenfence, $AreaFaceHand], [0.30, 0.65, 0.75])
+	_parallax.add($CharacterPanel, 0.60, true, true)
+	_parallax.add($SelectedIcon, 0.90, false)
 
 #==hooks==
 ## 数据更新：绑定新卡牌、接线子区域，并在同一张卡上比较 HP/MP 变化。
@@ -229,7 +245,7 @@ func _restore_original_pose() -> void:
 ## @internal
 func _update_floating_icon() -> void:
 	var offset: float = FLOAT_AMPLITUDE * sin(Time.get_ticks_msec() * FLOAT_FREQUENCY)
-	selected_icon.position = _icon_original_position + Vector2(0, offset)
+	selected_icon.position = _icon_original_position + Vector2(0, offset) + _parallax.shift_of(selected_icon)
 ## 处理受击事件（转发给 CharacterFace）
 ## @external
 func _handle_damage_event(event: RenderEvent) -> void:

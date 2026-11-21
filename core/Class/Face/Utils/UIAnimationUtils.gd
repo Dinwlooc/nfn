@@ -52,6 +52,18 @@ static func do_rect(
 	tween.set_parallel(true)
 	tween.tween_property(control, ^"position", target_position, duration).set_trans(trans_type).set_ease(ease_type)
 	tween.tween_property(control, ^"size", target_size, duration).set_trans(trans_type).set_ease(ease_type)
+## 面板移入装配：把 Control 的 position 补间到屏内位（单轴横向入场）
+## 装配方法只填充传入的 tween，不创建 tween、不持有槽位、不判条件。
+## @atomic
+static func do_panel_enter(
+	tween: Tween,
+	control: Control,
+	target_position: Vector2,
+	duration: float,
+	trans_type: Tween.TransitionType = Tween.TRANS_CUBIC,
+	ease_type: Tween.EaseType = Tween.EASE_OUT
+) -> void:
+	tween.tween_property(control, ^"position", target_position, duration).set_trans(trans_type).set_ease(ease_type)
 #==slots==
 ## 替换补间槽位：kill 旧补间，把新补间交还给槽位字段。空补间由调用点的卫语句拦住。
 ## 表现层每类动画只占一个槽位，同一槽位任一时刻只保留一条补间。
@@ -85,6 +97,14 @@ static func generate_coordinates(card_container_position:Vector2,card_container_
 		var x: float = ((i as float + 1) / (card_count + 1)) * width
 		coordinates.append(Vector2(x, y_center)+card_container_position)
 	return coordinates
+## 计算面板横移出屏幕的位置：按面板中心相对视口中心的方位向外整幅移出，右侧贴视口右缘、左侧贴视口左缘
+## 入参与返回值均为面板自身的局部坐标，供调用点直接写入 position
+## @pure
+static func compute_offscreen_position(panel: Control, viewport_size: Vector2) -> Vector2:
+	var extent: float = panel.size.x * panel.get_global_transform().get_scale().x
+	var center_x: float = panel.global_position.x + extent * 0.5
+	var target_x: float = viewport_size.x if center_x >= viewport_size.x * 0.5 else -extent
+	return panel.position + Vector2(target_x - panel.global_position.x, 0.0)
 ## 使用前要注意主题资源的共享性。需要时应当前提对主题资源进行唯一化。
 ## @atomic
 static func blink_stylebox_bg_color(block: Panel, from_color: Color, to_color: Color,  half_duration: float = 0.1 , times: int = 2) -> Tween:

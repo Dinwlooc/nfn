@@ -47,3 +47,4 @@ nfn:burn_fireball,火球术,fireball
 nfn:burn_fireball_DES,指定一名玩家，使你对其施加5层[燃烧]。,
 nfn:gun_repair_depot,维修场,repair_depot
 nfn:gun_repair_depot_DES,指定所有玩家，使你治疗其4点生命。对我方玩家额外治疗2点精神。,
+nfn:hint_click_center_start,点击中心 启动模拟,Click the center to start simulation

@@ -93,6 +93,7 @@ scale = Vector2(0.9, 0.9)
 [node name="CharacterContainer" parent="CharacterPanel/Anchor" unique_id=1774446217 instance=ExtResource("4_ct3wd")]
 clip_contents = false
 layout_mode = 1
+anchors_preset = -1
 offset_left = -35.555176
 offset_top = 28.888224
 offset_right = 169.85931

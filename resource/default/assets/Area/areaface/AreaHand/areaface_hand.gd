@@ -77,6 +77,7 @@ func _ready() -> void:
 	discard_cards_ui.visible = false
 	if area and area.items_pool.size() > 0:
 		_request_sort()
+
 ## 物理帧：悬停时每帧驱动正弦浮动，否则隔帧驱动；并处理延迟交换检测。
 ## @override
 func _physics_process(_delta: float) -> void:

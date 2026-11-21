@@ -1,16 +1,15 @@
-## 启动区：背景图中心的透明点击区域。左键点击发出开始游戏请求；开局前背景不进入泛光脉冲，首个主阶段到来后开启脉冲并停用本区域。
+## 启动区：背景图中心的透明点击区域。未开局时鼠标悬停显示手形光标；左键点击发出开始游戏请求并停用本区域。
 extends Control
 
-## 场景未配置脉冲速度时的兜底值
-const PULSE_SPEED_FALLBACK := 1.0
-## 关联渲染根（取渲染上下文以监听主阶段通知）
-@export var render_control: RenderControl = null
-## 关联背景泛光节点（脉冲的作用对象）
-@export var background_effect: CanvasItem = null
-## 就绪：接线点击、关闭开局前的泛光脉冲并接入首个主阶段
+#==lifecycle==
+## 就绪：接线点击、显示手形光标并接入开局标志
 ## @side_effect
 func _ready() -> void:
 	gui_input.connect(_on_gui_input)
+	mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	_bind_game_start()
+
+#==hooks==
 ## 左键点击：停止接收鼠标并发出开始游戏请求
 ## @side_effect @emitter
 func _on_gui_input(event: InputEvent) -> void:
@@ -19,7 +18,35 @@ func _on_gui_input(event: InputEvent) -> void:
 		return
 	_stop_input()
 	GlobalConsole.c_start.emit()
-## 停止接收鼠标：本区域此后对点击透明
+
+#==internal==
+## 停止接收鼠标：本区域此后对点击透明，光标恢复箭头
 ## @side_effect
 func _stop_input() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	mouse_default_cursor_shape = Control.CURSOR_ARROW
+## 接入开局标志：已注册则立即读取，否则等注册信号
+## @signal_listener
+func _bind_game_start() -> void:
+	if GlobalRegistry.has_singleton(GlobalRegistry.RENDER_CONTROL_TYPE):
+		_on_render_control_registered(GlobalRegistry.get_singleton(GlobalRegistry.RENDER_CONTROL_TYPE))
+		return
+	if not GlobalRegistry.singleton_registered.is_connected(_on_singleton_registered):
+		GlobalRegistry.singleton_registered.connect(_on_singleton_registered)
+## 单例注册：只处理渲染根
+## @signal_listener
+func _on_singleton_registered(type: String, instance: Node) -> void:
+	if type != String(GlobalRegistry.RENDER_CONTROL_TYPE):
+		return
+	_on_render_control_registered(instance)
+## 渲染根就绪：已开局则停用本区域，否则等开局通知
+## @signal_listener
+func _on_render_control_registered(instance: Node) -> void:
+	var render_control: RenderControl = instance as RenderControl
+	if not render_control:
+		return
+	var state: RenderStateManager = render_control.render_context.state_manager
+	if state.game_started:
+		_stop_input()
+		return
+	state.game_started_notified.connect(_stop_input, CONNECT_ONE_SHOT)
