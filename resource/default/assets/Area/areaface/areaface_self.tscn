@@ -19,7 +19,7 @@ texture_filter = 1
 layout_mode = 0
 offset_right = 196.0
 offset_bottom = 344.0
-color = Color(0.968627, 0.482353, 0.219608, 0.411765)
+color = Color(0.84680575, 0.38169605, 0.09705738, 0.2)
 
 [node name="BackgoundCharacter" type="ColorRect" parent="." unique_id=1893031539]
 texture_filter = 1
@@ -32,10 +32,11 @@ offset_left = 5.30803
 offset_top = 15.0
 offset_right = 184.308
 offset_bottom = 293.0
-color = Color(0.977015, 0.823146, 0.738518, 0.486275)
+color = Color(0, 0, 0, 0.21176471)
 
 [node name="CharacterContainer" parent="BackgoundCharacter" unique_id=1440807403 instance=ExtResource("2_en3oj")]
 layout_mode = 1
+anchors_preset = -1
 anchor_left = -0.68700004
 anchor_top = -0.029000001
 anchor_right = -0.68700004

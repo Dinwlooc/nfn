@@ -22,7 +22,7 @@
 [ext_resource type="PackedScene" uid="uid://b025ean41nrj6" path="res://core/tscn/game/console.tscn" id="15_vjhr3"]
 [ext_resource type="PackedScene" uid="uid://fv1p6oclb4qh" path="res://resource/default/assets/Area/areaface/AreaDenfence/areaface_defence.tscn" id="16_jjejj"]
 [ext_resource type="Script" uid="uid://bvofibqljxcmr" path="res://core/Class/Other/Agent/Manager/AgentManager.gd" id="21_ros0v"]
-[ext_resource type="PackedScene" path="res://resource/default/assets/Subtitle/subtitle_manager.tscn" id="17_sub"]
+[ext_resource type="PackedScene" path="res://resource/default/assets/Subtitle/center_text_face.tscn" id="17_sub"]
 
 [node name="MainGame" type="Node2D" unique_id=264974230]
 script = ExtResource("1_main")
@@ -67,13 +67,13 @@ offset_top = 270.0
 offset_right = 980.0
 offset_bottom = 630.0
 script = ExtResource("8_22a37")
-[node name="SubtitleManager" parent="Control/AreaCenter/Backgound" instance=ExtResource("17_sub") node_paths=PackedStringArray("render_control")]
+[node name="CenterTextFace" parent="Control/AreaCenter" instance=ExtResource("17_sub") node_paths=PackedStringArray("render_control")]
 layout_mode = 0
-offset_left = 500.0
-offset_top = 510.0
-offset_right = 1100.0
-offset_bottom = 570.0
-render_control = NodePath("../../..")
+offset_left = 515.0
+offset_top = 525.0
+offset_right = 1133.0
+offset_bottom = 587.0
+render_control = NodePath("../..")
 
 [node name="StageFace" type="Control" parent="Control/AreaCenter" unique_id=734852879 node_paths=PackedStringArray("render_control")]
 anchors_preset = 0
@@ -85,14 +85,12 @@ script = ExtResource("6_t5eyl")
 render_control = NodePath("../..")
 metadata/_custom_type_script = "uid://btwt7f8flx66t"
 
-[node name="RenderTimer" type="Label" parent="Control/AreaCenter" unique_id=2133939479]
+[node name="RenderTimer" type="Control" parent="Control/AreaCenter" unique_id=2133939479]
 layout_mode = 0
 offset_left = 58.0
 offset_top = 12.0
-offset_right = 147.0
-offset_bottom = 42.0
-theme_override_font_sizes/font_size = 100
-text = "0"
+offset_right = 178.0
+offset_bottom = 132.0
 script = ExtResource("8_ppvbj")
 
 [node name="Arrow" type="Control" parent="Control/AreaCenter" unique_id=810185477 node_paths=PackedStringArray("render_control")]

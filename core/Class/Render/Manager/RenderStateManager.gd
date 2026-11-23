@@ -11,10 +11,8 @@ class DragState:
 
 ## 公共玩家 id
 const PUBLIC_PLAYER_ID: int = GlobalConstants.PUBLIC_PLAYER_ID
-
 ## 当前拖拽中的卡牌状态
 var card_on_drag: DragState = null
-
 # 阶段状态
 ## 主阶段数据包（无则 null）
 var main_stage: StagePack = null

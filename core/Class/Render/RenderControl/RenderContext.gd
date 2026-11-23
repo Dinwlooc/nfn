@@ -14,12 +14,16 @@ var item_manager: RenderItemManager
 var state_manager: RenderStateManager
 ## 操作请求管理器
 var operation_manager: OperationManager
+## 文本管理器
+var text_manager: CenterTextManager
 
 ## 构造：创建三个默认管理器
 func _init() -> void:
 	area_manager = RenderAreaManager.new()
 	item_manager = RenderItemManager.new()
 	state_manager = RenderStateManager.new()
+	text_manager = CenterTextManager.new()
+	text_manager.setup_defaults(self)
 
 # ================= 阶段通知接口 =================
 ## 通知阶段集合

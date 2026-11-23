@@ -48,3 +48,12 @@ nfn:burn_fireball_DES,指定一名玩家，使你对其施加5层[燃烧]。,
 nfn:gun_repair_depot,维修场,repair_depot
 nfn:gun_repair_depot_DES,指定所有玩家，使你治疗其4点生命。对我方玩家额外治疗2点精神。,
 nfn:hint_click_center_start,点击中心 启动模拟,Click the center to start simulation
+nfn:stage_Null,空阶段,Void
+nfn:stage_Start,开始,Start
+nfn:stage_Draw,抽牌,Draw
+nfn:stage_Discard,弃牌,Discard
+nfn:stage_Main,主阶段,Main
+nfn:stage_DefenseBattle,守区攻防,Defense Zone
+nfn:stage_GroupAttack,群体攻击,Group Attack
+nfn:stage_Dying,濒死,Dying
+nfn:stage_End,结束,End
