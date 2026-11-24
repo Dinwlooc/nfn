@@ -22,6 +22,8 @@ const AMPLITUDE: float = 0.3
 const TWEEN_TIME: float = 0.2
 ## 拖拽补间时长（秒）
 const DRAG_TWEEN_TIME: float = 0.1
+## 释放过冲时长（秒）
+const RELEASE_OVERSHOOT_TIME: float = 0.2
 ## 复位时长（秒，常规补间的一半）
 const RESET_TIME: float = TWEEN_TIME / 2.0
 ## 选中卡牌的竖直偏移
@@ -128,6 +130,18 @@ static func do_drag_follow(drag_tween: Tween, card: RenderItem, mouse_pos: Vecto
 	drag_tween.tween_property(card, ^"rotation", ROTATION_NEUTRAL, RESET_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	drag_tween.tween_property(card, ^"scale:x", SCALE_NEUTRAL, RESET_TIME) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+## 释放过冲装配：沿释放瞬间鼠标与卡面中心的位移外延一步，制造伪惯性收尾。
+## @atomic
+static func do_release_overshoot(tween: Tween, card: RenderItem, mouse_pos: Vector2, total_scale_factor: float) -> void:
+	var offset: Vector2 = mouse_pos - card.center_position
+	tween.set_parallel(true)
+	tween.tween_property(card, ^"center_position", mouse_pos + offset, RELEASE_OVERSHOOT_TIME) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(card, ^"rotation", ROTATION_NEUTRAL, RELEASE_OVERSHOOT_TIME) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(card, ^"scale", Vector2(total_scale_factor, total_scale_factor), RELEASE_OVERSHOOT_TIME) \
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 #==pure==

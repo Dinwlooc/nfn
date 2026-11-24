@@ -57,6 +57,9 @@ signal request_drag(item:RenderItem)
 ## 请求外部取消拖拽
 ## @requester
 signal request_cancel_dragged(item:RenderItem)
+## 请求外部执行释放（拖拽收尾由外部演出接管）
+## @requester
+signal request_release(item:RenderItem)
 ## 请求外部处理牌面
 ## @requester
 signal request_face(item:RenderItem)
@@ -173,6 +176,11 @@ func request_dragging():
 func request_cancel_dragging():
 	dragging = DraggingState.READY
 	request_cancel_dragged.emit(self)
+
+## 请求外部执行释放（拖拽收尾由外部演出接管）
+## @requester
+func request_releasing():
+	request_release.emit(self)
 
 ## 判断鼠标位置是否落在本卡牌矩形内
 func is_hovering(mouse_pos):

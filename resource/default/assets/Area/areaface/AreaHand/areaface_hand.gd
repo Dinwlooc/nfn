@@ -16,6 +16,8 @@ var total_scale_factor: float = 1.0
 var layout_tween: Tween = null
 ## 拖拽跟随补间槽位（同一时刻只保留一条）
 var drag_tween: Tween = null
+## 释放收尾中的卡牌（过渡期拦住拖拽跟随）
+var _release_card: RenderItem = null
 ## 面板自身展开/收起补间槽位（同一时刻只保留一条）
 var panel_tween: Tween = null
 ## 排序管理器实例
@@ -143,6 +145,12 @@ func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 		return
 	if count_draggable_cards() == 0:
 		return
+	# 外部取消已接管该卡：终止释放收尾，位置交回排布补间
+	if _release_card and not _release_card.dragged:
+		if drag_tween and drag_tween.is_valid():
+			drag_tween.kill()
+		drag_tween = null
+		_release_card = null
 	var master_tween: Tween = create_tween()
 	HandAnimationManager.do_card_layout(master_tween, area.items_pool, target_position, total_scale_factor)
 	if render_event.get_type() == RenderEvent.DefaultType.SWAP_CARD:
@@ -153,6 +161,10 @@ func card_move(render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 ## 拖拽跟随：提交跟随补间并触发交换检测（单槽位提交）。
 ## @side_effect
 func dragging_move(card: RenderItem) -> void:
+	if _release_card:
+		if card == _release_card:
+			return
+		_release_card = null
 	var mouse_pos: Vector2 = get_global_mouse_position()
 	var next_drag_tween: Tween = create_tween()
 	HandAnimationManager.do_drag_follow(next_drag_tween, card, mouse_pos, total_scale_factor)
@@ -190,6 +202,15 @@ func _update_selection_ui() -> void:
 	var has_selection: bool = not area.get_selected_items().is_empty()
 	play_card_ui.visible = has_selection
 	discard_cards_ui.visible = has_selection
+## 释放收尾结束：清掉引用并结束拖拽，排布补间随后从过冲点接管回位。
+## 同一时刻只有一个释放收尾，故回调不携带参数绑定，避免用 bind 绑数据对象。
+## @internal @signal_once
+func _on_release_finished() -> void:
+	var card: RenderItem = _release_card
+	_release_card = null
+	if not is_instance_valid(card):
+		return
+	card.request_cancel_dragging()
 ## 尝试将拖拽卡牌与当前悬停卡牌交换。
 ## @side_effect
 func swap_cards(drag_card: RenderItem) -> void:
@@ -213,6 +234,31 @@ func _handle_operation_event(event: RenderEvent) -> void:
 	print("操作失败，状态码: ", status)
 
 #==signals_in==
+## 卡牌接入：在基类鼠标信号之外再接管释放请求。
+## @chain_override @signal_listener
+func connect_cards_signals(card: RenderItem) -> void:
+	super.connect_cards_signals(card)
+	card.request_release.connect(_on_card_released)
+## 卡牌断开：清掉释放引用后交给基类清理。
+## @chain_override @signal_listener
+func disconnect_card_signals(card: RenderItem) -> void:
+	if _release_card == card:
+		_release_card = null
+	super.disconnect_card_signals(card)
+	card.request_release.disconnect(_on_card_released)
+## 卡牌请求释放：仍在拖拽的卡先演过冲收尾，结束后再结束拖拽。
+## @signal_listener
+func _on_card_released(card: RenderItem) -> void:
+	if not card:
+		return
+	if not card.dragged:
+		card.request_cancel_dragging()
+		return
+	_release_card = card
+	var release_tween: Tween = create_tween()
+	HandAnimationManager.do_release_overshoot(release_tween, card, get_global_mouse_position(), total_scale_factor)
+	drag_tween = UIAnimationUtils.replace_tween(drag_tween, release_tween)
+	release_tween.finished.connect(_on_release_finished, CONNECT_ONE_SHOT)
 ## 快速排序按钮点击
 ## @signal_listener
 func _on_quick_sort_button_pressed() -> void:

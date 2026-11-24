@@ -1,4 +1,4 @@
-## 卡面表现基类：绑定一张 [RenderItem]，把数据更新与渲染请求分发到子类钩子，并提供回收用的重置契约。
+## 卡面表现基类（Face，表现控件）：绑定一张 [RenderItem]，把数据更新与渲染请求分发到子类钩子，并提供回收用的重置契约。
 extends Control
 class_name ItemFace
 

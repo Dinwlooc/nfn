@@ -67,7 +67,7 @@ func _ready() -> void:
 	var button: Button = get_node(^"Button")
 	button.button_down.connect(_on_button_down_selecting)
 	button.button_down.connect(_on_button_down_dragging)
-	button.button_up.connect(_on_button_up_cancel_dragging)
+	button.button_up.connect(_on_button_up_releasing_dragging)
 
 #==hooks==
 ## 数据更新：绑定新卡牌并重绘静态表现。
@@ -212,8 +212,8 @@ func _on_button_down_selecting() -> void:
 func _on_button_down_dragging() -> void:
 	if item:
 		item.request_dragging()
-## 按钮抬起：取消拖动
+## 按钮抬起：请求释放拖动（收尾演出由面板接管后再结束拖拽）
 ## @signal_listener
-func _on_button_up_cancel_dragging() -> void:
+func _on_button_up_releasing_dragging() -> void:
 	if item:
-		item.request_cancel_dragging()
+		item.request_releasing()

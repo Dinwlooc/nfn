@@ -163,3 +163,76 @@ func quickly_select(players_area: RenderAreaPlayers, item: RenderItem) -> void:
 				players_area.on_select(s)
 			if not has_self:
 				players_area.on_select(players_area.local_player)
+
+#==input==
+## 输入事件处理：手牌拖拽经过本区时把悬停转为目标选择，并在本区释放时触发打出。
+## @chain_override
+func _input(event: InputEvent) -> void:
+	super._input(event)
+	if not visible:
+		return
+	if not get_dragged_hand_card():
+		return
+	if event is InputEventMouseMotion:
+		hover_select_target()
+		return
+	try_play_on_drop(event)
+
+## 取当前拖拽中的手牌；非手牌拖拽时返回 null。
+## @nullable_pure
+func get_dragged_hand_card() -> RenderItem:
+	if not area:
+		return null
+	var context: RenderContext = area.render_context
+	if not context:
+		return null
+	var card: RenderItem = context.get_dragged_card()
+	if not card:
+		return null
+	if card.area_name != RenderArea.DefaultArea.HAND:
+		return null
+	return card
+
+## 按鼠标位置取命中的玩家卡；本地玩家与空位返回 null。
+## @nullable_pure
+func get_player_by_mouse() -> RenderItem:
+	if not area is RenderAreaPlayers:
+		return null
+	var players_area: RenderAreaPlayers = area as RenderAreaPlayers
+	var mouse_position: Vector2 = get_global_mouse_position()
+	for player: RenderItem in players_area.items_pool:
+		if player == players_area.local_player:
+			continue
+		if Rect2(player.global_position, player.get_item_size()).has_point(mouse_position):
+			return player
+	return null
+
+## 拖拽悬停选择：命中未选中的玩家卡时转为选中；已选中的不重复处理。
+## @external
+func hover_select_target() -> void:
+	var player: RenderItem = get_player_by_mouse()
+	if not player:
+		return
+	if player.selected:
+		return
+	var players_area: RenderAreaPlayers = area as RenderAreaPlayers
+	players_area.on_select(player)
+
+## 落点打出：鼠标在本区内释放时交给操作管理器，与出牌按钮同一条入口。
+## @external
+func try_play_on_drop(event: InputEvent) -> void:
+	if not event is InputEventMouseButton:
+		return
+	var mouse_event: InputEventMouseButton = event as InputEventMouseButton
+	if mouse_event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if mouse_event.pressed:
+		return
+	if not Rect2(Vector2.ZERO, size).has_point(get_local_mouse_position()):
+		return
+	if not render_context:
+		return
+	var op_manager: OperationManager = render_context.get_operation_manager()
+	if not op_manager:
+		return
+	op_manager.upload_play_card()
