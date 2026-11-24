@@ -11,7 +11,7 @@ var item_type: StringName
 #==hooks==
 ## 数据更新钩子：把 [RenderItem] 的数据归约为静态表现（文本、贴图、花色、底色）。
 ## @hook
-func data_update(item: RenderItem, render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
+func data_update(_item: RenderItem, _render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	pass
 ## 渲染更新钩子：由卡牌的渲染请求触发，默认委派给补间更新。
 ## @hook @delegates(tween_update)

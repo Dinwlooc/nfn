@@ -15,7 +15,7 @@ static func generate_command(
 	target_card: Card,
 	target_area: AreaDefence,
 	x: int,
-	game_state: GameState
+	_game_state: GameState
 ) -> BehaviorCommand:
 	var command: BehaviorCommand
 	if x >= target_card.get_attribute(&"power"):

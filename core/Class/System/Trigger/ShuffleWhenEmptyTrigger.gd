@@ -6,7 +6,7 @@ func _init(game_state: GameState, command_bus: CommandBus) -> void:
 	super._init(game_state, command_bus)
 	game_state.all_commands_completed.connect(_on_idle)
 ## @signal_listener 命令队列空闲时检查抽牌区
-func _on_idle(game_state: GameState) -> void:
+func _on_idle(_game_state_overriding: GameState) -> void:
 	if not _game_state:
 		return
 	var drawing: AreaDrawing = _game_state.get_drawing_area()

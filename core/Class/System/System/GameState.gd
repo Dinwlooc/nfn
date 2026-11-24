@@ -11,6 +11,7 @@ var timer: GameTimer
 ## 在线用户表：用户 id → 用户
 var users: Dictionary[int, User]
 ## 命令堆栈是否正在处理中
+@warning_ignore("unused_private_class_variable")  ## 由 CommandTrigger 与 System 跨类读写，类内不引用
 var _process_active := false
 ## 阶段管理器
 var stage_manager: StageManager = StageManager.new()

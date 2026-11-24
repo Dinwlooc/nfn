@@ -113,7 +113,7 @@ static func do_layout_reset(master_tween: Tween, cards: Array[RenderItem], total
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 ## 拖拽跟随补间：跟鼠标走，随后回正旋转与缩放。
 ## @atomic
-static func do_drag_follow(drag_tween: Tween, card: RenderItem, mouse_pos: Vector2, total_scale_factor: float) -> void:
+static func do_drag_follow(drag_tween: Tween, card: RenderItem, mouse_pos: Vector2, _total_scale_factor: float) -> void:
 	var dx: float = card.position.x - mouse_pos.x
 	var target_rot: float = _compute_rotation_from_dx(dx)
 	var target_scale_x: float = _compute_scale_from_dx(dx)

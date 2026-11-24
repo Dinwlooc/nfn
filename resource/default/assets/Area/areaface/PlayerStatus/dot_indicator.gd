@@ -18,8 +18,6 @@ var _units: Array[DotUnit] = []      ## 所有 DotUnit 实例
 var _capacity: int = 0               ## 总点数容量
 ## 闪烁时长（秒）
 var _blink_duration: float = 0.2
-## 淡出时长（秒）
-var _fade_duration: float = 0.2
 
 ## 设置总点数容量，调整单位数量。
 func set_capacity(new_max: int) -> void:

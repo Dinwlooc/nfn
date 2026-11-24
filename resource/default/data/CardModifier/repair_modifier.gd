@@ -8,7 +8,7 @@ extends Modifier
 
 ## 技能阶段：对技能目标玩家施加治疗
 ## @side_effect
-func process(ctx: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
+func process(ctx: CommandContext, _state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
 	if RuleModifierRuntime.should_skip(modifier_ctx):
 		return modifier_ctx
 	if not RuleModifierTiming.is_skill_phase(ctx, creator as Card):

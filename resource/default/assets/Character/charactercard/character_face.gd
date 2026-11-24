@@ -295,7 +295,7 @@ func sync_anchor() -> void:
 #==internal==
 ## 处理治疗：若硬直且剩余生命>0，则播放起身动画
 ## @internal
-func _handle_heal(hp_damage: int, remaining_hp_ratio: float) -> void:
+func _handle_heal(_hp_damage: int, remaining_hp_ratio: float) -> void:
 	if _is_down_stagger and remaining_hp_ratio > 0.0:
 		_play_recover_from_down_animation(remaining_hp_ratio)
 ## 播放物理受击动画（正常或倒地）
@@ -357,7 +357,7 @@ func _play_down_animation(factor: float, T: float, dir: float) -> void:
 	damage_tween.chain().tween_callback(_on_down_anim_finished)
 ## 播放魔法受击动画（仅闪蓝，帧变化）
 ## @internal
-func _play_magic_hit_animation(mp_damage: int, flash_duration: float) -> void:
+func _play_magic_hit_animation(_mp_damage: int, flash_duration: float) -> void:
 	_flash_sprite(Color.BLUE, flash_duration)
 	if character:
 		character.frame = profile.hit_frame if profile else 1

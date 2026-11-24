@@ -157,7 +157,7 @@ func _on_damage_phase(game_state: GameState, context_overriding: CommandContext 
 
 ## 纯修饰位点。设计如此。
 ## @hook
-func _on_effect_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+func _on_effect_phase(_game_state: GameState, _context_overriding: CommandContext = _context as Context) -> void:
 	pass
 
 ## @hook @operation(do_clear) @delegates(append_companion_command)
@@ -169,7 +169,7 @@ func _on_clear_phase(game_state: GameState, context_overriding: CommandContext =
 	append_companion_command(transfer_cmd)
 
 ## @hook @delegates(complete)
-func _on_done_phase(_game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+func _on_done_phase(_game_state: GameState, _context_overriding: CommandContext = _context as Context) -> void:
 	complete()
 
 ## @signal_once
@@ -219,7 +219,7 @@ func _on_card_area_changed(card: Card) -> void:
 
 ## 静态准备阶段：初始化守区，获取结算牌和对抗牌
 ## @atomic
-static func do_prepare(context: Context, game_state: GameState) -> void:
+static func do_prepare(context: Context, _game_state: GameState) -> void:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
 		return
@@ -234,7 +234,7 @@ static func do_prepare(context: Context, game_state: GameState) -> void:
 
 ## 静态攻击判断阶段：计算初始结算信息，需要时返回拼点命令
 ## @atomic
-static func do_attack_judge(context: Context, game_state: GameState) -> DuelCommand:
+static func do_attack_judge(context: Context, _game_state: GameState) -> DuelCommand:
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE
 		return null
@@ -250,7 +250,7 @@ static func do_attack_judge(context: Context, game_state: GameState) -> DuelComm
 	return null
 
 ## 静态伤害阶段：应用伤害和战意，返回需要伴生的命令
-static func do_damage(context: Context, game_state: GameState) -> Array[BehaviorCommand]:
+static func do_damage(context: Context, _game_state: GameState) -> Array[BehaviorCommand]:
 	var commands: Array[BehaviorCommand] = []
 	if context.is_virtual:
 		context.phase = Context.Phase.DONE

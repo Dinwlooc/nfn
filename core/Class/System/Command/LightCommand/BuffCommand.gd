@@ -162,7 +162,7 @@ static func do_send_update(context: Context, game_state: GameState) -> void:
 		return
 	RuleTrans.send_buff_modifiers_update(game_state, context.buff_modifiers, RenderRequest.ItemSet.EventType.UPDATE)
 ## @hook
-func _on_init_phase(_game_state: GameState, _context: Context) -> void:
+func _on_init_phase(_game_state: GameState, _context_overriding: Context) -> void:
 	pass
 ## @hook @operation(do_apply)
 func _on_apply_phase(game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:

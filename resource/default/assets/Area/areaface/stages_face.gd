@@ -364,7 +364,7 @@ func _start_temp_pull_back(index: int) -> void:
 
 # ==================== 通用清理 ====================
 ## 打断标签动画并立即回拉
-func _interrupt_and_pull(index: int, line: StageLine, is_main: bool) -> void:
+func _interrupt_and_pull(index: int, _line: StageLine, is_main: bool) -> void:
 	_kill_tween(index)
 	if is_main:
 		_start_main_pull_back(index)

@@ -103,8 +103,8 @@ static var _settle_rules: Dictionary[StringName, Variant] = {
 ## @delegates
 static func get_initial_info(
 	settle_card: Card,
-	oppose_card: Card,
-	is_unilateral: bool,
+	_oppose_card: Card,
+	_is_unilateral: bool,
 	attacker: Player,
 	defender: Player,
 	override_rules: Dictionary[StringName, Variant] = {}
@@ -149,8 +149,8 @@ static func generate_combat_will_grants(
 	duel_diff: int,
 	is_unilateral: bool,
 	mask: int,
-	attacker: Player,
-	defender: Player
+	_attacker: Player,
+	_defender: Player
 ) -> Array[CombatWillGrant]:
 	var out_grants: Array[CombatWillGrant] = []
 	if mask == 0 or not settle_card:

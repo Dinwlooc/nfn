@@ -87,7 +87,7 @@ func on_mp_changed(old_mp: int, new_mp: int, old_max: int, new_max: int) -> void
 	_apply_mp_animation(old_max, old_mp, new_max, new_mp)
 
 ## 行动点变化入口
-func on_ap_changed(old_ap: int, new_ap: int, old_init: int, new_init: int) -> void:
+func on_ap_changed(_old_ap: int, new_ap: int, _old_init: int, new_init: int) -> void:
 	ap_indicator.update_text(new_ap, new_init)
 
 ## 战意变化入口
@@ -299,7 +299,7 @@ func _on_morale_brightness_updated(index: int, brightness: float) -> void:
 	stylebox.bg_color = new_color
 
 ## 每帧更新（由外部调用，驱动动画控制器）
-func process(delta: float) -> void:
+func process(_delta: float) -> void:
 	_breath_anim.update()
 	_tremor_anim.update()
 	_morale_breath_anim.update()

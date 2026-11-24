@@ -218,21 +218,21 @@ func _process_play_card_request(request: ItemsOperation, game_state: GameState, 
 	request.complete()
 ## 处理结算请求
 ## @side_effect
-func _process_settle_request(request: OperationRequest, game_state: GameState, command_bus: CommandBus) -> void:
+func _process_settle_request(request: OperationRequest, _game_state: GameState, command_bus: CommandBus) -> void:
 	var settle_cmd: SettleCommand = build_settle_command(current_responsive_player_id, defense_area, attacker)
 	command_bus.queue_behavior(settle_cmd)
 	_pending_stage_end = true
 	request.complete()
 ## 更新响应权玩家
 ## @side_effect
-func _update_responsive_player(game_state: GameState, command_bus: CommandBus) -> void:
+func _update_responsive_player(_game_state: GameState, command_bus: CommandBus) -> void:
 	var top: Card = defense_area.get_top_card()
 	current_responsive_player_id = calculate_responsive_player_id(attacker.get_id(), defender.get_id(), top, defender)
 	command_bus.set_responsive_players(PackedInt32Array([current_responsive_player_id]))
 	GlobalConsole._print(["守区攻防阶段：更新响应权为玩家", current_responsive_player_id])
 ## 生成并排队斗牌命令
 ## @side_effect
-func _generate_and_queue_battle_command(game_state: GameState, command_bus: CommandBus, save_reference: bool = false) -> BattleCommand:
+func _generate_and_queue_battle_command(_game_state: GameState, command_bus: CommandBus, save_reference: bool = false) -> BattleCommand:
 	var battle_command: BattleCommand = build_battle_command(defense_area)
 	if not battle_command:
 		return null
@@ -250,7 +250,7 @@ func _cancel_current_battle_command() -> void:
 		GlobalConsole._print(["守区攻防阶段：取消当前斗牌命令"])
 ## 守区区域变更回调
 ## @signal_listener
-func _on_defense_area_changed(_card: Card, _area: Area, game_state: GameState) -> void:
+func _on_defense_area_changed(_card: Card, _area: Area, _game_state: GameState) -> void:
 	if is_ended or is_paused:
 		return
 	_cancel_current_battle_command()

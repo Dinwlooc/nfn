@@ -110,7 +110,7 @@ static func can_use_card_in_defense(
 	source_player: Player,
 	target_player: Player,
 	defense_area: AreaDefence,
-	attacker: Player,
+	_attacker: Player,
 	defender: Player,
 	game_state: GameState
 ) -> UsageResult:
@@ -141,7 +141,7 @@ static func can_use_card_in_defense(
 static func can_use_card_in_group_attack(
 	card: Card,
 	source_player: Player,
-	game_state: GameState
+	_game_state: GameState
 ) -> UsageResult:
 	if not card:
 		return UsageResult.new(false, ErrorCode.CARD_NULL, "卡牌实例为空")
@@ -182,7 +182,7 @@ static func _validate_speed_limit(defense_area: AreaDefence, source: Player, _ga
 	return UsageResult.new(true)
 
 ## 守区目标校验：只能以当前守区拥有者为目标
-static func _validate_defense_target(source: Player, target: Player, defender: Player) -> UsageResult:
+static func _validate_defense_target(_source: Player, target: Player, defender: Player) -> UsageResult:
 	if not target or target.get_id() != defender.get_id():
 		return UsageResult.new(false, ErrorCode.INVALID_DEFENSE_TARGET, "此卡牌在守区攻防阶段只能以当前守区拥有者为目标")
 	return UsageResult.new(true)

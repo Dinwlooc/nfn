@@ -39,7 +39,7 @@ static func tween_alpha(node: CanvasItem, tween: Tween, target_alpha: float, dur
 ## ===== 泛光 =====
 ## 设置亮度阈值（min 有效，max 参数保留用于兼容）
 ## @atomic
-static func set_bloom_range(node: CanvasItem, min_val: float, max_val: float = 1.0) -> void:
+static func set_bloom_range(node: CanvasItem, min_val: float, _max_val: float = 1.0) -> void:
 	node.set_instance_shader_parameter(&"threshold_min", min_val)
 	# threshold_max 已废弃
 

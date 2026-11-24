@@ -68,13 +68,13 @@ func execute(game_state: GameState) -> void:
 			_on_done_phase(game_state, ctx)
 ## 技能命令本身不产生任何逻辑，仅作为修饰占位。设计如此。
 ## @hook
-func _on_init_phase(_game_state: GameState, _context: Context) -> void:
+func _on_init_phase(_game_state: GameState, _context_overriding: Context) -> void:
 	pass
 ## 技能命令本身不产生任何逻辑，仅作为修饰占位。设计如此。
 ## @hook
-func _on_skill_phase(_game_state: GameState, context_overriding: CommandContext = _context as Context) -> void:
+func _on_skill_phase(_game_state: GameState, _context_overriding: CommandContext = _context as Context) -> void:
 	# 无操作
 	pass
 ## @hook
-func _on_done_phase(_game_state: GameState, _context: CommandContext = _context as Context) -> void:
+func _on_done_phase(_game_state: GameState, _context_overriding: CommandContext = _context as Context) -> void:
 	complete()

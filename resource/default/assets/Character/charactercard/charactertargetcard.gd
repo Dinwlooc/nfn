@@ -109,7 +109,7 @@ func _setup_parallax() -> void:
 #==hooks==
 ## 数据更新：绑定新卡牌、接线子区域，并在同一张卡上比较 HP/MP 变化。
 ## @override
-func data_update(new_item: RenderItem, render_item: RenderEvent = RenderEvent.NULL_EVENT) -> void:
+func data_update(new_item: RenderItem, _render_item: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	if not new_item:
 		return
 	var button: Button = get_node(^"Button")

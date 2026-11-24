@@ -6,7 +6,7 @@ extends Resource
 class_name Modifier
 
 ## 初始化，在 Card 或 Player 加载新修饰器时调用一次。
-func init(source: Item) -> void:
+func init(_source: Item) -> void:
 	pass
 
 ## 主处理方法，应用修饰器效果。
@@ -15,7 +15,7 @@ func init(source: Item) -> void:
 ## @param modifier_ctx 传入的修饰器上下文（用于外部传入初始状态或供修饰器修改）
 ## @param creator 挂载此修饰器的 Item（通常为 Card）
 ## @return 处理后的 ModifierContext（通常直接返回修改后的 modifier_ctx）
-func process(context: CommandContext, state: GameState, modifier_ctx: ModifierContext, creator: Item) -> ModifierContext:
+func process(_context: CommandContext, _state: GameState, modifier_ctx: ModifierContext, _creator: Item) -> ModifierContext:
 	return modifier_ctx  # 默认不做任何修改
 
 ## 辅助方法：检查时机并执行前置检查（挂载者是否为 Card，以及时机是否匹配）

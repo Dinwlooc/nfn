@@ -18,7 +18,7 @@ static func get_card_type_name(type_index: int) -> StringName:
 static func is_responsive(context: RenderContext, player_id: int, stage_name: StringName) -> bool:
 	if context == null or player_id <= 0:
 		return false
-	var state_manager: RenderStateManager = context.state_manager
+	var _state_manager: RenderStateManager = context.state_manager
 	match stage_name:
 		&"Main":
 			return context.get_main_stage_player_id() == player_id

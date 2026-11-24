@@ -69,8 +69,8 @@ func _on_morale_attack_increased(amount: int, player: Player) -> void:
 func _on_morale_defense_increased(amount: int, player: Player) -> void:
 	_charge_special_cards(player, &"defense", amount)
 ##
-func _charge_special_cards(player: Player, morale_type: StringName, base_amount: int) -> void:
-	var charge_amount: int = player.get_charge_amount(base_amount)
+func _charge_special_cards(player: Player, _morale_type: StringName, base_amount: int) -> void:
+	var _charge_amount: int = player.get_charge_amount(base_amount)
 	# TODO: 获取玩家拥有的特殊牌列表，筛选类型匹配的牌，调用其充能方法。
 ## @signal_listener 所有命令完成，检查濒死
 func _on_all_commands_completed(game_state: GameState) -> void:
@@ -101,7 +101,7 @@ func _get_current_player_seat_index(game_state: GameState) -> int:
 	var player: Player = game_state.player_manager.get_player_by_id(cur_player_id)
 	return player.seat_index if player else -1
 ##
-func _enter_dying_stage(game_state: GameState, dying_player: Player) -> void:
+func _enter_dying_stage(_game_state_overriding: GameState, dying_player: Player) -> void:
 	var request_cmd := DyingStageRequestCommand.new(dying_player)
 	_command_bus.queue_behavior(request_cmd)
 ##

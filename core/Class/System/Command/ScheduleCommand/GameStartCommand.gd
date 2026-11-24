@@ -60,16 +60,16 @@ static func do_start_draw(game_state: GameState, command_bus: CommandBus) -> Arr
 	return commands
 
 ## @hook
-func _on_init_setup_phase(game_state: GameState, _context: Context) -> void:
+func _on_init_setup_phase(game_state: GameState, _context_overriding: Context) -> void:
 	do_init_setup(game_state)
 
 ## @hook
-func _on_start_draw_phase(game_state: GameState, _context: Context) -> void:
+func _on_start_draw_phase(game_state: GameState, _context_overriding: Context) -> void:
 	var cmds := do_start_draw(game_state, _command_bus)
 	for cmd in cmds:
 		append_companion_command(cmd)
 	GlobalConsole._print("GameStartCommand:游戏初始化完成")
 
 ## @hook
-func _on_done_phase(_game_state: GameState, _context: Context) -> void:
+func _on_done_phase(_game_state: GameState, _context_overriding: Context) -> void:
 	complete()

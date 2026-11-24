@@ -50,6 +50,6 @@ func get_dot(local_index: int) -> ColorRect:
 		return null
 	return _dots[local_index]
 ## 淡出完成回调：如果单位无可见点则隐藏自身。
-func _on_dot_fade_out_finished(dot: ColorRect) -> void:
+func _on_dot_fade_out_finished(_dot: ColorRect) -> void:
 	if not has_visible_dots():
 		visible = false

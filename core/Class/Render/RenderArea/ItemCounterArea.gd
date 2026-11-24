@@ -41,7 +41,7 @@ func _process_item_count_set(item_count_set: RenderRequest.ItemCountSet) -> void
 
 ## 加一张牌：登记区域并计数；AUTO 模式随即回收
 ## @override
-func add_item(item: RenderItem, index: int = -1) -> void:
+func add_item(item: RenderItem, _index: int = -1) -> void:
 	item.area_name = get_area_name()
 	_connect_item_to_area(item)
 	item_count += 1

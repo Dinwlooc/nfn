@@ -73,5 +73,5 @@ func _on_remove_phase(game_state: GameState, context_overriding: CommandContext 
 	do_remove(context_overriding as Context, game_state)
 
 ## @hook
-func _on_done_phase(_game_state: GameState, _context: CommandContext = _context as Context) -> void:
+func _on_done_phase(_game_state: GameState, _context_overriding: CommandContext = _context as Context) -> void:
 	complete()

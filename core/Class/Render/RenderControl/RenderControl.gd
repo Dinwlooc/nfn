@@ -163,5 +163,5 @@ func _handle_request_immediate(request: RenderRequest) -> void:
 		render_context.get_render_area(RenderArea.DefaultArea.DISCARD).process_request(request)
 
 ## 区域创建回调：初始化该区域
-func _on_render_context_area_created(area: RenderArea, player_id: int) -> void:
+func _on_render_context_area_created(area: RenderArea, _player_id: int) -> void:
 	_initialize_render_area(area)

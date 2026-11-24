@@ -49,7 +49,7 @@ func execute(game_state: GameState) -> void:
 			_on_done_phase(game_state, ctx)
 
 ## @hook
-func _on_init_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
+func _on_init_phase(_game_state: GameState, _context_overriding: Context = _context as Context) -> void:
 	pass
 
 ## @hook
@@ -71,6 +71,6 @@ func get_update_event_type() -> RenderRequest.ItemSet.EventType:
 
 ## 向目标玩家发送增量数据包更新
 ## @delegates
-func _send_update(game_state: GameState, ctx: Context) -> void:
+func _send_update(_game_state: GameState, ctx: Context) -> void:
 	if ctx.target_player:
 		RuleTrans.send_player_delta_updates([ctx.target_player], get_update_event_type())

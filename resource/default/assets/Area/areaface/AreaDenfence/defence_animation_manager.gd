@@ -115,7 +115,7 @@ static func _do_single_card(
 	master_tween: Tween,
 	card: RenderItem,
 	index: int,
-	target_local: Vector2,
+	_target_local: Vector2,
 	total_scale_factor: float,
 	preview: PreviewParams,
 	pool_size: int

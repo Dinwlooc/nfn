@@ -80,7 +80,7 @@ func end_stage_effect(game_state: GameState, command_bus: CommandBus) -> void:
 	super.end_stage_effect(game_state, command_bus)
 ## 超时处理
 ## @override @hook @no_escape @side_effect
-func timeout(game_state: GameState, command_bus: CommandBus) -> void:
+func timeout(_game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	_pending_stage_end = true
@@ -163,7 +163,7 @@ func _revoke_response_permission(command_bus: CommandBus) -> void:
 	command_bus.set_responsive_players(PackedInt32Array())
 ## 锁定响应
 ## @side_effect
-func _lock_response(game_state: GameState, command_bus: CommandBus) -> void:
+func _lock_response(_game_state: GameState, command_bus: CommandBus) -> void:
 	if _is_locked:
 		return
 	_is_locked = true
@@ -187,7 +187,7 @@ func _stop_timer() -> void:
 	request_reset_timer.emit(0.0)
 ## 生成玩家死亡命令
 ## @side_effect
-func _generate_player_death_command(game_state: GameState, command_bus: CommandBus) -> void:
+func _generate_player_death_command(_game_state: GameState, command_bus: CommandBus) -> void:
 	var death_cmd: PlayerDeathCommand = create_player_death_command(dying_player)
 	command_bus.queue_behavior(death_cmd)
 	GlobalConsole._print(["濒死阶段：玩家", dying_player.get_id(), "死亡，已生成死亡命令"])

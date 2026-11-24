@@ -108,7 +108,7 @@ func execute(game_state: GameState) -> void:
 		Context.Phase.DONE:
 			_on_done_phase(game_state)
 ## @hook
-func _on_init_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
+func _on_init_phase(_game_state: GameState, _context_overriding: Context = _context as Context) -> void:
 	pass
 ## @hook @operation(do_move_out)
 func _on_move_out_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
@@ -117,12 +117,12 @@ func _on_move_out_phase(_game_state: GameState, context_overriding: Context = _c
 func _on_move_in_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
 	CardMoveCommand.do_move_in(context_overriding, _game_state)
 ## @hook @delegates(complete)
-func _on_done_phase(_game_state: GameState, context_overriding: Context = _context as Context) -> void:
+func _on_done_phase(_game_state: GameState, _context_overriding: Context = _context as Context) -> void:
 	complete()
 
 ## 静态移出。默认可以对空的合法类型参数进行生成空的移出卡牌数组，但将跳过移入阶段。行为设计如此。
 ## @atomic
-static func do_move_out(context: Context, game_state: GameState) -> void:
+static func do_move_out(context: Context, _game_state: GameState) -> void:
 	if not context.source_area:
 		BehaviorCommand.fail(context, "移出区域未设置")
 		return
@@ -147,7 +147,7 @@ static func do_move_out(context: Context, game_state: GameState) -> void:
 	if context.moved_cards.is_empty():
 		context.phase = Context.Phase.DONE
 ## 静态移入
-static func do_move_in(context: Context, game_state: GameState) -> void:
+static func do_move_in(context: Context, _game_state: GameState) -> void:
 	if context.is_virtual:
 		return
 	if not context.target_area:

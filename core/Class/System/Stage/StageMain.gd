@@ -73,7 +73,7 @@ func process_operation_request(request: OperationRequest, game_state: GameState,
 			GlobalConsole._print(["主阶段：不支持的操作类型", request.get_operation_name()])
 ## 刷新响应权：轮转命令结束后由触发器调用，统一管理计时
 ## @override @hook @no_escape @side_effect
-func refresh_response(game_state: GameState, command_bus: CommandBus) -> void:
+func refresh_response(_game_state: GameState, command_bus: CommandBus) -> void:
 	if is_ended or is_paused:
 		return
 	command_bus.set_responsive_players(build_responsive_players(_current_attacker_id))

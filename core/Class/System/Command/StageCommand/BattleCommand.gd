@@ -83,7 +83,7 @@ static func do_init(context: Context, _game_state: GameState) -> void:
 
 ## 静态预拼点阶段（专供修饰器触发）
 ## @atomic
-static func do_pre_duel(_context: Context, _game_state: GameState) -> void:
+static func do_pre_duel(_context_overriding: Context, _game_state: GameState) -> void:
 	# 无操作，仅为修饰器预留
 	pass
 
@@ -167,7 +167,7 @@ func _on_process_result_phase(game_state: GameState, context_overriding: Command
 	do_process_result(context_overriding as Context, game_state, self)
 
 ## @hook
-func _on_done_phase(_game_state: GameState, _context: CommandContext = _context as Context) -> void:
+func _on_done_phase(_game_state: GameState, _context_overriding: CommandContext = _context as Context) -> void:
 	complete()
 
 ## @signal_listener

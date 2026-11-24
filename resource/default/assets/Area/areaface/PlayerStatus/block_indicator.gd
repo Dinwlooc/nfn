@@ -75,7 +75,7 @@ func set_block_color_gradient(index: int, color: Color, duration: float = gradie
 	block_animating[index] = true
 	var block: Panel = blocks[index]
 	var stylebox: StyleBoxFlat = block.get_theme_stylebox(&"panel") as StyleBoxFlat
-	var from_color: Color = stylebox.bg_color
+	var _from_color: Color = stylebox.bg_color
 	block_base_colors[index] = color
 	var tween: Tween = create_tween()
 	tween.tween_property(stylebox, ^"bg_color", color, duration) \
@@ -83,7 +83,7 @@ func set_block_color_gradient(index: int, color: Color, duration: float = gradie
 	tween.finished.connect(_on_color_animation_finished.bind(index), CONNECT_ONE_SHOT)
 
 ## 两步渐变：先快速过渡到闪色，再渐变到目标色
-func set_block_color_two_step(index: int, flash_color: Color, target_color: Color, flash_duration: float = 0.05, gradient_duration: float = gradient_duration) -> void:
+func set_block_color_two_step(index: int, flash_color: Color, target_color: Color, flash_duration: float = 0.05, gradient_duration_overriding: float = gradient_duration) -> void:
 	if index < 0 or index >= blocks.size():
 		return
 	_cancel_block_animation(index)
@@ -93,7 +93,7 @@ func set_block_color_two_step(index: int, flash_color: Color, target_color: Colo
 	var tween: Tween = create_tween()
 	tween.tween_property(stylebox, ^"bg_color", flash_color, flash_duration) \
 		.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(stylebox, ^"bg_color", target_color, gradient_duration) \
+	tween.tween_property(stylebox, ^"bg_color", target_color, gradient_duration_overriding) \
 		.set_trans(Tween.TRANS_LINEAR).set_ease(Tween.EASE_IN_OUT)
 	block_base_colors[index] = target_color
 	tween.finished.connect(_on_color_animation_finished.bind(index), CONNECT_ONE_SHOT)

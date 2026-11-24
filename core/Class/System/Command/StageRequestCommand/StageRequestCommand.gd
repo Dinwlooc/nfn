@@ -44,7 +44,7 @@ static func do_request(context: Context, game_state: GameState) -> void:
 
 ## @hook
 ## 初始化阶段，子类可重写进行参数校验等，默认直接进入 REQUEST
-func _on_init_phase(_game_state: GameState, _context: Context) -> void:
+func _on_init_phase(_game_state: GameState, _context_overriding: Context) -> void:
 	pass
 
 ## @hook
@@ -54,5 +54,5 @@ func _on_request_phase(game_state: GameState, context_overriding: CommandContext
 
 ## @hook
 ## 完成阶段，子类可重写做收尾工作，默认直接 complete
-func _on_done_phase(_game_state: GameState, _context: CommandContext = _context as Context) -> void:
+func _on_done_phase(_game_state: GameState, _context_overriding: CommandContext = _context as Context) -> void:
 	complete()
