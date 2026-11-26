@@ -128,12 +128,11 @@ static func _do_single_card(
 		anim_time = PREVIEW_ANIM_TIME
 		var global_target: Vector2
 		var scale_val: float
+		global_target = preview.second_global
+		scale_val = preview.second_scale
 		if is_preview_top:
 			global_target = preview.top_global
 			scale_val = preview.top_scale
-		else:
-			global_target = preview.second_global
-			scale_val = preview.second_scale
 		scale_target = Vector2.ONE * scale_val
 		global_target += card.get_centered_offset(scale_target)
 		if card.global_position != global_target:

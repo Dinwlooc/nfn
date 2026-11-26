@@ -111,8 +111,8 @@ func card_move(_render_event: RenderEvent = RenderEvent.NULL_EVENT) -> void:
 	layout_tween = UIAnimationUtils.replace_tween(layout_tween, tween)
 ## 对位装配：单卡位移到目标。
 ## @atomic
-static func do_card_align(tween: Tween, card: RenderItem, target_position: Vector2) -> void:
-	tween.tween_property(card, ^"position", target_position, CARD_MOVE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+static func do_card_align(tween: Tween, card: RenderItem, target_position_overriding: Vector2) -> void:
+	tween.tween_property(card, ^"position", target_position_overriding, CARD_MOVE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 #==panel_entry==
 ## 订阅开局标志：首个阶段渲染请求到达后把面板移回屏内位；已开局则立即移入

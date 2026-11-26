@@ -56,22 +56,22 @@ func _ready() -> void:
 ## 输出到控制台面板；未接入面板时退回 print。接受单值或值数组
 ## @side_effect
 func _print(text:Variant)->void:
-	if console:
-		match typeof(text):
-			4:
-				console.append_text(text)
-				print(text)
-				return
-			28:
-				var real_text:String = ""
-				for i in range(text.size()):
-					real_text += str(text[i])
-				console.append_text(real_text)
-				print(real_text)
-				return
-		push_error()
-	else :
+	if not console:
 		print(text)
+		return
+	match typeof(text):
+		4:
+			console.append_text(text)
+			print(text)
+			return
+		28:
+			var real_text:String = ""
+			for i in range(text.size()):
+				real_text += str(text[i])
+			console.append_text(real_text)
+			print(real_text)
+			return
+	push_error()
 
 ## 校验参数个数，把数字字符串转成整数，再将指令转发为对应信号
 ## @requester

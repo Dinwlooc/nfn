@@ -71,26 +71,25 @@ func apply_hp_change(old_max: int, old_cur: int, new_max: int, new_cur: int) -> 
 		var new_color: Color = C.COLOR_HP_CURRENT if i < clamped_new_cur else C.COLOR_HP_LOST
 		if old_color == new_color:
 			continue
-		if use_gradient:
-			var flash_color: Color = Color.WHITE if new_cur > old_cur else Color.BLACK
-			request_two_step_gradient.emit(i, flash_color, new_color, C.HP_TWO_STEP_FLASH_DURATION, C.HP_TWO_STEP_GRADIENT_DURATION)
-		else:
+		if not use_gradient:
 			request_blink_block.emit(i, old_color, new_color, blink_duration)
+			continue
+		var flash_color: Color = Color.WHITE if new_cur > old_cur else Color.BLACK
+		request_two_step_gradient.emit(i, flash_color, new_color, C.HP_TWO_STEP_FLASH_DURATION, C.HP_TWO_STEP_GRADIENT_DURATION)
 	# 6. 呼吸/颤动控制
-	if ratio > 0.5:
-		request_breath_active.emit(true)
-		request_tremor_active.emit(false)
-	else:
-		request_breath_active.emit(false)
-		request_tremor_active.emit(clamped_new_cur > 0)
+	var is_high: bool = ratio > 0.5
+	request_breath_active.emit(is_high)
+	request_tremor_active.emit(not is_high and clamped_new_cur > 0)
+	if not is_high:
 		request_tremor_update.emit(clamped_new_cur, new_max)
 	# 7. 粒子发射（损失量）
 	var hp_loss: int = clamped_old_cur - clamped_new_cur
-	if hp_loss > 0:
-		if clamped_new_cur == 0:
-			# 井喷位置需由主类提供，暂发信号带占位，主类从第一个块获取位置
-			request_emit_gush.emit(Vector2.ZERO)  # 主类需自行计算
-		else:
-			var idx: int = clamped_new_cur
-			# 位置由主类根据索引计算，只发信号，主类负责获取块位置
-			request_emit_hit.emit(Vector2.ZERO, hp_loss, ratio)  # 主类自行填充位置
+	if hp_loss <= 0:
+		return
+	if clamped_new_cur == 0:
+		# 井喷位置需由主类提供，暂发信号带占位，主类从第一个块获取位置
+		request_emit_gush.emit(Vector2.ZERO)  # 主类需自行计算
+		return
+	var idx: int = clamped_new_cur
+	# 位置由主类根据索引计算，只发信号，主类负责获取块位置
+	request_emit_hit.emit(Vector2.ZERO, hp_loss, ratio)  # 主类自行填充位置

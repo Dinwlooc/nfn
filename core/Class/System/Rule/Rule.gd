@@ -22,19 +22,13 @@ static func merge_rules(
 	allowed_keys: Array[StringName] = []
 ) -> Dictionary[StringName, Variant]:
 	var merged: Dictionary[StringName, Variant] = base.duplicate()
-	if allowed_keys.is_empty():
-		# 不过滤，直接覆盖
-		for key in item_overrides:
+	for key in item_overrides:
+		if allowed_keys.is_empty() or key in allowed_keys:
 			merged[key] = item_overrides[key]
-		for key in extra_overrides:
+	for key in extra_overrides:
+		if allowed_keys.is_empty() or key in allowed_keys:
 			merged[key] = extra_overrides[key]
-	else:
-		for key in item_overrides:
-			if key in allowed_keys:
-				merged[key] = item_overrides[key]
-		for key in extra_overrides:
-			if key in allowed_keys:
-				merged[key] = extra_overrides[key]
+	return merged
 	return merged
 
 ## 获取单个规则键的最终值，按优先级查询。

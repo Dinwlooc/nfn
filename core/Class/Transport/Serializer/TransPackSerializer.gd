@@ -32,9 +32,9 @@ static func serialize_with_registry(
 	if class_idx == -1:
 		push_error("Unknown class in registry: " + _class_name)
 		write(buffer, -1)  # 无效标识
-	else:
-		write(buffer, class_idx)
-		obj.serialize_to_buffer(buffer)
+		return
+	write(buffer, class_idx)
+	obj.serialize_to_buffer(buffer)
 
 # 泛型对象反序列化方法（使用反向注册表）
 ## 按反向注册表读出类标识并构造对应对象

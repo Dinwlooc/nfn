@@ -78,17 +78,18 @@ func _process_item_set(item_set: RenderRequest.ItemSet) -> void:
 # ==================== 选择操作 ====================
 ## 处理[param item]的选中/取消选中逻辑，维护选中列表，并触发选择变化事件。
 func on_select(item: RenderItem) -> void:
-	if item.selected:
-		item.set_selected(false)
-		if item.dragged:
-			render_context.remove_card_on_drag()
-		selected_items.erase(item)
-	else:
+	var was_selected: bool = item.selected
+	if not was_selected:
 		if selected_items.size() >= select_limit:
 			selected_items[0].set_selected(false)
 			selected_items.remove_at(0)
 		item.set_selected(true)
 		selected_items.append(item)
+	if was_selected:
+		item.set_selected(false)
+		if item.dragged:
+			render_context.remove_card_on_drag()
+		selected_items.erase(item)
 	tween_update(RenderEvent.new().set_type(RenderEvent.DefaultType.CARD_SELECTION_CHANGED))
 	selected.emit(item)
 
@@ -157,8 +158,8 @@ func _set_item_to_pool(item: RenderItem, index: int) -> void:
 	item.pool_id = index
 	if index >= items_pool.size():
 		items_pool.append(item)
-	else:
-		items_pool[index] = item
+		return
+	items_pool[index] = item
 
 ## 压缩对象池，从[param min_index]开始，移除[param removed_count]个空位，后续元素向前移动。
 func _compact_pool(min_index: int, removed_count: int) -> void:
@@ -181,8 +182,8 @@ func _update_item_position(item: RenderItem, new_index: int) -> void:
 	move_item_in_tree(item, new_index)
 	if new_index >= items_pool.size():
 		items_pool.append(item)
-	else:
-		items_pool[new_index] = item
+		return
+	items_pool[new_index] = item
 
 # ==================== 移动与交换操作 ====================
 
@@ -208,9 +209,10 @@ func move_item_to_index_no_event(current_pool_id: int, target_index: int) -> voi
 	if is_forward:
 		for i in range(current_pool_id + 1, target_index + 1):
 			_update_item_position(items_pool[i], i - 1)
-	else:
-		for i in range(current_pool_id - 1, target_index - 1, -1):
-			_update_item_position(items_pool[i], i + 1)
+		_update_item_position(moved_item, target_index)
+		return
+	for i in range(current_pool_id - 1, target_index - 1, -1):
+		_update_item_position(items_pool[i], i + 1)
 	_update_item_position(moved_item, target_index)
 
 ## 交换两个位置的项（不触发补间更新）。
@@ -290,20 +292,16 @@ func insert_non_render_item(node: Node, tree_index: int) -> bool:
 		push_error("Cannot insert non-RenderItem between RenderItems. Index %d is between RenderItem indices %d and %d." %
 				  [tree_index, render_item_start, render_item_end - 1])
 		return false
-	if tree_index <= _divide_index:
+	var is_before_divide: bool = tree_index <= _divide_index
+	if is_before_divide:
 		_divide_index += 1
-		if node.get_parent():
-			node.get_parent().remove_child(node)
-		add_child(node)
-		move_child(node, tree_index)
-	else:
-		var actual_index: int = tree_index
-		if actual_index > get_child_count():
-			actual_index = get_child_count()
-		if node.get_parent():
-			node.get_parent().remove_child(node)
-		add_child(node)
-		move_child(node, actual_index)
+	var actual_index: int = tree_index
+	if not is_before_divide:
+		actual_index = mini(actual_index, get_child_count())
+	if node.get_parent():
+		node.get_parent().remove_child(node)
+	add_child(node)
+	move_child(node, actual_index)
 	return true
 
 ## 从区域中移除一个非[RenderItem]节点，自动维护分割索引，并返回是否成功。

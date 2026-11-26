@@ -231,7 +231,7 @@ func _update_floating() -> void:
 	var top_card: RenderItem = cards[pool_size - 1]
 	if (not top_card) or top_card.dragged:
 		return
-	var offset: float = _anim_manager.get_float_offset(pool_size - 1, elapsed)
+	var offset: float = DefenceAnimationManager.get_float_offset(pool_size - 1, elapsed)
 	if not _float_base_y.has(top_card.get_instance_id()):
 		_float_base_y[top_card.get_instance_id()] = top_card.global_position.y
 	top_card.global_position.y = _float_base_y[top_card.get_instance_id()] + offset

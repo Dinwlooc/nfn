@@ -116,24 +116,24 @@ static func do_process_result(context: Context, _game_state: GameState, command_
 
 	if context.top_card.type == GlobalConstants.DefaultCard.ATTACK:
 		attack_delta_top = BASE_MORALE_GAIN
-	else:
+	if context.top_card.type != GlobalConstants.DefaultCard.ATTACK:
 		defense_delta_top = BASE_MORALE_GAIN
 
 	if context.second_card.type == GlobalConstants.DefaultCard.ATTACK:
 		attack_delta_second = BASE_MORALE_GAIN
-	else:
+	if context.second_card.type != GlobalConstants.DefaultCard.ATTACK:
 		defense_delta_second = BASE_MORALE_GAIN
 
 	match context.duel_result:
 		DuelCommand.Context.Result.A_WIN:
 			if context.top_card.type == GlobalConstants.DefaultCard.ATTACK:
 				attack_delta_top += MORALE_BONUS_WIN
-			else:
+			if context.top_card.type != GlobalConstants.DefaultCard.ATTACK:
 				defense_delta_top += MORALE_BONUS_WIN
 		DuelCommand.Context.Result.B_WIN:
 			if context.second_card.type == GlobalConstants.DefaultCard.ATTACK:
 				attack_delta_second += MORALE_BONUS_WIN
-			else:
+			if context.second_card.type != GlobalConstants.DefaultCard.ATTACK:
 				defense_delta_second += MORALE_BONUS_WIN
 		_:
 			pass

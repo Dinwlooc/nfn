@@ -229,14 +229,15 @@ static func send_buff_modifiers_update(
 			push_error("RuleTrans.send_buff_modifiers_update: 无法定位卡牌所在区域")
 			return
 		send_cards(null, target_area, [card], event_type, custom_params)
-	elif buff_modifiers.owner_type == &"player":
+		return
+	if buff_modifiers.owner_type == &"player":
 		var player: Player = game_state.player_manager.get_player_by_id(buff_modifiers.owner_id)
 		if not player:
 			push_error("RuleTrans.send_buff_modifiers_update: 未找到玩家 id ", buff_modifiers.owner_id)
 			return
 		send_player_delta_updates([player], event_type, RenderRequest.PUBLIC_AREA_PLAYER_ID, custom_params)
-	else:
-		push_error("RuleTrans.send_buff_modifiers_update: 未知的所有者类型 ", buff_modifiers.owner_type)
+		return
+	push_error("RuleTrans.send_buff_modifiers_update: 未知的所有者类型 ", buff_modifiers.owner_type)
 
 ## 发送阶段集合请求（对指定嵌套位点上的一个阶段发送增量包）
 ## @atomic

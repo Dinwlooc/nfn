@@ -63,10 +63,10 @@ class Context extends CommandContext:
 		return self
 	## 链式设置自定义事件名（仅 CUSTOM 类型可用，否则报错）
 	func set_custom_event_name(name: StringName) -> Context:
-		if event_type == RenderRequest.ItemSet.EventType.CUSTOM:
-			custom_event_name = name
-		else:
+		if event_type != RenderRequest.ItemSet.EventType.CUSTOM:
 			push_error("Cannot set custom event name when event_type is not CUSTOM")
+			return self
+		custom_event_name = name
 		return self
 	## @hook @override
 	func get_primary_modifier_players() -> Array[Player]:

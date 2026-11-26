@@ -19,10 +19,10 @@ func set_dot_color(local_index: int, color: Color, animate: bool = false) -> voi
 	if local_index < 0 or local_index >= _dots.size():
 		return
 	var dot: ColorRect = _dots[local_index]
-	if animate:
-		UIAnimationUtils.blink_color(dot, dot.color, color, 0.2)  # 使用默认时长，可传入
-	else:
+	if not animate:
 		dot.color = color
+		return
+	UIAnimationUtils.blink_color(dot, dot.color, color, 0.2)  # 使用默认时长，可传入
 ## 对指定点执行从起始颜色到目标颜色的闪烁。
 func blink_dot(local_index: int, from_color: Color, to_color: Color, duration: float) -> void:
 	if local_index < 0 or local_index >= _dots.size():
@@ -31,6 +31,7 @@ func blink_dot(local_index: int, from_color: Color, to_color: Color, duration: f
 	dot.color = from_color
 	UIAnimationUtils.blink_color(dot, from_color, to_color, duration)
 ## 淡出指定点（透明度过渡到0），完成后检查是否所有点均不可见，若是则隐藏整个单位。
+## @signal_once
 func fade_out_dot(local_index: int, duration: float) -> void:
 	if local_index < 0 or local_index >= _dots.size():
 		return

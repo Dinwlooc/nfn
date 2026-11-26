@@ -34,10 +34,10 @@ func on_remove() -> void:
 ## 层数变化：非零则重算总加成，归零则移除
 ## @hook @override
 func on_stack_changed(_old: int, new_stack: int) -> void:
-	if new_stack > 0:
-		_apply_total_value()
-	else:
+	if new_stack <= 0:
 		attribute_modifiers.remove_modifier(attribute, modifier_type, modifier_name)
+		return
+	_apply_total_value()
 
 ## 按 value_per_stack × 当前层数 写入一条属性修饰
 ## @side_effect

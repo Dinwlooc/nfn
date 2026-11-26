@@ -159,7 +159,7 @@ func switch_to_main_stage(game_state: GameState, skip_count: int = 0, disallowed
 	end_current_stage(game_state, command_bus)
 	var actual_skip: int = skip_count
 	if not disallowed_stages.is_empty():
-		var current_name: StringName = current_stage.stage_name if current_stage else MAIN_STAGE_NAMES[0]
+		var current_name: StringName = current_stage.stage_name if current_stage else StringName(MAIN_STAGE_NAMES[0])
 		var idx: int = MAIN_STAGE_NAMES.find(current_name)
 		if idx == -1:
 			idx = current_main_stage_index

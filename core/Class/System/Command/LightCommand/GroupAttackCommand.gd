@@ -30,15 +30,15 @@ class Context extends CommandContext:
 		return self
 
 	## 链式登记单个目标的响应牌
-	func set_response_card(player_id: int, card: Card) -> Context:
+	func set_response_card(player_id_overriding: int, card: Card) -> Context:
 		if card:
-			response_cards[player_id] = card
+			response_cards[player_id_overriding] = card
 		return self
 
 	## 取目标玩家的响应牌；未响应返回 null
 	## @nullable_pure
-	func get_response_card(player_id: int) -> Card:
-		return response_cards.get(player_id)
+	func get_response_card(player_id_overriding: int) -> Card:
+		return response_cards.get(player_id_overriding)
 
 	## 来源卡与全部响应牌参与修饰
 	## @hook @override

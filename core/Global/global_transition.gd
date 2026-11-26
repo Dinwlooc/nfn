@@ -26,6 +26,8 @@ var _transition_rect: ColorRect
 var _tween: Tween
 ## 根视口画布当前的缩放倍率
 var _canvas_scale: float = 1.0
+## 当前补间的方向，true 为淡入
+var _fade_in_animation: bool = true
 
 ## 淡入开始
 ## @emitter
@@ -64,7 +66,7 @@ func play_fade_animation(target_alpha: float, duration: float, is_fade_in: bool,
 		_tween = null
 	if is_fade_in:
 		fade_in_started.emit()
-	else:
+	if not is_fade_in:
 		fade_out_started.emit()
 	if duration <= 0.0:
 		_transition_rect.color = Color(0, 0, 0, target_alpha)
@@ -78,13 +80,18 @@ func play_fade_animation(target_alpha: float, duration: float, is_fade_in: bool,
 	if not is_fade_in:
 		_transition_rect.color = Color.BLACK
 	_apply_canvas_scale(start_scale)
+	_fade_in_animation = is_fade_in
 	_tween = create_tween()
 	_tween.set_parallel(true)
 	_tween.tween_property(_transition_rect, ^"color",
 						  Color(0, 0, 0, target_alpha),
 						  duration).set_trans(ALPHA_TRANS).set_ease(ALPHA_EASE)
 	_tween.tween_method(_apply_canvas_scale, start_scale, end_scale, duration).set_trans(trans_type).set_ease(ease_type)
-	_tween.finished.connect(_emit_fade_completed.bind(is_fade_in))
+	_tween.finished.connect(_on_fade_tween_finished)
+## 补间结束：按补间方向发出完成信号
+## @emitter
+func _on_fade_tween_finished() -> void:
+	_emit_fade_completed(_fade_in_animation)
 
 ## 以画面中心为基准缩放根视口画布，倍率为 1.0 时还原
 ## @side_effect

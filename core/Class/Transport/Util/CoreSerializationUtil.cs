@@ -110,8 +110,8 @@ public static class CoreSerializationUtil
 			case Variant.Type.PackedInt32Array: WriteInt32Array(buffer, value.AsInt32Array()); break;
 			case Variant.Type.PackedInt64Array: WriteInt64Array(buffer, value.AsInt64Array()); break;
 			case Variant.Type.Dictionary:
-				var godotDict = value.AsGodotDictionary();
-				var innerDict = GodotTypeConverter.ToInnerDictionary(godotDict);
+				Godot.Collections.Dictionary godotDict = value.AsGodotDictionary();
+				Dictionary<StringName, Variant> innerDict = GodotTypeConverter.ToInnerDictionary(godotDict);
 				WriteDictionary(buffer, innerDict);
 				break;
 			case Variant.Type.Nil:
@@ -137,7 +137,7 @@ public static class CoreSerializationUtil
 			case Variant.Type.PackedInt32Array: return ReadInt32Array(buffer);
 			case Variant.Type.PackedInt64Array: return ReadInt64Array(buffer);
 			case Variant.Type.Dictionary:
-				var innerDict = ReadDictionary(buffer);
+				Dictionary<StringName, Variant> innerDict = ReadDictionary(buffer);
 				return Variant.From(GodotTypeConverter.ToGodotDictionary(innerDict));
 			case Variant.Type.Nil:
 				throw new NotSupportedException("Nil type cannot be read.");
@@ -223,7 +223,7 @@ public static class CoreSerializationUtil
 			return;
 		}
 
-		var groups = ClassifyDictEntries(dict);
+		Dictionary<StringName, Variant>[] groups = ClassifyDictEntries(dict);
 		WriteGroupInt(buffer, groups[0]);
 		WriteGroupFloat(buffer, groups[1]);
 		WriteGroupString(buffer, groups[2]);
@@ -239,7 +239,7 @@ public static class CoreSerializationUtil
 		if (total <= 5)
 			return ReadSmallDictEntries(buffer, total);
 
-		var dict = new Dictionary<StringName, Variant>();
+		Dictionary<StringName, Variant> dict = new Dictionary<StringName, Variant>();
 		int processed = 0;
 		processed += ReadGroupInt(buffer, dict);
 		processed += ReadGroupFloat(buffer, dict);
@@ -262,7 +262,7 @@ public static class CoreSerializationUtil
 
 	private static Dictionary<StringName, Variant> ReadSmallDictEntries(StreamPeerBuffer buffer, int count)
 	{
-		var dict = new Dictionary<StringName, Variant>();
+		Dictionary<StringName, Variant> dict = new Dictionary<StringName, Variant>();
 		for (int i = 0; i < count; i++)
 		{
 			string keyStr = ReadString(buffer);
@@ -275,7 +275,7 @@ public static class CoreSerializationUtil
 
 	private static Dictionary<StringName, Variant>[] ClassifyDictEntries(Dictionary<StringName, Variant> dict)
 	{
-		var groups = new Dictionary<StringName, Variant>[5];
+		Dictionary<StringName, Variant>[] groups = new Dictionary<StringName, Variant>[5];
 		for (int i = 0; i < 5; i++)
 			groups[i] = new Dictionary<StringName, Variant>();
 

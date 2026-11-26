@@ -17,15 +17,7 @@ static func generate_command(
 	x: int,
 	_game_state: GameState
 ) -> BehaviorCommand:
-	var command: BehaviorCommand
-	if x >= target_card.get_attribute(&"power"):
-			command = DestroyCardsCommand.new(
-				target_area ,
-				target_card.get_id(),
-				source_player,
-				source_card
-			)
-	else:
+	if x < target_card.get_attribute(&"power"):
 		var buff := SimpleAttributeBuffBuilder.create_attribute_buff(
 			buff_name,
 			target_card.attributeModifiers,
@@ -35,12 +27,17 @@ static func generate_command(
 			float(-x),
 			0
 		)
-		command = BuffCommand.new(
+		return BuffCommand.new(
 			target_card.buff_modifiers,
 			buff,
 			BuffCommand.Context.BuffMode.APPLY,
-			source_card.attributeModifiers.compute_with_temporary_bonus(buff_name,x),
+			source_card.attributeModifiers.compute_with_temporary_bonus(buff_name, x),
 			source_card,
 			source_player
 		)
-	return command
+	return DestroyCardsCommand.new(
+		target_area,
+		target_card.get_id(),
+		source_player,
+		source_card
+	)

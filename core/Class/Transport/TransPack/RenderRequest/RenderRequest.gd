@@ -35,10 +35,9 @@ func serialize_to_buffer(buffer: StreamPeerBuffer) -> void:
 static func deserialize_from_buffer(buffer: StreamPeerBuffer, pack: TransPack = RenderRequest.new()) -> RenderRequest:
 	pack.target_area = SerializationUtil.read(buffer, TYPE_STRING_NAME)
 	var mask: int = SerializationUtil.read(buffer, TYPE_INT)
+	pack.target_area_player_id = PUBLIC_AREA_PLAYER_ID
 	if mask & 1:
 		pack.target_area_player_id = SerializationUtil.read(buffer, TYPE_INT)
-	else:
-		pack.target_area_player_id = PUBLIC_AREA_PLAYER_ID
 	var dict:Dictionary[StringName,Variant] = SerializationUtil.read(buffer,TYPE_DICTIONARY)
 	pack.custom_params = dict
 	return pack
@@ -115,14 +114,12 @@ class ItemSet extends RenderRequest:
 			item_set.event_source_player_id = SerializationUtil.read(buffer, TYPE_INT)
 			item_set.items = ItemSerializer.deserialize_array(buffer)
 			var mask: int = SerializationUtil.read(buffer, TYPE_INT)
+			item_set.source_area_name = item_set.target_area
 			if mask & SourceMask.AREA_NAME:
 				item_set.source_area_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-			else:
-				item_set.source_area_name = item_set.target_area
+			item_set.source_area_player_id = item_set.target_area_player_id
 			if mask & SourceMask.PLAYER_ID:
 				item_set.source_area_player_id = SerializationUtil.read(buffer, TYPE_INT)
-			else:
-				item_set.source_area_player_id = item_set.target_area_player_id
 		return pack
 
 	## 包类名标识
@@ -199,14 +196,12 @@ class ItemCountSet extends RenderRequest:
 			count_set.event_type = SerializationUtil.read(buffer, TYPE_INT)
 			count_set.event_source_player_id = SerializationUtil.read(buffer, TYPE_INT)
 			var mask: int = SerializationUtil.read(buffer, TYPE_INT)
+			count_set.source_area_name = count_set.target_area
 			if mask & SourceMask.AREA_NAME:
 				count_set.source_area_name = SerializationUtil.read(buffer, TYPE_STRING_NAME)
-			else:
-				count_set.source_area_name = count_set.target_area
+			count_set.source_area_player_id = count_set.target_area_player_id
 			if mask & SourceMask.PLAYER_ID:
 				count_set.source_area_player_id = SerializationUtil.read(buffer, TYPE_INT)
-			else:
-				count_set.source_area_player_id = count_set.target_area_player_id
 		return pack
 
 	## 包类名标识

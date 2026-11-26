@@ -156,11 +156,11 @@ func _handle_request_immediate(request: RenderRequest) -> void:
 		target_area_player_id = RenderContext.PUBLIC_PLAYER_ID
 	var render_area: RenderArea = render_context.get_render_area(target_area, target_area_player_id)
 	GlobalConsole._print(["接收到RenderRequest：", request.get_class_name(), ",目标：", request.target_area, ",属于：玩家", request.target_area_player_id])
-	if render_area:
-		render_area.process_request(request)
-	else:
+	if not render_area:
 		push_error("RenderArea not found for target: " + str(target_area) + ",player:" + str(request.target_area_player_id))
 		render_context.get_render_area(RenderArea.DefaultArea.DISCARD).process_request(request)
+		return
+	render_area.process_request(request)
 
 ## 区域创建回调：初始化该区域
 func _on_render_context_area_created(area: RenderArea, _player_id: int) -> void:

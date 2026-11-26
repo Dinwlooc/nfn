@@ -27,10 +27,10 @@ func get_card_by_id(card_id: int) -> Card:
 ## 为单张卡牌分配 ID（添加到数组末尾）
 ## @side_effect
 func assign_id(card: Card) -> void:
+	if next_id != card_instances.size():
+		push_warning("Unexpected ID assignment: " + str(next_id) + " but array size is " + str(card_instances.size()))
 	if next_id == card_instances.size():
 		card_instances.append(card)
-	else:
-		push_warning("Unexpected ID assignment: " + str(next_id) + " but array size is " + str(card_instances.size()))
 	_add_card_to_array(card, next_id)
 	next_id += 1
 ## 批量分配 ID 到卡牌数组（优化版本，预先调整数组大小）

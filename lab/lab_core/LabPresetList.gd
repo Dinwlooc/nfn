@@ -2,6 +2,16 @@
 ## 交互与无头共用同一份预设标识，本组件只负责呈现与转发，不持有预设语义。
 extends VBoxContainer
 class_name LabPresetList
+## 预设按钮：把 pressed 转发为携带下标的 picked 信号
+class PresetButton extends Button:
+	## @emitter
+	signal picked(index: int)
+	var index: int = 0
+	func _init(at_index: int) -> void:
+		index = at_index
+		pressed.connect(_forward_pressed)
+	func _forward_pressed() -> void:
+		picked.emit(index)
 
 #==字段==
 ## 回调：被点选的预设下标
@@ -19,11 +29,11 @@ func fill(labels: PackedStringArray, on_pick: Callable) -> void:
 		child.queue_free()
 	add_theme_constant_override(&"separation", 4)
 	for index: int in labels.size():
-		var button: Button = Button.new()
+		var button: PresetButton = PresetButton.new(index)
 		button.text = labels[index]
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.custom_minimum_size = Vector2(0.0, 34.0)
-		button.pressed.connect(_on_pressed.bind(index))
+		button.picked.connect(_on_pressed)
 		add_child(button)
 	mark_selected(_selected)
 

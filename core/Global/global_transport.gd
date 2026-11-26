@@ -84,11 +84,11 @@ func _emit_operation_request_local(op: OperationRequest) -> void:
 @rpc("any_peer", "call_local", "reliable")
 func receive_operation_request(data: PackedByteArray) -> void:
 	var op: OperationRequest = OperationRequestSerializer.deserialize(data)
-	if op:
-		op.source_peer_id = multiplayer.get_remote_sender_id()
-		call_deferred(&"_emit_operation_request_local", op)
-	else:
+	if not op:
 		push_error("Failed to deserialize operation request")
+		return
+	op.source_peer_id = multiplayer.get_remote_sender_id()
+	call_deferred(&"_emit_operation_request_local", op)
 
 ## 启动本地服务器（port 为 0 时随机）；启动失败时在控制台报错
 ## @delegates

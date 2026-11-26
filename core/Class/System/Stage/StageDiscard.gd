@@ -149,14 +149,14 @@ func _process_discard_request(request: ItemsOperation, game_state: GameState, co
 		return
 	var valid_ids: PackedInt32Array = []
 	var seen: Dictionary[int, bool] = {}
-	for id: int in submitted_ids:
-		if not hand_area.get_card_by_id(id):
-			GlobalConsole._print(["弃牌阶段：卡牌", id, "不在玩家", player_id, "手牌中，已忽略"])
+	for card_id: int in submitted_ids:
+		if not hand_area.get_card_by_id(card_id):
+			GlobalConsole._print(["弃牌阶段：卡牌", card_id, "不在玩家", player_id, "手牌中，已忽略"])
 			continue
-		if seen.has(id):
+		if seen.has(card_id):
 			continue
-		seen[id] = true
-		valid_ids.append(id)
+		seen[card_id] = true
+		valid_ids.append(card_id)
 	if valid_ids.is_empty():
 		GlobalConsole._print(["弃牌阶段：玩家", player_id, "提交的卡牌均无效"])
 		request.cancel()

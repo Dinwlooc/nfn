@@ -20,8 +20,5 @@ func update_transition() -> void:
 	range_max = range_max + 0.005
 	range_min = range_min + 0.005
 	material.set_shader_parameter("range_min",range_min)
-	if range_max < 0.95:
-		material.set_shader_parameter("range_max",range_max)
-	else :
-		material.set_shader_parameter("range_max",0.95)
+	material.set_shader_parameter("range_max", minf(range_max, 0.95))
 	pass

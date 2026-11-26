@@ -18,6 +18,10 @@ var panel_display: bool = false
 var start: Node = null
 ## 命令建议标签数组
 var labels: Array[Node] = []
+## 建议标签焦点回调的缓存，连接与断开使用同一 Callable
+var _suggestion_focus_handlers: Array[Callable] = []
+## 建议标签悬停回调的缓存
+var _suggestion_hover_handlers: Array[Callable] = []
 ## 命令历史记录
 var command_history: PackedStringArray = []
 ## 当前历史导航索引，-1 表示空输入；0 表示最新命令，1 表示前一个，依此类推
@@ -100,10 +104,7 @@ func _flush_async() -> void:
 		var chunk_size: int = mini(_log_buffer.size(), FLUSH_CHUNK_SIZE)
 		var chunk: PackedStringArray = _log_buffer.slice(0, chunk_size)
 		_log_buffer = _log_buffer.slice(chunk_size)
-		if panel.text.is_empty():
-			panel.text = "\n".join(chunk)
-		else:
-			panel.text += "\n" + "\n".join(chunk)
+		panel.text = "\n".join(chunk) if panel.text.is_empty() else panel.text + "\n" + "\n".join(chunk)
 		# 滚动到最后一行
 		panel.set_caret_line(panel.get_line_count() - 1)
 		await get_tree().process_frame
@@ -133,8 +134,8 @@ func toggle_panel_display():
 	panel_display = !panel_display
 	if panel_display:
 		show_panel()
-	else:
-		hide_panel()
+		return
+	hide_panel()
 
 ## 显示控制台面板并聚焦输入框
 func show_panel():
@@ -161,14 +162,22 @@ func input_load():
 ## 创建建议标签节点池
 func suggestion_labels_load():
 	labels = vbox_container.get_children()
+	_suggestion_focus_handlers.clear()
+	_suggestion_hover_handlers.clear()
 	vbox_container.visible = false
 	for i in range(vbox_container.get_child_count()):
 		labels[i].mouse_filter = Control.MOUSE_FILTER_STOP
 		labels[i].focus_mode = Control.FOCUS_ALL
 		labels[i].visible = false
-		labels[i].connect(&"focus_entered", _on_suggestion_focused.bind(i))
-		labels[i].connect(&"text_submitted", _suggestion_submitted) if labels[i].has_signal(&"text_submitted") else labels[i].connect(&"gui_input", _on_suggestion_clicked.bind(i))
-		labels[i].mouse_entered.connect(labels[i].call_deferred.bind(&"grab_focus"))
+		var focus_handler: Callable = _on_suggestion_focused.bind(i)
+		_suggestion_focus_handlers.append(focus_handler)
+		labels[i].connect(&"focus_entered", focus_handler)
+		var submit_event: StringName = &"text_submitted" if labels[i].has_signal(&"text_submitted") else &"gui_input"
+		var submit_handler: Callable = _suggestion_submitted if submit_event == &"text_submitted" else _on_suggestion_clicked.bind(i)
+		labels[i].connect(submit_event, submit_handler)
+		var hover_handler: Callable = labels[i].call_deferred.bind(&"grab_focus")
+		_suggestion_hover_handlers.append(hover_handler)
+		labels[i].mouse_entered.connect(hover_handler)
 
 ## 输入框获得焦点：展开建议
 func _on_focus_entered():
@@ -189,10 +198,9 @@ func _on_text_changed(new_text: String):
 		toggle_suggestions(false)
 		return
 	filtered = []
+	filtered = command_suggestions.duplicate()
 	if new_text.length() > 2:
 		filtered = command_suggestions.filter(func(s): return s.to_lower().begins_with(new_text.to_lower()))
-	else:
-		filtered = command_suggestions.duplicate()
 	toggle_suggestions(not filtered.is_empty())
 	filtered.append("...")
 
@@ -251,15 +259,12 @@ func _on_command_submitted(new_text: String):
 
 ## 更新建议列表显示指定页
 func update_page_display(page: int):
-	var start = page * page_size
-	var end = min(start + page_size, filtered.size())
+	var page_start = page * page_size
+	var end = min(page_start + page_size, filtered.size())
 	for i in range(labels.size()):
-		if i < end - start:
-			labels[i].text = filtered[start + i]
-			labels[i].visible = true
-		else:
-			labels[i].text = ""
-			labels[i].visible = false
+		var has_item: bool = i < end - page_start
+		labels[i].text = filtered[page_start + i] if has_item else ""
+		labels[i].visible = has_item
 
 ## 展开/收起建议列表
 func toggle_suggestions(_show: bool):
@@ -272,18 +277,12 @@ func toggle_suggestions(_show: bool):
 func navigate_history(is_up: bool):
 	if command_history.is_empty():
 		return
-	if is_up:
-		# 向上：索引增加（0 -> 1 -> 2 ...）
-		current_history_index = min(current_history_index + 1, command_history.size() - 1)
-	else:
-		# 向下：索引减少（2 -> 1 -> 0 -> -1）
-		current_history_index = max(current_history_index - 1, -1)
+	current_history_index = min(current_history_index + 1, command_history.size() - 1) if is_up else max(current_history_index - 1, -1)
 	if current_history_index == -1:
 		input_line_edit.text = ""
-	else:
-		# 将索引映射到实际数组：0 对应最后一个（最新）
-		var actual_index = command_history.size() - 1 - current_history_index
-		input_line_edit.text = command_history[actual_index]
+		return
+	var actual_index = command_history.size() - 1 - current_history_index
+	input_line_edit.text = command_history[actual_index]
 
 ## 全局输入：处理控制台开关快捷键
 func _input(event):
@@ -297,13 +296,11 @@ func _input(event):
 				KEY_TAB:
 					if vbox_container.visible:
 						return
-					if input_line_edit.text == "":
-						input_line_edit.text_changed.emit("c")
-					else:
+					if input_line_edit.text != "":
 						_ignore_text_changed = true
 						input_line_edit.text = ""
 						_ignore_text_changed = false
-						input_line_edit.text_changed.emit("c")
+					input_line_edit.text_changed.emit("c")
 				KEY_UP:
 					navigate_history(true)
 				KEY_DOWN:

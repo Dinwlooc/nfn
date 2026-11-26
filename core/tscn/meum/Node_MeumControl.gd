@@ -32,8 +32,8 @@ func _ready() -> void:
 	_logo_home = $ColorRect_icon.position
 	_buttons_home = $MenuButtons.position
 	_panel_home = $RoomPanel.position
-	$MenuButtons/ButtonCreate.pressed.connect(_on_mode_pressed.bind(EntryMode.Mode.CREATE))
-	$MenuButtons/ButtonJoin.pressed.connect(_on_mode_pressed.bind(EntryMode.Mode.JOIN))
+	$MenuButtons/ButtonCreate.pressed.connect(_on_create_pressed)
+	$MenuButtons/ButtonJoin.pressed.connect(_on_join_pressed)
 	$MenuButtons/ButtonLab.pressed.connect(_on_lab_pressed)
 	$MenuButtons/ButtonQuit.pressed.connect(_on_quit_pressed)
 	$RoomPanel.confirmed.connect(_on_confirmed)
@@ -46,6 +46,15 @@ func _ready() -> void:
 func _on_mode_pressed(mode: EntryMode.Mode) -> void:
 	$RoomPanel.select_mode(mode)
 	_open_panel()
+## 点选「创建」入口
+## @side_effect
+func _on_create_pressed() -> void:
+	_on_mode_pressed(EntryMode.Mode.CREATE)
+
+## 点选「加入」入口
+## @side_effect
+func _on_join_pressed() -> void:
+	_on_mode_pressed(EntryMode.Mode.JOIN)
 
 ## 点选实验室入口：切到实验室分页；面板未展开时一并播放滑入
 ## @side_effect

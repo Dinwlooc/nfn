@@ -10,10 +10,10 @@ class Context extends CardMoveCommand.Context:
 	func set_draw_count(count: int) -> void:
 		draw_count = count
 	## 按源区域剩余张数裁剪后的实际抽取张数
-	func get_actual_draw_count(source_area: Area) -> int:
-		if not source_area:
+	func get_actual_draw_count(source_area_overriding: Area) -> int:
+		if not source_area_overriding:
 			return 0
-		return min(draw_count, source_area.card_count())
+		return min(draw_count, source_area_overriding.card_count())
 
 
 

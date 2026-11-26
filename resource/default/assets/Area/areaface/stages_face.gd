@@ -424,9 +424,9 @@ func _update_parallax(delta: float) -> void:
 ## @pure
 func _weight_of(index: int, total: float) -> float:
 	var order: float = 0.0
-	var position: int = _temp_entries.find(index)
-	if position != -1:
-		order = float(position + 1)
+	var found_index: int = _temp_entries.find(index)
+	if found_index != -1:
+		order = float(found_index + 1)
 	return lerpf(PARALLAX_MIN_WEIGHT, 1.0, order / maxf(total - 1.0, 1.0))
 
 # ==================== 辅助 ====================

@@ -265,14 +265,14 @@ func _current_preset() -> StringName:
 
 ## 预设名到资源路径：读 [preset:<实验室标识>] 段
 ## @internal
-func _preset_path(name: StringName) -> String:
+func _preset_path(name_overriding: StringName) -> String:
 	var table: ConfigTable = GlobalConfig.get_config_table(lab_scope, lab_table)
 	if table == null:
 		return ""
 	var section: StringName = StringName("preset:" + String(lab_id))
 	if not (section in table.sections):
 		return ""
-	return str(table.get_section(section).get(String(name), ""))
+	return str(table.get_section(section).get(String(name_overriding), ""))
 
 ## 实验室场景路径：读 [lab:<实验室标识>] 段
 ## @internal
@@ -287,8 +287,8 @@ func _scene_path() -> String:
 
 ## 某预设的观测帧数
 ## @internal
-func _observe_frames(name: StringName) -> int:
-	return observe.get(name, 0)
+func _observe_frames(name_overriding: StringName) -> int:
+	return observe.get(name_overriding, 0)
 
 ## 记录一次失败
 ## @internal
@@ -363,33 +363,33 @@ func _load_table() -> void:
 	run_timeout = _load_timeout(lab_scope, lab_table, lab_id)
 
 ## 读预设清单：以观测帧段的键为准，缺该段时取预设段的键；按名排序，界面与无头顺序一致
-static func _load_preset_ids(scope: StringName, table_name: StringName, lab_id: StringName) -> Array[StringName]:
+static func _load_preset_ids(scope: StringName, table_name: StringName, lab_id_overriding: StringName) -> Array[StringName]:
 	var table: ConfigTable = GlobalConfig.get_config_table(scope, table_name)
 	if table == null:
 		push_error("实验室配置表缺失：%s/%s.cfg" % [scope, table_name])
 		return []
-	var ids: Array[StringName] = _section_keys(table, StringName("observe:" + String(lab_id)))
+	var ids: Array[StringName] = _section_keys(table, StringName("observe:" + String(lab_id_overriding)))
 	ids.sort_custom(func(a: StringName, b: StringName) -> bool: return String(a) < String(b))
 	return ids
 
 ## 读观测帧：预设名 → 帧数
-static func _load_observe(scope: StringName, table_name: StringName, lab_id: StringName) -> Dictionary[StringName, int]:
+static func _load_observe(scope: StringName, table_name: StringName, lab_id_overriding: StringName) -> Dictionary[StringName, int]:
 	var frames: Dictionary[StringName, int] = {}
 	var table: ConfigTable = GlobalConfig.get_config_table(scope, table_name)
 	if table == null:
 		return frames
-	var section: StringName = StringName("observe:" + String(lab_id))
+	var section: StringName = StringName("observe:" + String(lab_id_overriding))
 	var row: Dictionary = table.get_section(section)
 	for key: StringName in _section_keys(table, section):
 		frames[key] = int(row.get(String(key), 0))
 	return frames
 
 ## 读默认超时：取实验室默认值段的 timeout
-static func _load_timeout(scope: StringName, table_name: StringName, lab_id: StringName) -> float:
+static func _load_timeout(scope: StringName, table_name: StringName, lab_id_overriding: StringName) -> float:
 	var table: ConfigTable = GlobalConfig.get_config_table(scope, table_name)
 	if table == null:
 		return DEFAULT_TIMEOUT
-	var row: Dictionary = table.get_section(StringName("lab:" + String(lab_id)))
+	var row: Dictionary = table.get_section(StringName("lab:" + String(lab_id_overriding)))
 	return float(row.get("timeout", DEFAULT_TIMEOUT))
 
 ## 某段的全部键；段不存在时返回空

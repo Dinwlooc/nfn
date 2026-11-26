@@ -92,13 +92,11 @@ func create_render_area(area_name: StringName, player_id: int = PUBLIC_PLAYER_ID
 ## 删除区域：注销并联动清理拖拽态与卡牌
 ## @delegates
 func delete_render_area(area: RenderArea) -> void:
-	if state_manager.card_on_drag:
-		if state_manager.card_on_drag.area == area:
-			state_manager.remove_card_on_drag()
-		else:
-			var dragged_card: RenderItem = state_manager.card_on_drag.card
-			if dragged_card and dragged_card.get_parent() == area:
-				state_manager.remove_card_on_drag()
+	var dragged_state := state_manager.card_on_drag
+	if dragged_state and dragged_state.area == area:
+		state_manager.remove_card_on_drag()
+	if dragged_state and dragged_state.area != area and dragged_state.card and dragged_state.card.get_parent() == area:
+		state_manager.remove_card_on_drag()
 	for child in area.get_children():
 		if child is not RenderItem:
 			continue

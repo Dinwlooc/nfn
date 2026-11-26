@@ -27,12 +27,12 @@ func add_modifier(attribute: StringName, type: int, modifier_name: StringName, v
 	if not type_dict.has(type):
 		type_dict[type] = {}
 	var modifiers_of_type: Dictionary = type_dict[type]
-	if modifiers_of_type.has(modifier_name):
-		var old_value: float = modifiers_of_type[modifier_name]
-		_update_modifier(attribute, type, modifier_name, old_value, rounded_value)
-	else:
+	if not modifiers_of_type.has(modifier_name):
 		modifiers_of_type[modifier_name] = rounded_value
 		_apply_modifier(attribute, type, rounded_value)
+		return
+	var old_value: float = modifiers_of_type[modifier_name]
+	_update_modifier(attribute, type, modifier_name, old_value, rounded_value)
 ## 删除修饰器
 ## @side_effect
 func remove_modifier(attribute: StringName, type: int, modifier_name: StringName) -> void:
@@ -60,10 +60,10 @@ func _update_modifier(attribute: StringName, type: int, modifier_name: StringNam
 	if abs(delta) < 0.001:  # 忽略微小变化
 		return
 	modifiers_of_type[modifier_name] = new_value
-	if delta > 0:
-		_apply_modifier(attribute, type, delta)
-	else:
+	if delta <= 0:
 		_revert_modifier(attribute, type, -delta)
+		return
+	_apply_modifier(attribute, type, delta)
 ## 应用修饰器影响
 ## @side_effect
 func _apply_modifier(attribute: StringName, type: int, value: float) -> void:
@@ -120,9 +120,10 @@ func _recalculate_combined_type(attribute: StringName, type: int) -> void:
 		combined = 1.0
 		for value in type_dict.values():
 			combined *= value
-	else:
-		for value in type_dict.values():
-			combined += value
+		combined_values[attribute][type] = combined
+		return
+	for value in type_dict.values():
+		combined += value
 	combined_values[attribute][type] = combined
 ## 重新计算最终值
 func _recalculate_final(attribute: StringName) -> void:

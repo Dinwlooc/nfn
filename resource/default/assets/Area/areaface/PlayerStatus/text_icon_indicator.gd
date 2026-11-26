@@ -8,9 +8,9 @@ extends Control
 @onready var icon: Control = $Icon
 
 ## 更新标签文本。
-func update_text(current: int, max: int) -> void:
+func update_text(current: int, max_overriding: int) -> void:
 	if label:
-		label.text = "%d / %d" % [current, max]
+		label.text = "%d / %d" % [current, max_overriding]
 
 ## 更新图标（例如改变纹理或颜色），可根据需要扩展。
 func update_icon(new_texture: Texture2D = null, new_color: Color = Color.WHITE) -> void:

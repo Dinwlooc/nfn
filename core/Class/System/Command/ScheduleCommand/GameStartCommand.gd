@@ -40,10 +40,9 @@ func execute(game_state: GameState) -> void:
 ## 静态初始化设置：创建玩家并发送更新
 ## @atomic
 static func do_init_setup(game_state: GameState) -> void:
-	if game_state.users:
-		for user in game_state.users.values():
-			game_state.player_manager.add_player(user.id)
-	else:
+	for user in game_state.users.values():
+		game_state.player_manager.add_player(user.id)
+	if not game_state.users:
 		game_state.player_manager.add_player(1)
 	game_state.player_manager.ensure_min_players(2)
 	RuleTrans.send_player_delta_updates(game_state.player_manager.get_seated_players())

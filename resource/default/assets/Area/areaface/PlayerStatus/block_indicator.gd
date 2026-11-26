@@ -68,6 +68,7 @@ func set_block_color(index: int, color: Color) -> void:
 	stylebox.bg_color = color
 
 ## 渐变设置单个块的颜色（快速 Tween）。
+## @signal_once
 func set_block_color_gradient(index: int, color: Color, duration: float = gradient_duration) -> void:
 	if index < 0 or index >= blocks.size():
 		return
@@ -83,6 +84,7 @@ func set_block_color_gradient(index: int, color: Color, duration: float = gradie
 	tween.finished.connect(_on_color_animation_finished.bind(index), CONNECT_ONE_SHOT)
 
 ## 两步渐变：先快速过渡到闪色，再渐变到目标色
+## @signal_once
 func set_block_color_two_step(index: int, flash_color: Color, target_color: Color, flash_duration: float = 0.05, gradient_duration_overriding: float = gradient_duration) -> void:
 	if index < 0 or index >= blocks.size():
 		return
@@ -100,6 +102,7 @@ func set_block_color_two_step(index: int, flash_color: Color, target_color: Colo
 	_block_tweens[index] = tween
 
 ## 闪烁设置单个块的颜色（使用工具类，返回 Tween 并自动管理）。
+## @signal_once
 func blink_block(index: int, from_color: Color, to_color: Color, duration: float = blink_duration) -> void:
 	if index < 0 or index >= blocks.size():
 		return
@@ -151,19 +154,19 @@ func clear_blocks() -> void:
 	capacity = 0
 
 ## 更新数值标签。
-func update_label_text(current: int, max: int) -> void:
+func update_label_text(current: int, max_overriding: int) -> void:
 	if value_label:
-		value_label.text = "%d / %d" % [current, max]
+		value_label.text = "%d / %d" % [current, max_overriding]
 
 ## ----- 背景相关 -----
 ## 直接设置背景颜色（可选动画）。
 func set_background_color(color: Color, animate: bool = false) -> void:
 	_ensure_background_style()
-	if animate:
-		var tween: Tween = create_tween()
-		tween.tween_property(_background_stylebox, ^"bg_color", color, blink_duration)
-	else:
+	if not animate:
 		_background_stylebox.bg_color = color
+		return
+	var tween: Tween = create_tween()
+	tween.tween_property(_background_stylebox, ^"bg_color", color, blink_duration)
 
 ## 根据比例（0~1）设置背景颜色：满血时保持原色，空血时完全变黑。
 func set_background_ratio(ratio: float, animate: bool = false) -> void:

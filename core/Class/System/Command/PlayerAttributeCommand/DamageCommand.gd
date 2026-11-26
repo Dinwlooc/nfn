@@ -57,32 +57,32 @@ class Context extends PlayerAttributeCommand.Context:
 	## 链式追加伤害标签；CUSTOM 需给出非空自定义名
 	## @side_effect
 	func add_damage_tag(tag: DamageTag, custom_name: StringName = &"") -> Context:
-		if tag == DamageTag.CUSTOM:
-			if custom_name.is_empty():
-				return self
-			var tag_str = String(custom_name)
-			if custom_damage_tags.has(tag_str):
-				return self
-			custom_damage_tags.append(tag_str)
-			damage_tags_mask |= DamageTag.CUSTOM
-		else:
+		if tag != DamageTag.CUSTOM:
 			damage_tags_mask |= tag
+			return self
+		if custom_name.is_empty():
+			return self
+		var tag_str = String(custom_name)
+		if custom_damage_tags.has(tag_str):
+			return self
+		custom_damage_tags.append(tag_str)
+		damage_tags_mask |= DamageTag.CUSTOM
 		return self
 
 	## 链式移除伤害标签
 	## @side_effect
 	func remove_damage_tag(tag: DamageTag, custom_name: StringName = &"") -> Context:
-		if tag == DamageTag.CUSTOM:
-			if custom_name.is_empty():
-				return self
-			var tag_str = String(custom_name)
-			var idx = custom_damage_tags.find(tag_str)
-			if idx != -1:
-				custom_damage_tags.remove_at(idx)
-				if custom_damage_tags.is_empty():
-					damage_tags_mask &= ~DamageTag.CUSTOM
-		else:
+		if tag != DamageTag.CUSTOM:
 			damage_tags_mask &= ~tag
+			return self
+		if custom_name.is_empty():
+			return self
+		var tag_str = String(custom_name)
+		var idx = custom_damage_tags.find(tag_str)
+		if idx != -1:
+			custom_damage_tags.remove_at(idx)
+			if custom_damage_tags.is_empty():
+				damage_tags_mask &= ~DamageTag.CUSTOM
 		return self
 
 	## 清空全部伤害标签

@@ -49,16 +49,12 @@ func apply_player_arrow(player_selected: Array[RenderItem], players_area: Render
 		is_local = (player == (players_area as RenderAreaPlayers).local_player)
 	var target_pos: Vector2
 	var direction: Vector2
-	if target_item == player:
-		if is_local:
-			target_pos = ArrowNode.get_card_top_center_global(player)
-			direction = Vector2.DOWN
-		else:
-			target_pos = ArrowNode.get_card_bottom_center_global(player)
-			direction = Vector2.UP
-	else:
-		target_pos = ArrowNode.get_card_bottom_center_global(target_item)
-		direction = Vector2.UP
+	var is_player: bool = target_item == player
+	target_pos = ArrowNode.get_card_bottom_center_global(target_item)
+	direction = Vector2.UP
+	if is_player and is_local:
+		target_pos = ArrowNode.get_card_top_center_global(player)
+		direction = Vector2.DOWN
 	if _cached_player_target == target_pos and _cached_player_dir == direction:
 		return false
 	_player_arrow.point_to_target(target_pos, direction)

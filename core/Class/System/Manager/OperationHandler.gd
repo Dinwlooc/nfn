@@ -54,7 +54,7 @@ func handle_request(request: OperationRequest) -> void:
 func set_player_responsive(player_id: int, can_respond: bool) -> void:
 	if can_respond:
 		_enable_player_response(player_id)
-	else:
+	if not can_respond:
 		_disable_player_response(player_id)
 	permissions_updated.emit(_get_responsive_player_ids())
 ## 批量设置响应玩家

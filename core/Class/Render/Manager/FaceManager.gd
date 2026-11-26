@@ -51,10 +51,10 @@ func _add_to_pool(itemface: ItemFace) -> void:
 	if not _face_pool.has(type_name):
 		_face_pool[type_name] = []
 	var pool_array: Array = _face_pool[type_name]
-	if pool_array.size() < MAX_POOL_SIZE:
-		pool_array.append(itemface)
-	else:
+	if pool_array.size() >= MAX_POOL_SIZE:
 		itemface.queue_free()
+		return
+	pool_array.append(itemface)
 ## 清理ItemFace状态（仅断开信号和移除父节点，不重置内容）
 func _cleanup_item_face(itemface: ItemFace) -> void:
 	if not itemface:

@@ -45,12 +45,12 @@ func remove_buff(buff_name: StringName, stack: int = 1, forced: bool = false) ->
 		return false
 	var old_stack: int = buff.stack_count
 	buff.stack_count -= stack
-	if buff.stack_count > 0:
-		buff.on_stack_changed(old_stack, buff.stack_count)
-	else:
+	if buff.stack_count <= 0:
 		buff.stack_count = 0
 		buff.on_remove()
 		buffs.erase(buff_name)
+		return true
+	buff.on_stack_changed(old_stack, buff.stack_count)
 	return true
 
 ## 按名取已施加的 Buff，不存在返回 null
@@ -68,13 +68,12 @@ func reset_buffs() -> void:
 	var all_buffs: Array[Buff] = []
 	all_buffs.assign(buffs.values())
 	for buff in all_buffs:
+		buff.on_remove()
 		if buff.inborn_stack == 0:
-			buff.on_remove()
 			buffs.erase(buff.buff_name)
-		else:
-			buff.on_remove()
-			buff.stack_count = buff.inborn_stack
-			buff.on_apply()
+			continue
+		buff.stack_count = buff.inborn_stack
+		buff.on_apply()
 
 ## 内部层数修改（供Buff自身使用，无视锁定，归零即移除）
 ## @side_effect
@@ -87,5 +86,5 @@ func _modify_stack_internal(buff: Buff, delta: int) -> void:
 		buff.stack_count = 0
 		buff.on_remove()
 		buffs.erase(buff.buff_name)
-	else:
-		buff.on_stack_changed(old_stack, buff.stack_count)
+		return
+	buff.on_stack_changed(old_stack, buff.stack_count)

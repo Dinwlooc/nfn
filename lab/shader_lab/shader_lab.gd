@@ -37,6 +37,50 @@ class ParamSpec:
 		max_value = p_max
 		default_value = p_default
 
+## 布尔参数复选框：把 toggled 转发为携带键的 param_changed
+class ParamCheck extends CheckBox:
+	## @emitter
+	signal param_changed(value: bool, key: StringName)
+	var key: StringName
+	func _init(param_key: StringName) -> void:
+		key = param_key
+		toggled.connect(_forward_toggled)
+	func _forward_toggled(pressed: bool) -> void:
+		param_changed.emit(pressed, key)
+
+## 浮点参数步进框：把 value_changed 转发为携带键的 param_changed
+class ParamSpin extends SpinBox:
+	## @emitter
+	signal param_changed(value: float, key: StringName)
+	var key: StringName
+	func _init(param_key: StringName) -> void:
+		key = param_key
+		value_changed.connect(_forward_value_changed)
+	func _forward_value_changed(value: float) -> void:
+		param_changed.emit(value, key)
+
+## 颜色参数按钮：把 color_changed 转发为携带键的 param_changed
+class ParamPicker extends ColorPickerButton:
+	## @emitter
+	signal param_changed(value: Color, key: StringName)
+	var key: StringName
+	func _init(param_key: StringName) -> void:
+		key = param_key
+		color_changed.connect(_forward_color_changed)
+	func _forward_color_changed(color: Color) -> void:
+		param_changed.emit(color, key)
+
+## 浮点滑杆：把 value_changed 转发为携带键与数值标签的 param_changed
+class ParamSlider extends HSlider:
+	## @emitter
+	signal param_changed(value: float, key: StringName, label: Label)
+	var key: StringName
+	var value_label: Label = null
+	func _init(param_key: StringName) -> void:
+		key = param_key
+		value_changed.connect(_forward_value_changed)
+	func _forward_value_changed(value: float) -> void:
+		param_changed.emit(value, key, value_label)
 var _pair_root: Control
 var _title_label: Label
 var _left_caption: Label
@@ -331,12 +375,12 @@ func _initial_bool(spec: ParamSpec) -> bool:
 ## @side_effect
 func _add_param_control(spec: ParamSpec) -> void:
 	if spec.type_name == "bool":
-		var check: CheckBox = CheckBox.new()
+		var check: ParamCheck = ParamCheck.new(spec.key)
 		check.text = String(spec.key)
 		var initial: bool = _initial_bool(spec)
 		check.button_pressed = initial
 		check.add_theme_font_size_override("font_size", 16)
-		check.toggled.connect(_on_param_bool.bind(spec.key))
+		check.param_changed.connect(_on_param_bool)
 		_param_box.add_child(check)
 		_apply_param(spec.key, initial)
 		return
@@ -344,20 +388,20 @@ func _add_param_control(spec: ParamSpec) -> void:
 		_add_float_slider(spec)
 		return
 	if spec.type_name == "int":
-		var spin: SpinBox = SpinBox.new()
+		var spin: ParamSpin = ParamSpin.new(spec.key)
 		spin.min_value = spec.min_value
 		spin.max_value = spec.max_value
 		spin.step = 1.0
 		spin.value = float(spec.default_value)
-		spin.value_changed.connect(_on_param_float.bind(spec.key))
+		spin.param_changed.connect(_on_param_float)
 		_param_box.add_child(spin)
 		_apply_param(spec.key, int(spec.default_value))
 		return
 	if spec.type_name == "color":
-		var picker: ColorPickerButton = ColorPickerButton.new()
+		var picker: ParamPicker = ParamPicker.new(spec.key)
 		picker.color = spec.default_value if spec.default_value is Color else Color.WHITE
 		picker.custom_minimum_size = Vector2(160.0, 32.0)
-		picker.color_changed.connect(_on_param_color.bind(spec.key))
+		picker.param_changed.connect(_on_param_color)
 		_param_box.add_child(picker)
 		_apply_param(spec.key, picker.color)
 		return
@@ -373,7 +417,7 @@ func _add_float_slider(spec: ParamSpec) -> void:
 	label.custom_minimum_size = Vector2(240.0, 0.0)
 	label.add_theme_font_size_override("font_size", 16)
 	row.add_child(label)
-	var slider: HSlider = HSlider.new()
+	var slider: ParamSlider = ParamSlider.new(spec.key)
 	slider.min_value = spec.min_value
 	slider.max_value = spec.max_value
 	slider.step = maxf((spec.max_value - spec.min_value) / 200.0, 0.001)
@@ -386,7 +430,8 @@ func _add_float_slider(spec: ParamSpec) -> void:
 	value_label.custom_minimum_size = Vector2(90.0, 0.0)
 	value_label.add_theme_font_size_override("font_size", 16)
 	row.add_child(value_label)
-	slider.value_changed.connect(_on_param_slider.bind(spec.key, value_label))
+	slider.value_label = value_label
+	slider.param_changed.connect(_on_param_slider)
 	_param_box.add_child(row)
 	_apply_param(spec.key, float(spec.default_value))
 

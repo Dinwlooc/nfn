@@ -49,8 +49,8 @@ func tween_move_in(item: RenderItem) -> void:
 	tween.chain().tween_callback(func() -> void: _on_move_finished(item))
 ## 移入装配：单卡位移到目标。
 ## @atomic
-static func do_move_in(tween: Tween, item: RenderItem, target_position: Vector2) -> void:
-	tween.tween_property(item, ^"position", target_position, MOVE_DURATION).set_trans(MOVE_TRANS).set_ease(MOVE_EASE)
+static func do_move_in(tween: Tween, item: RenderItem, target_position_overriding: Vector2) -> void:
+	tween.tween_property(item, ^"position", target_position_overriding, MOVE_DURATION).set_trans(MOVE_TRANS).set_ease(MOVE_EASE)
 
 #==signals_in==
 ## 创建移除卡牌时设置起始位置

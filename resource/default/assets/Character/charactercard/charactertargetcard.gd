@@ -171,13 +171,13 @@ func tween_selected(selected: bool) -> void:
 		selected_icon.position = _icon_original_position
 ## 选中态装配：角色容器与属性节点并行位移、缩放。
 ## @atomic
-static func do_selected(tween: Tween, container: Control, properties: Control, pose: SelectionPose) -> void:
+static func do_selected(tween: Tween, container: Control, properties_overriding: Control, pose: SelectionPose) -> void:
 	tween.set_ease(SELECT_ANIMATION_EASE)
 	tween.set_trans(SELECT_ANIMATION_TRANS)
 	tween.parallel().tween_property(container, ^"position", pose.container_position, SELECT_ANIMATION_DURATION)
 	tween.parallel().tween_property(container, ^"size", pose.container_size, SELECT_ANIMATION_DURATION)
-	tween.parallel().tween_property(properties, ^"position", pose.properties_position, SELECT_ANIMATION_DURATION)
-	tween.parallel().tween_property(properties, ^"scale", pose.properties_scale, SELECT_ANIMATION_DURATION)
+	tween.parallel().tween_property(properties_overriding, ^"position", pose.properties_position, SELECT_ANIMATION_DURATION)
+	tween.parallel().tween_property(properties_overriding, ^"scale", pose.properties_scale, SELECT_ANIMATION_DURATION)
 
 #==internal==
 ## 处理同一物品的数据更新（数值变化）

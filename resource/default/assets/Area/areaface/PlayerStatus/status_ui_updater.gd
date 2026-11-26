@@ -145,31 +145,30 @@ func _apply_hp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int)
 		var new_color: Color = C.COLOR_HP_CURRENT if i < clamped_new_cur else C.COLOR_HP_LOST
 		if old_color == new_color:
 			continue
-		if use_gradient:
-			var flash_color: Color = Color.WHITE if new_cur > old_cur else Color.BLACK
-			hp_indicator.set_block_color_two_step(i, flash_color, new_color, C.HP_TWO_STEP_FLASH_DURATION, C.HP_TWO_STEP_GRADIENT_DURATION)
-		else:
+		if not use_gradient:
 			hp_indicator.blink_block(i, old_color, new_color, blink_duration)
+			continue
+		var flash_color: Color = Color.WHITE if new_cur > old_cur else Color.BLACK
+		hp_indicator.set_block_color_two_step(i, flash_color, new_color, C.HP_TWO_STEP_FLASH_DURATION, C.HP_TWO_STEP_GRADIENT_DURATION)
 	hp_indicator.set_background_ratio(ratio, true)
-	if ratio > 0.5:
-		_breath_anim.set_active(true)
-		_tremor_anim.set_active(false)
-	else:
-		_breath_anim.set_active(false)
-		_tremor_anim.set_active(clamped_new_cur > 0)
+	var is_high: bool = ratio > 0.5
+	_breath_anim.set_active(is_high)
+	_tremor_anim.set_active(not is_high and clamped_new_cur > 0)
+	if not is_high:
 		_tremor_anim.update_amplitude_by_hp(clamped_new_cur, new_max)
 	var hp_loss: int = clamped_old_cur - clamped_new_cur
-	if hp_loss > 0:
-		if clamped_new_cur == 0:
-			var first_block: Panel = hp_indicator.blocks[0]
-			var pos: Vector2 = first_block.global_position + Vector2(first_block.size.x * 0.5, first_block.size.y)
-			particle_manager.emit_blood_gush(pos)
-		else:
-			var idx: int = clamped_new_cur
-			if idx >= 0 and idx < hp_indicator.blocks.size():
-				var block: Panel = hp_indicator.blocks[idx]
-				var pos: Vector2 = block.global_position + Vector2(block.size.x, block.size.y * 0.5)
-				particle_manager.emit_blood_hit(pos, hp_loss, ratio)
+	if hp_loss <= 0:
+		return
+	if clamped_new_cur == 0:
+		var first_block: Panel = hp_indicator.blocks[0]
+		var pos: Vector2 = first_block.global_position + Vector2(first_block.size.x * 0.5, first_block.size.y)
+		particle_manager.emit_blood_gush(pos)
+		return
+	var idx: int = clamped_new_cur
+	if idx >= 0 and idx < hp_indicator.blocks.size():
+		var block: Panel = hp_indicator.blocks[idx]
+		var pos: Vector2 = block.global_position + Vector2(block.size.x, block.size.y * 0.5)
+		particle_manager.emit_blood_hit(pos, hp_loss, ratio)
 
 ## 应用法力侧动画（点颜色/淡出）
 func _apply_mp_animation(old_max: int, old_cur: int, new_max: int, new_cur: int) -> void:
@@ -216,10 +215,7 @@ func _apply_morale_animation(old_attack: int, old_defense: int, old_required: in
 		morale_indicator.blink_block(i, old_color, new_color, C.MORALE_BLINK_DURATION)
 
 	var total: int = new_attack + new_defense
-	if total >= new_required and new_required > 0:
-		_morale_breath_anim.set_active(true)
-	else:
-		_morale_breath_anim.set_active(false)
+	_morale_breath_anim.set_active(total >= new_required and new_required > 0)
 
 ## 计算第 index 个战意块应显示的颜色
 func _get_morale_block_color(index: int, attack: int, defense: int, required: int) -> Color:

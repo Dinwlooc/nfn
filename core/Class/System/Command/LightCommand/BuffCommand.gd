@@ -98,18 +98,18 @@ static func do_apply(context: Context, _game_state: GameState) -> void:
 static func _do_apply_apply(context: Context) -> void:
 	var bm := context.buff_modifiers
 	var buff_name: StringName = context.buff.buff_name
-	if bm.buffs.has(buff_name):
-		var existing: Buff = bm.buffs[buff_name]
-		if existing.locked:
-			return
-		var target_stack = existing.stack_count + context.stack_count
-		var old = existing.stack_count
-		existing.stack_count = target_stack
-		existing.on_stack_changed(old, target_stack)
-	else:
+	if not bm.buffs.has(buff_name):
 		context.buff.stack_count = context.stack_count
 		bm.buffs[buff_name] = context.buff
 		context.buff.on_apply()
+		return
+	var existing: Buff = bm.buffs[buff_name]
+	if existing.locked:
+		return
+	var target_stack = existing.stack_count + context.stack_count
+	var old = existing.stack_count
+	existing.stack_count = target_stack
+	existing.on_stack_changed(old, target_stack)
 
 ## 覆盖模式：移除同名旧 Buff 后附加新的
 ## @atomic
@@ -136,13 +136,13 @@ static func _do_apply_remove(context: Context) -> void:
 		if existing.locked:
 			return
 		var new_stack = existing.stack_count - context.stack_count
-		if new_stack > 0:
-			var old = existing.stack_count
-			existing.stack_count = new_stack
-			existing.on_stack_changed(old, new_stack)
-		else:
+		if new_stack <= 0:
 			bm.buffs.erase(buff_name)
 			existing.on_remove()
+			return
+		var old = existing.stack_count
+		existing.stack_count = new_stack
+		existing.on_stack_changed(old, new_stack)
 
 ## 驱散模式：直接移除整个 Buff
 ## @atomic

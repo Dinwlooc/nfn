@@ -30,11 +30,12 @@ func set_capacity(new_max: int) -> void:
 ## 设置单个全局点的颜色（可选动画）。
 func set_dot_color(global_index: int, color: Color, animate: bool = false) -> void:
 	var dot: ColorRect = _get_dot(global_index)
-	if dot:
-		if animate:
-			UIAnimationUtils.blink_color(dot, dot.color, color, _blink_duration)
-		else:
-			dot.color = color
+	if not dot:
+		return
+	if not animate:
+		dot.color = color
+		return
+	UIAnimationUtils.blink_color(dot, dot.color, color, _blink_duration)
 
 ## 对全局点执行闪烁。
 func blink_dot(global_index: int, from_color: Color, to_color: Color, duration: float) -> void:
@@ -60,9 +61,9 @@ func clear_dots() -> void:
 	_capacity = 0
 
 ## 更新数值标签（如果存在）。
-func update_label_text(current: int, max: int) -> void:
+func update_label_text(current: int, max_overriding: int) -> void:
 	if value_label:
-		value_label.text = "%d / %d" % [current, max]
+		value_label.text = "%d / %d" % [current, max_overriding]
 
 ## 调整单位数量。
 func _adjust_units(target_dots: int) -> void:

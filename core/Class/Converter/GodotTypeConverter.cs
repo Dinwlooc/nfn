@@ -13,7 +13,7 @@ public static class GodotTypeConverter
 	/// </summary>
 	public static Dictionary<StringName, Variant> ToInnerDictionary(Godot.Collections.Dictionary godotDict)
 	{
-		var inner = new Dictionary<StringName, Variant>();
+		Dictionary<StringName, Variant> inner = new Dictionary<StringName, Variant>();
 		foreach (Variant key in godotDict.Keys)
 		{
 			StringName stringKey = key.AsStringName();

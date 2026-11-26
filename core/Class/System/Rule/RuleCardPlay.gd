@@ -155,12 +155,10 @@ static func _validate_target_permission(
 	if area_mode != PlayAreaMode.CENTER and target == null:
 		return RuleResult.new(false, null, "此卡牌需要指定一个目标玩家")
 	var is_self: bool = (target.get_id() == source.get_id())
-	if is_self:
-		if not (permission_mask & TargetPermissionFlags.SELF):
-			return RuleResult.new(false, null, "此卡牌不能对自己使用")
-	else:
-		if not (permission_mask & TargetPermissionFlags.OTHER):
-			return RuleResult.new(false, null, "此卡牌不能对其他玩家使用")
+	if is_self and not (permission_mask & TargetPermissionFlags.SELF):
+		return RuleResult.new(false, null, "此卡牌不能对自己使用")
+	if not is_self and not (permission_mask & TargetPermissionFlags.OTHER):
+		return RuleResult.new(false, null, "此卡牌不能对其他玩家使用")
 	return RuleResult.new(true)
 
 ## 验证距离限制

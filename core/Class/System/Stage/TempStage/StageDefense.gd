@@ -47,11 +47,11 @@ var _need_regenerate_battle_command: bool = false
 
 #== Constructor ==
 ## 构造：绑定守区与攻击方
-func _init(defense_area: AreaDefence, attacker: Player) -> void:
+func _init(defense_area_overriding: AreaDefence, attacker_overriding: Player) -> void:
 	super._init()
-	self.defense_area = defense_area
-	self.attacker = attacker
-	self.defender = defense_area.player
+	self.defense_area = defense_area_overriding
+	self.attacker = attacker_overriding
+	self.defender = defense_area_overriding.player
 	temporary_stage_player_id = defender.get_id()
 	stage_name = &"DefenseBattle"
 	time_limit = DEFAULT_TIME_LIMIT
@@ -92,24 +92,24 @@ func get_elapsed_time_since_last_reset() -> float:
 #== 响应能力 ==
 ## 根据攻防与顶牌玩家计算响应玩家 ID
 ## @pure
-static func calculate_responsive_player_id(attacker_id: int, defender_id: int, top_card: Card, defender: Player) -> int:
+static func calculate_responsive_player_id(attacker_id: int, defender_id: int, top_card: Card, defender_overriding: Player) -> int:
 	if not top_card:
 		return attacker_id
-	return attacker_id if top_card.player == defender else defender_id
+	return attacker_id if top_card.player == defender_overriding else defender_id
 
 #== 命令能力 ==
 ## 创建斗牌命令，无法形成斗牌时返回 null
 ## @nullable_pure
-static func build_battle_command(defense_area: AreaDefence) -> BattleCommand:
-	if not defense_area.check_battle_formation():
+static func build_battle_command(defense_area_overriding: AreaDefence) -> BattleCommand:
+	if not defense_area_overriding.check_battle_formation():
 		return null
-	var top_card: Card = defense_area.get_top_card()
-	var second_card: Card = defense_area.get_second_card()
-	return BattleCommand.new(defense_area, top_card, second_card)
+	var top_card: Card = defense_area_overriding.get_top_card()
+	var second_card: Card = defense_area_overriding.get_second_card()
+	return BattleCommand.new(defense_area_overriding, top_card, second_card)
 ## 创建结算命令
 ## @factory
-static func build_settle_command(responsive_player_id: int, defense_area: AreaDefence, attacker: Player) -> SettleCommand:
-	return SettleCommand.new(responsive_player_id, defense_area, attacker)
+static func build_settle_command(responsive_player_id: int, defense_area_overriding: AreaDefence, attacker_overriding: Player) -> SettleCommand:
+	return SettleCommand.new(responsive_player_id, defense_area_overriding, attacker_overriding)
 ## 创建放弃响应请求
 ## @factory
 static func build_abandon_response(player_id: int) -> OperationRequest.AbandonResponse:

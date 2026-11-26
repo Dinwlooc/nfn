@@ -136,4 +136,4 @@ static func compute_scale_factor(count: int, min_count: int = 8, max_count: int 
 		return max_scale
 	if count >= max_count:
 		return min_scale
-	return max_scale - (count - min_count) / (max_count - min_count) * (max_scale - min_scale)
+	return max_scale - float(count - min_count) / float(max_count - min_count) * (max_scale - min_scale)
