@@ -43,18 +43,18 @@ func _ready() -> void:
 
 ## 点选入口：切到对应分页；面板未展开时一并播放滑入
 ## @side_effect
-func _on_mode_pressed(mode: EntryMode.Mode) -> void:
+func _on_mode_pressed(mode: LaunchContext.Mode) -> void:
 	$RoomPanel.select_mode(mode)
 	_open_panel()
 ## 点选「创建」入口
 ## @side_effect
 func _on_create_pressed() -> void:
-	_on_mode_pressed(EntryMode.Mode.CREATE)
+	_on_mode_pressed(LaunchContext.Mode.CREATE)
 
 ## 点选「加入」入口
 ## @side_effect
 func _on_join_pressed() -> void:
-	_on_mode_pressed(EntryMode.Mode.JOIN)
+	_on_mode_pressed(LaunchContext.Mode.JOIN)
 
 ## 点选实验室入口：切到实验室分页；面板未展开时一并播放滑入
 ## @side_effect
@@ -78,11 +78,11 @@ func _open_panel() -> void:
 
 ## 面板确认：写入进入模式与端口；创建游戏直接转场，加入游戏先连服务器
 ## @side_effect
-func _on_confirmed(mode: EntryMode.Mode, host: String, port_text: String) -> void:
-	EntryMode.current = mode
+func _on_confirmed(mode: LaunchContext.Mode, host: String, port_text: String) -> void:
+	GlobalRegistry.get_launch_context().mode = mode
 	var port: int = port_text.strip_edges().to_int()
-	if mode == EntryMode.Mode.CREATE:
-		EntryMode.server_port = port
+	if mode == LaunchContext.Mode.CREATE:
+		GlobalRegistry.get_launch_context().server_port = port
 		GlobalTransition.change_scene_with_transition(GAME_SCENE)
 		return
 	var url: String = _build_url(host, port)

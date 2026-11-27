@@ -3,7 +3,7 @@
 extends Node2D
 
 ## 常量配置脚本
-const C = preload("status_constants.gd")
+const C = preload("StatusConstants.gd")
 
 ## ---- 发射器 ----
 var _hit_emitter: GPUParticles2D = null

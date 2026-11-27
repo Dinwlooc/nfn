@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://db51joyx0uc86"]
 
-[ext_resource type="Script" uid="uid://bbo5r3nm8gklu" path="res://resource/default/assets/Card/cardface/RenderCard.gd" id="1_e6d5b"]
+[ext_resource type="Script" uid="uid://bbo5r3nm8gklu" path="res://resource/default/assets/Card/cardface/render_card.gd" id="1_e6d5b"]
 [ext_resource type="Texture2D" uid="uid://ljvviksp78nn" path="res://resource/default/assets/Card/suit/suit.png" id="2_u6ebe"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ycaky"]

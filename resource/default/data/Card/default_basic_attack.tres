@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bq8pou4k8ujat" path="res://core/Class/System/Modifier/Modifier.gd" id="1_jnom1"]
 [ext_resource type="Script" uid="uid://chndppyj08lvd" path="res://core/Class/System/Item/AttributeData.gd" id="1_qhk8a"]
 [ext_resource type="Script" uid="uid://xwa2xhc857ep" path="res://core/Class/Transport/TransPack/ItemPack/HandCardPack.gd" id="3_rvtcu"]
-[ext_resource type="Script" uid="uid://bxumydctuiihd" path="res://resource/default/data/CardModifier/basic_attack_modifier.gd" id="3_to1qo"]
+[ext_resource type="Script" uid="uid://bxumydctuiihd" path="res://resource/default/data/CardModifier/BasicAttackModifier.gd" id="3_to1qo"]
 [ext_resource type="Script" uid="uid://b04wnl4nfxsn2" path="res://core/Class/System/Item/CardData.gd" id="4_to1qo"]
 
 [sub_resource type="Resource" id="Resource_qhk8a"]

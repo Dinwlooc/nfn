@@ -2,11 +2,11 @@
 extends Control
 
 ## 实验室目录：扫描与显示名
-const LabCatalogScript := preload("res://core/tscn/meum/lab_catalog.gd")
+const LabCatalogScript := preload("res://core/tscn/meum/LabCatalog.gd")
 
 ## 确认进入游戏（模式、主机文本、端口文本）
 ## @emitter
-signal confirmed(mode: EntryMode.Mode, host: String, port_text: String)
+signal confirmed(mode: LaunchContext.Mode, host: String, port_text: String)
 ## 返回菜单
 ## @emitter
 signal back_requested()
@@ -15,7 +15,7 @@ signal back_requested()
 signal lab_selected(scene_path: String)
 
 ## 当前选中的模式
-var _mode: EntryMode.Mode = EntryMode.Mode.CREATE
+var _mode: LaunchContext.Mode = LaunchContext.Mode.CREATE
 ## 实验室分页当前列出的场景路径，下标与列表条目一一对应
 var _lab_paths: Array[String] = []
 
@@ -29,9 +29,9 @@ func _ready() -> void:
 	$PageLab/ItemList_Lab.item_activated.connect(_on_lab_activated)
 
 ## 切换分页：创建页填端口，加入页填主机与端口
-func select_mode(mode: EntryMode.Mode) -> void:
+func select_mode(mode: LaunchContext.Mode) -> void:
 	_mode = mode
-	var is_create: bool = mode == EntryMode.Mode.CREATE
+	var is_create: bool = mode == LaunchContext.Mode.CREATE
 	$Title.text = "创建游戏" if is_create else "加入游戏"
 	$PageCreate.visible = is_create
 	$PageJoin.visible = not is_create
@@ -88,10 +88,10 @@ func _on_enter_pressed() -> void:
 	if not _is_port_usable(get_create_port()) or not _is_port_usable(get_join_port()):
 		GlobalConsole._print("菜单:Error:端口须留空或填写数字")
 		return
-	if _mode == EntryMode.Mode.JOIN and not _is_join_ready():
+	if _mode == LaunchContext.Mode.JOIN and not _is_join_ready():
 		GlobalConsole._print("菜单:Error:请填写主机与端口")
 		return
-	var active_port: String = get_create_port() if _mode == EntryMode.Mode.CREATE else get_join_port()
+	var active_port: String = get_create_port() if _mode == LaunchContext.Mode.CREATE else get_join_port()
 	confirmed.emit(_mode, get_host(), active_port)
 
 ## 双击列表条目：上报该条目的场景路径

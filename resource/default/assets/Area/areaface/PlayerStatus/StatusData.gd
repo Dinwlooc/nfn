@@ -74,7 +74,7 @@ func update_from_pack(pack: PlayerPack, initial: bool = false) -> void:
 
 ## 取某等级升级所需的总士气
 func _get_morale_required(level: int) -> int:
-	const C = preload("status_constants.gd")
+	const C = preload("StatusConstants.gd")
 	if level < C.UPGRADE_REQUIREMENTS.size():
 		return C.UPGRADE_REQUIREMENTS[level]
 	return 0

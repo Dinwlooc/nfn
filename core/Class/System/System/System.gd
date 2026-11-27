@@ -13,7 +13,7 @@ var operation_handler := OperationHandler.new()
 ## 触发器管理器，_ready 时统一接线
 var trigger_manager := TriggerManager.new()
 ## 传输层（全局 autoload）
-var transport: Transport = GlobalTransport
+var transport: Transport = GlobalTransport.transport
 ## 修饰器管理器
 var modifier_manager := ModifierManager.new()
 
@@ -29,7 +29,7 @@ func _ready() -> void:
 ## 启动服务器并接管用户表
 ## @side_effect
 func start_server() -> void:
-	transport.start_server(EntryMode.server_port)
+	transport.start_server(GlobalRegistry.get_launch_context().server_port)
 	game_state.users = transport.network_manager.users
 
 ## 按 4 帧节流驱动命令堆栈（帧控制节奏由架构裁定保留）

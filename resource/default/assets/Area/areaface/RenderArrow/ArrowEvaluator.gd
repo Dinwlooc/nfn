@@ -2,7 +2,7 @@
 extends RefCounted
 
 ## 箭头节点脚本
-const ArrowNode = preload("arrow_node.gd")
+const ArrowNode = preload("ArrowNode.gd")
 
 ## 手牌箭头控件
 var _hand_arrow: ArrowNode

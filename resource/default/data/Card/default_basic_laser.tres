@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CardData" format=3 uid="uid://b58jaf3o1bkik"]
 
-[ext_resource type="Script" uid="uid://cwc888s751r48" path="res://resource/default/data/CardModifier/laser_modifier.gd" id="1_okqxb"]
+[ext_resource type="Script" uid="uid://cwc888s751r48" path="res://resource/default/data/CardModifier/LaserModifier.gd" id="1_okqxb"]
 [ext_resource type="Script" uid="uid://chndppyj08lvd" path="res://core/Class/System/Item/AttributeData.gd" id="1_s3hbs"]
 [ext_resource type="Script" uid="uid://bq8pou4k8ujat" path="res://core/Class/System/Modifier/Modifier.gd" id="2_s3hbs"]
 [ext_resource type="Script" uid="uid://xwa2xhc857ep" path="res://core/Class/Transport/TransPack/ItemPack/HandCardPack.gd" id="3_ie6li"]

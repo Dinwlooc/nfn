@@ -35,9 +35,9 @@ var _select_limit_changed_callback: Callable
 
 #==consts==
 ## 防御动画管理器脚本
-const DefenceAnimationManager = preload("defence_animation_manager.gd")
+const DefenceAnimationManager = preload("DefenceAnimationManager.gd")
 ## 防御预览管理器脚本
-const DefencePreviewManager = preload("defence_preview_manager.gd")
+const DefencePreviewManager = preload("DefencePreviewManager.gd")
 ## 补间动画时长（秒）
 const TWEEN_TIME: float = 0.2
 ## 层视差换算工具

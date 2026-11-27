@@ -1,98 +1,51 @@
-## 传输层节点，负责管理网络连接与请求分发。
+## 传输层单例节点：管理网络生命周期（建管理器、轮询、控制台接线），传输语义委托给 Transport 服务。
 extends Node
-class_name Transport
-
-## 本地化后的渲染请求（已反序列化，待渲染层消费）
-## @emitter
-signal render_request_received(request: RenderRequest)
-## 本地化后的操作请求（已反序列化，待系统层消费）
-## @emitter
-signal operation_request_received(op: OperationRequest)
-## 对等体变更通知（预留，当前无发射点）
-signal peer_update(peer_id: int)
+#==consts==
 ## 网络轮询间隔（帧）
-const POLL_FRAME_INTERVAL: int = 6            ## 每隔多少帧轮询一次（60fps 下约 10 次/秒）
-## 网络管理器实例，_ready 时创建
+const POLL_FRAME_INTERVAL: int = 6
+#==vars==
+## 网络管理器实例，实例化时创建
 var network_manager: NetworkManager
-
-## 创建网络管理器并接线控制台命令
-func _ready() -> void:
+## 传输服务，实例化时创建；对外类型为 Transport
+var transport: Transport
+#==public methods==
+## 实例化时就建好管理器与服务，场景在 _ready 前读到的不是空引用 @delegates(Transport.new)
+func _init() -> void:
 	network_manager = NetworkManager.new()
+	transport = Transport.new(self, network_manager)
+## 接线多人环境与控制台命令
+func _ready() -> void:
 	network_manager.set_multiplayer(multiplayer)
-	GlobalConsole.c_connect_to.connect(_on_console_connect_to)
-	GlobalConsole.c_close.connect(_on_console_close)
-
-## 按 POLL_FRAME_INTERVAL 节流轮询网络事件
+	GlobalConsole.c_connect_to.connect(_on_c_connect_to)
+	GlobalConsole.c_close.connect(_on_c_close)
+## 按 POLL_FRAME_INTERVAL 节流轮询网络事件 @delegates(network_manager.poll)
 func _process(_delta: float) -> void:
 	if not network_manager:
 		return
 	if Engine.get_process_frames() % POLL_FRAME_INTERVAL != 0:
 		return
 	network_manager.poll()
-
-## 控制台命令：连接到指定 URL
-func _on_console_connect_to(new_url: String) -> void:
-	network_manager.url_connect(new_url)
-
-## 控制台命令：关闭当前连接
-func _on_console_close() -> void:
-	network_manager.close()
-
-## 发送渲染请求（自动处理本地/远程调用）
-## @side_effect
+## 发送渲染请求，转发到传输服务 @delegates(transport.send_render_request)
 func send_render_request(peer_id: int, request: RenderRequest) -> void:
-	var data: PackedByteArray = RenderRequestSerializer.serialize(request)
-	if peer_id >= 0:
-		# 广播：所有对等体（包括本地）都会收到
-		rpc_id(0, &"receive_render_request", data)
-		return
-	# 排除模式：向除 -peer_id 外的所有远程对等体发送（本地不自动执行）
-	var exclude_id: int = -peer_id
-	for id: int in multiplayer.get_peers():
-		if id != exclude_id:
-			rpc_id(id, &"receive_render_request", data)
-
-## 在本进程内转发渲染请求（call_deferred 的落点）
-## @emitter
-func _emit_render_request_local(request: RenderRequest) -> void:
-	render_request_received.emit(request)
-
-## RPC：反序列化远端渲染请求，延迟转发到本地信号
-## @delegates
+	transport.send_render_request(peer_id, request)
+## 上传操作请求，转发到传输服务 @delegates(transport.upload_operation_request)
+func upload_operation_request(op: OperationRequest) -> void:
+	transport.upload_operation_request(op)
+## 启动本地服务器，转发到传输服务 @delegates(transport.start_server)
+func start_server(port: int = 0) -> void:
+	transport.start_server(port)
+## RPC 入口：远端渲染请求交给传输服务分发 @delegates(transport.handle_render_request)
 @rpc("authority", "call_local", "reliable")
 func receive_render_request(serialized_request: PackedByteArray) -> void:
-	var request: RenderRequest = RenderRequestSerializer.deserialize(serialized_request)
-	if not request:
-		push_error("Failed to deserialize render request")
-		return
-	call_deferred(&"_emit_render_request_local", request)
-
-## 上传操作请求（本地服务器自动转为本地调用）
-## @side_effect
-func upload_operation_request(op: OperationRequest) -> void:
-	var data: PackedByteArray = OperationRequestSerializer.serialize(op)
-	# 始终向服务器（ID=1）发送，若本地就是服务器则自动本地调用
-	rpc_id(1, &"receive_operation_request", data)
-
-## 在本进程内转发操作请求（call_deferred 的落点）
-## @emitter
-func _emit_operation_request_local(op: OperationRequest) -> void:
-	operation_request_received.emit(op)
-
-## RPC：反序列化远端操作请求，记录来源 peer_id 后延迟转发
-## @delegates
+	transport.handle_render_request(serialized_request)
+## RPC 入口：远端操作请求交给传输服务分发 @delegates(transport.handle_operation_request)
 @rpc("any_peer", "call_local", "reliable")
 func receive_operation_request(data: PackedByteArray) -> void:
-	var op: OperationRequest = OperationRequestSerializer.deserialize(data)
-	if not op:
-		push_error("Failed to deserialize operation request")
-		return
-	op.source_peer_id = multiplayer.get_remote_sender_id()
-	call_deferred(&"_emit_operation_request_local", op)
-
-## 启动本地服务器（port 为 0 时随机）；启动失败时在控制台报错
-## @delegates
-func start_server(port: int = 0) -> void:
-	if network_manager.create_server(port):
-		return
-	GlobalConsole._print("Transport:Error:服务器启动失败，端口 %d 不可用" % port)
+	transport.handle_operation_request(data)
+#==private methods==
+## 控制台命令：连接到指定 URL @delegates(transport.connect_to)
+func _on_c_connect_to(new_url: String) -> void:
+	transport.connect_to(new_url)
+## 控制台命令：关闭当前连接 @delegates(transport.close)
+func _on_c_close() -> void:
+	transport.close()

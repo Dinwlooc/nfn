@@ -2,7 +2,7 @@
 extends RefCounted
 
 ## 常量配置脚本
-const C = preload("status_constants.gd")
+const C = preload("StatusConstants.gd")
 
 ## 信号：请求设置块容量（新容量）
 signal request_set_capacity(new_max: int)

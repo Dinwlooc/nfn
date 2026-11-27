@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b025ean41nrj6"]
 
-[ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://resource/default/assets/Console/Node_Console.gd" id="1_vrjsm"]
+[ext_resource type="Script" uid="uid://ca0h871rg0ntv" path="res://resource/default/assets/Console/console.gd" id="1_vrjsm"]
 [ext_resource type="Theme" uid="uid://c7plfql805fgp" path="res://resource/default/tres/LineEdit_theme.tres" id="2_n0p75"]
 
 [node name="Console" type="Control" unique_id=1927194631]

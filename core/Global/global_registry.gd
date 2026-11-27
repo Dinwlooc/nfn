@@ -11,6 +11,8 @@ signal constant_registered(type: StringName)  # 新增常量注册信号
 # 注册表存储
 ## 单例表：类型键 → 实例
 var _singletons: Dictionary = {}
+## 上下文表：类型键 → 数据对象（如启动参数）
+var _contexts: Dictionary = {}
 ## 常量表：类型键 → { &"array": Array[StringName], &"dic": Dictionary }
 var _constants: Dictionary = {}  # 新增常量存储 { type: { array: [], dic: {} } }
 
@@ -20,6 +22,7 @@ var _constants: Dictionary = {}  # 新增常量存储 { type: { array: [], dic: 
 ## @operation
 func _ready() -> void:
 	GlobalConstants.register_to(self)
+	_contexts[LAUNCH_TYPE] = LaunchContext.new()
 
 # 预定义类型常量
 ## 控制台单例类型键
@@ -34,6 +37,8 @@ const RENDER_CONTROL_TYPE := &"render_control"
 const NETWORK_MANAGER_TYPE := &"network_manager"
 ## Agent 管理器单例类型键
 const AGENT_MANAGER_TYPE := &"agent_manager"
+## 启动上下文类型键
+const LAUNCH_TYPE := &"launch"
 # 新增常量注册接口
 ## 注册一组常量名，建立 名↔序 双向映射（断言名称数与枚举长度一致）
 ## @side_effect @emitter
@@ -117,3 +122,8 @@ func get_singleton(type: StringName) -> Node:
 ## @pure
 func has_singleton(type: StringName) -> bool:
 	return _singletons.has(type) and is_instance_valid(_singletons[type])
+
+## 取启动上下文：菜单写入，主场景与系统层读取
+func get_launch_context() -> LaunchContext:
+	assert(_contexts.has(LAUNCH_TYPE), "Launch context not registered")
+	return _contexts[LAUNCH_TYPE]

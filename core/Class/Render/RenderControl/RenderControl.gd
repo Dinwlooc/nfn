@@ -26,7 +26,7 @@ var render_context: RenderContext = RenderContext.new()
 ## 卡面管理器
 var face_manager: FaceManager = FaceManager.new()
 ## 传输层引用
-var transport: Transport = GlobalTransport
+var transport: Transport = GlobalTransport.transport
 ## 操作请求管理器
 var operation_manager: OperationManager = OperationManager.new(transport, render_context)
 ## 渲染请求队列

@@ -19,19 +19,19 @@ const DotIndicator = preload("dot_indicator.gd")
 ## 行动点图标指示器脚本
 const TextIconIndicator = preload("text_icon_indicator.gd")
 ## 呼吸动画脚本
-const BreathAnimation = preload("breath_animation.gd")
+const BreathAnimation = preload("BreathAnimation.gd")
 ## 颤动动画脚本
-const TremorAnimation = preload("tremor_animation.gd")
+const TremorAnimation = preload("TremorAnimation.gd")
 ## 粒子管理器脚本
-const ParticleManager = preload("ParticleManager.gd")
+const ParticleManager = preload("particle_manager.gd")
 ## 状态数据脚本
-const StatusData = preload("status_data.gd")
+const StatusData = preload("StatusData.gd")
 ## 层视差换算（无状态工具）
 const LayerParallaxRuntime = preload("res://core/Class/Face/Utils/LayerParallaxRuntime.gd")
 ## UI 更新器脚本
-const StatusUIUpdater = preload("status_ui_updater.gd")
+const StatusUIUpdater = preload("StatusUiUpdater.gd")
 ## 常量配置脚本
-const C = preload("status_constants.gd")
+const C = preload("StatusConstants.gd")
 ## 面板移入补间时长（秒）
 const PANEL_ENTER_TIME: float = 0.3
 

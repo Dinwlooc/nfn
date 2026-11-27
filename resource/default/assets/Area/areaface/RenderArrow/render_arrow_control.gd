@@ -3,13 +3,13 @@
 extends Control
 # 导入内部依赖
 ## 箭头节点脚本
-const ArrowNode = preload("arrow_node.gd")
+const ArrowNode = preload("ArrowNode.gd")
 ## 箭头线脚本
-const ArrowLine = preload("arrow_line.gd")
+const ArrowLine = preload("ArrowLine.gd")
 ## 箭头线构建器脚本
-const ArrowLineBuilder = preload("arrow_line_builder.gd")
+const ArrowLineBuilder = preload("ArrowLineBuilder.gd")
 ## 箭头评估器脚本
-const ArrowEvaluator = preload("arrow_evaluator.gd")
+const ArrowEvaluator = preload("ArrowEvaluator.gd")
 # ==================== 常量 ====================
 ## 手牌区名称
 const HAND_AREA_NAME: StringName = RenderArea.DefaultArea.HAND

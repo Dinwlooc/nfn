@@ -31,11 +31,11 @@ var _anim_manager: HandAnimationManager = null
 
 #==consts==
 ## 手牌排序管理器脚本
-const HandSortManager = preload("hand_sort_manager.gd")
+const HandSortManager = preload("HandSortManager.gd")
 ## 手牌拖拽管理器脚本
-const HandDragManager = preload("hand_drag_manager.gd")
+const HandDragManager = preload("HandDragManager.gd")
 ## 手牌动画管理器脚本
-const HandAnimationManager = preload("hand_animation_manager.gd")
+const HandAnimationManager = preload("HandAnimationManager.gd")
 
 #==nodes==
 ## 操作按钮容器
