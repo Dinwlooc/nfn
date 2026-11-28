@@ -1,5 +1,5 @@
-class_name OperationManager
 extends RefCounted
+class_name OperationManager
 
 ## 区域名称常量引用
 const HAND_AREA_NAME = GlobalConstants.AREA_TYPES[GlobalConstants.AreaType.HAND]

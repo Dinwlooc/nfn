@@ -22,8 +22,7 @@ class_name FaceLab
 signal preset_finished(result: Dictionary[StringName, Variant])
 
 #==字段==
-## 返回目标场景路径；非空时退出实验室回到该场景
-## @context
+## 返回目标场景路径；非空时退出实验室回到该场景（静态，跨实验室共享）
 static var return_scene: String = ""
 ## 预设清单，按名排序
 var presets: Array[StringName] = []

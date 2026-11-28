@@ -5,7 +5,6 @@ class_name RenderContext
 
 ## 公共视角的玩家 id
 const PUBLIC_PLAYER_ID: int = 1
-
 ## 区域管理器
 var area_manager: RenderAreaManager
 ## 渲染项管理器

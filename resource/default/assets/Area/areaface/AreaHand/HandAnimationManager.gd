@@ -1,23 +1,7 @@
-## 手牌动画：浮动相位（逐帧通道）与排布/交换/拖拽补间的静态装配。本类不创建 Tween、不持有槽位。
+## 手牌动画：排布/交换/拖拽补间的静态装配。本类不创建 Tween、不持有槽位；浮动相位在 HandFloatPhase。
 extends RefCounted
 
-#==vars==
-## 正弦表
-var _sine_table: PackedFloat64Array = PackedFloat64Array()
-## 全局相位索引
-var _global_phase_index: int = 0
-
 #==consts==
-## 常量
-const TABLE_SIZE: int = 64
-## 每帧全局相位递增量
-const PHASE_INCREMENT: int = 1
-## 相位取模掩码（TABLE_SIZE-1）
-const MASK: int = TABLE_SIZE - 1
-## 相邻卡牌之间的相位差
-const CARD_PHASE_OFFSET: int = 4
-## 浮动振幅
-const AMPLITUDE: float = 0.3
 ## 常规补间时长（秒）
 const TWEEN_TIME: float = 0.2
 ## 拖拽补间时长（秒）
@@ -46,26 +30,6 @@ const BASE_SCALE_FACTOR: float = 1.0
 const SIGN_POSITIVE: float = 1.0
 ## 负方向符号
 const SIGN_NEGATIVE: float = -1.0
-
-#==frame==
-## 构造：生成正弦表
-func _init() -> void:
-	_generate_sine_table()
-## 生成浮动用正弦表
-## @internal
-func _generate_sine_table() -> void:
-	_sine_table = MathUtils.generate_sine_table(TABLE_SIZE)
-## 卡牌浮动扩展效果（逐帧通道：不建补间、不占槽位）
-## @internal
-func card_move_expand(cards: Array[RenderItem]) -> void:
-	_global_phase_index = (_global_phase_index + PHASE_INCREMENT) % TABLE_SIZE
-	var card_count: int = cards.size()
-	for i in card_count:
-		var phase_index: int = (_global_phase_index + i * CARD_PHASE_OFFSET) & MASK
-		var card: RenderItem = cards[i]
-		if not card:
-			continue
-		card.position.y += AMPLITUDE * _sine_table[phase_index]
 
 #==assembly==
 ## 排布补间：为每个非拖拽卡牌并行追加位置与缩放（已在目标位的不追加）。
@@ -139,10 +103,6 @@ static func do_release_overshoot(tween: Tween, card: RenderItem, mouse_pos: Vect
 	tween.set_parallel(true)
 	tween.tween_property(card, ^"center_position", mouse_pos + offset, RELEASE_OVERSHOOT_TIME) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(card, ^"rotation", ROTATION_NEUTRAL, RELEASE_OVERSHOOT_TIME) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(card, ^"scale", Vector2(total_scale_factor, total_scale_factor), RELEASE_OVERSHOOT_TIME) \
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 #==pure==
 ## 根据水平位移差计算卡牌旋转角度

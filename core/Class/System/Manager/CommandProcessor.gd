@@ -1,6 +1,6 @@
 ## 命令处理器：管理命令堆栈
-class_name CommandProcessor
 extends RefCounted
+class_name CommandProcessor
 
 #=== Variables ===
 ## 命令堆栈（尾部为当前执行的命令）

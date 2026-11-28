@@ -1,7 +1,7 @@
 ## 角色主体信息定义（全局资源）
 ## 包含角色的标识、视觉参数、受击表现修正包和帧索引，供动画系统使用。
-class_name CharacterProfile
 extends Resource
+class_name CharacterProfile
 
 ## ==================== 角色标识 ====================
 ## 角色代码名（如 &"nfn:mizukagami"），与系统数据层玩家数据包的名称对齐

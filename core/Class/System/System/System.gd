@@ -32,9 +32,9 @@ func start_server() -> void:
 	transport.start_server(GlobalRegistry.get_launch_context().server_port)
 	game_state.users = transport.network_manager.users
 
-## 按 4 帧节流驱动命令堆栈（帧控制节奏由架构裁定保留）
+## 按 2 帧节流驱动命令堆栈（帧控制节奏由架构裁定保留）
 func _process(_delta: float) -> void:
-	if Engine.get_process_frames() % 4 != 0:
+	if Engine.get_process_frames() % 2 != 0:
 		return
 	if not game_state._process_active:
 		return

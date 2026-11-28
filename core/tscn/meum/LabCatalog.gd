@@ -1,7 +1,7 @@
 ## 实验室目录：扫描实验室根目录下的实验室场景，供菜单列出并加载。
 ## 只读场景文本与脚本链，不实例化场景——实例化会执行实验室的 _ready、无头看门狗与预设解析。
-class_name LabCatalog
 extends RefCounted
+class_name LabCatalog
 
 #==consts==
 ## 实验室根目录

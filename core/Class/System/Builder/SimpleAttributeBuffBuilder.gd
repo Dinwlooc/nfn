@@ -1,5 +1,5 @@
-class_name SimpleAttributeBuffBuilder
 extends RefCounted
+class_name SimpleAttributeBuffBuilder
 
 ## 创建简单属性Buff，根据属性名、类型与正负方向拼合修饰器名
 ## @factory

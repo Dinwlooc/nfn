@@ -1,8 +1,8 @@
 ## 角色受击表现修正包（表现层资源）：受击动画的幅度与力度百分数。
 ## 只承载原始整型百分数（100 与基准观感一致）；幅度钳制一律由动画组件在计算时执行，
 ## 因为后续会引入更复杂的动画修正算法，原始数据不得被改写。
-class_name CharacterHitPack
 extends Resource
+class_name CharacterHitPack
 
 #==knockback==
 ## 击退幅度百分数（100 与基准一致；负值不改变击退方向，由动画组件钳制到 0）

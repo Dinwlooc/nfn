@@ -1,6 +1,6 @@
 ## 启动上下文：菜单写入、主场景读取的启动期参数；新增启动参数一律在此扩展。
-class_name LaunchContext
 extends RefCounted
+class_name LaunchContext
 #==types==
 ## 进入模式
 enum Mode {

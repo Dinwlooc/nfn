@@ -26,8 +26,8 @@ var _sort_manager: HandSortManager = null
 var _drag_manager: HandDragManager = null
 ## 已提交的面板展开状态（用于差量判定）
 var _applied_panel_expanded: bool = false
-## 动画管理器实例
-var _anim_manager: HandAnimationManager = null
+## 浮动相位实例
+var _float_phase: HandFloatPhase = null
 
 #==consts==
 ## 手牌排序管理器脚本
@@ -36,6 +36,8 @@ const HandSortManager = preload("HandSortManager.gd")
 const HandDragManager = preload("HandDragManager.gd")
 ## 手牌动画管理器脚本
 const HandAnimationManager = preload("HandAnimationManager.gd")
+## 手牌浮动相位脚本
+const HandFloatPhase = preload("HandFloatPhase.gd")
 
 #==nodes==
 ## 操作按钮容器
@@ -63,7 +65,7 @@ const HandAnimationManager = preload("HandAnimationManager.gd")
 func _ready() -> void:
 	_sort_manager = HandSortManager.new()
 	_drag_manager = HandDragManager.new()
-	_anim_manager = HandAnimationManager.new()
+	_float_phase = HandFloatPhase.new()
 	request_area(RenderArea.DefaultArea.HAND)
 	original_position = global_position
 	original_size = size
@@ -84,10 +86,10 @@ func _ready() -> void:
 ## @override
 func _physics_process(_delta: float) -> void:
 	if in_area:
-		_anim_manager.card_move_expand(area.items_pool)
+		_float_phase.card_move_expand(area.items_pool)
 		return
 	if Engine.get_process_frames() % 2 == 0:
-		_anim_manager.card_move_expand(area.items_pool)
+		_float_phase.card_move_expand(area.items_pool)
 	if _drag_manager.pending_swap and _drag_manager.can_swap_immediately(Time.get_ticks_msec()):
 		try_dragging_move()
 		_drag_manager.clear_pending()
